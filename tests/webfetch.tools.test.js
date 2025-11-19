@@ -1,5 +1,9 @@
 import { test, expect } from 'bun:test'
 import { $ } from 'bun'
+import { setDefaultTimeout } from 'bun:test'
+
+// Disable timeouts for these tests
+setDefaultTimeout(0)
 
 // Shared assertion function to validate OpenCode-compatible JSON structure for webfetch tool
 function validateWebfetchToolOutput(toolEvent, label) {

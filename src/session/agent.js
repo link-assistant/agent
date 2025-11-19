@@ -2,7 +2,7 @@
 // Permalink: https://github.com/sst/opencode/blob/main/packages/opencode/src/session/index.ts
 // Permalink: https://github.com/sst/opencode/blob/main/packages/opencode/src/provider/provider.ts
 
-import { ToolRegistry } from '../tool/registry.js'
+import { ToolRegistry } from '../tool/registry.ts'
 
 export class Agent {
   constructor() {
@@ -38,9 +38,10 @@ export class Agent {
     // Check if this is a tool request
     if (request.tools && request.tools.length > 0) {
       // Handle tool execution
-      const tools = await ToolRegistry.getTools()
+      const toolsList = await ToolRegistry.tools('', '')
+      const toolsMap = Object.fromEntries(toolsList.map(t => [t.id, t]))
       for (const tool of request.tools) {
-        const toolFn = tools[tool.name]
+        const toolFn = toolsMap[tool.name]
         if (toolFn) {
           try {
             const startTime = Date.now()
