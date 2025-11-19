@@ -1,113 +1,107 @@
 import { test, expect } from 'bun:test'
-// @ts-ignore
-import { sh } from 'command-stream'
+import { $ } from 'bun'
 
-test('Reference test: agent-cli tool produces expected OpenCode-compatible JSON format', async () => {
+// Shared assertion function to validate OpenCode-compatible JSON structure
+function validateBashToolOutput(toolEvent, label) {
+  console.log(`\n${label} JSON structure:`)
+  console.log(JSON.stringify(toolEvent, null, 2))
+
+  // Validate top-level structure
+  expect(typeof toolEvent.type).toBe('string')
+  expect(toolEvent.type).toBe('tool_use')
+  expect(typeof toolEvent.timestamp).toBe('number')
+  expect(typeof toolEvent.sessionID).toBe('string')
+  expect(toolEvent.sessionID.startsWith('ses_')).toBeTruthy()
+
+  // Validate part structure
+  expect(toolEvent.part).toBeTruthy()
+  expect(typeof toolEvent.part.id).toBe('string')
+  expect(toolEvent.part.id.startsWith('prt_')).toBeTruthy()
+  expect(typeof toolEvent.part.sessionID).toBe('string')
+  expect(typeof toolEvent.part.messageID).toBe('string')
+  expect(toolEvent.part.type).toBe('tool')
+  expect(typeof toolEvent.part.callID).toBe('string')
+  expect(toolEvent.part.callID.startsWith('call_')).toBeTruthy()
+  expect(toolEvent.part.tool).toBe('bash')
+
+  // Validate state structure
+  expect(toolEvent.part.state).toBeTruthy()
+  expect(toolEvent.part.state.status).toBe('completed')
+  expect(typeof toolEvent.part.state.title).toBe('string')
+
+  // Validate input structure
+  expect(toolEvent.part.state.input).toBeTruthy()
+  expect(toolEvent.part.state.input.command).toBe('echo hello world')
+
+  // Validate output
+  expect(typeof toolEvent.part.state.output).toBe('string')
+  expect(toolEvent.part.state.output.includes('hello world')).toBeTruthy()
+
+  // Validate metadata structure
+  expect(toolEvent.part.state.metadata).toBeTruthy()
+  expect(typeof toolEvent.part.state.metadata.output).toBe('string')
+  expect(typeof toolEvent.part.state.metadata.exit).toBe('number')
+
+  // Validate timing information
+  expect(toolEvent.part.state.time).toBeTruthy()
+  expect(typeof toolEvent.part.state.time.start).toBe('number')
+  expect(typeof toolEvent.part.state.time.end).toBe('number')
+  expect(toolEvent.part.state.time.end >= toolEvent.part.state.time.start).toBeTruthy()
+
+  console.log(`✅ ${label} structure validation passed`)
+}
+
+test('Reference test: OpenCode tool produces expected JSON format', async () => {
   const input = '{"message":"run command","tools":[{"name":"bash","params":{"command":"echo hello world"}}]}'
 
   // Test original OpenCode bash tool
-  const originalResult = await sh(`echo '${input}' | opencode run --format json --model opencode/grok-code`)
-  const originalLines = originalResult.stdout.trim().split('\n').filter(line => line.trim())
+  const originalResult = await $`echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow()
+  const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
   const originalEvents = originalLines.map(line => JSON.parse(line))
+  const originalTool = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'bash')
 
-  // Document expected OpenCode JSON structure (validated against: opencode run --format json --model opencode/grok-code)
-  console.log('Expected OpenCode JSON event structure (compatible with opencode run --format json --model opencode/grok-code):')
-  console.log('{"type":"tool_use","timestamp":1234567890,"sessionID":"ses_xxx","part":{"tool":"bash","state":{"status":"completed","input":{"command":"..."},"output":"..."}}}')
+  // Validate using shared assertion function
+  validateBashToolOutput(originalTool, 'OpenCode')
 
-  // Find tool_use events
-  const originalToolEvents = originalEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'bash')
-
-  // Should have tool_use events for bash
-  expect(originalToolEvents.length > 0).toBeTruthy()
-
-  // Check the structure matches OpenCode format
-  const originalTool = originalToolEvents[0]
-
-  // Validate top-level structure
-  expect(typeof originalTool.type).toBeTruthy()
-  expect(originalTool.type).toBe('tool_use')
-  expect(typeof originalTool.timestamp).toBeTruthy()
-  expect(typeof originalTool.sessionID).toBeTruthy()
-  expect(originalTool.sessionID.startsWith('ses_')).toBeTruthy()
-
-  // Validate part structure
-  expect(originalTool.part).toBeTruthy()
-  expect(originalTool.part.tool).toBe('bash')
-  expect(originalTool.part.type).toBe('tool')
-
-  // Validate state structure
-  expect(originalTool.part.state).toBeTruthy()
-  expect(originalTool.part.state.status).toBe('completed')
-  expect(typeof originalTool.part.state.title).toBeTruthy()
-  expect(originalTool.part.state.input).toBeTruthy()
-  expect(originalTool.part.state.input.command).toBe('echo hello world')
-  expect(typeof originalTool.part.state.output).toBeTruthy()
-
-  // Validate timing information
-  expect(originalTool.part.state.time).toBeTruthy()
-  expect(typeof originalTool.part.state.time.start).toBeTruthy()
-  expect(typeof originalTool.part.state.time.end).toBeTruthy()
-  expect(originalTool.part.state.time.end >= originalTool.part.state.time.start).toBeTruthy()
-
-  // Check that output contains expected result
-  expect(originalTool.part.state.output.includes('hello world')).toBeTruthy()
-
-  console.log('✅ Reference test passed - original OpenCode tool produces expected JSON format')
-  console.log('Validated against opencode run --format json --model opencode/grok-code output structure')
+  console.log('✅ Reference test passed - OpenCode produces expected JSON format')
 })
 
 console.log('This establishes the baseline behavior for compatibility testing')
 
-test('Agent-cli bash tool produces OpenCode-compatible JSON output', async () => {
-  // Test our agent-cli bash tool (compatible with OpenCode format)
-  const projectRoot = process.cwd()
+test('Agent-cli bash tool produces 100% compatible JSON output with OpenCode', async () => {
   const input = '{"message":"run command","tools":[{"name":"bash","params":{"command":"echo hello world"}}]}'
-  const agentResult = await sh(`echo '${input}' | bun run ${projectRoot}/src/index.js`)
-  const agentLines = agentResult.stdout.trim().split('\n').filter(line => line.trim())
+
+  // Get OpenCode output
+  const originalResult = await $`echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow()
+  const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+  const originalEvents = originalLines.map(line => JSON.parse(line))
+  const originalTool = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'bash')
+
+  // Get agent-cli output
+  const projectRoot = process.cwd()
+  const agentResult = await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet()
+  const agentLines = agentResult.stdout.toString().trim().split('\n').filter(line => line.trim())
   const agentEvents = agentLines.map(line => JSON.parse(line))
+  const agentTool = agentEvents.find(e => e.type === 'tool_use' && e.part.tool === 'bash')
 
-  // Document expected OpenCode JSON structure
-  console.log('Expected OpenCode JSON event structure:')
-  console.log('{"type":"tool_use","timestamp":1234567890,"sessionID":"ses_xxx","part":{"tool":"bash","state":{"status":"completed","input":{...},"output":"..."}}}')
+  // Validate both outputs using shared assertion function
+  validateBashToolOutput(originalTool, 'OpenCode')
+  validateBashToolOutput(agentTool, 'Agent-cli')
 
-  // Find tool_use events
-  const agentToolEvents = agentEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'bash')
+  // Verify structure has same keys at all levels
+  expect(Object.keys(agentTool).sort()).toEqual(Object.keys(originalTool).sort())
+  expect(Object.keys(agentTool.part).sort()).toEqual(Object.keys(originalTool.part).sort())
+  expect(Object.keys(agentTool.part.state).sort()).toEqual(Object.keys(originalTool.part.state).sort())
 
-  // Should have tool_use events for bash
-  expect(agentToolEvents.length > 0).toBeTruthy()
+  // Input may have optional description field added by AI, so we just check required fields are present
+  expect(agentTool.part.state.input.command).toBe(originalTool.part.state.input.command)
 
-  // Check the structure matches OpenCode format
-  const agentTool = agentToolEvents[0]
+  // Metadata may have optional description field, so we check required fields
+  expect(agentTool.part.state.metadata.output).toBeTruthy()
+  expect(typeof agentTool.part.state.metadata.exit).toBe('number')
 
-  // Validate top-level structure
-  expect(typeof agentTool.type).toBeTruthy()
-  expect(agentTool.type).toBeTruthy()
-  expect(typeof agentTool.timestamp).toBeTruthy()
-  expect(typeof agentTool.sessionID).toBeTruthy()
-  expect(agentTool.sessionID.startsWith('ses_')).toBeTruthy()
+  expect(Object.keys(agentTool.part.state.time).sort()).toEqual(Object.keys(originalTool.part.state.time).sort())
 
-  // Validate part structure
-  expect(agentTool.part).toBeTruthy()
-  expect(agentTool.part.tool).toBeTruthy()
-  expect(typeof agentTool.part.sessionID).toBeTruthy()
-  expect(agentTool.part.type).toBeTruthy()
-
-  // Validate state structure
-  expect(agentTool.part.state).toBeTruthy()
-  expect(agentTool.part.state.status).toBeTruthy()
-  expect(typeof agentTool.part.state.title).toBeTruthy()
-  expect(agentTool.part.state.input).toBeTruthy()
-  expect(typeof agentTool.part.state.output).toBeTruthy()
-
-  // Validate timing information
-  expect(agentTool.part.state.time).toBeTruthy()
-  expect(typeof agentTool.part.state.time.start).toBeTruthy()
-  expect(typeof agentTool.part.state.time.end).toBeTruthy()
-  expect(agentTool.part.state.time.end >= agentTool.part.state.time.start).toBeTruthy()
-
-  // Check that output contains expected result
-  expect(agentTool.part.state.output.includes('hello world')).toBeTruthy()
-
-  console.log('✅ Bash tool test passed - agent-cli produces OpenCode-compatible JSON format')
-  console.log('Actual output structure validated against expected OpenCode format')
+  console.log('\n✅ Agent-cli produces 100% OpenCode-compatible JSON structure')
+  console.log('All required fields and nested structure match OpenCode output format')
 })

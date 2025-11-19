@@ -296,7 +296,7 @@ class ToolRegistry {
             output: `Subagent ${subagent_type} would process: ${prompt}`
           }
         }
-      })
+      }
     }
   }
 }

@@ -1,6 +1,24 @@
 # agent-cli
 
-A minimal AI CLI agent MVP based on OpenCode, providing JSON input/output with unrestricted file and system access.
+**A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface**
+
+This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/grok-code` mode with:
+
+- ✅ **JSON Input/Output Only**: Compatible with `opencode run --format json --model opencode/grok-code`
+- ✅ **Single Model**: Hardcoded to OpenCode Zen Grok Code Fast 1 (no configuration needed)
+- ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
+- ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
+- ✅ **Tool Support**: Working on implementing core tools (bash, read, edit, list, glob, grep)
+- ❌ **No TUI**: Pure JSON CLI interface only
+- ❌ **No MCP**: No MCP server support
+- ❌ **No Sandbox**: Designed for VMs/containers where full access is acceptable
+- ❌ **No Client/Server**: Local execution only
+
+## Project Vision
+
+We're creating a slimmed-down, public domain version of OpenCode CLI focused on the "agentic run mode" for use in virtual machines, Docker containers, and other environments where unrestricted AI agent access is acceptable. This is **not** for general desktop use - it's for isolated environments where you want maximum AI agent freedom.
+
+**OpenCode Compatibility**: We maintain 100% compatibility with OpenCode's JSON event streaming format, so tools expecting `opencode run --format json --model opencode/grok-code` output will work with our agent-cli.
 
 ## Design Choices
 
@@ -30,11 +48,13 @@ The agent streams events as they occur, providing the same real-time experience 
 
 ## Features
 
-- **JSON Input/Output**: Accepts JSON via stdin, outputs JSON responses
-- **Unrestricted Access**: Full file system and command execution access
-- **Tool Support**: Built-in tools for file operations, bash commands, and more
-- **Hardcoded Model**: Uses OpenCode Zen Grok Code Fast 1 model
-- **No TUI**: Pure CLI interface for automation and integration
+- **JSON Input/Output**: Accepts JSON via stdin, outputs JSON event streams (OpenCode-compatible)
+- **Unrestricted Access**: Full file system and command execution access (no sandbox, no restrictions)
+- **Tool Support**: Working implementation of bash, read, edit, list, glob, grep tools
+- **Hardcoded Model**: OpenCode Zen Grok Code Fast 1 (no configuration, maximum simplicity)
+- **Bun.sh First**: Built with Bun for maximum efficiency and minimal resource usage
+- **No TUI**: Pure JSON CLI interface for automation and integration
+- **Public Domain**: Unlicense - use it however you want
 
 ## Installation
 

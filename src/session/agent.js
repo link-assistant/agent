@@ -42,7 +42,13 @@ export class Agent {
         const toolFn = ToolRegistry.getTools()[tool.name]
         if (toolFn) {
           try {
+            const startTime = Date.now()
             const result = await toolFn.execute(tool.params)
+            const endTime = Date.now()
+
+            // Generate callID (OpenCode compatibility)
+            const callID = `call_${Math.floor(Math.random() * 100000000)}`
+
             // Emit tool_use event
             this.emitEvent('tool_use', {
               part: {
@@ -50,20 +56,27 @@ export class Agent {
                 sessionID,
                 messageID: this.messageID,
                 type: 'tool',
+                callID,
                 tool: tool.name,
                 state: {
                   status: 'completed',
-                  title: result.title || `${tool.name} ${JSON.stringify(tool.params)}`,
                   input: tool.params,
-                  output: result.output
-                },
-                time: {
-                  start: Date.now(),
-                  end: Date.now()
+                  output: result.output,
+                  title: result.title || `${tool.name} ${JSON.stringify(tool.params)}`,
+                  metadata: result.metadata || {
+                    output: result.output,
+                    exit: result.exitCode || 0,
+                    ...(tool.params.description && { description: tool.params.description })
+                  },
+                  time: {
+                    start: startTime,
+                    end: endTime
+                  }
                 }
               }
             })
           } catch (error) {
+            const errorTime = Date.now()
             // Emit tool_use event with error
             this.emitEvent('tool_use', {
               part: {
@@ -75,11 +88,11 @@ export class Agent {
                 state: {
                   status: 'error',
                   input: tool.params,
-                  error: error.message
-                },
-                time: {
-                  start: Date.now(),
-                  end: Date.now()
+                  error: error.message,
+                  time: {
+                    start: errorTime,
+                    end: errorTime
+                  }
                 }
               }
             })
