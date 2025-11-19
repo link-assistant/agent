@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun run src/index.js",
-    "test": "find test -name '*.test.js' -exec bun test {} \\;"
+    "test": "find tests -name '*.test.js' -exec bun test {} \\;"
   },
   "dependencies": {
     "@ai-sdk/xai": "^2.0.33",

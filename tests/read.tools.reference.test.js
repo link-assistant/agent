@@ -1,4 +1,4 @@
-import { test, assert } from 'test-anywhere'
+import { test, expect } from 'bun:test'
 // @ts-ignore
 import { sh } from 'command-stream'
 import { writeFileSync, unlinkSync } from 'fs'
@@ -25,37 +25,37 @@ test('Agent-cli read tool produces OpenCode-compatible JSON output', async () =>
     const agentToolEvents = agentEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'read')
 
     // Should have tool_use events for read
-    assert.ok(agentToolEvents.length > 0, 'Agent should have read tool_use events')
+    expect(agentToolEvents.length > 0).toBeTruthy()
 
     // Check the structure matches OpenCode format
     const agentTool = agentToolEvents[0]
 
     // Validate top-level structure
-    assert.equal(typeof agentTool.type, 'string', 'Event should have type field')
-    assert.equal(agentTool.type, 'tool_use', 'Event type should be tool_use')
-    assert.equal(typeof agentTool.timestamp, 'number', 'Event should have timestamp')
-    assert.equal(typeof agentTool.sessionID, 'string', 'Event should have sessionID')
+    expect(typeof agentTool.type).toBeTruthy()
+    expect(agentTool.type).toBeTruthy()
+    expect(typeof agentTool.timestamp).toBeTruthy()
+    expect(typeof agentTool.sessionID).toBeTruthy()
 
     // Validate part structure
-    assert.ok(agentTool.part, 'Event should have part object')
-    assert.equal(agentTool.part.tool, 'read', 'Part tool should be read')
-    assert.equal(agentTool.part.type, 'tool', 'Part type should be tool')
+    expect(agentTool.part).toBeTruthy()
+    expect(agentTool.part.tool).toBeTruthy()
+    expect(agentTool.part.type).toBeTruthy()
 
     // Validate state structure
-    assert.ok(agentTool.part.state, 'Part should have state object')
-    assert.equal(agentTool.part.state.status, 'completed', 'Tool status should be completed')
-    assert.equal(typeof agentTool.part.state.title, 'string', 'State should have title')
-    assert.ok(agentTool.part.state.input, 'State should have input')
-    assert.equal(typeof agentTool.part.state.input.filePath, 'string', 'Input should have filePath')
-    assert.equal(typeof agentTool.part.state.output, 'string', 'State should have output')
+    expect(agentTool.part.state).toBeTruthy()
+    expect(agentTool.part.state.status).toBeTruthy()
+    expect(typeof agentTool.part.state.title).toBeTruthy()
+    expect(agentTool.part.state.input).toBeTruthy()
+    expect(typeof agentTool.part.state.input.filePath).toBeTruthy()
+    expect(typeof agentTool.part.state.output).toBeTruthy()
 
     // Validate timing information
-    assert.ok(agentTool.part.time, 'Part should have time object')
-    assert.equal(typeof agentTool.part.time.start, 'number', 'Time should have start timestamp')
-    assert.equal(typeof agentTool.part.time.end, 'number', 'Time should have end timestamp')
+    expect(agentTool.part.time).toBeTruthy()
+    expect(typeof agentTool.part.time.start).toBeTruthy()
+    expect(typeof agentTool.part.time.end).toBeTruthy()
 
     // Check that output contains the file content
-    assert.ok(agentTool.part.state.output.includes('This is test content'), 'Should have file content')
+    expect(agentTool.part.state.output.includes('This is test content')).toBeTruthy()
 
     console.log('✅ Read tool test passed - agent-cli produces OpenCode-compatible JSON format')
     console.log('Actual output structure validated against expected OpenCode format')

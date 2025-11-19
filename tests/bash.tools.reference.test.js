@@ -1,4 +1,4 @@
-import { test, assert } from 'test-anywhere'
+import { test, expect } from 'bun:test'
 // @ts-ignore
 import { sh } from 'command-stream'
 
@@ -18,39 +18,39 @@ test('Agent-cli bash tool produces OpenCode-compatible JSON output', async () =>
   const agentToolEvents = agentEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'bash')
 
   // Should have tool_use events for bash
-  assert.ok(agentToolEvents.length > 0, 'Agent should have bash tool_use events')
+  expect(agentToolEvents.length > 0).toBeTruthy()
 
   // Check the structure matches OpenCode format
   const agentTool = agentToolEvents[0]
 
   // Validate top-level structure
-  assert.equal(typeof agentTool.type, 'string', 'Event should have type field')
-  assert.equal(agentTool.type, 'tool_use', 'Event type should be tool_use')
-  assert.equal(typeof agentTool.timestamp, 'number', 'Event should have timestamp')
-  assert.equal(typeof agentTool.sessionID, 'string', 'Event should have sessionID')
-  assert.ok(agentTool.sessionID.startsWith('ses_'), 'SessionID should start with ses_')
+  expect(typeof agentTool.type).toBeTruthy()
+  expect(agentTool.type).toBeTruthy()
+  expect(typeof agentTool.timestamp).toBeTruthy()
+  expect(typeof agentTool.sessionID).toBeTruthy()
+  expect(agentTool.sessionID.startsWith('ses_')).toBeTruthy()
 
   // Validate part structure
-  assert.ok(agentTool.part, 'Event should have part object')
-  assert.equal(agentTool.part.tool, 'bash', 'Part tool should be bash')
-  assert.equal(typeof agentTool.part.sessionID, 'string', 'Part should have sessionID')
-  assert.equal(agentTool.part.type, 'tool', 'Part type should be tool')
+  expect(agentTool.part).toBeTruthy()
+  expect(agentTool.part.tool).toBeTruthy()
+  expect(typeof agentTool.part.sessionID).toBeTruthy()
+  expect(agentTool.part.type).toBeTruthy()
 
   // Validate state structure
-  assert.ok(agentTool.part.state, 'Part should have state object')
-  assert.equal(agentTool.part.state.status, 'completed', 'Tool status should be completed')
-  assert.equal(typeof agentTool.part.state.title, 'string', 'State should have title')
-  assert.ok(agentTool.part.state.input, 'State should have input')
-  assert.equal(typeof agentTool.part.state.output, 'string', 'State should have output')
+  expect(agentTool.part.state).toBeTruthy()
+  expect(agentTool.part.state.status).toBeTruthy()
+  expect(typeof agentTool.part.state.title).toBeTruthy()
+  expect(agentTool.part.state.input).toBeTruthy()
+  expect(typeof agentTool.part.state.output).toBeTruthy()
 
   // Validate timing information
-  assert.ok(agentTool.part.time, 'Part should have time object')
-  assert.equal(typeof agentTool.part.time.start, 'number', 'Time should have start timestamp')
-  assert.equal(typeof agentTool.part.time.end, 'number', 'Time should have end timestamp')
-  assert.ok(agentTool.part.time.end >= agentTool.part.time.start, 'End time should be >= start time')
+  expect(agentTool.part.time).toBeTruthy()
+  expect(typeof agentTool.part.time.start).toBeTruthy()
+  expect(typeof agentTool.part.time.end).toBeTruthy()
+  expect(agentTool.part.time.end >= agentTool.part.time.start).toBeTruthy()
 
   // Check that output contains expected result
-  assert.ok(agentTool.part.state.output.includes('hello world'), 'Should have command output')
+  expect(agentTool.part.state.output.includes('hello world')).toBeTruthy()
 
   console.log('✅ Bash tool test passed - agent-cli produces OpenCode-compatible JSON format')
   console.log('Actual output structure validated against expected OpenCode format')

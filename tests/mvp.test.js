@@ -1,4 +1,4 @@
-import { test, assert } from 'test-anywhere'
+import { test, expect } from 'bun:test'
 // @ts-ignore
 import { sh } from 'command-stream'
 import { writeFileSync, unlinkSync } from 'fs'
@@ -12,14 +12,14 @@ test('MVP agent responds to JSON input with streaming events', async () => {
   const events = lines.map(line => JSON.parse(line))
 
   // Verify we got events
-  assert.ok(events.length > 0, 'Should have events')
+  expect(events.length).toBeGreaterThan(0)
 
   // Check for text event
   const textEvents = events.filter(e => e.type === 'text')
-  assert.equal(textEvents.length, 1, 'Should have one text event')
-  assert.equal(textEvents[0].part.text, 'Hi!', 'Should have correct response text')
-  assert.equal(textEvents[0].sessionID, events[0].sessionID, 'Should have consistent sessionID')
-  assert.ok(textEvents[0].timestamp, 'Should have timestamp')
+  expect(textEvents.length).toBe(1)
+  expect(textEvents[0].part.text).toBe('Hi!')
+  expect(textEvents[0].sessionID).toBe(events[0].sessionID)
+  expect(textEvents[0].timestamp).toBeTruthy()
 })
 
 test('MVP agent executes tools with streaming events', async () => {
@@ -43,27 +43,27 @@ test('MVP agent executes tools with streaming events', async () => {
     const events = lines.map(line => JSON.parse(line))
 
     // Verify we got events
-    assert.ok(events.length > 0, 'Should have events')
+    expect(events.length).toBeGreaterThan(0)
 
     // Check for step_start events
     const stepStartEvents = events.filter(e => e.type === 'step_start')
-    assert.equal(stepStartEvents.length, 1, 'Should have one step_start event')
+    expect(stepStartEvents.length).toBe(1)
 
     // Check for tool_use event
     const toolEvents = events.filter(e => e.type === 'tool_use')
-    assert.equal(toolEvents.length, 1, 'Should have one tool_use event')
-    assert.equal(toolEvents[0].part.tool, 'read', 'Should be read tool')
-    assert.ok(toolEvents[0].part.state.output.includes('Hello World'), 'Should contain file content')
+    expect(toolEvents.length).toBe(1)
+    expect(toolEvents[0].part.tool).toBe('read')
+    expect(toolEvents[0].part.state.output).toContain('Hello World')
 
     // Check for step_finish events
     const stepFinishEvents = events.filter(e => e.type === 'step_finish')
-    assert.equal(stepFinishEvents.length, 1, 'Should have one step_finish event')
+    expect(stepFinishEvents.length).toBe(1)
 
     // All events should have the same sessionID
     const sessionID = events[0].sessionID
     events.forEach(event => {
-      assert.equal(event.sessionID, sessionID, 'All events should have same sessionID')
-      assert.ok(event.timestamp, 'Should have timestamp')
+      expect(event.sessionID).toBe(sessionID)
+      expect(event.timestamp).toBeTruthy()
     })
 
   } finally {

@@ -131,7 +131,7 @@ class ToolRegistry {
             })
             return {
               title: `List ${path}`,
-              output: JSON.stringify(detailed, null, 2)
+              output: JSON.stringify({items: detailed}, null, 2)
             }
           } catch (error) {
             throw new Error(`Failed to list directory ${path}: ${error.message}`)
@@ -153,7 +153,7 @@ class ToolRegistry {
             })
             return {
               title: `Glob ${pattern}`,
-              output: JSON.stringify(matches, null, 2)
+              output: JSON.stringify({matches: matches}, null, 2)
             }
           } catch (error) {
             throw new Error(`Failed to glob pattern ${pattern}: ${error.message}`)
@@ -196,7 +196,7 @@ class ToolRegistry {
 
             return {
               title: `Grep ${pattern}`,
-              output: JSON.stringify(matches.slice(0, 100), null, 2) // Limit results
+              output: JSON.stringify({matches: matches.slice(0, 100)}, null, 2) // Limit results
             }
           } catch (error) {
             throw new Error(`Failed to grep pattern ${pattern}: ${error.message}`)

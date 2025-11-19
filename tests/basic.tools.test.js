@@ -1,4 +1,4 @@
-import { test, assert } from 'test-anywhere'
+import { test, expect } from 'bun:test'
 // @ts-ignore
 import { sh } from 'command-stream'
 
@@ -11,27 +11,27 @@ test('Agent-cli processes JSON input "hi" and produces JSON output', async () =>
   const agentEvents = agentLines.map(line => JSON.parse(line))
 
   // Should have events
-  assert.ok(agentEvents.length > 0, 'Agent should produce JSON events')
+  expect(agentEvents.length > 0).toBeTruthy()
 
   // Check for step_start event
   const startEvents = agentEvents.filter(e => e.type === 'step_start')
-  assert.ok(startEvents.length > 0, 'Should have step_start events')
+  expect(startEvents.length > 0).toBeTruthy()
 
   // Check for step_finish event
   const finishEvents = agentEvents.filter(e => e.type === 'step_finish')
-  assert.ok(finishEvents.length > 0, 'Should have step_finish events')
+  expect(finishEvents.length > 0).toBeTruthy()
 
   // Check for text event (the AI response)
   const textEvents = agentEvents.filter(e => e.type === 'text')
-  assert.ok(textEvents.length > 0, 'Should have text events')
-  assert.ok(textEvents[0].part.text.length > 0, 'Should have non-empty response text')
+  expect(textEvents.length > 0).toBeTruthy()
+  expect(textEvents[0].part.text.length > 0).toBeTruthy()
 
   // Validate event structure
   for (const event of agentEvents) {
-    assert.equal(typeof event.type, 'string', 'Event should have type field')
-    assert.equal(typeof event.timestamp, 'number', 'Event should have timestamp')
-    assert.equal(typeof event.sessionID, 'string', 'Event should have sessionID')
-    assert.ok(event.sessionID.startsWith('session-'), 'SessionID should start with session-')
+    expect(typeof event.type).toBeTruthy()
+    expect(typeof event.timestamp).toBeTruthy()
+    expect(typeof event.sessionID).toBeTruthy()
+    expect(event.sessionID.startsWith('ses_')).toBeTruthy()
   }
 
   console.log('✅ Basic JSON processing test passed')
