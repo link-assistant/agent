@@ -9,8 +9,7 @@
   },
   "scripts": {
     "dev": "bun run src/index.js",
-    "test": "bun test test/tools/basic.test.js test/mvp.test.js test/reference.test.js",
-    "test:all": "bun test"
+    "test": "find test -name '*.test.js' -exec bun test {} \\;"
   },
   "dependencies": {
     "@ai-sdk/xai": "^2.0.33",

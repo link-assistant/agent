@@ -28,7 +28,7 @@ test('Agent-cli bash tool produces OpenCode-compatible JSON output', async () =>
   assert.equal(agentTool.type, 'tool_use', 'Event type should be tool_use')
   assert.equal(typeof agentTool.timestamp, 'number', 'Event should have timestamp')
   assert.equal(typeof agentTool.sessionID, 'string', 'Event should have sessionID')
-  assert.ok(agentTool.sessionID.startsWith('session-'), 'SessionID should start with session-')
+  assert.ok(agentTool.sessionID.startsWith('ses_'), 'SessionID should start with ses_')
 
   // Validate part structure
   assert.ok(agentTool.part, 'Event should have part object')

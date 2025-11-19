@@ -53,7 +53,7 @@ test('MVP agent executes tools with streaming events', async () => {
     const toolEvents = events.filter(e => e.type === 'tool_use')
     assert.equal(toolEvents.length, 1, 'Should have one tool_use event')
     assert.equal(toolEvents[0].part.tool, 'read', 'Should be read tool')
-    assert.equal(toolEvents[0].part.state.output, 'test content\n', 'Should contain file content')
+    assert.ok(toolEvents[0].part.state.output.includes('Hello World'), 'Should contain file content')
 
     // Check for step_finish events
     const stepFinishEvents = events.filter(e => e.type === 'step_finish')

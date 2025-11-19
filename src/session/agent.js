@@ -39,27 +39,51 @@ export class Agent {
     if (request.tools && request.tools.length > 0) {
       // Handle tool execution
       for (const tool of request.tools) {
-        if (tool.name === 'read') {
-          // Emit tool_use event
-          this.emitEvent('tool_use', {
-            part: {
-              id: this.generatePartId(),
-              sessionID,
-              messageID: this.messageID,
-              type: 'tool',
-              tool: 'read',
-              state: {
-                status: 'completed',
-                title: `read ${tool.params.filePath}`,
-                input: tool.params,
-                output: 'test content\n'
-              },
-              time: {
-                start: Date.now(),
-                end: Date.now()
+        const toolFn = ToolRegistry.getTools()[tool.name]
+        if (toolFn) {
+          try {
+            const result = await toolFn.execute(tool.params)
+            // Emit tool_use event
+            this.emitEvent('tool_use', {
+              part: {
+                id: this.generatePartId(),
+                sessionID,
+                messageID: this.messageID,
+                type: 'tool',
+                tool: tool.name,
+                state: {
+                  status: 'completed',
+                  title: result.title || `${tool.name} ${JSON.stringify(tool.params)}`,
+                  input: tool.params,
+                  output: result.output
+                },
+                time: {
+                  start: Date.now(),
+                  end: Date.now()
+                }
               }
-            }
-          })
+            })
+          } catch (error) {
+            // Emit tool_use event with error
+            this.emitEvent('tool_use', {
+              part: {
+                id: this.generatePartId(),
+                sessionID,
+                messageID: this.messageID,
+                type: 'tool',
+                tool: tool.name,
+                state: {
+                  status: 'error',
+                  input: tool.params,
+                  error: error.message
+                },
+                time: {
+                  start: Date.now(),
+                  end: Date.now()
+                }
+              }
+            })
+          }
         }
       }
 
@@ -86,27 +110,27 @@ export class Agent {
         sessionID,
         timestamp: Date.now()
       }
-    } else {
-      // Regular message processing
-      // Simulate processing delay
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      // Emit text response like opencode
-      const responseText = message === "hi" ? "Hi!" : `You said: "${message}"`
-      this.emitEvent('text', {
-        part: {
-          id: this.generatePartId(),
-          sessionID,
-          messageID: this.messageID,
-          type: 'text',
-          text: responseText,
-          time: {
-            start: Date.now(),
-            end: Date.now()
-          }
-        }
-      })
     }
+
+    // Regular message processing
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // Emit text response like opencode
+    const responseText = message === "hi" ? "Hi!" : `You said: "${message}"`
+    this.emitEvent('text', {
+      part: {
+        id: this.generatePartId(),
+        sessionID,
+        messageID: this.messageID,
+        type: 'text',
+        text: responseText,
+        time: {
+          start: Date.now(),
+          end: Date.now()
+        }
+      }
+    })
 
     // Emit step_finish with cost and tokens like opencode
     this.emitEvent('step_finish', {
