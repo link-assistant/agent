@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Agent } from './session/agent.js'
+import { Server } from './server/server.ts'
 import { Instance } from './project/instance.ts'
 import { Log } from './util/log.ts'
 
@@ -45,13 +45,59 @@ async function main() {
     await Instance.provide({
       directory: process.cwd(),
       fn: async () => {
-        // Create agent and process request (events are emitted during processing)
-        const agent = new Agent()
-        await agent.process(request)
+        // Start server like OpenCode does
+        const server = Server.listen({ port: 0, hostname: "127.0.0.1" })
+
+        try {
+          // Create a session
+          const createRes = await fetch(`http://${server.hostname}:${server.port}/session`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          })
+          const session = await createRes.json()
+          const sessionID = session.id
+
+          if (!sessionID) {
+            throw new Error("Failed to create session")
+          }
+
+          // Send message to session with Grok Code Fast 1 model (opencode/grok-code)
+          const message = request.message || "hi"
+          const parts = [{ type: "text", text: message }]
+
+          const promptRes = await fetch(`http://${server.hostname}:${server.port}/session/${sessionID}/message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              parts,
+              model: {
+                providerID: "opencode",
+                modelID: "grok-code"
+              }
+            })
+          })
+
+          const promptData = await promptRes.text()
+
+          // Output the result with pretty printing (unless AGENT_CLI_COMPACT=1)
+          const compact = process.env.AGENT_CLI_COMPACT === '1'
+          if (compact) {
+            console.log(promptData)
+          } else {
+            const parsed = JSON.parse(promptData)
+            console.log(JSON.stringify(parsed, null, 2))
+          }
+
+          // Stop server
+          server.stop()
+        } catch (error) {
+          server.stop()
+          throw error
+        }
       }
     })
 
-    // No final output since we stream events
     // Explicitly exit to ensure process terminates
     process.exit(0)
   } catch (error) {
