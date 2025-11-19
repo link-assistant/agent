@@ -2,15 +2,12 @@ import z from "zod"
 import * as fs from "fs"
 import * as path from "path"
 import { Tool } from "./tool"
-import { LSP } from "../lsp"
 import { FileTime } from "../file/time"
 import DESCRIPTION from "./read.txt"
 import { Filesystem } from "../util/filesystem"
 import { Instance } from "../project/instance"
 import { Provider } from "../provider/provider"
 import { Identifier } from "../id/id"
-import { Permission } from "../permission"
-import { Agent } from "@/agent/agent"
 import { iife } from "@/util/iife"
 
 const DEFAULT_READ_LIMIT = 2000
@@ -29,50 +26,8 @@ export const ReadTool = Tool.define("read", {
       filepath = path.join(process.cwd(), filepath)
     }
     const title = path.relative(Instance.worktree, filepath)
-    const agent = await Agent.get(ctx.agent)
 
-    if (!ctx.extra?.["bypassCwdCheck"] && !Filesystem.contains(Instance.directory, filepath)) {
-      const parentDir = path.dirname(filepath)
-      if (agent.permission.external_directory === "ask") {
-        await Permission.ask({
-          type: "external_directory",
-          pattern: parentDir,
-          sessionID: ctx.sessionID,
-          messageID: ctx.messageID,
-          callID: ctx.callID,
-          title: `Access file outside working directory: ${filepath}`,
-          metadata: {
-            filepath,
-            parentDir,
-          },
-        })
-      } else if (agent.permission.external_directory === "deny") {
-        throw new Permission.RejectedError(
-          ctx.sessionID,
-          "external_directory",
-          ctx.callID,
-          {
-            filepath: filepath,
-            parentDir,
-          },
-          `File ${filepath} is not in the current working directory`,
-        )
-      }
-    }
-
-    const block = iife(() => {
-      const whitelist = [".env.sample", ".example"]
-
-      if (whitelist.some((w) => filepath.endsWith(w))) return false
-      if (filepath.includes(".env")) return true
-
-      return false
-    })
-
-    if (block) {
-      throw new Error(`The user has blocked you from reading ${filepath}, DO NOT make further attempts to read it`)
-    }
-
+    // No restrictions - unrestricted file read
     const file = Bun.file(filepath)
     if (!(await file.exists())) {
       const dir = path.dirname(filepath)
@@ -157,7 +112,6 @@ export const ReadTool = Tool.define("read", {
     output += "\n</file>"
 
     // just warms the lsp client
-    LSP.touchFile(filepath, false)
     FileTime.read(ctx.sessionID, filepath)
 
     return {

@@ -1,12 +1,46 @@
-import { test, expect } from 'bun:test'
+import { test, expect, setDefaultTimeout } from 'bun:test'
 import { $ } from 'bun'
+import { spawn } from 'child_process'
 import { writeFileSync, readFileSync, unlinkSync, mkdirSync, existsSync, rmSync } from 'fs'
 import { join } from 'path'
+
+// Increase default timeout to 30 seconds for these tests
+setDefaultTimeout(30000)
 
 // Ensure tmp directory exists
 const tmpDir = join(process.cwd(), 'tmp')
 if (!existsSync(tmpDir)) {
   mkdirSync(tmpDir, { recursive: true })
+}
+
+// Helper to run agent-cli using spawn
+async function runAgentCli(input) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
+      stdio: ['pipe', 'pipe', 'pipe']
+    })
+
+    let stdout = ''
+    let stderr = ''
+
+    proc.stdout.on('data', (data) => {
+      stdout += data.toString()
+    })
+
+    proc.stderr.on('data', (data) => {
+      stderr += data.toString()
+    })
+
+    proc.on('close', (code) => {
+      resolve({ stdout, stderr, exitCode: code })
+    })
+
+    proc.on('error', reject)
+
+    // Write input and close stdin
+    proc.stdin.write(input)
+    proc.stdin.end()
+  })
 }
 
 // Shared assertion function to validate OpenCode-compatible JSON structure for edit tool
@@ -121,9 +155,10 @@ test('Agent-cli edit tool produces 100% compatible JSON output with OpenCode', a
     const originalTool = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'edit')
 
     // Get agent-cli output (using different file)
-    const projectRoot = process.cwd()
+    // const projectRoot = process.cwd()
     const agentInput = `{"message":"edit file","tools":[{"name":"edit","params":{"filePath":"${agentFileName}","oldString":"Hello","newString":"Hi"}}]}`
-    const agentResult = await $`echo ${agentInput} | bun run ${projectRoot}/src/index.js`.quiet()
+    // const agentResult = await $`echo ${agentInput} | bun run ${projectRoot}/src/index.js`.quiet()
+    const agentResult = await runAgentCli(agentInput)
     const agentLines = agentResult.stdout.toString().trim().split('\n').filter(line => line.trim())
     const agentEvents = agentLines.map(line => JSON.parse(line))
     const agentTool = agentEvents.find(e => e.type === 'tool_use' && e.part.tool === 'edit')

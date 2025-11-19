@@ -1,5 +1,40 @@
-import { test, expect } from 'bun:test'
+import { test, expect, setDefaultTimeout } from 'bun:test'
 import { $ } from 'bun'
+import { spawn } from 'child_process'
+import { join } from 'path'
+
+// Increase default timeout to 30 seconds for these tests
+setDefaultTimeout(30000)
+
+// Helper to run agent-cli using spawn
+async function runAgentCli(input) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
+      stdio: ['pipe', 'pipe', 'pipe']
+    })
+
+    let stdout = ''
+    let stderr = ''
+
+    proc.stdout.on('data', (data) => {
+      stdout += data.toString()
+    })
+
+    proc.stderr.on('data', (data) => {
+      stderr += data.toString()
+    })
+
+    proc.on('close', (code) => {
+      resolve({ stdout, stderr, exitCode: code })
+    })
+
+    proc.on('error', reject)
+
+    // Write input and close stdin
+    proc.stdin.write(input)
+    proc.stdin.end()
+  })
+}
 
 // Shared assertion function to validate OpenCode-compatible JSON structure for task tool
 function validateTaskToolOutput(toolEvent, label) {
@@ -35,9 +70,14 @@ function validateTaskToolOutput(toolEvent, label) {
   expect(typeof toolEvent.part.state.input.prompt).toBe('string')
   expect(typeof toolEvent.part.state.input.subagent_type).toBe('string')
 
-  // Validate output
+  // Validate output - task actually runs and returns AI response
   expect(typeof toolEvent.part.state.output).toBe('string')
-  expect(toolEvent.part.state.output.includes('Subagent general would process: Do something')).toBeTruthy()
+  expect(toolEvent.part.state.output.length > 0).toBeTruthy()
+
+  // Validate metadata structure
+  expect(toolEvent.part.state.metadata).toBeTruthy()
+  expect(Array.isArray(toolEvent.part.state.metadata.summary)).toBeTruthy()
+  expect(typeof toolEvent.part.state.metadata.sessionId).toBe('string')
 
   // Validate timing information
   expect(toolEvent.part.state.time).toBeTruthy()
@@ -83,8 +123,9 @@ test('Agent-cli task tool produces 100% compatible JSON output with OpenCode', a
   const originalTool = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'task')
 
   // Get agent-cli output
-  const projectRoot = process.cwd()
-  const agentResult = await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet()
+  // const projectRoot = process.cwd()
+  // const agentResult = await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet()
+  const agentResult = await runAgentCli(input)
   const agentLines = agentResult.stdout.toString().trim().split('\n').filter(line => line.trim())
   const agentEvents = agentLines.map(line => JSON.parse(line))
   const agentTool = agentEvents.find(e => e.type === 'tool_use' && e.part.tool === 'task')

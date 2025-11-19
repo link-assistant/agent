@@ -13,6 +13,8 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 - ❌ **No MCP**: No MCP server support
 - ❌ **No Sandbox**: Designed for VMs/containers where full access is acceptable
 - ❌ **No Client/Server**: Local execution only
+- ❌ **No LSP**: No Language Server Protocol support for diagnostics
+- ❌ **No Permissions**: No permission system - full unrestricted access
 
 ## Project Vision
 

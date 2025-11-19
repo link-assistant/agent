@@ -26,6 +26,8 @@ async function main() {
     await agent.process(request)
 
     // No final output since we stream events
+    // Explicitly exit to ensure process terminates
+    process.exit(0)
   } catch (error) {
     console.error(JSON.stringify({
       type: 'error',

@@ -3,11 +3,9 @@ import * as path from "path"
 import * as fs from "fs/promises"
 import { Tool } from "./tool"
 import { FileTime } from "../file/time"
-import { Permission } from "../permission"
 import { Bus } from "../bus"
 import { FileWatcher } from "../file/watcher"
 import { Instance } from "../project/instance"
-import { Agent } from "../agent/agent"
 import { Patch } from "../patch"
 import { Filesystem } from "../util/filesystem"
 import { createTwoFilesPatch } from "diff"
@@ -38,8 +36,7 @@ export const PatchTool = Tool.define("patch", {
       throw new Error("No file changes found in patch")
     }
 
-    // Validate file paths and check permissions
-    const agent = await Agent.get(ctx.agent)
+    // No restrictions - unrestricted patching
     const fileChanges: Array<{
       filePath: string
       oldContent: string
@@ -52,35 +49,6 @@ export const PatchTool = Tool.define("patch", {
 
     for (const hunk of hunks) {
       const filePath = path.resolve(Instance.directory, hunk.path)
-
-      if (!Filesystem.contains(Instance.directory, filePath)) {
-        const parentDir = path.dirname(filePath)
-        if (agent.permission.external_directory === "ask") {
-          await Permission.ask({
-            type: "external_directory",
-            pattern: parentDir,
-            sessionID: ctx.sessionID,
-            messageID: ctx.messageID,
-            callID: ctx.callID,
-            title: `Patch file outside working directory: ${filePath}`,
-            metadata: {
-              filepath: filePath,
-              parentDir,
-            },
-          })
-        } else if (agent.permission.external_directory === "deny") {
-          throw new Permission.RejectedError(
-            ctx.sessionID,
-            "external_directory",
-            ctx.callID,
-            {
-              filepath: filePath,
-              parentDir,
-            },
-            `File ${filePath} is not in the current working directory`,
-          )
-        }
-      }
 
       switch (hunk.type) {
         case "add":
@@ -151,20 +119,7 @@ export const PatchTool = Tool.define("patch", {
       }
     }
 
-    // Check permissions if needed
-    if (agent.permission.edit === "ask") {
-      await Permission.ask({
-        type: "edit",
-        sessionID: ctx.sessionID,
-        messageID: ctx.messageID,
-        callID: ctx.callID,
-        title: `Apply patch to ${fileChanges.length} files`,
-        metadata: {
-          diff: totalDiff,
-        },
-      })
-    }
-
+    // No restrictions - apply changes directly
     // Apply the changes
     const changedFiles: string[] = []
 
