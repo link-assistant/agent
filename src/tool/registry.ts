@@ -49,10 +49,11 @@ export namespace ToolRegistry {
       WriteTool,
       TaskTool,
       WebFetchTool,
+      WebSearchTool,
+      CodeSearchTool,
       TodoWriteTool,
       TodoReadTool,
       ...(config.experimental?.batch_tool === true ? [BatchTool] : []),
-      ...(Flag.OPENCODE_EXPERIMENTAL_EXA ? [WebSearchTool, CodeSearchTool] : []),
       ...custom,
     ]
   }

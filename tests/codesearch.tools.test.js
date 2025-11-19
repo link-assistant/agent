@@ -1,9 +1,72 @@
 import { test, expect } from 'bun:test'
 import { $ } from 'bun'
 import { setDefaultTimeout } from 'bun:test'
+import { spawn } from 'child_process'
+import { join } from 'path'
 
 // Disable timeouts for these tests
 setDefaultTimeout(0)
+
+// Helper to run opencode using spawn
+async function runOpenCode(input) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('opencode', ['run', '--format', 'json', '--model', 'opencode/grok-code'], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, OPENCODE_EXPERIMENTAL_EXA: 'true' }
+    })
+
+    let stdout = ''
+    let stderr = ''
+
+    proc.stdout.on('data', (data) => {
+      stdout += data.toString()
+    })
+
+    proc.stderr.on('data', (data) => {
+      stderr += data.toString()
+    })
+
+    proc.on('close', (code) => {
+      resolve({ stdout, stderr, exitCode: code })
+    })
+
+    proc.on('error', reject)
+
+    // Write input and close stdin
+    proc.stdin.write(input)
+    proc.stdin.end()
+  })
+}
+
+// Helper to run agent-cli using spawn
+async function runAgentCli(input) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
+      stdio: ['pipe', 'pipe', 'pipe']
+    })
+
+    let stdout = ''
+    let stderr = ''
+
+    proc.stdout.on('data', (data) => {
+      stdout += data.toString()
+    })
+
+    proc.stderr.on('data', (data) => {
+      stderr += data.toString()
+    })
+
+    proc.on('close', (code) => {
+      resolve({ stdout, stderr, exitCode: code })
+    })
+
+    proc.on('error', reject)
+
+    // Write input and close stdin
+    proc.stdin.write(input)
+    proc.stdin.end()
+  })
+}
 
 // Shared assertion function to validate OpenCode-compatible JSON structure for codesearch tool
 function validateCodeSearchToolOutput(toolEvent, label) {
@@ -54,13 +117,25 @@ console.log('This establishes the baseline behavior for compatibility testing')
 test('Reference test: OpenCode codesearch tool produces expected JSON format', async () => {
   const input = `{"message":"search code","tools":[{"name":"codesearch","params":{"query":"React hooks implementation"}}]}`
 
-  // Set OPENCODE_EXPERIMENTAL_EXA flag
-  const originalResult = await $`OPENCODE_EXPERIMENTAL_EXA=true echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow()
-  const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+  console.log('Starting opencode codesearch test...')
+
+  // Use spawn instead of Bun $ to properly handle the command
+  const originalResult = await runOpenCode(input)
+
+  console.log('Command finished. Exit code:', originalResult.exitCode)
+  console.log('Stdout length:', originalResult.stdout.length)
+  console.log('Stderr length:', originalResult.stderr.length)
+
+  const originalLines = originalResult.stdout.trim().split('\n').filter(line => line.trim())
+  console.log('Number of output lines:', originalLines.length)
+
   const originalEvents = originalLines.map(line => JSON.parse(line))
+  console.log('Event types:', originalEvents.map(e => e.type))
 
   // Find tool_use events for codesearch
   const searchEvent = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'codesearch')
+
+  console.log('Found codesearch event:', !!searchEvent)
 
   // Should have tool_use event for codesearch
   expect(searchEvent).toBeTruthy()
@@ -74,16 +149,17 @@ test('Reference test: OpenCode codesearch tool produces expected JSON format', a
 test('Agent-cli codesearch tool produces 100% compatible JSON output with OpenCode', async () => {
   const input = `{"message":"search code","tools":[{"name":"codesearch","params":{"query":"React hooks implementation"}}]}`
 
-  // Get OpenCode output
-  const originalResult = await $`OPENCODE_EXPERIMENTAL_EXA=true echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow()
-  const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+  console.log('Getting OpenCode output...')
+  // Get OpenCode output using spawn
+  const originalResult = await runOpenCode(input)
+  const originalLines = originalResult.stdout.trim().split('\n').filter(line => line.trim())
   const originalEvents = originalLines.map(line => JSON.parse(line))
   const originalSearch = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'codesearch')
 
-  // Get agent-cli output with OPENCODE_EXPERIMENTAL_EXA flag
-  const projectRoot = process.cwd()
-  const agentResult = await $`OPENCODE_EXPERIMENTAL_EXA=true echo ${input} | bun run ${projectRoot}/src/index.js`.quiet()
-  const agentLines = agentResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+  console.log('Getting agent-cli output...')
+  // Get agent-cli output using spawn without OPENCODE_EXPERIMENTAL_EXA flag
+  const agentResult = await runAgentCli(input)
+  const agentLines = agentResult.stdout.trim().split('\n').filter(line => line.trim())
   const agentEvents = agentLines.map(line => JSON.parse(line))
   const agentSearch = agentEvents.find(e => e.type === 'tool_use' && e.part.tool === 'codesearch')
 

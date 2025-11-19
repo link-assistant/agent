@@ -42,8 +42,7 @@ async function runOpenCode(input) {
 async function runAgentCli(input) {
   return new Promise((resolve, reject) => {
     const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, OPENCODE_EXPERIMENTAL_EXA: 'true' }
+      stdio: ['pipe', 'pipe', 'pipe']
     })
 
     let stdout = ''
