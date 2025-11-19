@@ -1,79 +1,166 @@
 import { test, expect } from 'bun:test'
-// @ts-ignore
-import { sh } from 'command-stream'
-import { writeFileSync, unlinkSync } from 'fs'
+import { $ } from 'bun'
+import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs'
+import { join } from 'path'
 
-test('Agent-cli glob tool produces OpenCode-compatible JSON output', async () => {
+// Ensure tmp directory exists
+const tmpDir = join(process.cwd(), 'tmp')
+if (!existsSync(tmpDir)) {
+  mkdirSync(tmpDir, { recursive: true })
+}
+
+// Shared assertion function to validate OpenCode-compatible JSON structure for glob tool
+function validateGlobToolOutput(toolEvent, label) {
+  console.log(`\n${label} JSON structure:`)
+  console.log(JSON.stringify(toolEvent, null, 2))
+
+  // Validate top-level structure
+  expect(typeof toolEvent.type).toBe('string')
+  expect(toolEvent.type).toBe('tool_use')
+  expect(typeof toolEvent.timestamp).toBe('number')
+  expect(typeof toolEvent.sessionID).toBe('string')
+  expect(toolEvent.sessionID.startsWith('ses_')).toBeTruthy()
+
+  // Validate part structure
+  expect(toolEvent.part).toBeTruthy()
+  expect(typeof toolEvent.part.id).toBe('string')
+  expect(toolEvent.part.id.startsWith('prt_')).toBeTruthy()
+  expect(typeof toolEvent.part.sessionID).toBe('string')
+  expect(typeof toolEvent.part.messageID).toBe('string')
+  expect(toolEvent.part.type).toBe('tool')
+  expect(typeof toolEvent.part.callID).toBe('string')
+  expect(toolEvent.part.callID.startsWith('call_')).toBeTruthy()
+  expect(toolEvent.part.tool).toBe('glob')
+
+  // Validate state structure
+  expect(toolEvent.part.state).toBeTruthy()
+  expect(toolEvent.part.state.status).toBe('completed')
+  expect(typeof toolEvent.part.state.title).toBe('string')
+
+  // Validate input structure
+  expect(toolEvent.part.state.input).toBeTruthy()
+  expect(typeof toolEvent.part.state.input.pattern).toBe('string')
+
+  // Validate output - OpenCode returns newline-separated file paths
+  expect(typeof toolEvent.part.state.output).toBe('string')
+  const matches = toolEvent.part.state.output.trim().split('\n').filter(line => line.trim())
+  expect(matches.length >= 2).toBeTruthy()
+
+  // Validate that matches are strings (file paths)
+  matches.forEach(match => {
+    expect(typeof match).toBe('string')
+    expect(match.length > 0).toBeTruthy()
+  })
+
+  // Validate metadata structure
+  expect(toolEvent.part.state.metadata).toBeTruthy()
+  expect(typeof toolEvent.part.state.metadata.count).toBe('number')
+  expect(typeof toolEvent.part.state.metadata.truncated).toBe('boolean')
+
+  // Validate timing information
+  expect(toolEvent.part.state.time).toBeTruthy()
+  expect(typeof toolEvent.part.state.time.start).toBe('number')
+  expect(typeof toolEvent.part.state.time.end).toBe('number')
+  expect(toolEvent.part.state.time.end >= toolEvent.part.state.time.start).toBeTruthy()
+
+  console.log(`✅ ${label} structure validation passed`)
+}
+
+test('Reference test: OpenCode tool produces expected JSON format', async () => {
   const timestamp = Date.now()
   const randomId = Math.random().toString(36).substr(2, 9)
 
-  // Create test files with unique names
-  const file1 = `test1-${timestamp}-${randomId}.txt`
-  const file2 = `test2-${timestamp}-${randomId}.txt`
-  const file3 = `other-${timestamp}-${randomId}.js`
+  // Create test files with unique names in tmp directory
+  const file1 = join(tmpDir, `test1-${timestamp}-${randomId}.txt`)
+  const file2 = join(tmpDir, `test2-${timestamp}-${randomId}.txt`)
+  const file3 = join(tmpDir, `other-${timestamp}-${randomId}.js`)
 
   writeFileSync(file1, 'content1')
   writeFileSync(file2, 'content2')
   writeFileSync(file3, 'javascript')
 
   try {
-    // Test our agent-cli glob tool (compatible with OpenCode format)
-    const projectRoot = process.cwd()
-    const input = `{"message":"find txt files","tools":[{"name":"glob","params":{"pattern":"test*-${timestamp}-${randomId}.txt"}}]}`
-    const agentResult = await sh(`echo '${input}' | bun run ${projectRoot}/src/index.js`)
-    const agentLines = agentResult.stdout.trim().split('\n').filter(line => line.trim())
-    const agentEvents = agentLines.map(line => JSON.parse(line))
-
-    // Document expected OpenCode JSON structure for glob tool
-    console.log('Expected OpenCode JSON event structure for glob tool:')
-    console.log('{"type":"tool_use","timestamp":1234567890,"sessionID":"ses_xxx","part":{"tool":"glob","state":{"status":"completed","input":{"pattern":"*.txt"},"output":{"matches":["file1.txt","file2.txt"]}}}}')
+    // Test original OpenCode glob tool
+    const input = `{"message":"find txt files","tools":[{"name":"glob","params":{"pattern":"tmp/test*-${timestamp}-${randomId}.txt"}}]}`
+    const originalResult = await $`echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow().timeout(120000)
+    const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const originalEvents = originalLines.map(line => JSON.parse(line))
 
     // Find tool_use events
-    const agentToolEvents = agentEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'glob')
+    const originalToolEvents = originalEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'glob')
 
     // Should have tool_use events for glob
-    expect(agentToolEvents.length > 0).toBeTruthy()
+    expect(originalToolEvents.length > 0).toBeTruthy()
 
     // Check the structure matches OpenCode format
-    const agentTool = agentToolEvents[0]
+    const originalTool = originalToolEvents[0]
 
-    // Validate top-level structure
-    expect(typeof agentTool.type).toBeTruthy()
-    expect(agentTool.type).toBeTruthy()
-    expect(typeof agentTool.timestamp).toBeTruthy()
-    expect(typeof agentTool.sessionID).toBeTruthy()
+    // Validate using shared assertion function
+    validateGlobToolOutput(originalTool, 'OpenCode')
 
-    // Validate part structure
-    expect(agentTool.part).toBeTruthy()
-    expect(agentTool.part.tool).toBeTruthy()
-    expect(agentTool.part.type).toBeTruthy()
+    console.log('✅ Reference test passed - OpenCode produces expected JSON format')
+  } finally {
+    // Clean up
+    try {
+      unlinkSync(file1)
+      unlinkSync(file2)
+      unlinkSync(file3)
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+  }
+})
 
-    // Validate state structure
-    expect(agentTool.part.state).toBeTruthy()
-    expect(agentTool.part.state.status).toBeTruthy()
-    expect(typeof agentTool.part.state.title).toBeTruthy()
-    expect(agentTool.part.state.input).toBeTruthy()
-    expect(typeof agentTool.part.state.input.pattern).toBeTruthy()
-    expect(typeof agentTool.part.state.output).toBeTruthy()
+console.log('This establishes the baseline behavior for compatibility testing')
 
-    // Validate timing information
-    expect(agentTool.part.time).toBeTruthy()
-    expect(typeof agentTool.part.time.start).toBeTruthy()
-    expect(typeof agentTool.part.time.end).toBeTruthy()
+test('Agent-cli glob tool produces 100% compatible JSON output with OpenCode', async () => {
+  const timestamp = Date.now()
+  const randomId = Math.random().toString(36).substr(2, 9)
 
-    // Check that output contains file matches
-    const agentOutput = JSON.parse(agentTool.part.state.output)
-    expect(agentOutput.matches).toBeTruthy()
-    expect(Array.isArray(agentOutput.matches)).toBeTruthy()
-    expect(agentOutput.matches.length >= 2).toBeTruthy()
+  // Create test files with unique names in tmp directory
+  const file1 = join(tmpDir, `test1-${timestamp}-${randomId}.txt`)
+  const file2 = join(tmpDir, `test2-${timestamp}-${randomId}.txt`)
+  const file3 = join(tmpDir, `other-${timestamp}-${randomId}.js`)
 
-    // Validate that matches are strings (file paths)
-    agentOutput.matches.forEach(match => {
-      expect(typeof match).toBeTruthy()
-    })
+  writeFileSync(file1, 'content1')
+  writeFileSync(file2, 'content2')
+  writeFileSync(file3, 'javascript')
 
-    console.log('✅ Glob tool test passed - agent-cli produces OpenCode-compatible JSON format')
-    console.log('Actual output structure validated against expected OpenCode format')
+  try {
+    const input = `{"message":"find txt files","tools":[{"name":"glob","params":{"pattern":"tmp/test*-${timestamp}-${randomId}.txt"}}]}`
+
+    // Get OpenCode output
+    const originalResult = await $`echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow().timeout(120000)
+    const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const originalEvents = originalLines.map(line => JSON.parse(line))
+    const originalTool = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'glob')
+
+    // Get agent-cli output
+    const projectRoot = process.cwd()
+    const agentResult = await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet()
+    const agentLines = agentResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const agentEvents = agentLines.map(line => JSON.parse(line))
+    const agentTool = agentEvents.find(e => e.type === 'tool_use' && e.part.tool === 'glob')
+
+    // Validate both outputs using shared assertion function
+    validateGlobToolOutput(originalTool, 'OpenCode')
+    validateGlobToolOutput(agentTool, 'Agent-cli')
+
+    // Verify structure has same keys at all levels
+    expect(Object.keys(agentTool).sort()).toEqual(Object.keys(originalTool).sort())
+    expect(Object.keys(agentTool.part).sort()).toEqual(Object.keys(originalTool.part).sort())
+    expect(Object.keys(agentTool.part.state).sort()).toEqual(Object.keys(originalTool.part.state).sort())
+
+    // Input should match
+    expect(agentTool.part.state.input.pattern).toBe(originalTool.part.state.input.pattern)
+
+    // Output should contain similar matches
+    expect(agentTool.part.state.output).toBeTruthy()
+
+    expect(Object.keys(agentTool.part.state.time).sort()).toEqual(Object.keys(originalTool.part.state.time).sort())
+
+    console.log('\n✅ Agent-cli produces 100% OpenCode-compatible JSON structure')
+    console.log('All required fields and nested structure match OpenCode output format')
   } finally {
     // Clean up
     try {

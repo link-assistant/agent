@@ -1,9 +1,65 @@
 import { test, expect } from 'bun:test'
-// @ts-ignore
-import { sh } from 'command-stream'
+import { $ } from 'bun'
 import { writeFileSync, unlinkSync } from 'fs'
 
-test('Agent-cli grep tool produces OpenCode-compatible JSON output', async () => {
+// Shared assertion function to validate OpenCode-compatible JSON structure for grep tool
+function validateGrepToolOutput(toolEvent, label) {
+  console.log(`\n${label} JSON structure:`)
+  console.log(JSON.stringify(toolEvent, null, 2))
+
+  // Validate top-level structure
+  expect(typeof toolEvent.type).toBe('string')
+  expect(toolEvent.type).toBe('tool_use')
+  expect(typeof toolEvent.timestamp).toBe('number')
+  expect(typeof toolEvent.sessionID).toBe('string')
+  expect(toolEvent.sessionID.startsWith('ses_')).toBeTruthy()
+
+  // Validate part structure
+  expect(toolEvent.part).toBeTruthy()
+  expect(typeof toolEvent.part.id).toBe('string')
+  expect(toolEvent.part.id.startsWith('prt_')).toBeTruthy()
+  expect(typeof toolEvent.part.sessionID).toBe('string')
+  expect(typeof toolEvent.part.messageID).toBe('string')
+  expect(toolEvent.part.type).toBe('tool')
+  expect(typeof toolEvent.part.callID).toBe('string')
+  expect(toolEvent.part.callID.startsWith('call_')).toBeTruthy()
+  expect(toolEvent.part.tool).toBe('grep')
+
+  // Validate state structure
+  expect(toolEvent.part.state).toBeTruthy()
+  expect(toolEvent.part.state.status).toBe('completed')
+  expect(typeof toolEvent.part.state.title).toBe('string')
+
+  // Validate input structure
+  expect(toolEvent.part.state.input).toBeTruthy()
+  expect(typeof toolEvent.part.state.input.pattern).toBe('string')
+  expect(typeof toolEvent.part.state.input.include).toBe('string')
+
+  // Validate output
+  expect(typeof toolEvent.part.state.output).toBe('string')
+  const output = JSON.parse(toolEvent.part.state.output)
+  expect(output.matches).toBeTruthy()
+  expect(Array.isArray(output.matches)).toBeTruthy()
+  expect(output.matches.length >= 2).toBeTruthy()
+
+  // Validate match structure
+  output.matches.forEach(match => {
+    expect(typeof match.file).toBe('string')
+    expect(typeof match.line).toBe('number')
+    expect(typeof match.content).toBe('string')
+    expect(match.content.includes('search')).toBeTruthy()
+  })
+
+  // Validate timing information
+  expect(toolEvent.part.state.time).toBeTruthy()
+  expect(typeof toolEvent.part.state.time.start).toBe('number')
+  expect(typeof toolEvent.part.state.time.end).toBe('number')
+  expect(toolEvent.part.state.time.end >= toolEvent.part.state.time.start).toBeTruthy()
+
+  console.log(`✅ ${label} structure validation passed`)
+}
+
+test('Reference test: OpenCode tool produces expected JSON format', async () => {
   const timestamp = Date.now()
   const randomId = Math.random().toString(36).substr(2, 9)
 
@@ -15,67 +71,85 @@ test('Agent-cli grep tool produces OpenCode-compatible JSON output', async () =>
   writeFileSync(file2, 'Another file\nMore search text here\nEnd of file\n')
 
   try {
-    // Test our agent-cli grep tool (compatible with OpenCode format)
-    const projectRoot = process.cwd()
+    // Test original OpenCode grep tool
     const input = `{"message":"search for text","tools":[{"name":"grep","params":{"pattern":"search","include":"grep*-${timestamp}-${randomId}.txt"}}]}`
-    const agentResult = await sh(`echo '${input}' | bun run ${projectRoot}/src/index.js`)
-    const agentLines = agentResult.stdout.trim().split('\n').filter(line => line.trim())
-    const agentEvents = agentLines.map(line => JSON.parse(line))
-
-    // Document expected OpenCode JSON structure for grep tool
-    console.log('Expected OpenCode JSON event structure for grep tool:')
-    console.log('{"type":"tool_use","timestamp":1234567890,"sessionID":"ses_xxx","part":{"tool":"grep","state":{"status":"completed","input":{"pattern":"search","include":"*.txt"},"output":{"matches":[{"file":"file.txt","line":2,"content":"..."}]}}}}')
+    const originalResult = await $`echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow()
+    const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const originalEvents = originalLines.map(line => JSON.parse(line))
 
     // Find tool_use events
-    const agentToolEvents = agentEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'grep')
+    const originalToolEvents = originalEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'grep')
 
     // Should have tool_use events for grep
-    expect(agentToolEvents.length > 0).toBeTruthy()
+    expect(originalToolEvents.length > 0).toBeTruthy()
 
     // Check the structure matches OpenCode format
-    const agentTool = agentToolEvents[0]
+    const originalTool = originalToolEvents[0]
 
-    // Validate top-level structure
-    expect(typeof agentTool.type).toBeTruthy()
-    expect(agentTool.type).toBeTruthy()
-    expect(typeof agentTool.timestamp).toBeTruthy()
-    expect(typeof agentTool.sessionID).toBeTruthy()
+    // Validate using shared assertion function
+    validateGrepToolOutput(originalTool, 'OpenCode')
 
-    // Validate part structure
-    expect(agentTool.part).toBeTruthy()
-    expect(agentTool.part.tool).toBeTruthy()
-    expect(agentTool.part.type).toBeTruthy()
+    console.log('✅ Reference test passed - OpenCode produces expected JSON format')
+  } finally {
+    // Clean up
+    try {
+      unlinkSync(file1)
+      unlinkSync(file2)
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+  }
+})
 
-    // Validate state structure
-    expect(agentTool.part.state).toBeTruthy()
-    expect(agentTool.part.state.status).toBeTruthy()
-    expect(typeof agentTool.part.state.title).toBeTruthy()
-    expect(agentTool.part.state.input).toBeTruthy()
-    expect(typeof agentTool.part.state.input.pattern).toBeTruthy()
-    expect(typeof agentTool.part.state.input.include).toBeTruthy()
-    expect(typeof agentTool.part.state.output).toBeTruthy()
+console.log('This establishes the baseline behavior for compatibility testing')
 
-    // Validate timing information
-    expect(agentTool.part.time).toBeTruthy()
-    expect(typeof agentTool.part.time.start).toBeTruthy()
-    expect(typeof agentTool.part.time.end).toBeTruthy()
+test('Agent-cli grep tool produces 100% compatible JSON output with OpenCode', async () => {
+  const timestamp = Date.now()
+  const randomId = Math.random().toString(36).substr(2, 9)
 
-    // Check that output contains matches
-    const agentOutput = JSON.parse(agentTool.part.state.output)
-    expect(agentOutput.matches).toBeTruthy()
-    expect(Array.isArray(agentOutput.matches)).toBeTruthy()
-    expect(agentOutput.matches.length >= 2).toBeTruthy()
+  // Create test files with unique names
+  const file1 = `grep1-${timestamp}-${randomId}.txt`
+  const file2 = `grep2-${timestamp}-${randomId}.txt`
 
-    // Validate match structure
-    agentOutput.matches.forEach(match => {
-      expect(typeof match.file).toBeTruthy()
-      expect(typeof match.line).toBeTruthy()
-      expect(typeof match.content).toBeTruthy()
-      expect(match.content.includes('search')).toBeTruthy()
-    })
+  writeFileSync(file1, 'This is line 1\nThis contains search text\nThis is line 3\n')
+  writeFileSync(file2, 'Another file\nMore search text here\nEnd of file\n')
 
-    console.log('✅ Grep tool test passed - agent-cli produces OpenCode-compatible JSON format')
-    console.log('Actual output structure validated against expected OpenCode format')
+  try {
+    const input = `{"message":"search for text","tools":[{"name":"grep","params":{"pattern":"search","include":"grep*-${timestamp}-${randomId}.txt"}}]}`
+
+    // Get OpenCode output
+    const originalResult = await $`echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow()
+    const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const originalEvents = originalLines.map(line => JSON.parse(line))
+    const originalTool = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'grep')
+
+    // Get agent-cli output
+    const projectRoot = process.cwd()
+    const agentResult = await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet()
+    const agentLines = agentResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const agentEvents = agentLines.map(line => JSON.parse(line))
+    const agentTool = agentEvents.find(e => e.type === 'tool_use' && e.part.tool === 'grep')
+
+    // Validate both outputs using shared assertion function
+    validateGrepToolOutput(originalTool, 'OpenCode')
+    validateGrepToolOutput(agentTool, 'Agent-cli')
+
+    // Verify structure has same keys at all levels
+    expect(Object.keys(agentTool).sort()).toEqual(Object.keys(originalTool).sort())
+    expect(Object.keys(agentTool.part).sort()).toEqual(Object.keys(originalTool.part).sort())
+    expect(Object.keys(agentTool.part.state).sort()).toEqual(Object.keys(originalTool.part.state).sort())
+
+    // Input should match
+    expect(agentTool.part.state.input.pattern).toBe(originalTool.part.state.input.pattern)
+    expect(agentTool.part.state.input.include).toBe(originalTool.part.state.input.include)
+
+    // Output should contain similar matches
+    expect(agentTool.part.state.output).toBeTruthy()
+
+    expect(Object.keys(agentTool.part.state.time).sort()).toEqual(Object.keys(originalTool.part.state.time).sort())
+
+    console.log('\n✅ Agent-cli produces 100% OpenCode-compatible JSON structure')
+    console.log('All required fields and nested structure match OpenCode output format')
   } finally {
     // Clean up
     try {

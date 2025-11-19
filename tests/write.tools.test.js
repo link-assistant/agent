@@ -1,63 +1,141 @@
 import { test, expect } from 'bun:test'
-// @ts-ignore
-import { sh } from 'command-stream'
-import { readFileSync, unlinkSync } from 'fs'
+import { $ } from 'bun'
+import { readFileSync, unlinkSync, mkdirSync, existsSync } from 'fs'
+import { join } from 'path'
 
-test('Agent-cli write tool produces OpenCode-compatible JSON output', async () => {
-  const testFileName = `test-write-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.txt`
+// Ensure tmp directory exists
+const tmpDir = join(process.cwd(), 'tmp')
+if (!existsSync(tmpDir)) {
+  mkdirSync(tmpDir, { recursive: true })
+}
+
+// Shared assertion function to validate OpenCode-compatible JSON structure for write tool
+function validateWriteToolOutput(toolEvent, label) {
+  console.log(`\n${label} JSON structure:`)
+  console.log(JSON.stringify(toolEvent, null, 2))
+
+  // Validate top-level structure
+  expect(typeof toolEvent.type).toBe('string')
+  expect(toolEvent.type).toBe('tool_use')
+  expect(typeof toolEvent.timestamp).toBe('number')
+  expect(typeof toolEvent.sessionID).toBe('string')
+  expect(toolEvent.sessionID.startsWith('ses_')).toBeTruthy()
+
+  // Validate part structure
+  expect(toolEvent.part).toBeTruthy()
+  expect(typeof toolEvent.part.id).toBe('string')
+  expect(toolEvent.part.id.startsWith('prt_')).toBeTruthy()
+  expect(typeof toolEvent.part.sessionID).toBe('string')
+  expect(typeof toolEvent.part.messageID).toBe('string')
+  expect(toolEvent.part.type).toBe('tool')
+  expect(typeof toolEvent.part.callID).toBe('string')
+  expect(toolEvent.part.callID.startsWith('call_')).toBeTruthy()
+  expect(toolEvent.part.tool).toBe('write')
+
+  // Validate state structure
+  expect(toolEvent.part.state).toBeTruthy()
+  expect(toolEvent.part.state.status).toBe('completed')
+  expect(typeof toolEvent.part.state.title).toBe('string')
+
+  // Validate input structure
+  expect(toolEvent.part.state.input).toBeTruthy()
+  expect(typeof toolEvent.part.state.input.filePath).toBe('string')
+  expect(typeof toolEvent.part.state.input.content).toBe('string')
+
+  // Validate output
+  expect(typeof toolEvent.part.state.output).toBe('string')
+
+  // Validate timing information
+  expect(toolEvent.part.state.time).toBeTruthy()
+  expect(typeof toolEvent.part.state.time.start).toBe('number')
+  expect(typeof toolEvent.part.state.time.end).toBe('number')
+  expect(toolEvent.part.state.time.end >= toolEvent.part.state.time.start).toBeTruthy()
+
+  console.log(`✅ ${label} structure validation passed`)
+}
+
+test('Reference test: OpenCode tool produces expected JSON format', async () => {
+  const testFileName = join(tmpDir, `test-write-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.txt`)
 
   try {
-    // Test our agent-cli write tool (compatible with OpenCode format)
-    const projectRoot = process.cwd()
+    // Test original OpenCode write tool
     const input = `{"message":"write file","tools":[{"name":"write","params":{"filePath":"${testFileName}","content":"Hello World\\nThis is a test file"}}]}`
-    const agentResult = await sh(`echo '${input}' | bun run ${projectRoot}/src/index.js`)
-    const agentLines = agentResult.stdout.trim().split('\n').filter(line => line.trim())
-    const agentEvents = agentLines.map(line => JSON.parse(line))
-
-    // Document expected OpenCode JSON structure for write tool
-    console.log('Expected OpenCode JSON event structure for write tool:')
-    console.log('{"type":"tool_use","timestamp":1234567890,"sessionID":"ses_xxx","part":{"tool":"write","state":{"status":"completed","input":{"filePath":"...","content":"..."},"output":"success"}}}')
+    const originalResult = await $`echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow()
+    const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const originalEvents = originalLines.map(line => JSON.parse(line))
 
     // Find tool_use events
-    const agentToolEvents = agentEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'write')
+    const originalToolEvents = originalEvents.filter(e => e.type === 'tool_use' && e.part.tool === 'write')
 
     // Should have tool_use events for write
-    expect(agentToolEvents.length > 0).toBeTruthy()
+    expect(originalToolEvents.length > 0).toBeTruthy()
 
     // Check the structure matches OpenCode format
-    const agentTool = agentToolEvents[0]
+    const originalTool = originalToolEvents[0]
 
-    // Validate top-level structure
-    expect(typeof agentTool.type).toBeTruthy()
-    expect(agentTool.type).toBeTruthy()
-    expect(typeof agentTool.timestamp).toBeTruthy()
-    expect(typeof agentTool.sessionID).toBeTruthy()
-
-    // Validate part structure
-    expect(agentTool.part).toBeTruthy()
-    expect(agentTool.part.tool).toBeTruthy()
-    expect(agentTool.part.type).toBeTruthy()
-
-    // Validate state structure
-    expect(agentTool.part.state).toBeTruthy()
-    expect(agentTool.part.state.status).toBeTruthy()
-    expect(typeof agentTool.part.state.title).toBeTruthy()
-    expect(agentTool.part.state.input).toBeTruthy()
-    expect(typeof agentTool.part.state.input.filePath).toBeTruthy()
-    expect(typeof agentTool.part.state.input.content).toBeTruthy()
-    expect(typeof agentTool.part.state.output).toBeTruthy()
-
-    // Validate timing information
-    expect(agentTool.part.time).toBeTruthy()
-    expect(typeof agentTool.part.time.start).toBeTruthy()
-    expect(typeof agentTool.part.time.end).toBeTruthy()
+    // Validate using shared assertion function
+    validateWriteToolOutput(originalTool, 'OpenCode')
 
     // Verify the file was actually written
     const finalContent = readFileSync(testFileName, 'utf-8')
     expect(finalContent).toBe('Hello World\nThis is a test file')
 
-    console.log('✅ Write tool test passed - agent-cli produces OpenCode-compatible JSON format')
-    console.log('Actual output structure validated against expected OpenCode format')
+    console.log('✅ Reference test passed - OpenCode produces expected JSON format')
+  } finally {
+    // Clean up
+    try {
+      unlinkSync(testFileName)
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+  }
+})
+
+console.log('This establishes the baseline behavior for compatibility testing')
+
+test('Agent-cli write tool produces 100% compatible JSON output with OpenCode', async () => {
+  const testFileName = join(tmpDir, `test-write-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.txt`)
+
+  try {
+    const input = `{"message":"write file","tools":[{"name":"write","params":{"filePath":"${testFileName}","content":"Hello World\\nThis is a test file"}}]}`
+
+    // Get OpenCode output
+    const originalResult = await $`echo ${input} | opencode run --format json --model opencode/grok-code`.quiet().nothrow()
+    const originalLines = originalResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const originalEvents = originalLines.map(line => JSON.parse(line))
+    const originalTool = originalEvents.find(e => e.type === 'tool_use' && e.part.tool === 'write')
+
+    // Get agent-cli output
+    const projectRoot = process.cwd()
+    const agentResult = await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet()
+    const agentLines = agentResult.stdout.toString().trim().split('\n').filter(line => line.trim())
+    const agentEvents = agentLines.map(line => JSON.parse(line))
+    const agentTool = agentEvents.find(e => e.type === 'tool_use' && e.part.tool === 'write')
+
+    // Validate both outputs using shared assertion function
+    validateWriteToolOutput(originalTool, 'OpenCode')
+    validateWriteToolOutput(agentTool, 'Agent-cli')
+
+    // Verify structure has same keys at all levels
+    expect(Object.keys(agentTool).sort()).toEqual(Object.keys(originalTool).sort())
+    expect(Object.keys(agentTool.part).sort()).toEqual(Object.keys(originalTool.part).sort())
+    expect(Object.keys(agentTool.part.state).sort()).toEqual(Object.keys(originalTool.part.state).sort())
+
+    // Input should match
+    expect(agentTool.part.state.input.filePath).toBe(originalTool.part.state.input.filePath)
+    expect(agentTool.part.state.input.content).toBe(originalTool.part.state.input.content)
+
+    // Output should be similar (may have optional fields)
+    expect(agentTool.part.state.output).toBeTruthy()
+
+    expect(Object.keys(agentTool.part.state.time).sort()).toEqual(Object.keys(originalTool.part.state.time).sort())
+
+    // Verify the file was actually written by both
+    const finalContent = readFileSync(testFileName, 'utf-8')
+    expect(finalContent).toBe('Hello World\nThis is a test file')
+
+    console.log('\n✅ Agent-cli produces 100% OpenCode-compatible JSON structure')
+    console.log('All required fields and nested structure match OpenCode output format')
   } finally {
     // Clean up
     try {

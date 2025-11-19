@@ -16,8 +16,12 @@
     "@opencode-ai/sdk": "^1.0.78",
     "ai": "^5.0.95",
     "command-stream": "^0.7.1",
+    "diff": "^8.0.2",
     "glob": "^10.0.0",
     "test-anywhere": "^0.7.0",
+    "tree-sitter-bash": "^0.25.0",
+    "turndown": "^7.2.2",
+    "web-tree-sitter": "^0.25.10",
     "zod": "^3.23.8"
   },
   "license": "Unlicense"

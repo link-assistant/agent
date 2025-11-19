@@ -1,14 +1,20 @@
 import { test, expect } from 'bun:test'
-// @ts-ignore
-import { sh } from 'command-stream'
-import { writeFileSync, unlinkSync } from 'fs'
+import { $ } from 'bun'
+import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs'
+import { join } from 'path'
+
+// Ensure tmp directory exists
+const tmpDir = join(process.cwd(), 'tmp')
+if (!existsSync(tmpDir)) {
+  mkdirSync(tmpDir, { recursive: true })
+}
 
 test('MVP agent responds to JSON input with streaming events', async () => {
-  // Pipe JSON input to the agent CLI using command-stream
-  const result = await sh(`echo '{"message":"hi"}' | bun run src/index.js`)
+  // Pipe JSON input to the agent CLI
+  const result = await $`echo '{"message":"hi"}' | bun run src/index.js`.quiet()
 
   // Parse all JSON lines from stdout
-  const lines = result.stdout.trim().split('\n').filter(line => line.trim())
+  const lines = result.stdout.toString().trim().split('\n').filter(line => line.trim())
   const events = lines.map(line => JSON.parse(line))
 
   // Verify we got events
@@ -23,23 +29,24 @@ test('MVP agent responds to JSON input with streaming events', async () => {
 })
 
 test('MVP agent executes tools with streaming events', async () => {
-  // Create a test file
-  writeFileSync('test-file.txt', 'Hello World\n')
+  // Create a test file in tmp directory
+  const testFile = join(tmpDir, 'test-file.txt')
+  writeFileSync(testFile, 'Hello World\n')
 
   try {
-    // Pipe JSON input with tools to the agent CLI using command-stream
+    // Pipe JSON input with tools to the agent CLI
     const jsonInput = JSON.stringify({
       message: "read the test file",
       tools: [{
         name: "read",
-        params: { filePath: "test-file.txt" }
+        params: { filePath: testFile }
       }]
     })
 
-    const result = await sh(`echo '${jsonInput}' | bun run src/index.js`)
+    const result = await $`echo ${jsonInput} | bun run src/index.js`.quiet()
 
     // Parse all JSON lines from stdout
-    const lines = result.stdout.trim().split('\n').filter(line => line.trim())
+    const lines = result.stdout.toString().trim().split('\n').filter(line => line.trim())
     const events = lines.map(line => JSON.parse(line))
 
     // Verify we got events
@@ -69,7 +76,7 @@ test('MVP agent executes tools with streaming events', async () => {
   } finally {
     // Clean up
     try {
-      unlinkSync('test-file.txt')
+      unlinkSync(testFile)
     } catch (e) {
       // Ignore cleanup errors
     }

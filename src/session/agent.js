@@ -38,16 +38,28 @@ export class Agent {
     // Check if this is a tool request
     if (request.tools && request.tools.length > 0) {
       // Handle tool execution
+      const tools = await ToolRegistry.getTools()
       for (const tool of request.tools) {
-        const toolFn = ToolRegistry.getTools()[tool.name]
+        const toolFn = tools[tool.name]
         if (toolFn) {
           try {
             const startTime = Date.now()
-            const result = await toolFn.execute(tool.params)
-            const endTime = Date.now()
-
-            // Generate callID (OpenCode compatibility)
             const callID = `call_${Math.floor(Math.random() * 100000000)}`
+
+            // Create OpenCode-compatible context
+            const ctx = {
+              sessionID,
+              messageID: this.messageID,
+              agent: 'default',
+              callID,
+              abort: new AbortController().signal,
+              metadata: (data) => {
+                // Handle metadata updates during execution
+              }
+            }
+
+            const result = await toolFn.execute(tool.params, ctx)
+            const endTime = Date.now()
 
             // Emit tool_use event
             this.emitEvent('tool_use', {
