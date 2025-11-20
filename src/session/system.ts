@@ -16,6 +16,7 @@ import PROMPT_ANTHROPIC_SPOOF from "./prompt/anthropic_spoof.txt"
 import PROMPT_SUMMARIZE from "./prompt/summarize.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
 import PROMPT_CODEX from "./prompt/codex.txt"
+import PROMPT_GROK_CODE from "./prompt/grok-code.txt"
 
 export namespace SystemPrompt {
   export function header(providerID: string) {
@@ -29,6 +30,7 @@ export namespace SystemPrompt {
     if (modelID.includes("gemini-")) return [PROMPT_GEMINI]
     if (modelID.includes("claude")) return [PROMPT_ANTHROPIC]
     if (modelID.includes("polaris-alpha")) return [PROMPT_POLARIS]
+    if (modelID.includes("grok-code")) return [PROMPT_GROK_CODE]
     return [PROMPT_ANTHROPIC_WITHOUT_TODO]
   }
 

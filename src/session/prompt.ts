@@ -455,6 +455,7 @@ export namespace SessionPrompt {
         modelID: model.info.id,
         agent,
         system: lastUser.system,
+        appendSystem: lastUser.appendSystem,
       })
       const tools = await resolveTools({
         agent,
@@ -600,6 +601,7 @@ export namespace SessionPrompt {
 
   async function resolveSystemPrompt(input: {
     system?: string
+    appendSystem?: string
     agent: Agent.Info
     providerID: string
     modelID: string
@@ -608,8 +610,11 @@ export namespace SessionPrompt {
     system.push(
       ...(() => {
         if (input.system) return [input.system]
-        if (input.agent.prompt) return [input.agent.prompt]
-        return SystemPrompt.provider(input.modelID)
+        const base = input.agent.prompt ? [input.agent.prompt] : SystemPrompt.provider(input.modelID)
+        if (input.appendSystem) {
+          return [base[0] + "\n" + input.appendSystem]
+        }
+        return base
       })(),
     )
     system.push(...(await SystemPrompt.environment()))

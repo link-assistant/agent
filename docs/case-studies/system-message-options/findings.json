@@ -1,0 +1,17 @@
+{
+  "title": "System Message Options Investigation",
+  "description": "Investigation into support for --system-message and --append-system-message CLI options and system prompt configuration for opencode/grok-code model",
+  "status": "completed",
+  "findings": {
+    "cli_options_supported": false,
+    "system_message_location": "src/session/prompt.ts:resolveSystemPrompt",
+    "default_model": "opencode/grok-code",
+    "system_prompt_source": "src/session/prompt/qwen.txt",
+    "alternative_methods": [
+      "AGENTS.md files",
+      "CLAUDE.md files",
+      "opencode.json config",
+      "Custom agent definitions"
+    ]
+  }
+}

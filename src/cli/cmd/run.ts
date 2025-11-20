@@ -81,6 +81,14 @@ export const RunCommand = cmd({
         type: "number",
         describe: "port for the local server (defaults to random port if no value provided)",
       })
+      .option("system-message", {
+        type: "string",
+        describe: "full override of the system message",
+      })
+      .option("append-system-message", {
+        type: "string",
+        describe: "append to the default system message",
+      })
   },
   handler: async (args) => {
     let message = args.message.join(" ")
@@ -221,6 +229,8 @@ export const RunCommand = cmd({
           body: {
             agent: args.agent || "build",
             model: args.model,
+            system: args["system-message"],
+            appendSystem: args["append-system-message"],
             command: args.command,
             arguments: message,
           },
@@ -232,6 +242,8 @@ export const RunCommand = cmd({
           body: {
             agent: args.agent || "build",
             model: modelParam,
+            system: args["system-message"],
+            appendSystem: args["append-system-message"],
             parts: [...fileParts, { type: "text", text: message }],
           },
         })
