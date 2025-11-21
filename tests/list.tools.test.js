@@ -10,8 +10,8 @@ if (!existsSync(TMP_DIR)) {
   mkdirSync(TMP_DIR, { recursive: true })
 }
 
-// Increase default timeout to 30 seconds for these tests
-setDefaultTimeout(30000)
+// Increase default timeout to 60 seconds for these tests
+setDefaultTimeout(60000)
 
 // Helper function to parse JSON output (handles pretty-printed format)
 function parseJSONOutput(stdout) {

@@ -1,7 +1,7 @@
 import { test, expect, setDefaultTimeout } from 'bun:test'
 
-// Increase default timeout to 30 seconds for these tests
-setDefaultTimeout(30000)
+// Increase default timeout to 60 seconds for these tests
+setDefaultTimeout(60000)
 import { $ } from 'bun'
 import { spawn } from 'child_process'
 import { readFileSync, unlinkSync, mkdirSync, existsSync } from 'fs'

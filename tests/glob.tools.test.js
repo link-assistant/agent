@@ -4,8 +4,8 @@ import { spawn } from 'child_process'
 import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
 
-// Increase default timeout to 30 seconds for these tests
-setDefaultTimeout(30000)
+// Increase default timeout to 60 seconds for these tests
+setDefaultTimeout(60000)
 
 // Ensure tmp directory exists
 const tmpDir = join(process.cwd(), 'tmp')

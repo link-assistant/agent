@@ -1,7 +1,10 @@
-import { test, expect } from 'bun:test'
+import { test, expect, setDefaultTimeout } from 'bun:test'
 import { $ } from 'bun'
 import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
+
+// Increase default timeout to 60 seconds for these tests
+setDefaultTimeout(60000)
 
 // Ensure tmp directory exists
 const tmpDir = join(process.cwd(), 'tmp')

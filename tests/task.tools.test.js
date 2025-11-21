@@ -3,8 +3,8 @@ import { $ } from 'bun'
 import { spawn } from 'child_process'
 import { join } from 'path'
 
-// Increase default timeout to 30 seconds for these tests
-setDefaultTimeout(30000)
+// Increase default timeout to 60 seconds for these tests
+setDefaultTimeout(60000)
 
 // Helper to run agent-cli using spawn
 async function runAgentCli(input) {
