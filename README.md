@@ -357,6 +357,22 @@ This agent-cli reproduces OpenCode's `run --format json` command architecture:
 - [TOOLS.md](TOOLS.md) - Complete tool documentation
 - [EXAMPLES.md](EXAMPLES.md) - Usage examples for each tool
 
+## Reference Implementations
+
+This repository includes official reference implementations as git submodules to provide best-in-class examples:
+
+- **original-opencode** - [OpenCode](https://github.com/sst/opencode) - The original OpenCode implementation we maintain compatibility with
+- **reference-gemini-cookbook** - [Google Gemini Cookbook](https://github.com/google-gemini/cookbook) - Official examples and guides for using the Gemini API
+- **reference-gemini-cli** - [Google Gemini CLI](https://github.com/google-gemini/gemini-cli) - Official AI agent bringing Gemini directly to the terminal
+- **reference-qwen3-coder** - [Qwen3-Coder](https://github.com/QwenLM/Qwen3-Coder) - Official Qwen3 code model from Alibaba Cloud
+
+To initialize all submodules:
+```bash
+git submodule update --init --recursive
+```
+
+These reference implementations provide valuable insights into different approaches for building AI agents and can serve as learning resources for developers working with this codebase.
+
 ## License
 
 Unlicense (Public Domain)

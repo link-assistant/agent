@@ -1,3 +1,12 @@
 [submodule "original-opencode"]
 	path = original-opencode
 	url = https://github.com/sst/opencode.git
+[submodule "reference-gemini-cookbook"]
+	path = reference-gemini-cookbook
+	url = https://github.com/google-gemini/cookbook.git
+[submodule "reference-gemini-cli"]
+	path = reference-gemini-cli
+	url = https://github.com/google-gemini/gemini-cli.git
+[submodule "reference-qwen3-coder"]
+	path = reference-qwen3-coder
+	url = https://github.com/QwenLM/Qwen3-Coder.git
