@@ -85,9 +85,7 @@ echo "hello" | agent --model opencode/qwen3-coder-480b
 
 ## More Information
 
-For complete details about OpenCode Zen subscription and pricing, visit:
-- [OpenCode Zen Documentation](https://opencode.ai/docs/zen/)
-- [OpenCode Pricing](https://opencode.ai/pricing)
+For complete details about OpenCode Zen subscription and pricing, visit the [OpenCode Zen Documentation](https://opencode.ai/docs/zen/).
 
 ## Notes
 
