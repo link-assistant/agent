@@ -5,6 +5,16 @@
 [![npm version](https://badge.fury.io/js/@deep-assistant%2Fagent.svg)](https://www.npmjs.com/package/@deep-assistant/agent)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
+> 🚨 **SECURITY WARNING: 100% UNSAFE AND AUTONOMOUS** 🚨
+>
+> This agent operates with **ZERO RESTRICTIONS** and **FULL AUTONOMY**:
+> - ❌ **No Sandbox** - Complete unrestricted file system access
+> - ❌ **No Permissions System** - No approval required for any actions
+> - ❌ **No Safety Guardrails** - Can execute ANY command with full privileges
+> - ⚠️ **Autonomous Execution** - Makes decisions and executes actions independently
+>
+> **ONLY use in isolated environments** (VMs, Docker containers) where AI agents can have unrestricted access. **NOT SAFE** for personal computers, production servers, or systems with sensitive data.
+
 > ⚠️ **Bun-only runtime** - This package requires [Bun](https://bun.sh) and does NOT support Node.js or Deno.
 
 This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/grok-code` mode with:
