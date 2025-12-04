@@ -3,16 +3,16 @@
 ## Issue Summary
 
 **Title:** Ошибка установки (Installation Error)  
-**URL:** https://github.com/deep-assistant/agent/issues/5  
+**URL:** https://github.com/link-assistant/agent/issues/5  
 **Status:** Open  
 **Author:** unidel2035  
 **Created:** (from issue data)  
 
 **Description:**  
-User reports an installation error when attempting to use the @deep-assistant/agent package after global installation with Bun. The error message is:  
+User reports an installation error when attempting to use the @link-assistant/agent package after global installation with Bun. The error message is:  
 ```
 error: For security reasons, macros cannot be run from node_modules.
-    at /home/unidel/node_modules/@deep-assistant/agent/src/provider/models.ts:75:24
+    at /home/unidel/node_modules/@link-assistant/agent/src/provider/models.ts:75:24
 ```
 
 The full installation log shows successful installation of Bun and the package, but failure on first run.
@@ -24,8 +24,8 @@ The full installation log shows successful installation of Bun and the package, 
    Bun v1.3.2 is installed successfully.
 
 2. **Global package installation:**  
-   Runs `bun install -g @deep-assistant/agent`  
-   Package @deep-assistant/agent@0.0.2 installs with binary "agent"  
+   Runs `bun install -g @link-assistant/agent`  
+   Package @link-assistant/agent@0.0.2 installs with binary "agent"  
    Notes some warnings about lockfile migration and peer dependencies.
 
 3. **First run attempt:**  
@@ -63,7 +63,7 @@ Bun macros are designed to run at bundle-time, inlining their results. Publishin
 - Trade-off: Potential performance impact and increased runtime dependencies
 
 ### 3. User Workaround
-- Install package locally instead of globally: `bun add @deep-assistant/agent` then run with `bunx agent`
+- Install package locally instead of globally: `bun add @link-assistant/agent` then run with `bunx agent`
 - Less convenient for CLI tool usage
 
 ## References
