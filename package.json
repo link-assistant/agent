@@ -1,6 +1,6 @@
 {
-  "name": "@deep-assistant/agent",
-  "version": "0.0.7",
+  "name": "@link-assistant/agent",
+  "version": "0.0.8",
   "description": "A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface. Bun-only runtime.",
   "main": "src/index.js",
   "type": "module",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/deep-assistant/agent"
+    "url": "https://github.com/link-assistant/agent"
   },
   "keywords": [
     "ai",

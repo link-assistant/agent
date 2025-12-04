@@ -1,8 +1,8 @@
 # Usage Examples
 
-This document provides practical examples for using each tool with both `@deep-assistant/agent` and `opencode` commands.
+This document provides practical examples for using each tool with both `@link-assistant/agent` and `opencode` commands.
 
-> ⚠️ **Bun-only** - `@deep-assistant/agent` requires [Bun](https://bun.sh) and does NOT support Node.js or Deno.
+> ⚠️ **Bun-only** - `@link-assistant/agent` requires [Bun](https://bun.sh) and does NOT support Node.js or Deno.
 
 ## Table of Contents
 
@@ -16,14 +16,14 @@ This document provides practical examples for using each tool with both `@deep-a
 
 ### Simplest Examples - Start Here!
 
-**Plain text (@deep-assistant/agent only, easiest!):**
+**Plain text (@link-assistant/agent only, easiest!):**
 ```bash
 echo "hi" | agent
 ```
 
-**Simple JSON message (both @deep-assistant/agent and opencode):**
+**Simple JSON message (both @link-assistant/agent and opencode):**
 
-@deep-assistant/agent:
+@link-assistant/agent:
 ```bash
 echo '{"message":"hi"}' | agent
 ```
@@ -33,7 +33,7 @@ opencode:
 echo '{"message":"hi"}' | opencode run --format json --model opencode/grok-code
 ```
 
-### Plain Text Input (@deep-assistant/agent only)
+### Plain Text Input (@link-assistant/agent only)
 
 ```bash
 # Simple message
@@ -48,7 +48,7 @@ echo "search the web for latest React news" | agent
 
 ### JSON Input Examples
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 echo '{"message":"hello world"}' | agent
 ```
@@ -64,7 +64,7 @@ echo '{"message":"hello world"}' | opencode run --format json --model opencode/g
 
 Execute shell commands.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"echo hello world"}}]}' | agent
 ```
@@ -83,7 +83,7 @@ echo '{"message":"list files","tools":[{"name":"bash","params":{"command":"ls -l
 
 Read file contents.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 echo '{"message":"read file","tools":[{"name":"read","params":{"file_path":"/path/to/file.txt"}}]}' | agent
 ```
@@ -97,7 +97,7 @@ echo '{"message":"read file","tools":[{"name":"read","params":{"file_path":"/pat
 
 Write content to a file.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 echo '{"message":"write file","tools":[{"name":"write","params":{"file_path":"/tmp/test.txt","content":"Hello World"}}]}' | agent
 ```
@@ -111,7 +111,7 @@ echo '{"message":"write file","tools":[{"name":"write","params":{"file_path":"/t
 
 Edit file with string replacement.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 echo '{"message":"edit file","tools":[{"name":"edit","params":{"file_path":"/tmp/test.txt","old_string":"Hello","new_string":"Hi"}}]}' | agent
 ```
@@ -125,7 +125,7 @@ echo '{"message":"edit file","tools":[{"name":"edit","params":{"file_path":"/tmp
 
 List directory contents.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 echo '{"message":"list directory","tools":[{"name":"list","params":{"path":"."}}]}' | agent
 ```
@@ -141,7 +141,7 @@ echo '{"message":"list directory","tools":[{"name":"list","params":{"path":"."}}
 
 Find files using glob patterns.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 # Find all JavaScript files
 echo '{"message":"find js files","tools":[{"name":"glob","params":{"pattern":"**/*.js"}}]}' | agent
@@ -159,7 +159,7 @@ echo '{"message":"find js files","tools":[{"name":"glob","params":{"pattern":"**
 
 Search text in files with regex.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 # Search for pattern in files
 echo '{"message":"search pattern","tools":[{"name":"grep","params":{"pattern":"function","output_mode":"files_with_matches"}}]}' | agent
@@ -180,7 +180,7 @@ echo '{"message":"search pattern","tools":[{"name":"grep","params":{"pattern":"T
 
 Search the web using Exa API.
 
-**@deep-assistant/agent (no environment variable needed!):**
+**@link-assistant/agent (no environment variable needed!):**
 ```bash
 echo '{"message":"search web","tools":[{"name":"websearch","params":{"query":"TypeScript latest features"}}]}' | agent
 
@@ -196,7 +196,7 @@ echo '{"message":"search web","tools":[{"name":"websearch","params":{"query":"Ty
 
 Search code repositories and documentation.
 
-**@deep-assistant/agent (no environment variable needed!):**
+**@link-assistant/agent (no environment variable needed!):**
 ```bash
 echo '{"message":"search code","tools":[{"name":"codesearch","params":{"query":"React hooks implementation"}}]}' | agent
 
@@ -214,7 +214,7 @@ echo '{"message":"search code","tools":[{"name":"codesearch","params":{"query":"
 
 Batch multiple tool calls together for optimal performance.
 
-**@deep-assistant/agent (no configuration needed!):**
+**@link-assistant/agent (no configuration needed!):**
 ```bash
 echo '{"message":"run batch","tools":[{"name":"batch","params":{"tool_calls":[{"tool":"bash","parameters":{"command":"echo hello"}},{"tool":"bash","parameters":{"command":"echo world"}}]}}]}' | agent
 ```
@@ -233,7 +233,7 @@ echo '{"message":"run batch","tools":[{"name":"batch","params":{"tool_calls":[{"
 
 Launch specialized agents for complex tasks.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 echo '{"message":"launch task","tools":[{"name":"task","params":{"description":"Analyze codebase","prompt":"Find all TODO comments in JavaScript files","subagent_type":"general-purpose"}}]}' | agent
 ```
@@ -249,7 +249,7 @@ echo '{"message":"launch task","tools":[{"name":"task","params":{"description":"
 
 Read and write TODO items for task tracking.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 # Write todos
 echo '{"message":"add todos","tools":[{"name":"todowrite","params":{"todos":[{"content":"Implement feature X","status":"pending","activeForm":"Implementing feature X"},{"content":"Write tests","status":"pending","activeForm":"Writing tests"}]}}]}' | agent
@@ -267,7 +267,7 @@ echo '{"message":"add todos","tools":[{"name":"todowrite","params":{"todos":[{"c
 
 Fetch and process web content.
 
-**@deep-assistant/agent:**
+**@link-assistant/agent:**
 ```bash
 echo '{"message":"fetch url","tools":[{"name":"webfetch","params":{"url":"https://example.com","prompt":"Summarize the content"}}]}' | agent
 ```
@@ -281,7 +281,7 @@ echo '{"message":"fetch url","tools":[{"name":"webfetch","params":{"url":"https:
 
 ### JSON Event Streaming (Pretty-Printed)
 
-@deep-assistant/agent outputs JSON events in pretty-printed streaming format for easy readability, 100% compatible with OpenCode's event structure:
+@link-assistant/agent outputs JSON events in pretty-printed streaming format for easy readability, 100% compatible with OpenCode's event structure:
 
 ```bash
 echo "hi" | agent
@@ -347,7 +347,7 @@ echo "hello" | agent | jq
 
 ## Tips
 
-### @deep-assistant/agent Advantages
+### @link-assistant/agent Advantages
 
 1. **No Configuration**: WebSearch, CodeSearch, and Batch tools work without any setup
 2. **Plain Text Input**: Can use simple text instead of JSON

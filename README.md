@@ -1,8 +1,8 @@
-# @deep-assistant/agent
+# @link-assistant/agent
 
 **A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface**
 
-[![npm version](https://badge.fury.io/js/@deep-assistant%2Fagent.svg)](https://www.npmjs.com/package/@deep-assistant/agent)
+[![npm version](https://badge.fury.io/js/@link-assistant%2Fagent.svg)](https://www.npmjs.com/package/@link-assistant/agent)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 > 🚨 **SECURITY WARNING: 100% UNSAFE AND AUTONOMOUS** 🚨
@@ -90,10 +90,10 @@ The agent streams events as they occur, providing the same real-time experience 
 curl -fsSL https://bun.sh/install | bash
 
 # Install the package globally
-bun install -g @deep-assistant/agent
+bun install -g @link-assistant/agent
 
 # Or install locally in your project
-bun add @deep-assistant/agent
+bun add @link-assistant/agent
 ```
 
 After installation, the `agent` command will be available globally.

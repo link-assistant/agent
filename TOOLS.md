@@ -1,6 +1,6 @@
 # Supported Tools
 
-This document lists all tools supported by `@deep-assistant/agent`. All tools are enabled by default and produce OpenCode-compatible JSON output.
+This document lists all tools supported by `@link-assistant/agent`. All tools are enabled by default and produce OpenCode-compatible JSON output.
 
 > ⚠️ **Bun-only** - This package requires [Bun](https://bun.sh) and does NOT support Node.js or Deno.
 
@@ -125,7 +125,7 @@ Each tool test verifies:
 - Tool event structure matches OpenCode specifications
 
 ### Plain Text Input Support
-`@deep-assistant/agent` also accepts plain text input (not just JSON):
+`@link-assistant/agent` also accepts plain text input (not just JSON):
 
 ```bash
 echo "hello world" | agent
