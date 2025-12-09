@@ -9,6 +9,7 @@ import { SessionPrompt } from './session/prompt.ts'
 import { EOL } from 'os'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import { McpCommand } from './cli/cmd/mcp.ts'
 
 // Track if any errors occurred during execution
 let hasError = false
@@ -61,10 +62,308 @@ async function readStdin() {
   })
 }
 
+async function runAgentMode(argv) {
+  // Parse model argument
+  const modelParts = argv.model.split('/')
+  const providerID = modelParts[0] || 'opencode'
+  const modelID = modelParts[1] || 'grok-code'
+
+  // Read system message files
+  let systemMessage = argv['system-message']
+  let appendSystemMessage = argv['append-system-message']
+
+  if (argv['system-message-file']) {
+    const resolvedPath = require('path').resolve(process.cwd(), argv['system-message-file'])
+    const file = Bun.file(resolvedPath)
+    if (!(await file.exists())) {
+      console.error(`System message file not found: ${argv['system-message-file']}`)
+      process.exit(1)
+    }
+    systemMessage = await file.text()
+  }
+
+  if (argv['append-system-message-file']) {
+    const resolvedPath = require('path').resolve(process.cwd(), argv['append-system-message-file'])
+    const file = Bun.file(resolvedPath)
+    if (!(await file.exists())) {
+      console.error(`Append system message file not found: ${argv['append-system-message-file']}`)
+      process.exit(1)
+    }
+    appendSystemMessage = await file.text()
+  }
+
+  // Initialize logging to redirect to log file instead of stderr
+  // This prevents log messages from mixing with JSON output
+  await Log.init({
+    print: false,  // Don't print to stderr
+    level: 'INFO'
+  })
+
+  // Read input from stdin
+  const input = await readStdin()
+  const trimmedInput = input.trim()
+
+  // Try to parse as JSON, if it fails treat it as plain text message
+  let request
+  try {
+    request = JSON.parse(trimmedInput)
+  } catch (e) {
+    // Not JSON, treat as plain text message
+    request = {
+      message: trimmedInput
+    }
+  }
+
+  // Wrap in Instance.provide for OpenCode infrastructure
+  await Instance.provide({
+    directory: process.cwd(),
+    fn: async () => {
+      if (argv.server) {
+        // SERVER MODE: Start server and communicate via HTTP
+        await runServerMode(request, providerID, modelID, systemMessage, appendSystemMessage)
+      } else {
+        // DIRECT MODE: Run everything in single process
+        await runDirectMode(request, providerID, modelID, systemMessage, appendSystemMessage)
+      }
+    }
+  })
+
+  // Explicitly exit to ensure process terminates
+  process.exit(0)
+}
+
+async function runServerMode(request, providerID, modelID, systemMessage, appendSystemMessage) {
+  // Start server like OpenCode does
+  const server = Server.listen({ port: 0, hostname: "127.0.0.1" })
+  let unsub = null
+
+  try {
+    // Create a session
+    const createRes = await fetch(`http://${server.hostname}:${server.port}/session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    })
+    const session = await createRes.json()
+    const sessionID = session.id
+
+    if (!sessionID) {
+      throw new Error("Failed to create session")
+    }
+
+    // Subscribe to all bus events to output them in OpenCode format
+    const eventPromise = new Promise((resolve) => {
+      unsub = Bus.subscribeAll((event) => {
+        // Output events in OpenCode JSON format
+        if (event.type === 'message.part.updated') {
+          const part = event.properties.part
+          if (part.sessionID !== sessionID) return
+
+          // Output different event types (pretty-printed for readability)
+          if (part.type === 'step-start') {
+            process.stdout.write(JSON.stringify({
+              type: 'step_start',
+              timestamp: Date.now(),
+              sessionID,
+              part
+            }, null, 2) + EOL)
+          }
+
+          if (part.type === 'step-finish') {
+            process.stdout.write(JSON.stringify({
+              type: 'step_finish',
+              timestamp: Date.now(),
+              sessionID,
+              part
+            }, null, 2) + EOL)
+          }
+
+          if (part.type === 'text' && part.time?.end) {
+            process.stdout.write(JSON.stringify({
+              type: 'text',
+              timestamp: Date.now(),
+              sessionID,
+              part
+            }, null, 2) + EOL)
+          }
+
+          if (part.type === 'tool' && part.state.status === 'completed') {
+            process.stdout.write(JSON.stringify({
+              type: 'tool_use',
+              timestamp: Date.now(),
+              sessionID,
+              part
+            }, null, 2) + EOL)
+          }
+        }
+
+        // Handle session idle to know when to stop
+        if (event.type === 'session.idle' && event.properties.sessionID === sessionID) {
+          resolve()
+        }
+
+        // Handle errors
+        if (event.type === 'session.error') {
+          const props = event.properties
+          if (props.sessionID !== sessionID || !props.error) return
+          process.stdout.write(JSON.stringify({
+            type: 'error',
+            timestamp: Date.now(),
+            sessionID,
+            error: props.error
+          }, null, 2) + EOL)
+        }
+      })
+    })
+
+    // Send message to session with specified model (default: opencode/grok-code)
+    const message = request.message || "hi"
+    const parts = [{ type: "text", text: message }]
+
+    // Start the prompt (don't wait for response, events come via Bus)
+    fetch(`http://${server.hostname}:${server.port}/session/${sessionID}/message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        parts,
+        model: {
+          providerID,
+          modelID
+        },
+        system: systemMessage,
+        appendSystem: appendSystemMessage
+      })
+    }).catch(() => {
+      // Ignore errors, we're listening to events
+    })
+
+    // Wait for session to become idle
+    await eventPromise
+  } finally {
+    // Always clean up resources
+    if (unsub) unsub()
+    server.stop()
+    await Instance.dispose()
+  }
+}
+
+async function runDirectMode(request, providerID, modelID, systemMessage, appendSystemMessage) {
+  // DIRECT MODE: Run in single process without server
+  let unsub = null
+
+  try {
+    // Create a session directly
+    const session = await Session.createNext({
+      directory: process.cwd()
+    })
+    const sessionID = session.id
+
+    // Subscribe to all bus events to output them in OpenCode format
+    const eventPromise = new Promise((resolve) => {
+      unsub = Bus.subscribeAll((event) => {
+        // Output events in OpenCode JSON format
+        if (event.type === 'message.part.updated') {
+          const part = event.properties.part
+          if (part.sessionID !== sessionID) return
+
+          // Output different event types (pretty-printed for readability)
+          if (part.type === 'step-start') {
+            process.stdout.write(JSON.stringify({
+              type: 'step_start',
+              timestamp: Date.now(),
+              sessionID,
+              part
+            }, null, 2) + EOL)
+          }
+
+          if (part.type === 'step-finish') {
+            process.stdout.write(JSON.stringify({
+              type: 'step_finish',
+              timestamp: Date.now(),
+              sessionID,
+              part
+            }, null, 2) + EOL)
+          }
+
+          if (part.type === 'text' && part.time?.end) {
+            process.stdout.write(JSON.stringify({
+              type: 'text',
+              timestamp: Date.now(),
+              sessionID,
+              part
+            }, null, 2) + EOL)
+          }
+
+          if (part.type === 'tool' && part.state.status === 'completed') {
+            process.stdout.write(JSON.stringify({
+              type: 'tool_use',
+              timestamp: Date.now(),
+              sessionID,
+              part
+            }, null, 2) + EOL)
+          }
+        }
+
+        // Handle session idle to know when to stop
+        if (event.type === 'session.idle' && event.properties.sessionID === sessionID) {
+          resolve()
+        }
+
+        // Handle errors
+        if (event.type === 'session.error') {
+          const props = event.properties
+          if (props.sessionID !== sessionID || !props.error) return
+          process.stdout.write(JSON.stringify({
+            type: 'error',
+            timestamp: Date.now(),
+            sessionID,
+            error: props.error
+          }, null, 2) + EOL)
+        }
+      })
+    })
+
+    // Send message to session directly
+    const message = request.message || "hi"
+    const parts = [{ type: "text", text: message }]
+
+    // Start the prompt directly without HTTP
+    SessionPrompt.prompt({
+      sessionID,
+      parts,
+      model: {
+        providerID,
+        modelID
+      },
+      system: systemMessage,
+      appendSystem: appendSystemMessage
+    }).catch((error) => {
+      process.stdout.write(JSON.stringify({
+        type: 'error',
+        timestamp: Date.now(),
+        sessionID,
+        error: error instanceof Error ? error.message : String(error)
+      }, null, 2) + EOL)
+    })
+
+    // Wait for session to become idle
+    await eventPromise
+  } finally {
+    // Always clean up resources
+    if (unsub) unsub()
+    await Instance.dispose()
+  }
+}
+
 async function main() {
   try {
-    // Parse command line arguments
+    // Parse command line arguments with subcommands
     const argv = await yargs(hideBin(process.argv))
+      .scriptName('agent')
+      .usage('$0 [command] [options]')
+      // MCP subcommand
+      .command(McpCommand)
+      // Default run mode (when piping stdin)
       .option('model', {
         type: 'string',
         description: 'Model to use in format providerID/modelID',
@@ -94,305 +393,14 @@ async function main() {
       .help()
       .argv
 
-    // Parse model argument
-    const modelParts = argv.model.split('/')
-    const providerID = modelParts[0] || 'opencode'
-    const modelID = modelParts[1] || 'grok-code'
+    // If a command was executed (like mcp), yargs handles it
+    // Otherwise, check if we should run in agent mode (stdin piped)
+    const commandExecuted = argv._ && argv._.length > 0
 
-    // Read system message files
-    let systemMessage = argv['system-message']
-    let appendSystemMessage = argv['append-system-message']
-
-    if (argv['system-message-file']) {
-      const resolvedPath = require('path').resolve(process.cwd(), argv['system-message-file'])
-      const file = Bun.file(resolvedPath)
-      if (!(await file.exists())) {
-        console.error(`System message file not found: ${argv['system-message-file']}`)
-        process.exit(1)
-      }
-      systemMessage = await file.text()
+    if (!commandExecuted) {
+      // No command specified, run in default agent mode (stdin processing)
+      await runAgentMode(argv)
     }
-
-    if (argv['append-system-message-file']) {
-      const resolvedPath = require('path').resolve(process.cwd(), argv['append-system-message-file'])
-      const file = Bun.file(resolvedPath)
-      if (!(await file.exists())) {
-        console.error(`Append system message file not found: ${argv['append-system-message-file']}`)
-        process.exit(1)
-      }
-      appendSystemMessage = await file.text()
-    }
-
-    // Initialize logging to redirect to log file instead of stderr
-    // This prevents log messages from mixing with JSON output
-    await Log.init({
-      print: false,  // Don't print to stderr
-      level: 'INFO'
-    })
-
-    // Read input from stdin
-    const input = await readStdin()
-    const trimmedInput = input.trim()
-
-    // Try to parse as JSON, if it fails treat it as plain text message
-    let request
-    try {
-      request = JSON.parse(trimmedInput)
-    } catch (e) {
-      // Not JSON, treat as plain text message
-      request = {
-        message: trimmedInput
-      }
-    }
-
-    // Wrap in Instance.provide for OpenCode infrastructure
-    await Instance.provide({
-      directory: process.cwd(),
-      fn: async () => {
-        if (argv.server) {
-          // SERVER MODE: Start server and communicate via HTTP
-          await runServerMode()
-        } else {
-          // DIRECT MODE: Run everything in single process
-          await runDirectMode()
-        }
-      }
-    })
-
-    async function runServerMode() {
-      // Start server like OpenCode does
-      const server = Server.listen({ port: 0, hostname: "127.0.0.1" })
-      let unsub = null
-
-      try {
-        // Create a session
-        const createRes = await fetch(`http://${server.hostname}:${server.port}/session`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        })
-        const session = await createRes.json()
-        const sessionID = session.id
-
-        if (!sessionID) {
-          throw new Error("Failed to create session")
-        }
-
-        // Subscribe to all bus events to output them in OpenCode format
-        const eventPromise = new Promise((resolve) => {
-          unsub = Bus.subscribeAll((event) => {
-            // Output events in OpenCode JSON format
-            if (event.type === 'message.part.updated') {
-              const part = event.properties.part
-              if (part.sessionID !== sessionID) return
-
-              // Output different event types (pretty-printed for readability)
-              if (part.type === 'step-start') {
-                process.stdout.write(JSON.stringify({
-                  type: 'step_start',
-                  timestamp: Date.now(),
-                  sessionID,
-                  part
-                }, null, 2) + EOL)
-              }
-
-              if (part.type === 'step-finish') {
-                process.stdout.write(JSON.stringify({
-                  type: 'step_finish',
-                  timestamp: Date.now(),
-                  sessionID,
-                  part
-                }, null, 2) + EOL)
-              }
-
-              if (part.type === 'text' && part.time?.end) {
-                process.stdout.write(JSON.stringify({
-                  type: 'text',
-                  timestamp: Date.now(),
-                  sessionID,
-                  part
-                }, null, 2) + EOL)
-              }
-
-              if (part.type === 'tool' && part.state.status === 'completed') {
-                process.stdout.write(JSON.stringify({
-                  type: 'tool_use',
-                  timestamp: Date.now(),
-                  sessionID,
-                  part
-                }, null, 2) + EOL)
-              }
-            }
-
-            // Handle session idle to know when to stop
-            if (event.type === 'session.idle' && event.properties.sessionID === sessionID) {
-              resolve()
-            }
-
-            // Handle errors
-            if (event.type === 'session.error') {
-              const props = event.properties
-              if (props.sessionID !== sessionID || !props.error) return
-              hasError = true
-              process.stdout.write(JSON.stringify({
-                type: 'error',
-                timestamp: Date.now(),
-                sessionID,
-                error: props.error
-              }, null, 2) + EOL)
-            }
-          })
-        })
-
-        // Send message to session with specified model (default: opencode/grok-code)
-        const message = request.message || "hi"
-        const parts = [{ type: "text", text: message }]
-
-        // Start the prompt (don't wait for response, events come via Bus)
-        fetch(`http://${server.hostname}:${server.port}/session/${sessionID}/message`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            parts,
-            model: {
-              providerID,
-              modelID
-            },
-            system: systemMessage,
-            appendSystem: appendSystemMessage
-          })
-        }).catch((error) => {
-          hasError = true
-          process.stdout.write(JSON.stringify({
-            type: 'error',
-            timestamp: Date.now(),
-            sessionID,
-            error: error instanceof Error ? error.message : String(error)
-          }, null, 2) + EOL)
-        })
-
-        // Wait for session to become idle
-        await eventPromise
-      } finally {
-        // Always clean up resources
-        if (unsub) unsub()
-        server.stop()
-        await Instance.dispose()
-      }
-    }
-
-    async function runDirectMode() {
-      // DIRECT MODE: Run in single process without server
-      let unsub = null
-
-      try {
-        // Create a session directly
-        const session = await Session.createNext({
-          directory: process.cwd()
-        })
-        const sessionID = session.id
-
-        // Subscribe to all bus events to output them in OpenCode format
-        const eventPromise = new Promise((resolve) => {
-          unsub = Bus.subscribeAll((event) => {
-            // Output events in OpenCode JSON format
-            if (event.type === 'message.part.updated') {
-              const part = event.properties.part
-              if (part.sessionID !== sessionID) return
-
-              // Output different event types (pretty-printed for readability)
-              if (part.type === 'step-start') {
-                process.stdout.write(JSON.stringify({
-                  type: 'step_start',
-                  timestamp: Date.now(),
-                  sessionID,
-                  part
-                }, null, 2) + EOL)
-              }
-
-              if (part.type === 'step-finish') {
-                process.stdout.write(JSON.stringify({
-                  type: 'step_finish',
-                  timestamp: Date.now(),
-                  sessionID,
-                  part
-                }, null, 2) + EOL)
-              }
-
-              if (part.type === 'text' && part.time?.end) {
-                process.stdout.write(JSON.stringify({
-                  type: 'text',
-                  timestamp: Date.now(),
-                  sessionID,
-                  part
-                }, null, 2) + EOL)
-              }
-
-              if (part.type === 'tool' && part.state.status === 'completed') {
-                process.stdout.write(JSON.stringify({
-                  type: 'tool_use',
-                  timestamp: Date.now(),
-                  sessionID,
-                  part
-                }, null, 2) + EOL)
-              }
-            }
-
-            // Handle session idle to know when to stop
-            if (event.type === 'session.idle' && event.properties.sessionID === sessionID) {
-              resolve()
-            }
-
-            // Handle errors
-            if (event.type === 'session.error') {
-              const props = event.properties
-              if (props.sessionID !== sessionID || !props.error) return
-              hasError = true
-              process.stdout.write(JSON.stringify({
-                type: 'error',
-                timestamp: Date.now(),
-                sessionID,
-                error: props.error
-              }, null, 2) + EOL)
-            }
-          })
-        })
-
-        // Send message to session directly
-        const message = request.message || "hi"
-        const parts = [{ type: "text", text: message }]
-
-        // Start the prompt directly without HTTP
-        SessionPrompt.prompt({
-          sessionID,
-          parts,
-          model: {
-            providerID,
-            modelID
-          },
-          system: systemMessage,
-          appendSystem: appendSystemMessage
-        }).catch((error) => {
-          hasError = true
-          process.stdout.write(JSON.stringify({
-            type: 'error',
-            timestamp: Date.now(),
-            sessionID,
-            error: error instanceof Error ? error.message : String(error)
-          }, null, 2) + EOL)
-        })
-
-        // Wait for session to become idle
-        await eventPromise
-      } finally {
-        // Always clean up resources
-        if (unsub) unsub()
-        await Instance.dispose()
-      }
-    }
-
-    // Explicitly exit to ensure process terminates with correct code
-    process.exit(hasError ? 1 : 0)
   } catch (error) {
     hasError = true
     console.error(JSON.stringify({

@@ -1,0 +1,12 @@
+{
+  "author": {
+    "login": "konard",
+    "name": ""
+  },
+  "body": "Make sure we have support for playwright MCP (https://github.com/microsoft/playwright-mcp), we need to have a test for it, and the test is executed at GitHub Actions (CI).\n\nClaude command style configuration:\n\n```\nagent mcp add playwright npx @playwright/mcp@latest\n```\n\nShould result in opencode style configuration in agent's user configuration folder\n\n```\n{\n  \"$schema\": \"https://opencode.ai/config.json\",\n  \"mcp\": {\n    \"playwright\": {\n      \"type\": \"local\",\n      \"command\": [\n        \"npx\",\n        \"@playwright/mcp@latest\"\n      ],\n      \"enabled\": true\n    }\n  }\n}\n```\n\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
+  "title": "Support Playwright MCP",
+  "labels": ["documentation", "enhancement"],
+  "createdAt": "2025-12-05",
+  "updatedAt": "2025-12-05",
+  "url": "https://github.com/link-assistant/agent/issues/16"
+}

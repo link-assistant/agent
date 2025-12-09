@@ -1,0 +1,118 @@
+{
+  "name": "@playwright/mcp",
+  "description": "A Model Context Protocol (MCP) server that provides browser automation capabilities using Playwright. Enables LLMs to interact with web pages through structured accessibility snapshots.",
+  "repository": "https://github.com/microsoft/playwright-mcp",
+  "npmPackage": "@playwright/mcp",
+  "latestVersion": "0.0.49",
+  "releaseDate": "2025-12",
+  "requirements": {
+    "nodejs": ">=18"
+  },
+  "installation": {
+    "npx": "npx @playwright/mcp@latest",
+    "configExample": {
+      "mcpServers": {
+        "playwright": {
+          "command": "npx",
+          "args": ["@playwright/mcp@latest"]
+        }
+      }
+    }
+  },
+  "features": {
+    "core": [
+      "Fast and lightweight - uses Playwright's accessibility tree, not pixel-based input",
+      "LLM-friendly - no vision models needed, operates on structured data",
+      "Deterministic tool application - avoids ambiguity of screenshot-based approaches"
+    ],
+    "browserModes": [
+      "Persistent profile (default) - stores credentials and state",
+      "Isolated mode - in-memory sessions discarded on close",
+      "Browser extension - connect to existing browser via CDP"
+    ],
+    "supportedBrowsers": ["chromium", "firefox", "webkit", "msedge", "chrome"]
+  },
+  "tools": [
+    "browser_click",
+    "browser_close",
+    "browser_console_messages",
+    "browser_drag",
+    "browser_evaluate",
+    "browser_file_upload",
+    "browser_fill_form",
+    "browser_handle_dialog",
+    "browser_hover",
+    "browser_install",
+    "browser_navigate",
+    "browser_navigate_back",
+    "browser_network_requests",
+    "browser_press_key",
+    "browser_resize",
+    "browser_run_code",
+    "browser_select_option",
+    "browser_snapshot",
+    "browser_tabs",
+    "browser_take_screenshot",
+    "browser_type",
+    "browser_wait_for"
+  ],
+  "commandLineOptions": [
+    {
+      "option": "--browser",
+      "description": "Browser to use (chromium, firefox, webkit, msedge, chrome)"
+    },
+    {
+      "option": "--headless",
+      "description": "Run in headless mode (headed by default)"
+    },
+    {
+      "option": "--device",
+      "description": "Emulate specific device (e.g., 'iPhone 15')"
+    },
+    {
+      "option": "--user-data-dir",
+      "description": "Persistent profile location"
+    },
+    {
+      "option": "--isolated",
+      "description": "Keep profile in-memory, discard on close"
+    },
+    {
+      "option": "--caps",
+      "description": "Enable vision and/or pdf capabilities"
+    },
+    {
+      "option": "--viewport-size",
+      "description": "Set viewport dimensions (e.g., '1280x720')"
+    },
+    {
+      "option": "--timeout-action",
+      "description": "Action timeout in milliseconds (default 5000ms)"
+    },
+    {
+      "option": "--timeout-navigation",
+      "description": "Navigation timeout (default 60000ms)"
+    }
+  ],
+  "clientConfigurations": {
+    "claudeCode": {
+      "command": "claude mcp add playwright npx '@playwright/mcp@latest'",
+      "configFile": "~/.claude.json"
+    },
+    "vscode": {
+      "command": "code --add-mcp '{\"name\":\"playwright\",\"command\":\"npx\",\"args\":[\"@playwright/mcp@latest\"]}'",
+      "configFile": "mcp.json"
+    },
+    "cursor": {
+      "location": "Settings -> MCP -> Add new MCP Server",
+      "type": "command",
+      "command": "npx @playwright/mcp@latest"
+    }
+  },
+  "sources": [
+    "https://github.com/microsoft/playwright-mcp",
+    "https://til.simonwillison.net/claude-code/playwright-mcp-claude-code",
+    "https://techcommunity.microsoft.com/blog/azuredevcommunityblog/how-to-integrate-playwright-mcp-for-ai-driven-test-automation/4470372",
+    "https://kailash-pathak.medium.com/mcp-model-context-protocol-server-with-playwright-05d751387e53"
+  ]
+}

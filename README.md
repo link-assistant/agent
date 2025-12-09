@@ -222,10 +222,13 @@ See [EXAMPLES.md](EXAMPLES.md) for detailed usage examples of each tool with bot
 bun test
 
 # Run specific test file
+bun test tests/mcp.test.js
 bun test tests/websearch.tools.test.js
 bun test tests/batch.tools.test.js
 bun test tests/plaintext.input.test.js
 ```
+
+For detailed testing information including how to run tests manually and trigger CI tests, see [TESTING.md](TESTING.md).
 
 ## Maintenance
 
