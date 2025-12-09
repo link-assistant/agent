@@ -11,6 +11,32 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { McpCommand } from './cli/cmd/mcp.ts'
 
+// Track if any errors occurred during execution
+let hasError = false
+
+// Install global error handlers to ensure non-zero exit codes
+process.on('uncaughtException', (error) => {
+  hasError = true
+  console.error(JSON.stringify({
+    type: 'error',
+    errorType: error.name || 'UncaughtException',
+    message: error.message,
+    stack: error.stack
+  }, null, 2))
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  hasError = true
+  console.error(JSON.stringify({
+    type: 'error',
+    errorType: 'UnhandledRejection',
+    message: reason?.message || String(reason),
+    stack: reason?.stack
+  }, null, 2))
+  process.exit(1)
+})
+
 async function readStdin() {
   return new Promise((resolve, reject) => {
     let data = ''
@@ -376,11 +402,14 @@ async function main() {
       await runAgentMode(argv)
     }
   } catch (error) {
+    hasError = true
     console.error(JSON.stringify({
       type: 'error',
       timestamp: Date.now(),
-      error: error instanceof Error ? error.message : String(error)
-    }))
+      errorType: error instanceof Error ? error.name : 'Error',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    }, null, 2))
     process.exit(1)
   }
 }
