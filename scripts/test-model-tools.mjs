@@ -39,14 +39,41 @@ const testInput = JSON.stringify({
 
 console.log(`Input: ${testInput}`);
 console.log('');
+
+// Models with low token limits that need minimal system messages
+// These models have ~6000 TPM limits on free tiers which can't accommodate
+// the full default system message (~12,000 tokens)
+const lowLimitModels = [
+  'qwen3-32b',
+  'mixtral-8x7b-32768',
+];
+
+const needsMinimalSystem = lowLimitModels.some(model => modelId.includes(model));
+
+// Minimal system message for low-limit models (optimized for token efficiency)
+const minimalSystemMessage = 'You are a helpful AI assistant. Answer questions accurately and concisely.';
+
+if (needsMinimalSystem) {
+  console.log('ℹ️  Using minimal system message (low token limit model detected)');
+  console.log('');
+}
+
 console.log('Running test...');
 console.log('');
 
 const logFile = join(projectRoot, 'test-output-tools.log');
 const logStream = createWriteStream(logFile);
 
+// Build command arguments
+const args = ['run', join(projectRoot, 'src/index.js'), '--model', modelId];
+
+// Add minimal system message for low-limit models
+if (needsMinimalSystem) {
+  args.push('--system-message', minimalSystemMessage);
+}
+
 // Run the agent
-const agent = spawn('bun', ['run', join(projectRoot, 'src/index.js'), '--model', modelId], {
+const agent = spawn('bun', args, {
   cwd: projectRoot,
   env: process.env,
 });
