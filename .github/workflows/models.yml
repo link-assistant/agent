@@ -3,44 +3,55 @@ name: Model Tests
 on:
   workflow_dispatch:
     inputs:
-      provider:
-        description: 'Provider'
-        required: true
-        type: choice
-        default: 'opencode'
-        options:
-          - opencode
-          - groq
       model:
         description: 'Model (from dropdown)'
         required: true
         type: choice
-        default: 'grok-code'
+        default: 'groq/llama-3.3-70b-versatile'
         options:
-          # OpenCode Zen models (free)
-          - grok-code
-          - gpt-5-nano
-          - big-pickle
-          # OpenCode Zen models (paid)
-          - sonnet
-          - haiku
-          - opus
-          - gemini-3-pro
-          - gpt-5-1
-          - qwen3-coder-480b
-          # Groq models
-          - llama-3.3-70b-versatile
-          - llama-3.1-8b-instant
-          - qwen/qwen3-32b
-          - openai/gpt-oss-120b
-          - openai/gpt-oss-20b
-          - groq/compound
-          - groq/compound-mini
-          - moonshotai/kimi-k2-instruct-0905
-          - meta-llama/llama-4-scout-17b-16e-instruct
-          - meta-llama/llama-4-maverick-17b-128e-instruct
+          # Groq models (sorted alphabetically)
+          - groq/deepseek-r1-distill-llama-70b
+          - groq/gemma2-9b-it
+          - groq/llama-3.1-8b-instant
+          - groq/llama-3.3-70b-versatile
+          - groq/llama-guard-3-8b
+          - groq/llama3-70b-8192
+          - groq/llama3-8b-8192
+          - groq/meta-llama/llama-4-maverick-17b-128e-instruct
+          - groq/meta-llama/llama-4-scout-17b-16e-instruct
+          - groq/meta-llama/llama-guard-4-12b
+          - groq/mistral-saba-24b
+          - groq/moonshotai/kimi-k2-instruct
+          - groq/moonshotai/kimi-k2-instruct-0905
+          - groq/openai/gpt-oss-120b
+          - groq/openai/gpt-oss-20b
+          - groq/qwen-qwq-32b
+          - groq/qwen/qwen3-32b
+          # OpenCode models (sorted alphabetically)
+          - opencode/alpha-doubao-seed-code
+          - opencode/alpha-gd4
+          - opencode/alpha-minimax-m2
+          - opencode/big-pickle
+          - opencode/claude-3-5-haiku
+          - opencode/claude-haiku-4-5
+          - opencode/claude-opus-4-1
+          - opencode/claude-opus-4-5
+          - opencode/claude-sonnet-4
+          - opencode/claude-sonnet-4-5
+          - opencode/gemini-3-pro
+          - opencode/glm-4.6
+          - opencode/gpt-5
+          - opencode/gpt-5-codex
+          - opencode/gpt-5-nano
+          - opencode/gpt-5.1
+          - opencode/gpt-5.1-codex
+          - opencode/gpt-5.1-codex-max
+          - opencode/grok-code
+          - opencode/kimi-k2
+          - opencode/kimi-k2-thinking
+          - opencode/qwen3-coder
       custom_model:
-        description: 'Custom model name (overrides dropdown if set)'
+        description: 'Custom model name in provider/model format (overrides dropdown if set)'
         required: false
         type: string
         default: ''
@@ -79,30 +90,33 @@ jobs:
         id: model
         run: |
           CUSTOM_MODEL="${{ inputs.custom_model }}"
-          MODEL_NAME="${{ inputs.model }}"
-          PROVIDER="${{ inputs.provider }}"
+          MODEL_FROM_DROPDOWN="${{ inputs.model }}"
 
           if [ -n "$CUSTOM_MODEL" ]; then
-            MODEL_ID="$PROVIDER/$CUSTOM_MODEL"
-            MODEL_NAME="$CUSTOM_MODEL"
+            MODEL_ID="$CUSTOM_MODEL"
           else
-            MODEL_ID="$PROVIDER/$MODEL_NAME"
+            MODEL_ID="$MODEL_FROM_DROPDOWN"
           fi
+
+          # Extract provider and model name from provider/model format
+          PROVIDER=$(echo "$MODEL_ID" | cut -d'/' -f1)
+          MODEL_NAME=$(echo "$MODEL_ID" | cut -d'/' -f2-)
 
           echo "model_id=$MODEL_ID" >> $GITHUB_OUTPUT
           echo "model_name=$MODEL_NAME" >> $GITHUB_OUTPUT
-          echo "Testing model: $MODEL_ID"
+          echo "provider=$PROVIDER" >> $GITHUB_OUTPUT
+          echo "Testing model: $MODEL_ID (provider: $PROVIDER, model: $MODEL_NAME)"
 
       - name: Fetch model capabilities
         id: capabilities
         run: |
-          OUTPUT=$(node scripts/get-model-info.mjs "${{ inputs.provider }}" "${{ steps.model.outputs.model_name }}")
+          OUTPUT=$(node scripts/get-model-info.mjs "${{ steps.model.outputs.provider }}" "${{ steps.model.outputs.model_name }}")
           echo "$OUTPUT"
           echo "$OUTPUT" >> $GITHUB_OUTPUT
 
       - name: Check API key availability
         run: |
-          if [ "${{ inputs.provider }}" = "groq" ]; then
+          if [ "${{ steps.model.outputs.provider }}" = "groq" ]; then
             if [ -z "$GROQ_API_KEY" ]; then
               echo "::warning::GROQ_API_KEY is not set. Groq tests may fail."
             else
@@ -122,8 +136,8 @@ jobs:
         run: |
           echo "## Model Test Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Provider**: ${{ inputs.provider }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Model**: ${{ steps.model.outputs.model_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Provider**: ${{ steps.model.outputs.provider }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Test Type**: ${{ inputs.test_type }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
