@@ -24,6 +24,8 @@ import { Instance } from "../project/instance"
 import { Bus } from "../bus"
 import { ProviderTransform } from "../provider/transform"
 import { SystemPrompt } from "./system"
+import { Flag } from "../flag/flag"
+import { Token } from "../util/token"
 
 import PROMPT_PLAN from "../session/prompt/plan.txt"
 import BUILD_SWITCH from "../session/prompt/build-switch.txt"
@@ -482,6 +484,38 @@ export namespace SessionPrompt {
           sessionID: sessionID,
           messageID: lastUser.id,
         })
+      }
+
+      // Verbose logging: output request details for debugging
+      if (Flag.OPENCODE_VERBOSE) {
+        const systemTokens = system.reduce((acc, s) => acc + Token.estimate(s), 0)
+        const userMessages = msgs.filter((m) => m.info.role === "user")
+        const userTokens = userMessages.reduce(
+          (acc, m) => acc + m.parts.reduce((a, p) => a + Token.estimate("text" in p ? p.text || "" : ""), 0),
+          0,
+        )
+        const totalEstimatedTokens = systemTokens + userTokens
+
+        log.info("=== VERBOSE: API Request Details ===")
+        log.info(`Model: ${model.providerID}/${model.modelID}`)
+        log.info(`Session ID: ${sessionID}`)
+        log.info(`Agent: ${agent.name}`)
+        log.info(`Temperature: ${params.temperature ?? "default"}`)
+        log.info(`Top P: ${params.topP ?? "default"}`)
+        log.info(`Active Tools: ${Object.keys(tools).filter((x) => x !== "invalid").join(", ")}`)
+        log.info("--- System Prompt ---")
+        for (let i = 0; i < system.length; i++) {
+          const tokens = Token.estimate(system[i])
+          log.info(`System Message ${i + 1} (${tokens} tokens estimated):`)
+          log.info(system[i].slice(0, 2000) + (system[i].length > 2000 ? "... [truncated]" : ""))
+        }
+        log.info("--- Token Summary ---")
+        log.info(`System prompt tokens (estimated): ${systemTokens}`)
+        log.info(`User message tokens (estimated): ${userTokens}`)
+        log.info(`Total estimated tokens: ${totalEstimatedTokens}`)
+        log.info(`Model context limit: ${model.info.limit.context || "unknown"}`)
+        log.info(`Model output limit: ${model.info.limit.output || "unknown"}`)
+        log.info("=== END VERBOSE ===")
       }
 
       const result = await processor.process(() =>

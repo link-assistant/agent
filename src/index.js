@@ -11,6 +11,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { createEventHandler, isValidJsonStandard } from './json-standard/index.ts'
 import { McpCommand } from './cli/cmd/mcp.ts'
+import { Flag } from './flag/flag.ts'
 
 // Track if any errors occurred during execution
 let hasError = false
@@ -64,6 +65,11 @@ async function readStdin() {
 }
 
 async function runAgentMode(argv) {
+  // Set verbose mode if requested via CLI flag
+  if (argv.verbose) {
+    Flag.setVerbose(true)
+  }
+
   // Parse model argument (handle model IDs with slashes like groq/qwen/qwen3-32b)
   const modelParts = argv.model.split('/')
   const providerID = modelParts[0] || 'opencode'
@@ -102,9 +108,10 @@ async function runAgentMode(argv) {
 
   // Initialize logging to redirect to log file instead of stderr
   // This prevents log messages from mixing with JSON output
+  // In verbose mode, print to stderr for debugging
   await Log.init({
-    print: false,  // Don't print to stderr
-    level: 'INFO'
+    print: Flag.OPENCODE_VERBOSE,  // Print to stderr only in verbose mode
+    level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO'
   })
 
   // Read input from stdin
@@ -418,6 +425,11 @@ async function main() {
         type: 'boolean',
         description: 'Run in server mode (default)',
         default: true
+      })
+      .option('verbose', {
+        type: 'boolean',
+        description: 'Enable verbose mode to debug API requests (shows system prompt, token counts, etc.)',
+        default: false
       })
       .help()
       .argv

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Test script for model providers - message expecting tool calls
- * Usage: node scripts/test-model-tools.mjs <model-id>
+ * Usage: node scripts/test-model-tools.mjs <model-id> [--verbose]
  * Example: node scripts/test-model-tools.mjs groq/llama-3.3-70b-versatile
+ * Example with verbose: node scripts/test-model-tools.mjs groq/llama-3.3-70b-versatile --verbose
  */
 
 import { spawn } from 'child_process';
@@ -14,15 +15,26 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '..');
 
-const modelId = process.argv[2];
+// Parse arguments
+const cliArgs = process.argv.slice(2);
+const verboseIndex = cliArgs.indexOf('--verbose');
+const verbose = verboseIndex !== -1;
+if (verbose) {
+  cliArgs.splice(verboseIndex, 1);
+}
+
+const modelId = cliArgs[0];
 if (!modelId) {
   console.error('Error: Model ID is required');
-  console.error('Usage: node scripts/test-model-tools.mjs <model-id>');
+  console.error('Usage: node scripts/test-model-tools.mjs <model-id> [--verbose]');
   process.exit(1);
 }
 
 console.log(`Testing model: ${modelId}`);
 console.log('Test type: Message expecting tool call');
+if (verbose) {
+  console.log('🔍 Verbose mode: ENABLED');
+}
 console.log('');
 
 // Check for API key if using Groq
@@ -65,15 +77,20 @@ const logFile = join(projectRoot, 'test-output-tools.log');
 const logStream = createWriteStream(logFile);
 
 // Build command arguments
-const args = ['run', join(projectRoot, 'src/index.js'), '--model', modelId];
+const spawnArgs = ['run', join(projectRoot, 'src/index.js'), '--model', modelId];
 
 // Add minimal system message for low-limit models
 if (needsMinimalSystem) {
-  args.push('--system-message', minimalSystemMessage);
+  spawnArgs.push('--system-message', minimalSystemMessage);
+}
+
+// Add verbose flag if requested
+if (verbose) {
+  spawnArgs.push('--verbose');
 }
 
 // Run the agent
-const agent = spawn('bun', args, {
+const agent = spawn('bun', spawnArgs, {
   cwd: projectRoot,
   env: process.env,
 });

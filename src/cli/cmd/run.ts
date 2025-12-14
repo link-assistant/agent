@@ -3,6 +3,7 @@ import path from "path"
 import { UI } from "../ui"
 import { cmd } from "./cmd"
 import { Flag } from "../../flag/flag"
+import { Log } from "../../util/log"
 import { bootstrap } from "../bootstrap"
 import { Command } from "../../command"
 import { EOL } from "os"
@@ -97,8 +98,18 @@ export const RunCommand = cmd({
          type: "string",
          describe: "append to the default system message from file",
        })
+       .option("verbose", {
+         type: "boolean",
+         describe: "enable verbose mode to debug API requests (shows system prompt, token counts, etc.)",
+         default: false,
+       })
   },
    handler: async (args) => {
+     // Set verbose mode if requested
+     if (args.verbose) {
+       Flag.setVerbose(true)
+       await Log.init({ print: true, level: "DEBUG" })
+     }
      let message = args.message.join(" ")
 
     const fileParts: any[] = []
