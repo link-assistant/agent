@@ -2,7 +2,7 @@ import { Global } from "../global"
 import { Log } from "../util/log"
 import path from "path"
 import z from "zod"
-import { data } from "./models-macro"
+import { data } from "./models-macro" with { type: "macro" }
 
 export namespace ModelsDev {
   const log = Log.create({ service: "models.dev" })
