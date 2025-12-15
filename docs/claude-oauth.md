@@ -1,84 +1,74 @@
 # Claude OAuth Provider
 
-> **⚠️ Current Limitation:** As of December 2024, Anthropic's public API does not accept OAuth tokens for programmatic access. The API returns "OAuth authentication is currently not supported" when attempting to use Claude Code CLI OAuth tokens. This provider is implemented for future compatibility when Anthropic enables OAuth token support for the API.
->
-> **Recommended Alternative:** Use the `anthropic` provider with an API key from the [Anthropic Console](https://console.anthropic.com/), or use the `opencode` provider which includes Claude models.
+The Claude OAuth provider allows you to use your Claude Pro or Max subscription with the agent CLI through OAuth 2.0 authentication (PKCE flow).
 
-The Claude OAuth provider is designed to allow using Claude Code CLI OAuth credentials to access Claude models. This feature is prepared for when Anthropic enables OAuth token support for their public API.
+## Quick Start
 
-## Current Status
-
-| Feature | Status |
-|---------|--------|
-| Token Reading | ✅ Works - reads from `~/.claude/.credentials.json` |
-| Token Detection | ✅ Works - detects `CLAUDE_CODE_OAUTH_TOKEN` env var |
-| Provider Setup | ✅ Works - provider loads with Claude models |
-| API Authentication | ❌ Blocked by Anthropic - API rejects OAuth tokens |
-
-## Why This Doesn't Work Yet
-
-According to [Anthropic's documentation](https://github.com/anthropics/claude-code/issues/6536):
-
-> "The SDK is designed for programmatic use and requires an API key (which starts with `sk-ant-api...`) for API-based billing."
-
-The OAuth tokens from Claude Code CLI (`sk-ant-oat...`) are designed for interactive CLI usage only, not for programmatic API access. Anthropic's API explicitly rejects these tokens with the error: "OAuth authentication is currently not supported."
-
-## Current Alternatives
-
-### Option 1: Use Anthropic API Key (Direct)
-
-Get an API key from the [Anthropic Console](https://console.anthropic.com/) and use the `anthropic` provider:
+### Option 1: Authenticate with Agent CLI (Recommended)
 
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-api03-..."
-echo "hello" | agent --model anthropic/claude-sonnet-4-5
-```
+# Authenticate with Claude OAuth
+agent auth claude
 
-### Option 2: Use OpenCode Provider (Recommended)
+# Use with default Claude model
+echo "hello" | agent --use-existing-claude-oauth
 
-The OpenCode provider includes Claude models with a simpler setup:
-
-```bash
-# Free tier (limited)
-echo "hello" | agent --model opencode/grok-code
-
-# Paid models via OpenCode subscription
-echo "hello" | agent --model opencode/claude-sonnet-4-5
-```
-
-## Prerequisites (For Future Use)
-
-When Anthropic enables OAuth token support, you'll need:
-- [Claude Code CLI](https://claude.ai/code) installed and authenticated
-- A Claude Pro or Max subscription
-- Or a `CLAUDE_CODE_OAUTH_TOKEN` environment variable
-
-## How It Will Work (Future)
-
-### Method 1: Claude Code CLI
-
-Once enabled, the agent will automatically detect and use your OAuth credentials:
-
-1. Install Claude Code CLI from [claude.ai/code](https://claude.ai/code)
-2. Run `claude auth login` to authenticate
-3. Use the agent with `claude-oauth` provider:
-
-```bash
+# Or specify a model explicitly
 echo "hello" | agent --model claude-oauth/claude-sonnet-4-5
 ```
 
-The agent reads OAuth tokens from `~/.claude/.credentials.json`, which is created by the Claude Code CLI.
+### Option 2: Use Existing Claude Code CLI Credentials
 
-### Method 2: Environment Variable
+If you already have Claude Code CLI installed and authenticated:
 
-You can also set the `CLAUDE_CODE_OAUTH_TOKEN` environment variable directly:
+```bash
+# Claude Code CLI stores credentials in ~/.claude/.credentials.json
+# Simply use the --use-existing-claude-oauth flag
+echo "hello" | agent --use-existing-claude-oauth
+```
+
+### Option 3: Environment Variable
 
 ```bash
 export CLAUDE_CODE_OAUTH_TOKEN="sk-ant-oat01-..."
 echo "hello" | agent --model claude-oauth/claude-sonnet-4-5
 ```
 
-## Available Models (When Enabled)
+## Authentication Commands
+
+### Login
+
+```bash
+agent auth claude
+```
+
+This will:
+1. Generate an authorization URL with PKCE
+2. Open your browser to authenticate with Claude
+3. Ask you to paste the authorization code
+4. Exchange the code for tokens
+5. Store credentials in `~/.claude/.credentials.json`
+
+### Check Status
+
+```bash
+agent auth claude-status
+```
+
+Shows current authentication status including:
+- Whether you're authenticated
+- Subscription type
+- Token expiration
+
+### Refresh Token
+
+```bash
+agent auth claude-refresh
+```
+
+Refreshes your access token using the stored refresh token.
+
+## Available Models
 
 The Claude OAuth provider gives you access to all Anthropic models:
 
@@ -91,11 +81,13 @@ The Claude OAuth provider gives you access to all Anthropic models:
 
 ## Token Storage
 
-OAuth tokens from Claude Code CLI are stored in:
+OAuth tokens are stored in:
 
 ```
 ~/.claude/.credentials.json
 ```
+
+This is the same location used by Claude Code CLI, allowing shared authentication.
 
 The format is:
 ```json
@@ -104,12 +96,18 @@ The format is:
     "accessToken": "sk-ant-oat01-...",
     "refreshToken": "sk-ant-ort01-...",
     "expiresAt": 1765759825273,
-    "scopes": ["user:inference", "user:profile", "user:sessions:claude_code"],
-    "subscriptionType": "max",
-    "rateLimitTier": "default_claude_max_20x"
+    "scopes": ["org:create_api_key", "user:profile", "user:inference"],
+    "subscriptionType": "max"
   }
 }
 ```
+
+## CLI Options
+
+| Option | Description |
+|--------|-------------|
+| `--use-existing-claude-oauth` | Use existing credentials from `~/.claude/.credentials.json` |
+| `--model claude-oauth/<model>` | Use specific Claude model with OAuth |
 
 ## Differences from Direct Anthropic API
 
@@ -118,22 +116,74 @@ The format is:
 | Token Format | `sk-ant-oat...` (OAuth) | `sk-ant-api...` (API key) |
 | Authentication | Bearer token | x-api-key header |
 | Billing | Claude Pro/Max subscription | Pay-as-you-go through Console |
-| Setup | `claude auth login` | Generate API key in Console |
+| Setup | `agent auth claude` | Generate API key in Console |
 | Environment Variable | `CLAUDE_CODE_OAUTH_TOKEN` | `ANTHROPIC_API_KEY` |
-| **API Support** | ❌ Not supported yet | ✅ Fully supported |
 
-## Technical Implementation
+## Technical Details
 
-The provider is implemented to:
+### OAuth Flow
 
-1. Check for `CLAUDE_CODE_OAUTH_TOKEN` environment variable
-2. If not found, read OAuth credentials from `~/.claude/.credentials.json`
-3. Use Bearer token authentication (when supported)
-4. Inherit all Claude models from the Anthropic provider
+The implementation uses OAuth 2.0 with PKCE (Proof Key for Code Exchange):
+
+1. **Authorization URL Generation**: Creates URL with PKCE code verifier/challenge
+2. **User Authentication**: User authenticates in browser and authorizes
+3. **Code Exchange**: Authorization code exchanged for access/refresh tokens
+4. **Token Storage**: Tokens saved to `~/.claude/.credentials.json`
+
+### OAuth Endpoints
+
+| Endpoint | URL |
+|----------|-----|
+| Authorization | `https://claude.ai/oauth/authorize` |
+| Token Exchange | `https://console.anthropic.com/v1/oauth/token` |
+| Redirect URI | `https://console.anthropic.com/oauth/code/callback` |
+
+### API Authentication
+
+OAuth tokens require special handling:
+- Uses `Authorization: Bearer <token>` header
+- Requires `anthropic-beta: oauth-2025-04-20` header
+
+## Alternatives
+
+### Direct Anthropic API Key
+
+If you prefer pay-as-you-go billing:
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-api03-..."
+echo "hello" | agent --model anthropic/claude-sonnet-4-5
+```
+
+Get an API key from the [Anthropic Console](https://console.anthropic.com/).
+
+### OpenCode Provider
+
+The OpenCode provider includes Claude models:
+
+```bash
+echo "hello" | agent --model opencode/claude-sonnet-4-5
+```
+
+## Troubleshooting
+
+### "No Claude OAuth credentials found"
+
+Run `agent auth claude` to authenticate.
+
+### "Token expired"
+
+Run `agent auth claude-refresh` or re-authenticate with `agent auth claude`.
+
+### "OAuth authentication is currently not supported"
+
+This error may occur if Anthropic's API has restrictions on OAuth tokens. Try:
+1. Ensure you have Claude Pro or Max subscription
+2. Re-authenticate with `agent auth claude`
+3. If issue persists, use the `anthropic` provider with an API key instead
 
 ## References
 
-- [Claude Code CLI OAuth Issue #6536](https://github.com/anthropics/claude-code/issues/6536) - SDK OAuth support discussion
-- [Claude Code CLI Documentation](https://code.claude.com/docs/en/setup)
-- [Anthropic API Documentation](https://docs.anthropic.com/en/docs/about-claude/models)
+- [Claude Code CLI](https://claude.ai/code) - Official CLI with OAuth
 - [Anthropic Console](https://console.anthropic.com/) - For API key generation
+- [claude-code-login](https://github.com/grll/claude-code-login) - Reference OAuth implementation

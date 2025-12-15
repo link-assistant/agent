@@ -152,11 +152,16 @@ echo "hi" | agent --model groq/llama-3.1-8b-instant     # Llama 3.1 8B (fast)
 # Anthropic direct (requires ANTHROPIC_API_KEY)
 echo "hi" | agent --model anthropic/claude-sonnet-4-5  # Claude Sonnet 4.5
 echo "hi" | agent --model anthropic/claude-opus-4-1    # Claude Opus 4.1
+
+# Claude OAuth (requires Claude Pro/Max subscription)
+agent auth claude                                      # Authenticate first
+echo "hi" | agent --use-existing-claude-oauth          # Uses existing credentials
+echo "hi" | agent --model claude-oauth/claude-sonnet-4-5  # Explicit model
 ```
 
 See [MODELS.md](MODELS.md) for complete list of available models and pricing.
 See [docs/groq.md](docs/groq.md) for Groq provider documentation.
-See [docs/claude-oauth.md](docs/claude-oauth.md) for Claude OAuth provider documentation (future feature).
+See [docs/claude-oauth.md](docs/claude-oauth.md) for Claude OAuth provider documentation.
 
 ### CLI Options
 
@@ -168,12 +173,20 @@ Options:
                                  Default: opencode/grok-code
   --json-standard                JSON output format standard
                                  Choices: "opencode" (default), "claude" (experimental)
+  --use-existing-claude-oauth    Use existing Claude OAuth credentials
+                                 from ~/.claude/.credentials.json
   --system-message               Full override of the system message
   --system-message-file          Full override of the system message from file
   --append-system-message        Append to the default system message
   --append-system-message-file   Append to the default system message from file
   --help                         Show help
   --version                      Show version number
+
+Commands:
+  auth claude          Authenticate with Claude OAuth
+  auth claude-status   Check Claude OAuth authentication status
+  auth claude-refresh  Refresh Claude OAuth token
+  mcp                  MCP server commands
 ```
 
 ### JSON Output Standards

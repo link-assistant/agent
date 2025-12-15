@@ -8,10 +8,10 @@ This agent supports multiple model providers. By default, it uses models from th
 |----------|--------|---------------------|---------------|
 | OpenCode Zen | `opencode/<model-id>` | N/A (public for free models) | [OpenCode Zen](https://opencode.ai/docs/zen/) |
 | Anthropic | `anthropic/<model-id>` | `ANTHROPIC_API_KEY` | [Anthropic Docs](https://docs.anthropic.com/) |
-| Claude OAuth | `claude-oauth/<model-id>` | `CLAUDE_CODE_OAUTH_TOKEN` | [Claude OAuth Documentation](docs/claude-oauth.md) ⚠️ |
+| Claude OAuth | `claude-oauth/<model-id>` | `CLAUDE_CODE_OAUTH_TOKEN` | [Claude OAuth Documentation](docs/claude-oauth.md) |
 | Groq | `groq/<model-id>` | `GROQ_API_KEY` | [Groq Documentation](docs/groq.md) |
 
-> ⚠️ **Claude OAuth Note:** The `claude-oauth` provider is prepared for future use when Anthropic enables OAuth token support. Currently, Anthropic's API does not accept OAuth tokens from Claude Code CLI. Use the `anthropic` provider with an API key instead.
+> **Claude OAuth:** The `claude-oauth` provider allows using your Claude Pro/Max subscription. Authenticate with `agent auth claude` or use existing Claude Code CLI credentials with `--use-existing-claude-oauth`.
 
 ## Available Models
 
