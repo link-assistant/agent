@@ -21,7 +21,7 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 
 - ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/grok-code`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
-- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Grok Code Fast 1, supports [OpenCode Zen](https://opencode.ai/docs/zen/) and [Groq](docs/groq.md) providers
+- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Grok Code Fast 1, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](docs/claude-oauth.md), and [Groq](docs/groq.md) providers
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
 - ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
 - ✅ **Full Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
@@ -75,7 +75,7 @@ The agent streams events as they occur, providing the same real-time experience 
 - **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
 - **Unrestricted Access**: Full file system and command execution access (no sandbox, no restrictions)
 - **Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
-- **Flexible Model Selection**: Defaults to free Grok Code Fast 1, supports [OpenCode Zen](https://opencode.ai/docs/zen/) and [Groq](docs/groq.md) - see [MODELS.md](MODELS.md)
+- **Flexible Model Selection**: Defaults to free Grok Code Fast 1, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](docs/claude-oauth.md), and [Groq](docs/groq.md) - see [MODELS.md](MODELS.md)
 - **Bun.sh First**: Built with Bun for maximum efficiency and minimal resource usage
 - **No TUI**: Pure JSON CLI interface for automation and integration
 - **Public Domain**: Unlicense - use it however you want
@@ -148,10 +148,26 @@ echo "hi" | agent --model opencode/gemini-3-pro  # Gemini 3 Pro
 # Groq models (requires GROQ_API_KEY)
 echo "hi" | agent --model groq/llama-3.3-70b-versatile  # Llama 3.3 70B
 echo "hi" | agent --model groq/llama-3.1-8b-instant     # Llama 3.1 8B (fast)
+
+# Anthropic direct (requires ANTHROPIC_API_KEY)
+echo "hi" | agent --model anthropic/claude-sonnet-4-5  # Claude Sonnet 4.5
+echo "hi" | agent --model anthropic/claude-opus-4-1    # Claude Opus 4.1
+
+# Anthropic OAuth (requires Claude Pro/Max subscription)
+agent auth login                                       # Select Anthropic > Claude Pro/Max
+echo "hi" | agent --model anthropic/claude-sonnet-4-5  # Uses OAuth credentials
+
+# Use existing Claude Code CLI credentials
+echo "hi" | agent --use-existing-claude-oauth          # Reads from ~/.claude/.credentials.json
+
+# GitHub Copilot (requires Copilot subscription)
+agent auth login                                       # Select GitHub Copilot
+echo "hi" | agent --model github-copilot/gpt-4o        # Uses Copilot
 ```
 
 See [MODELS.md](MODELS.md) for complete list of available models and pricing.
 See [docs/groq.md](docs/groq.md) for Groq provider documentation.
+See [docs/claude-oauth.md](docs/claude-oauth.md) for Claude OAuth provider documentation.
 
 ### CLI Options
 
@@ -163,12 +179,21 @@ Options:
                                  Default: opencode/grok-code
   --json-standard                JSON output format standard
                                  Choices: "opencode" (default), "claude" (experimental)
+  --use-existing-claude-oauth    Use existing Claude OAuth credentials
+                                 from ~/.claude/.credentials.json
   --system-message               Full override of the system message
   --system-message-file          Full override of the system message from file
   --append-system-message        Append to the default system message
   --append-system-message-file   Append to the default system message from file
   --help                         Show help
   --version                      Show version number
+
+Commands:
+  auth login           Authenticate with a provider (Anthropic, GitHub Copilot, etc.)
+  auth logout          Remove credentials for a provider
+  auth list            List configured credentials
+  auth status          Check authentication status (experimental)
+  mcp                  MCP server commands
 ```
 
 ### JSON Output Standards

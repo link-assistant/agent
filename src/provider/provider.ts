@@ -8,6 +8,8 @@ import { BunProc } from "../bun"
 import { ModelsDev } from "./models"
 import { NamedError } from "../util/error"
 import { Auth } from "../auth"
+import { ClaudeOAuth } from "../auth/claude-oauth"
+import { AuthPlugins } from "../auth/plugins"
 import { Instance } from "../project/instance"
 import { Global } from "../global"
 import { Flag } from "../flag/flag"
@@ -25,7 +27,30 @@ export namespace Provider {
   type Source = "env" | "config" | "custom" | "api"
 
   const CUSTOM_LOADERS: Record<string, CustomLoader> = {
-    async anthropic() {
+    async anthropic(input) {
+      // Check if OAuth credentials are available via the auth plugin
+      const auth = await Auth.get("anthropic")
+      if (auth?.type === "oauth") {
+        log.info("using anthropic oauth credentials")
+        const loaderFn = await AuthPlugins.getLoader("anthropic")
+        if (loaderFn) {
+          const result = await loaderFn(() => Auth.get("anthropic"), input)
+          if (result.fetch) {
+            return {
+              autoload: true,
+              options: {
+                apiKey: result.apiKey || "",
+                fetch: result.fetch,
+                headers: {
+                  "anthropic-beta":
+                    "oauth-2025-04-20,claude-code-20250219,interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14",
+                },
+              },
+            }
+          }
+        }
+      }
+      // Default: API key auth
       return {
         autoload: false,
         options: {
@@ -241,6 +266,106 @@ export namespace Provider {
         options: {},
       }
     },
+    /**
+     * GitHub Copilot OAuth provider
+     * Uses OAuth credentials from agent auth login
+     */
+    "github-copilot": async (input) => {
+      const auth = await Auth.get("github-copilot")
+      if (auth?.type === "oauth") {
+        log.info("using github copilot oauth credentials")
+        const loaderFn = await AuthPlugins.getLoader("github-copilot")
+        if (loaderFn) {
+          const result = await loaderFn(() => Auth.get("github-copilot"), input)
+          if (result.fetch) {
+            return {
+              autoload: true,
+              options: {
+                apiKey: result.apiKey || "",
+                baseURL: result.baseURL,
+                fetch: result.fetch,
+              },
+            }
+          }
+        }
+      }
+      return { autoload: false }
+    },
+    /**
+     * GitHub Copilot Enterprise OAuth provider
+     * Uses OAuth credentials from agent auth login with enterprise URL
+     */
+    "github-copilot-enterprise": async (input) => {
+      const auth = await Auth.get("github-copilot-enterprise")
+      if (auth?.type === "oauth") {
+        log.info("using github copilot enterprise oauth credentials")
+        const loaderFn = await AuthPlugins.getLoader("github-copilot")
+        if (loaderFn) {
+          const result = await loaderFn(() => Auth.get("github-copilot-enterprise"), input)
+          if (result.fetch) {
+            return {
+              autoload: true,
+              options: {
+                apiKey: result.apiKey || "",
+                baseURL: result.baseURL,
+                fetch: result.fetch,
+              },
+            }
+          }
+        }
+      }
+      return { autoload: false }
+    },
+    /**
+     * Claude OAuth provider - uses Claude OAuth credentials to access
+     * Anthropic models via the Claude API.
+     *
+     * This provider supports two methods:
+     * 1. Environment variable: CLAUDE_CODE_OAUTH_TOKEN
+     * 2. Credentials file: ~/.claude/.credentials.json (from Claude Code CLI or our auth command)
+     *
+     * OAuth tokens use Bearer authentication (Authorization header)
+     * instead of x-api-key authentication used by standard API keys.
+     *
+     * To authenticate, run: agent auth claude
+     */
+    "claude-oauth": async (input) => {
+      // Check for OAuth token from environment variable first
+      let oauthToken = process.env["CLAUDE_CODE_OAUTH_TOKEN"]
+      let tokenSource = "environment"
+
+      if (!oauthToken) {
+        // Check for OAuth credentials from credentials file
+        const claudeCreds = await ClaudeOAuth.getCredentials()
+        if (claudeCreds) {
+          oauthToken = claudeCreds.accessToken
+          tokenSource = `credentials file (${claudeCreds.subscriptionType ?? "unknown"})`
+        }
+      }
+
+      if (!oauthToken) {
+        return { autoload: false }
+      }
+
+      log.info("using claude oauth credentials", { source: tokenSource })
+
+      // Create authenticated fetch with Bearer token and OAuth beta header
+      const customFetch = ClaudeOAuth.createAuthenticatedFetch(oauthToken)
+
+      return {
+        autoload: true,
+        options: {
+          // Use a placeholder key to satisfy the SDK's API key requirement
+          // The actual authentication is done via Bearer token in customFetch
+          apiKey: "oauth-token-placeholder",
+          fetch: customFetch,
+          headers: {
+            "anthropic-beta":
+              "oauth-2025-04-20,claude-code-20250219,interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14",
+          },
+        },
+      }
+    },
   }
 
   const state = Instance.state(async () => {
@@ -307,6 +432,19 @@ export namespace Provider {
         name: "GitHub Copilot Enterprise",
         // Enterprise uses a different API endpoint - will be set dynamically based on auth
         api: undefined,
+      }
+    }
+
+    // Add Claude OAuth provider that inherits from Anthropic
+    // This allows using Claude Code CLI OAuth credentials with the Anthropic API
+    if (database["anthropic"]) {
+      const anthropic = database["anthropic"]
+      database["claude-oauth"] = {
+        ...anthropic,
+        id: "claude-oauth",
+        name: "Claude OAuth",
+        // Use CLAUDE_CODE_OAUTH_TOKEN environment variable
+        env: ["CLAUDE_CODE_OAUTH_TOKEN"],
       }
     }
 

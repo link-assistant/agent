@@ -11,6 +11,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { createEventHandler, isValidJsonStandard } from './json-standard/index.ts'
 import { McpCommand } from './cli/cmd/mcp.ts'
+import { AuthCommand } from './cli/cmd/auth.ts'
 import { Flag } from './flag/flag.ts'
 
 // Track if any errors occurred during execution
@@ -72,8 +73,43 @@ async function runAgentMode(argv) {
 
   // Parse model argument (handle model IDs with slashes like groq/qwen/qwen3-32b)
   const modelParts = argv.model.split('/')
-  const providerID = modelParts[0] || 'opencode'
-  const modelID = modelParts.slice(1).join('/') || 'grok-code'
+  let providerID = modelParts[0] || 'opencode'
+  let modelID = modelParts.slice(1).join('/') || 'grok-code'
+
+  // Handle --use-existing-claude-oauth option
+  // This reads OAuth credentials from ~/.claude/.credentials.json (Claude Code CLI)
+  // For new authentication, use: agent auth login (select Anthropic > Claude Pro/Max)
+  if (argv['use-existing-claude-oauth']) {
+    // Import ClaudeOAuth to check for credentials from Claude Code CLI
+    const { ClaudeOAuth } = await import('./auth/claude-oauth.ts')
+    const creds = await ClaudeOAuth.getCredentials()
+
+    if (!creds?.accessToken) {
+      console.error(JSON.stringify({
+        type: 'error',
+        errorType: 'AuthenticationError',
+        message: 'No Claude OAuth credentials found in ~/.claude/.credentials.json. Either authenticate with Claude Code CLI first, or use: agent auth login (select Anthropic > Claude Pro/Max)'
+      }))
+      process.exit(1)
+    }
+
+    // Set environment variable for the provider to use
+    process.env.CLAUDE_CODE_OAUTH_TOKEN = creds.accessToken
+
+    // If user specified a model, use it with claude-oauth provider
+    // If not, use claude-oauth/claude-sonnet-4-5 as default
+    if (providerID === 'opencode' && modelID === 'grok-code') {
+      providerID = 'claude-oauth'
+      modelID = 'claude-sonnet-4-5'
+    } else if (!['claude-oauth', 'anthropic'].includes(providerID)) {
+      // If user specified a different provider, warn them
+      console.error(JSON.stringify({
+        type: 'warning',
+        message: `--use-existing-claude-oauth is set but model uses provider "${providerID}". Using OAuth credentials anyway.`
+      }))
+      providerID = 'claude-oauth'
+    }
+  }
 
   // Validate and get JSON standard
   const jsonStandard = argv['json-standard']
@@ -393,6 +429,8 @@ async function main() {
       .usage('$0 [command] [options]')
       // MCP subcommand
       .command(McpCommand)
+      // Auth subcommand
+      .command(AuthCommand)
       // Default run mode (when piping stdin)
       .option('model', {
         type: 'string',
@@ -429,6 +467,11 @@ async function main() {
       .option('verbose', {
         type: 'boolean',
         description: 'Enable verbose mode to debug API requests (shows system prompt, token counts, etc.)',
+        default: false
+      })
+      .option('use-existing-claude-oauth', {
+        type: 'boolean',
+        description: 'Use existing Claude OAuth credentials from ~/.claude/.credentials.json (from Claude Code CLI)',
         default: false
       })
       .help()
