@@ -174,6 +174,15 @@ function isImageFile(filePath: string): string | false {
       return 'BMP';
     case '.webp':
       return 'WebP';
+    case '.tiff':
+    case '.tif':
+      return 'TIFF';
+    case '.svg':
+      return 'SVG';
+    case '.ico':
+      return 'ICO';
+    case '.avif':
+      return 'AVIF';
     default:
       return false;
   }
@@ -184,15 +193,15 @@ function isImageFile(filePath: string): string | false {
  * This prevents sending invalid data to the Claude API which would cause non-recoverable errors.
  *
  * @param bytes - File content as Uint8Array
- * @param expectedFormat - Expected image format ('PNG', 'JPEG', 'GIF', 'BMP', 'WebP')
+ * @param expectedFormat - Expected image format ('PNG', 'JPEG', 'GIF', 'BMP', 'WebP', 'TIFF', 'SVG', 'ICO', 'AVIF')
  * @returns true if file signature matches expected format, false otherwise
  */
 function validateImageFormat(
   bytes: Uint8Array,
   expectedFormat: string
 ): boolean {
-  // Need at least 8 bytes for reliable detection
-  if (bytes.length < 8) {
+  // Need at least 8 bytes for reliable detection (except SVG which needs more for text check)
+  if (bytes.length < 8 && expectedFormat !== 'SVG') {
     return false;
   }
 
@@ -204,9 +213,43 @@ function validateImageFormat(
     GIF: [0x47, 0x49, 0x46, 0x38], // GIF8 (GIF87a or GIF89a)
     BMP: [0x42, 0x4d], // BM
     WebP: [0x52, 0x49, 0x46, 0x46], // RIFF (need additional check at offset 8)
+    TIFF: [0x49, 0x49, 0x2a, 0x00], // Little-endian TIFF, also check big-endian below
+    ICO: [0x00, 0x00, 0x01, 0x00], // ICO format
   };
 
   const sig = signatures[expectedFormat];
+
+  // Special handling for formats with multiple possible signatures
+  if (expectedFormat === 'TIFF') {
+    // TIFF can be little-endian (II) or big-endian (MM)
+    const littleEndian = [0x49, 0x49, 0x2a, 0x00];
+    const bigEndian = [0x4d, 0x4d, 0x00, 0x2a];
+    const matchesLE = littleEndian.every((byte, i) => bytes[i] === byte);
+    const matchesBE = bigEndian.every((byte, i) => bytes[i] === byte);
+    return matchesLE || matchesBE;
+  }
+
+  if (expectedFormat === 'SVG') {
+    // SVG is XML-based, check for common SVG patterns
+    const text = new TextDecoder('utf-8', { fatal: false }).decode(
+      bytes.slice(0, Math.min(1000, bytes.length))
+    );
+    return text.includes('<svg') || text.includes('<?xml');
+  }
+
+  if (expectedFormat === 'AVIF') {
+    // AVIF uses ISOBMFF container with 'ftyp' box
+    // Signature: offset 4-7 should be 'ftyp', and offset 8-11 should contain 'avif' or 'avis'
+    if (bytes.length < 12) return false;
+    const ftyp = [0x66, 0x74, 0x79, 0x70]; // 'ftyp'
+    const hasFtyp = ftyp.every((byte, i) => bytes[4 + i] === byte);
+    if (!hasFtyp) return false;
+
+    // Check for avif/avis brand
+    const brand = String.fromCharCode(...bytes.slice(8, 12));
+    return brand === 'avif' || brand === 'avis';
+  }
+
   if (!sig) {
     // Unknown format, skip validation
     return true;

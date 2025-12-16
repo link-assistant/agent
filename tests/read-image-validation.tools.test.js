@@ -349,9 +349,29 @@ test('Read tool validates different image formats correctly', async () => {
       format: 'JPEG',
     },
     {
+      ext: '.jpeg',
+      signature: [0xff, 0xd8, 0xff, 0xe1, 0x00, 0x10, 0x45, 0x78],
+      format: 'JPEG',
+    },
+    {
       ext: '.gif',
       signature: [0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x00, 0x00],
       format: 'GIF',
+    },
+    {
+      ext: '.tiff',
+      signature: [0x49, 0x49, 0x2a, 0x00, 0x00, 0x00, 0x00, 0x00],
+      format: 'TIFF',
+    },
+    {
+      ext: '.tif',
+      signature: [0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x00],
+      format: 'TIFF',
+    },
+    {
+      ext: '.ico',
+      signature: [0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x10, 0x10],
+      format: 'ICO',
     },
   ];
 
@@ -390,6 +410,125 @@ test('Read tool validates different image formats correctly', async () => {
       } catch (_e) {
         // Ignore cleanup errors
       }
+    }
+  }
+});
+
+test('Read tool validates SVG files correctly', async () => {
+  const svgFile = join(
+    tmpDir,
+    `valid-svg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.svg`
+  );
+
+  // Create a minimal valid SVG
+  const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+  <circle cx="50" cy="50" r="40" fill="red" />
+</svg>`;
+
+  writeFileSync(svgFile, svgContent);
+
+  try {
+    const input = `{"message":"read SVG file","tools":[{"name":"read","params":{"filePath":"${svgFile}"}}]}`;
+    const projectRoot = process.cwd();
+    const result =
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+
+    const lines = result.stdout
+      .toString()
+      .trim()
+      .split('\n')
+      .filter((line) => line.trim());
+    const events = lines.map((line) => JSON.parse(line));
+
+    const toolEvent = events.find(
+      (e) => e.type === 'tool_use' && e.part?.tool === 'read'
+    );
+
+    expect(toolEvent).toBeTruthy();
+    expect(toolEvent.part.state.status).toBe('completed');
+
+    console.log('✅ Successfully validated SVG file format');
+  } finally {
+    try {
+      unlinkSync(svgFile);
+    } catch (_e) {
+      // Ignore cleanup errors
+    }
+  }
+});
+
+test('Read tool validates AVIF files correctly', async () => {
+  const avifFile = join(
+    tmpDir,
+    `valid-avif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.avif`
+  );
+
+  // Create a minimal AVIF file signature
+  // AVIF uses ISO Base Media File Format with 'ftyp' box and 'avif' brand
+  const avifSignature = Buffer.from([
+    0x00,
+    0x00,
+    0x00,
+    0x20, // Box size (32 bytes)
+    0x66,
+    0x74,
+    0x79,
+    0x70, // 'ftyp'
+    0x61,
+    0x76,
+    0x69,
+    0x66, // 'avif' brand
+    0x00,
+    0x00,
+    0x00,
+    0x00, // Minor version
+    0x61,
+    0x76,
+    0x69,
+    0x66, // Compatible brand
+    0x6d,
+    0x69,
+    0x66,
+    0x31, // 'mif1'
+    0x6d,
+    0x69,
+    0x61,
+    0x66, // 'miaf'
+    0x4d,
+    0x41,
+    0x31,
+    0x42, // 'MA1B'
+  ]);
+
+  writeFileSync(avifFile, avifSignature);
+
+  try {
+    const input = `{"message":"read AVIF file","tools":[{"name":"read","params":{"filePath":"${avifFile}"}}]}`;
+    const projectRoot = process.cwd();
+    const result =
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+
+    const lines = result.stdout
+      .toString()
+      .trim()
+      .split('\n')
+      .filter((line) => line.trim());
+    const events = lines.map((line) => JSON.parse(line));
+
+    const toolEvent = events.find(
+      (e) => e.type === 'tool_use' && e.part?.tool === 'read'
+    );
+
+    expect(toolEvent).toBeTruthy();
+    expect(toolEvent.part.state.status).toBe('completed');
+
+    console.log('✅ Successfully validated AVIF file format');
+  } finally {
+    try {
+      unlinkSync(avifFile);
+    } catch (_e) {
+      // Ignore cleanup errors
     }
   }
 });
