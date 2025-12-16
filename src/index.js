@@ -16,6 +16,8 @@ import {
 import { McpCommand } from './cli/cmd/mcp.ts';
 import { AuthCommand } from './cli/cmd/auth.ts';
 import { Flag } from './flag/flag.ts';
+import { FormatError } from './cli/error.ts';
+import { UI } from './cli/ui.ts';
 
 // Track if any errors occurred during execution
 let hasError = false;
@@ -560,6 +562,33 @@ async function main() {
         description:
           'Use existing Claude OAuth credentials from ~/.claude/.credentials.json (from Claude Code CLI)',
         default: false,
+      })
+      .fail((msg, err, yargs) => {
+        // Handle errors from command handlers
+        if (err) {
+          // Check if it's a CancelledError (user pressed ESC)
+          if (UI.CancelledError.isInstance(err)) {
+            // Exit silently without showing error or help text
+            process.exit(0);
+          }
+
+          // Format other errors using FormatError
+          const formatted = FormatError(err);
+          if (formatted) {
+            console.error(formatted);
+          } else {
+            // Fallback to default error formatting
+            console.error(err.message || err);
+          }
+          process.exit(1);
+        }
+
+        // Handle validation errors (msg without err)
+        if (msg) {
+          console.error(msg);
+          console.error(`\n${yargs.help()}`);
+          process.exit(1);
+        }
       })
       .help().argv;
 
