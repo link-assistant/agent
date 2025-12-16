@@ -104,3 +104,26 @@ test('Append system message: default + append "Answered." at end', async () => {
 
   console.log(`\nAppend response: ${responseText}`);
 });
+
+test('Empty string system message override: should work without defaults', async () => {
+  const projectRoot = process.cwd();
+  const input = 'Say "Empty system test passed."';
+  const agentResult = await sh(
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --format json --system-message ""`
+  );
+  const agentEvents = parseJSONOutput(agentResult.stdout);
+
+  // Check for text event
+  const textEvents = agentEvents.filter((e) => e.type === 'text');
+  expect(textEvents.length > 0).toBeTruthy();
+  const responseText = textEvents[0].part.text;
+  // Should NOT include default system prompt indicators
+  expect(responseText.toLowerCase().includes('grok code fast 1')).toBeFalsy();
+  expect(responseText.toLowerCase().includes('opencode')).toBeFalsy();
+  // Should respond to the user's request since it has no system constraints
+  expect(
+    responseText.toLowerCase().includes('empty system test passed')
+  ).toBeTruthy();
+
+  console.log(`\nEmpty string override response: ${responseText}`);
+});

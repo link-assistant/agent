@@ -704,7 +704,7 @@ export namespace SessionPrompt {
     // When --system-message is provided, use it exclusively without any
     // additional context (no environment, no custom instructions, no header).
     // This is critical for models with low token limits (e.g., qwen3-32b with 6K TPM).
-    if (input.system) {
+    if (input.system !== undefined) {
       return [input.system];
     }
 
