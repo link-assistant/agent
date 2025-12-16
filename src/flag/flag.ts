@@ -19,6 +19,14 @@ export namespace Flag {
   export const OPENCODE_EXPERIMENTAL_WATCHER =
     OPENCODE_EXPERIMENTAL || truthy('OPENCODE_EXPERIMENTAL_WATCHER');
 
+  // Verbose mode - enables detailed logging of API requests
+  export let OPENCODE_VERBOSE = truthy('OPENCODE_VERBOSE');
+
+  // Allow setting verbose mode programmatically (e.g., from CLI --verbose flag)
+  export function setVerbose(value: boolean) {
+    OPENCODE_VERBOSE = value;
+  }
+
   function truthy(key: string) {
     const value = process.env[key]?.toLowerCase();
     return value === 'true' || value === '1';
