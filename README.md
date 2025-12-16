@@ -287,6 +287,109 @@ All 13 tools are **enabled by default** with **no configuration required**. See 
 
 ✨ = Always enabled (no experimental flags or environment variables needed)
 
+## MCP (Model Context Protocol) Support
+
+The agent supports the Model Context Protocol (MCP), allowing you to extend functionality with MCP servers. MCP enables the agent to interact with external tools and services, such as browser automation via Playwright.
+
+### Installing Playwright MCP
+
+Microsoft's Playwright MCP server provides browser automation capabilities using Playwright. This enables the agent to interact with web pages through structured accessibility snapshots.
+
+**Requirements:**
+- Node.js 18 or newer (for running the Playwright MCP server)
+- Bun (for running the agent itself)
+
+**Installation:**
+
+```bash
+# Add Playwright MCP server to your agent configuration
+agent mcp add playwright npx @playwright/mcp@latest
+
+# Verify the configuration
+agent mcp list
+```
+
+This will create a configuration file at `~/.config/opencode/opencode.json` (or your system's config directory) with:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"],
+      "enabled": true
+    }
+  }
+}
+```
+
+**Available Playwright Tools:**
+
+Once configured, the agent gains access to 22+ browser automation tools:
+
+- `browser_navigate` - Navigate to a URL
+- `browser_click` - Click on an element
+- `browser_type` - Type text into an element
+- `browser_snapshot` - Capture accessibility snapshot
+- `browser_take_screenshot` - Take a screenshot
+- `browser_fill_form` - Fill multiple form fields
+- `browser_select_option` - Select dropdown option
+- `browser_hover` - Hover over element
+- `browser_drag` - Drag and drop
+- `browser_evaluate` - Execute JavaScript
+- `browser_tabs` - Manage browser tabs
+- `browser_close` - Close the browser
+- `browser_wait_for` - Wait for text/element
+- `browser_press_key` - Press keyboard key
+- `browser_handle_dialog` - Handle browser dialogs
+- `browser_network_requests` - Get network requests
+- `browser_console_messages` - Get console messages
+- `browser_file_upload` - Upload files
+- `browser_resize` - Resize browser window
+- `browser_navigate_back` - Navigate back
+- `browser_install` - Install browser
+- `browser_run_code` - Run Playwright code
+
+**Usage Example:**
+
+```bash
+# Tell the agent to navigate to a website and take a screenshot
+echo "Navigate to https://example.com and take a screenshot" | agent
+```
+
+The agent will automatically use the Playwright MCP tools when browser automation is needed.
+
+**Learn More:**
+
+- [Playwright MCP GitHub Repository](https://github.com/microsoft/playwright-mcp)
+- [Using Playwright MCP with Claude Code](https://til.simonwillison.net/claude-code/playwright-mcp-claude-code)
+- [Playwright MCP Case Study](docs/case-studies/playwright-mcp-support/case-study.md)
+
+### Managing MCP Servers
+
+**List configured servers:**
+
+```bash
+agent mcp list
+```
+
+**Add a remote MCP server:**
+
+```bash
+agent mcp add myserver --url https://example.com/mcp
+```
+
+**Interactive mode:**
+
+If you prefer an interactive setup, just run:
+
+```bash
+agent mcp add
+```
+
+The interactive prompt will guide you through configuring local or remote MCP servers.
+
 ## Examples
 
 See [EXAMPLES.md](EXAMPLES.md) for detailed usage examples of each tool with both agent-cli and opencode commands.
