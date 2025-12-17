@@ -18,6 +18,22 @@ import { AuthCommand } from './cli/cmd/auth.ts';
 import { Flag } from './flag/flag.ts';
 import { FormatError } from './cli/error.ts';
 import { UI } from './cli/ui.ts';
+import { createRequire } from 'module';
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
+const require = createRequire(import.meta.url);
+let pkg;
+try {
+  pkg = require('../package.json');
+} catch (_e) {
+  // Fallback: read package.json directly
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const pkgPath = join(__dirname, '../package.json');
+  const pkgContent = readFileSync(pkgPath, 'utf8');
+  pkg = JSON.parse(pkgContent);
+}
 
 // Track if any errors occurred during execution
 let hasError = false;
@@ -85,6 +101,14 @@ function readStdin() {
 async function runAgentMode(argv) {
   // Note: verbose flag and logging are now initialized in middleware
   // See main() function for the middleware that sets up Flag and Log.init()
+
+  // Log version and command info in verbose mode
+  if (Flag.OPENCODE_VERBOSE) {
+    console.error(`Agent version: ${pkg.version}`);
+    console.error(`Command: ${process.argv.join(' ')}`);
+    console.error(`Working directory: ${process.cwd()}`);
+    console.error(`Script path: ${import.meta.path}`);
+  }
 
   // Parse model argument (handle model IDs with slashes like groq/qwen/qwen3-32b)
   const modelParts = argv.model.split('/');
@@ -505,6 +529,7 @@ async function main() {
     const argv = await yargs(hideBin(process.argv))
       .scriptName('agent')
       .usage('$0 [command] [options]')
+      .version(pkg.version)
       // MCP subcommand
       .command(McpCommand)
       // Auth subcommand

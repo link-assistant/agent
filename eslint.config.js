@@ -33,6 +33,11 @@ export default [
         // Other globals
         require: 'readonly',
         AbortController: 'readonly',
+        // Web APIs available in Bun
+        Blob: 'readonly',
+        Response: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
       },
     },
     rules: {

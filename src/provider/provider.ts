@@ -626,14 +626,14 @@ export namespace Provider {
     // load env
     for (const [providerID, provider] of Object.entries(database)) {
       if (disabled.has(providerID)) continue;
-      const apiKey = provider.env.map((item) => process.env[item]).at(0);
+      // Find the first truthy env var (supports multiple env var options like Google's
+      // GOOGLE_GENERATIVE_AI_API_KEY and GEMINI_API_KEY)
+      const apiKey = provider.env
+        .map((item) => process.env[item])
+        .find(Boolean);
       if (!apiKey) continue;
-      mergeProvider(
-        providerID,
-        // only include apiKey if there's only one potential option
-        provider.env.length === 1 ? { apiKey } : {},
-        'env'
-      );
+      // Always pass the API key - the provider SDK needs it for authentication
+      mergeProvider(providerID, { apiKey }, 'env');
     }
 
     // load apikeys

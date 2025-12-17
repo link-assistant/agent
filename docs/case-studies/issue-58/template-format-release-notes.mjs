@@ -23,8 +23,8 @@
  * Note: Uses --release-version instead of --version to avoid conflict with yargs' built-in --version flag.
  */
 
-// Package name from package.json
-const PACKAGE_NAME = '@link-assistant/agent';
+// TODO: Update this to match your package name in package.json
+const PACKAGE_NAME = 'my-package';
 
 // Load use-m dynamically
 const { use } = eval(
@@ -89,35 +89,28 @@ try {
     process.exit(0);
   }
 
-  // Extract changes section (Major, Minor, or Patch)
-  // This regex handles multiple formats:
-  // 1. With commit hash: "### [Major|Minor|Patch] Changes\n- abc1234: Description"
-  // 2. Without commit hash: "### [Major|Minor|Patch] Changes\n- Description"
-  const changesPattern =
-    /### (Major|Minor|Patch) Changes\s*\n\s*-\s+(?:([a-f0-9]+):\s+)?(.+?)$/s;
-  const changesMatch = currentBody.match(changesPattern);
+  // Extract the patch changes section
+  // This regex handles two formats:
+  // 1. With commit hash: "- abc1234: Description"
+  // 2. Without commit hash: "- Description"
+  const patchChangesMatchWithHash = currentBody.match(
+    /### Patch Changes\s*\n\s*-\s+([a-f0-9]+):\s+(.+?)$/s
+  );
+  const patchChangesMatchNoHash = currentBody.match(
+    /### Patch Changes\s*\n\s*-\s+(.+?)$/s
+  );
 
   let commitHash = null;
   let rawDescription = null;
-  let changeType = null;
 
-  if (changesMatch) {
-    // Extract: [full match, changeType, commitHash (optional), description]
-    [, changeType, commitHash, rawDescription] = changesMatch;
-    console.log(`ℹ️ Found ${changeType} Changes section`);
-
-    // If commitHash is undefined and description contains it, try to extract
-    if (!commitHash && rawDescription) {
-      // This handles the case where description itself might be null/undefined
-      // and we need to safely check for commit hash at the start
-      const descWithHashMatch = rawDescription.match(/^([a-f0-9]+):\s+(.+)$/s);
-      if (descWithHashMatch) {
-        [, commitHash, rawDescription] = descWithHashMatch;
-      }
-    }
+  if (patchChangesMatchWithHash) {
+    // Format: - abc1234: Description
+    [, commitHash, rawDescription] = patchChangesMatchWithHash;
+  } else if (patchChangesMatchNoHash) {
+    // Format: - Description (no commit hash)
+    [, rawDescription] = patchChangesMatchNoHash;
   } else {
-    console.log('⚠️ Could not parse changes from release notes');
-    console.log('   Looking for pattern: ### [Major|Minor|Patch] Changes');
+    console.log('⚠️ Could not parse patch changes from release notes');
     process.exit(0);
   }
 

@@ -1,0 +1,10 @@
+{
+  "author": { "id": "MDM6Qm90NDE4OTgyODI=", "login": "github-actions[bot]" },
+  "body": "### Minor Changes\n\n- 2bcef5f: Add support for google/gemini-3-pro model alias\n  - Added `google/gemini-3-pro` as an alias to `gemini-3-pro-preview`\n  - Updated README.md with Google Gemini usage examples\n  - Created comprehensive case study in docs/case-studies/issue-53/\n  - Fixes ProviderModelNotFoundError when using google/gemini-3-pro\n\n  This change allows users to use the commonly expected model name `gemini-3-pro` while maintaining compatibility with Google's official `gemini-3-pro-preview` identifier.",
+  "createdAt": "2025-12-16T20:24:31Z",
+  "name": "0.1.0",
+  "publishedAt": "2025-12-16T20:26:20Z",
+  "tagName": "v0.1.0",
+  "targetCommitish": "main",
+  "url": "https://github.com/link-assistant/agent/releases/tag/v0.1.0"
+}

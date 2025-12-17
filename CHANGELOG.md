@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.3
+
+### Patch Changes
+
+- 50728b3: fix: Fixed `agent --version` command and added logging in `--verbose` mode
+  - Fixed `--version` command that was showing "unknown" instead of the current package version
+  - Added explicit import of `package.json` using `createRequire` with fallback via `fs`
+  - Added logging of version, command, working directory and script path in `--verbose` mode
+
+## 0.1.2
+
+### Patch Changes
+
+- de95398: fix: Pass API key to providers with multiple env var options
+
+  Fixes #61 - Error when using google/gemini-3-pro model. When providers have multiple possible environment variables (like Google with GOOGLE_GENERATIVE_AI_API_KEY and GEMINI_API_KEY), the code was finding the API key correctly but then not passing it to mergeProvider.
+
+## 0.1.1
+
+### Patch Changes
+
+- 09b6709: Fix GitHub release formatting to remove incorrect title for major/minor/patch versions and properly link related pull requests
+
 ## 0.1.0
 
 ### Minor Changes

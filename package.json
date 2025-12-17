@@ -1,6 +1,6 @@
 {
   "name": "@link-assistant/agent",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface. Bun-only runtime.",
   "main": "src/index.js",
   "type": "module",
@@ -43,6 +43,7 @@
   },
   "files": [
     "src/",
+    "package.json",
     "README.md",
     "MODELS.md",
     "TOOLS.md",

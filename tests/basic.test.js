@@ -197,3 +197,10 @@ test('Agent-cli processes plain text "2+2?" and produces JSON output', async () 
 
   console.log(`\nAgent-cli response to "2+2?": ${responseText}`);
 });
+
+test('Agent-cli --version flag shows correct version', async () => {
+  const projectRoot = process.cwd();
+  const result = await sh(`bun run ${projectRoot}/src/index.js --version`);
+  const version = result.stdout.trim();
+  expect(version).toBe('0.1.0');
+});
