@@ -1,0 +1,31 @@
+{
+  "type": "error",
+  "timestamp": 1765920267268,
+  "sessionID": "ses_4d6f3284cffeJYqUKoBG8t8koG",
+  "command": "echo \"Which tools you have enabled?\" | agent --model anthropic/claude-sonnet-4-5 --system-message \"\"",
+  "error": {
+    "name": "APIError",
+    "data": {
+      "message": "system.0: cache_control cannot be set for empty text blocks",
+      "statusCode": 400,
+      "isRetryable": false,
+      "responseHeaders": {
+        "anthropic-organization-id": "05610d25-5a50-493c-9061-625c47aaf847",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "9af13f638888d4bc-BOM",
+        "connection": "keep-alive",
+        "content-length": "173",
+        "content-type": "application/json",
+        "date": "Tue, 16 Dec 2025 21:24:27 GMT",
+        "request-id": "req_011CWB54S37ku5VRSmDZv26K",
+        "server": "cloudflare",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding",
+        "x-envoy-upstream-service-time": "91",
+        "x-robots-tag": "none",
+        "x-should-retry": "false"
+      },
+      "responseBody": "{\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"system.0: cache_control cannot be set for empty text blocks\"},\"request_id\":\"req_011CWB54S37ku5VRSmDZv26K\"}"
+    }
+  }
+}

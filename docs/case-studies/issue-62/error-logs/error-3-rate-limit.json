@@ -1,0 +1,7 @@
+{
+  "type": "error",
+  "errorType": "UnhandledRejection",
+  "command": "echo \"Which tools you have enabled?\" | agent --model anthropic/claude-sonnet-4-5",
+  "message": "Failed after 3 attempts. Last error: This request would exceed your account's rate limit. Please try again later.",
+  "stack": "AI_RetryError: Failed after 3 attempts. Last error: This request would exceed your account's rate limit. Please try again later.\n    at new _AISDKError (/Users/konard/.bun/install/global/node_modules/ai/node_modules/@ai-sdk/provider/dist/index.mjs:19:5)\n    at new RetryError (/Users/konard/.bun/install/global/node_modules/ai/dist/index.mjs:429:5)\n    at _retryWithExponentialBackoff (/Users/konard/.bun/install/global/node_modules/ai/dist/index.mjs:1940:17)\n    at processTicksAndRejections (native:7:39)"
+}
