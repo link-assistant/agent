@@ -320,6 +320,33 @@ export namespace Provider {
       };
     },
     /**
+     * Google OAuth provider for Gemini subscription users
+     * Uses OAuth credentials from agent auth login (Google AI Pro/Ultra)
+     *
+     * To authenticate, run: agent auth google
+     */
+    google: async (input) => {
+      const auth = await Auth.get('google');
+      if (auth?.type === 'oauth') {
+        log.info('using google oauth credentials');
+        const loaderFn = await AuthPlugins.getLoader('google');
+        if (loaderFn) {
+          const result = await loaderFn(() => Auth.get('google'), input);
+          if (result.fetch) {
+            return {
+              autoload: true,
+              options: {
+                apiKey: result.apiKey || '',
+                fetch: result.fetch,
+              },
+            };
+          }
+        }
+      }
+      // Default: API key auth (no OAuth credentials found)
+      return { autoload: false };
+    },
+    /**
      * GitHub Copilot OAuth provider
      * Uses OAuth credentials from agent auth login
      */

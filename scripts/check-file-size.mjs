@@ -58,7 +58,17 @@ async function countLines(filePath) {
  * Main function
  */
 async function main() {
-  const excludePatterns = ['node_modules', 'coverage', 'dist', '.git', 'build'];
+  const excludePatterns = [
+    'node_modules',
+    'coverage',
+    'dist',
+    '.git',
+    'build',
+    'original-opencode',
+    'reference-gemini-cli',
+    'reference-gemini-cookbook',
+    'reference-qwen3-coder',
+  ];
 
   console.log(
     `\nChecking JavaScript files for maximum ${MAX_LINES} lines...\n`

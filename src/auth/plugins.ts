@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import * as http from 'node:http';
+import * as net from 'node:net';
 import { Auth } from './index';
 import { Log } from '../util/log';
 
@@ -833,12 +835,286 @@ const OpenAIPlugin: AuthPlugin = {
 };
 
 /**
+ * Google OAuth Configuration
+ * Used for Google AI Pro/Ultra subscription authentication
+ *
+ * These credentials are from the official Gemini CLI (google-gemini/gemini-cli)
+ * and are public for installed applications as per Google OAuth documentation:
+ * https://developers.google.com/identity/protocols/oauth2#installed
+ */
+const GOOGLE_OAUTH_CLIENT_ID =
+  '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com';
+const GOOGLE_OAUTH_CLIENT_SECRET = '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';
+const GOOGLE_OAUTH_SCOPES = [
+  'https://www.googleapis.com/auth/cloud-platform',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+];
+
+// Google OAuth endpoints
+const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
+
+/**
+ * Google OAuth Plugin
+ * Supports:
+ * - Google AI Pro/Ultra OAuth login
+ * - Manual API key entry
+ *
+ * Note: This plugin uses OAuth 2.0 with PKCE for Google AI subscription authentication.
+ * After authenticating, you can use Gemini models with subscription benefits.
+ */
+const GooglePlugin: AuthPlugin = {
+  provider: 'google',
+  methods: [
+    {
+      label: 'Google AI Pro/Ultra (OAuth)',
+      type: 'oauth',
+      async authorize() {
+        const pkce = await generatePKCE();
+        const state = generateRandomString(16);
+
+        // Start local server to handle OAuth redirect
+        const server = http.createServer();
+        let serverPort = 0;
+        let authCode: string | null = null;
+        let authState: string | null = null;
+
+        const authPromise = new Promise<{ code: string; state: string }>(
+          (resolve, reject) => {
+            server.on('request', (req, res) => {
+              const url = new URL(req.url!, `http://localhost:${serverPort}`);
+              const code = url.searchParams.get('code');
+              const receivedState = url.searchParams.get('state');
+              const error = url.searchParams.get('error');
+
+              if (error) {
+                res.writeHead(400, { 'Content-Type': 'text/html' });
+                res.end(`
+                <html>
+                  <body>
+                    <h1>Authentication Failed</h1>
+                    <p>Error: ${error}</p>
+                    <p>You can close this window.</p>
+                  </body>
+                </html>
+              `);
+                server.close();
+                reject(new Error(`OAuth error: ${error}`));
+                return;
+              }
+
+              if (code && receivedState) {
+                if (receivedState !== state) {
+                  res.writeHead(400, { 'Content-Type': 'text/html' });
+                  res.end('Invalid state parameter');
+                  server.close();
+                  reject(new Error('State mismatch - possible CSRF attack'));
+                  return;
+                }
+
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.end(`
+                <html>
+                  <body>
+                    <h1>Authentication Successful!</h1>
+                    <p>You can close this window and return to the terminal.</p>
+                    <script>window.close();</script>
+                  </body>
+                </html>
+              `);
+                server.close();
+                resolve({ code, state: receivedState });
+                return;
+              }
+
+              res.writeHead(400, { 'Content-Type': 'text/html' });
+              res.end('Missing code or state parameter');
+            });
+
+            server.listen(0, () => {
+              const address = server.address() as net.AddressInfo;
+              serverPort = address.port;
+            });
+
+            server.on('error', reject);
+
+            // Timeout after 5 minutes
+            setTimeout(
+              () => {
+                server.close();
+                reject(new Error('OAuth timeout'));
+              },
+              5 * 60 * 1000
+            );
+          }
+        );
+
+        // Build authorization URL with local redirect URI
+        const redirectUri = `http://localhost:${serverPort}/oauth/callback`;
+        const url = new URL(GOOGLE_AUTH_URL);
+        url.searchParams.set('client_id', GOOGLE_OAUTH_CLIENT_ID);
+        url.searchParams.set('redirect_uri', redirectUri);
+        url.searchParams.set('response_type', 'code');
+        url.searchParams.set('scope', GOOGLE_OAUTH_SCOPES.join(' '));
+        url.searchParams.set('access_type', 'offline');
+        url.searchParams.set('code_challenge', pkce.challenge);
+        url.searchParams.set('code_challenge_method', 'S256');
+        url.searchParams.set('state', state);
+        url.searchParams.set('prompt', 'consent');
+
+        return {
+          url: url.toString(),
+          instructions:
+            'Your browser will open for authentication. Complete the login and return to the terminal.',
+          method: 'auto' as const,
+          async callback(): Promise<AuthResult> {
+            try {
+              const { code } = await authPromise;
+
+              // Exchange authorization code for tokens
+              const tokenResult = await fetch(GOOGLE_TOKEN_URL, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                  code: code,
+                  client_id: GOOGLE_OAUTH_CLIENT_ID,
+                  client_secret: GOOGLE_OAUTH_CLIENT_SECRET,
+                  redirect_uri: redirectUri,
+                  grant_type: 'authorization_code',
+                  code_verifier: pkce.verifier,
+                }),
+              });
+
+              if (!tokenResult.ok) {
+                log.error('google oauth token exchange failed', {
+                  status: tokenResult.status,
+                });
+                return { type: 'failed' };
+              }
+
+              const json = await tokenResult.json();
+              if (
+                !json.access_token ||
+                !json.refresh_token ||
+                typeof json.expires_in !== 'number'
+              ) {
+                log.error('google oauth token response missing fields');
+                return { type: 'failed' };
+              }
+
+              return {
+                type: 'success',
+                refresh: json.refresh_token,
+                access: json.access_token,
+                expires: Date.now() + json.expires_in * 1000,
+              };
+            } catch (error) {
+              log.error('google oauth failed', { error });
+              return { type: 'failed' };
+            }
+          },
+        };
+      },
+    },
+    {
+      label: 'Manually enter API Key',
+      type: 'api',
+    },
+  ],
+  async loader(getAuth, provider) {
+    const auth = await getAuth();
+    if (!auth || auth.type !== 'oauth') return {};
+
+    // Zero out cost for subscription users
+    if (provider?.models) {
+      for (const model of Object.values(provider.models)) {
+        (model as any).cost = {
+          input: 0,
+          output: 0,
+          cache: {
+            read: 0,
+            write: 0,
+          },
+        };
+      }
+    }
+
+    return {
+      apiKey: 'oauth-token-used-via-custom-fetch',
+      async fetch(input: RequestInfo | URL, init?: RequestInit) {
+        let currentAuth = await getAuth();
+        if (!currentAuth || currentAuth.type !== 'oauth')
+          return fetch(input, init);
+
+        // Refresh token if expired (with 5 minute buffer)
+        const FIVE_MIN_MS = 5 * 60 * 1000;
+        if (
+          !currentAuth.access ||
+          currentAuth.expires < Date.now() + FIVE_MIN_MS
+        ) {
+          log.info('refreshing google oauth token');
+          const response = await fetch(GOOGLE_TOKEN_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+              client_id: GOOGLE_OAUTH_CLIENT_ID,
+              client_secret: GOOGLE_OAUTH_CLIENT_SECRET,
+              refresh_token: currentAuth.refresh,
+              grant_type: 'refresh_token',
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Token refresh failed: ${response.status}`);
+          }
+
+          const json = await response.json();
+          await Auth.set('google', {
+            type: 'oauth',
+            // Google doesn't return a new refresh token on refresh
+            refresh: currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          });
+          currentAuth = {
+            type: 'oauth',
+            refresh: currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          };
+        }
+
+        // Google API uses Bearer token authentication
+        const headers: Record<string, string> = {
+          ...(init?.headers as Record<string, string>),
+          Authorization: `Bearer ${currentAuth.access}`,
+        };
+        // Remove any API key header if present since we're using OAuth
+        delete headers['x-goog-api-key'];
+
+        return fetch(input, {
+          ...init,
+          headers,
+        });
+      },
+    };
+  },
+};
+
+/**
  * Registry of all auth plugins
  */
 const plugins: Record<string, AuthPlugin> = {
   anthropic: AnthropicPlugin,
   'github-copilot': GitHubCopilotPlugin,
   openai: OpenAIPlugin,
+  google: GooglePlugin,
 };
 
 /**
