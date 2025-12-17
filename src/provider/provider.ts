@@ -459,6 +459,45 @@ export namespace Provider {
     const config = await Config.get();
     const database = await ModelsDev.get();
 
+    // Add Google provider if not present in models.dev
+    if (!database['google']) {
+      database['google'] = {
+        id: 'google',
+        name: 'Google',
+        env: ['GOOGLE_GENERATIVE_AI_API_KEY'],
+        npm: '@ai-sdk/google',
+        models: {
+          'gemini-3-pro-preview': {
+            id: 'gemini-3-pro-preview',
+            name: 'Gemini 3 Pro Preview',
+            release_date: '2025-11-18',
+            attachment: true,
+            reasoning: false,
+            temperature: true,
+            tool_call: true,
+            cost: {
+              input: 0,
+              output: 0,
+            },
+            limit: {
+              context: 1000000,
+              output: 64000,
+            },
+            modalities: {
+              input: ['text', 'image', 'audio', 'video'],
+              output: ['text'],
+            },
+            experimental: false,
+            options: {},
+            headers: {},
+            provider: {
+              npm: '@ai-sdk/google',
+            },
+          },
+        },
+      };
+    }
+
     const providers: {
       [providerID: string]: {
         source: Source;
