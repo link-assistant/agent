@@ -876,7 +876,13 @@ export namespace Provider {
     }
   }
 
-  const priority = ['gpt-5', 'claude-sonnet-4', 'big-pickle', 'gemini-3-pro'];
+  const priority = [
+    'grok-code',
+    'gpt-5',
+    'claude-sonnet-4',
+    'big-pickle',
+    'gemini-3-pro',
+  ];
   export function sort(models: ModelsDev.Model[]) {
     return sortBy(
       models,
@@ -893,13 +899,23 @@ export namespace Provider {
     const cfg = await Config.get();
     if (cfg.model) return parseModel(cfg.model);
 
-    const provider = await list()
-      .then((val) => Object.values(val))
-      .then((x) =>
-        x.find(
-          (p) => !cfg.provider || Object.keys(cfg.provider).includes(p.info.id)
-        )
-      );
+    // Prefer opencode provider if available
+    const providers = await list().then((val) => Object.values(val));
+    const opencodeProvider = providers.find((p) => p.info.id === 'opencode');
+    if (opencodeProvider) {
+      const [model] = sort(Object.values(opencodeProvider.info.models));
+      if (model) {
+        return {
+          providerID: opencodeProvider.info.id,
+          modelID: model.id,
+        };
+      }
+    }
+
+    // Fall back to any available provider
+    const provider = providers.find(
+      (p) => !cfg.provider || Object.keys(cfg.provider).includes(p.info.id)
+    );
     if (!provider) throw new Error('no providers found');
     const [model] = sort(Object.values(provider.info.models));
     if (!model) throw new Error('no models found');
