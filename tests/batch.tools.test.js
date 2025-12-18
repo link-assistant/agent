@@ -126,8 +126,8 @@ test.skip('Reference test: OpenCode batch tool produces expected JSON format', a
 
   // Create temporary config for OpenCode with batch_tool enabled
   const tmpDir = `/tmp/opencode-test-${Date.now()}`;
-  await $`mkdir -p ${tmpDir}/.opencode`.quiet();
-  await $`echo '{"experimental":{"batch_tool":true}}' > ${tmpDir}/.opencode/config.json`.quiet();
+  await $`mkdir -p ${tmpDir}/.link-assistant-agent`.quiet();
+  await $`echo '{"experimental":{"batch_tool":true}}' > ${tmpDir}/.link-assistant-agent/opencode.json`.quiet();
 
   // Use spawn instead of Bun $ to properly handle the command
   const originalResult = await runOpenCode(input, tmpDir);
