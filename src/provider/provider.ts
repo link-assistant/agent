@@ -905,6 +905,10 @@ export namespace Provider {
     if (opencodeProvider) {
       const [model] = sort(Object.values(opencodeProvider.info.models));
       if (model) {
+        log.info('using opencode provider as default', {
+          provider: opencodeProvider.info.id,
+          model: model.id,
+        });
         return {
           providerID: opencodeProvider.info.id,
           modelID: model.id,
@@ -912,7 +916,7 @@ export namespace Provider {
       }
     }
 
-    // Fall back to any available provider
+    // Fall back to any available provider if opencode is not available
     const provider = providers.find(
       (p) => !cfg.provider || Object.keys(cfg.provider).includes(p.info.id)
     );
