@@ -347,6 +347,33 @@ export namespace Provider {
       return { autoload: false };
     },
     /**
+     * Google OAuth-only provider for Gemini subscription users
+     * Requires OAuth credentials and does not fall back to API keys
+     *
+     * To authenticate, run: agent auth google
+     */
+    'google-oauth': async (input) => {
+      const auth = await Auth.get('google');
+      if (auth?.type === 'oauth') {
+        log.info('using google oauth credentials');
+        const loaderFn = await AuthPlugins.getLoader('google');
+        if (loaderFn) {
+          const result = await loaderFn(() => Auth.get('google'), input);
+          if (result.fetch) {
+            return {
+              autoload: true,
+              options: {
+                apiKey: result.apiKey || '',
+                fetch: result.fetch,
+              },
+            };
+          }
+        }
+      }
+      // OAuth-only: no fallback to API key
+      return { autoload: false };
+    },
+    /**
      * GitHub Copilot OAuth provider
      * Uses OAuth credentials from agent auth login
      */
@@ -539,6 +566,19 @@ export namespace Provider {
         name: 'Claude OAuth',
         // Use CLAUDE_CODE_OAUTH_TOKEN environment variable
         env: ['CLAUDE_CODE_OAUTH_TOKEN'],
+      };
+    }
+
+    // Add Google OAuth provider that inherits from Google
+    // This allows using Google AI Pro/Ultra OAuth credentials with the Google API
+    if (database['google']) {
+      const google = database['google'];
+      database['google-oauth'] = {
+        ...google,
+        id: 'google-oauth',
+        name: 'Google OAuth',
+        // OAuth credentials are handled via auth plugin, no env vars needed
+        env: [],
       };
     }
 
