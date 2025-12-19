@@ -2,6 +2,8 @@
 
 This guide explains how to authenticate with Google AI using OAuth, which is required for Google AI Pro and Google AI Ultra subscribers.
 
+**Note:** Full OAuth support for Gemini subscriptions has been implemented using the official Google Auth Library, based on the reference Gemini CLI implementation.
+
 ## Quick Start
 
 ```bash
@@ -53,6 +55,10 @@ With Google AI Pro/Ultra subscription via OAuth:
 - No per-token costs (included in subscription)
 
 ## Technical Details
+
+### Implementation
+
+The OAuth implementation uses the official `google-auth-library` package, following the same approach as the reference Gemini CLI. This ensures compatibility and reliability with Google's OAuth services.
 
 ### OAuth Endpoints
 

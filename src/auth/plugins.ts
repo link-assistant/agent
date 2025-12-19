@@ -3,6 +3,10 @@ import * as http from 'node:http';
 import * as net from 'node:net';
 import { Auth } from './index';
 import { Log } from '../util/log';
+import { OAuth2Client, CodeChallengeMethod } from 'google-auth-library';
+import open from 'open';
+import crypto from 'node:crypto';
+import url from 'node:url';
 
 /**
  * Auth Plugins Module
@@ -856,6 +860,8 @@ const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
+
+
 /**
  * Google OAuth Plugin
  * Supports:
@@ -872,145 +878,104 @@ const GooglePlugin: AuthPlugin = {
       label: 'Google AI Pro/Ultra (OAuth)',
       type: 'oauth',
       async authorize() {
-        const pkce = await generatePKCE();
-        const state = generateRandomString(16);
+        const client = new OAuth2Client({
+          clientId: GOOGLE_OAUTH_CLIENT_ID,
+          clientSecret: GOOGLE_OAUTH_CLIENT_SECRET,
+        });
 
-        // Start local server to handle OAuth redirect
-        const server = http.createServer();
-        let serverPort = 0;
-        let authCode: string | null = null;
-        let authState: string | null = null;
+        const port = await getAvailablePort();
+        const host = process.env['OAUTH_CALLBACK_HOST'] || 'localhost';
+        const redirectUri = `http://localhost:${port}/oauth2callback`;
+        const state = crypto.randomBytes(32).toString('hex');
 
-        const authPromise = new Promise<{ code: string; state: string }>(
-          (resolve, reject) => {
-            server.on('request', (req, res) => {
-              const url = new URL(req.url!, `http://localhost:${serverPort}`);
-              const code = url.searchParams.get('code');
-              const receivedState = url.searchParams.get('state');
-              const error = url.searchParams.get('error');
+        const authUrl = client.generateAuthUrl({
+          redirect_uri: redirectUri,
+          access_type: 'offline',
+          scope: GOOGLE_OAUTH_SCOPES,
+          state,
+        });
 
-              if (error) {
-                res.writeHead(400, { 'Content-Type': 'text/html' });
-                res.end(`
-                <html>
-                  <body>
-                    <h1>Authentication Failed</h1>
-                    <p>Error: ${error}</p>
-                    <p>You can close this window.</p>
-                  </body>
-                </html>
-              `);
-                server.close();
-                reject(new Error(`OAuth error: ${error}`));
-                return;
+        // Open browser for authentication
+        await open(authUrl);
+
+        const loginCompletePromise = new Promise<void>((resolve, reject) => {
+          const server = http.createServer(async (req, res) => {
+            try {
+              if (req.url!.indexOf('/oauth2callback') === -1) {
+                res.writeHead(301, { Location: 'https://developers.google.com/gemini-code-assist/auth_failure_gemini' });
+                res.end();
+                reject(new Error('OAuth callback not received. Unexpected request: ' + req.url));
               }
 
-              if (code && receivedState) {
-                if (receivedState !== state) {
-                  res.writeHead(400, { 'Content-Type': 'text/html' });
-                  res.end('Invalid state parameter');
-                  server.close();
-                  reject(new Error('State mismatch - possible CSRF attack'));
-                  return;
+              const qs = new url.URL(req.url!, 'http://localhost:3000').searchParams;
+              if (qs.get('error')) {
+                res.writeHead(301, { Location: 'https://developers.google.com/gemini-code-assist/auth_failure_gemini' });
+                res.end();
+                const errorCode = qs.get('error');
+                const errorDescription = qs.get('error_description') || 'No additional details provided';
+                reject(new Error(`Google OAuth error: ${errorCode}. ${errorDescription}`));
+              } else if (qs.get('state') !== state) {
+                res.end('State mismatch. Possible CSRF attack');
+                reject(new Error('OAuth state mismatch. Possible CSRF attack or browser session issue.'));
+              } else if (qs.get('code')) {
+                try {
+                  const { tokens } = await client.getToken({
+                    code: qs.get('code')!,
+                    redirect_uri: redirectUri,
+                  });
+                  client.setCredentials(tokens);
+
+                  res.writeHead(301, { Location: 'https://developers.google.com/gemini-code-assist/auth_success_gemini' });
+                  res.end();
+                  resolve();
+                } catch (error) {
+                  res.writeHead(301, { Location: 'https://developers.google.com/gemini-code-assist/auth_failure_gemini' });
+                  res.end();
+                  reject(new Error(`Failed to exchange authorization code for tokens: ${error}`));
                 }
-
-                res.writeHead(200, { 'Content-Type': 'text/html' });
-                res.end(`
-                <html>
-                  <body>
-                    <h1>Authentication Successful!</h1>
-                    <p>You can close this window and return to the terminal.</p>
-                    <script>window.close();</script>
-                  </body>
-                </html>
-              `);
-                server.close();
-                resolve({ code, state: receivedState });
-                return;
+              } else {
+                reject(new Error('No authorization code received from Google OAuth. Please try authenticating again.'));
               }
+            } catch (e) {
+              if (e instanceof Error) {
+                reject(e);
+              } else {
+                reject(new Error(`Unexpected error during OAuth authentication: ${e}`));
+              }
+            } finally {
+              server.close();
+            }
+          });
 
-              res.writeHead(400, { 'Content-Type': 'text/html' });
-              res.end('Missing code or state parameter');
-            });
+          server.listen(port, host, () => {
+            // Server started successfully
+          });
 
-            server.listen(0, () => {
-              const address = server.address() as net.AddressInfo;
-              serverPort = address.port;
-            });
-
-            server.on('error', reject);
-
-            // Timeout after 5 minutes
-            setTimeout(
-              () => {
-                server.close();
-                reject(new Error('OAuth timeout'));
-              },
-              5 * 60 * 1000
-            );
-          }
-        );
-
-        // Build authorization URL with local redirect URI
-        const redirectUri = `http://localhost:${serverPort}/oauth/callback`;
-        const url = new URL(GOOGLE_AUTH_URL);
-        url.searchParams.set('client_id', GOOGLE_OAUTH_CLIENT_ID);
-        url.searchParams.set('redirect_uri', redirectUri);
-        url.searchParams.set('response_type', 'code');
-        url.searchParams.set('scope', GOOGLE_OAUTH_SCOPES.join(' '));
-        url.searchParams.set('access_type', 'offline');
-        url.searchParams.set('code_challenge', pkce.challenge);
-        url.searchParams.set('code_challenge_method', 'S256');
-        url.searchParams.set('state', state);
-        url.searchParams.set('prompt', 'consent');
+          server.on('error', (err) => {
+            reject(new Error(`OAuth callback server error: ${err}`));
+          });
+        });
 
         return {
-          url: url.toString(),
+          url: authUrl,
           instructions:
             'Your browser will open for authentication. Complete the login and return to the terminal.',
           method: 'auto' as const,
           async callback(): Promise<AuthResult> {
             try {
-              const { code } = await authPromise;
+              await loginCompletePromise;
 
-              // Exchange authorization code for tokens
-              const tokenResult = await fetch(GOOGLE_TOKEN_URL, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                  code: code,
-                  client_id: GOOGLE_OAUTH_CLIENT_ID,
-                  client_secret: GOOGLE_OAUTH_CLIENT_SECRET,
-                  redirect_uri: redirectUri,
-                  grant_type: 'authorization_code',
-                  code_verifier: pkce.verifier,
-                }),
-              });
-
-              if (!tokenResult.ok) {
-                log.error('google oauth token exchange failed', {
-                  status: tokenResult.status,
-                });
-                return { type: 'failed' };
-              }
-
-              const json = await tokenResult.json();
-              if (
-                !json.access_token ||
-                !json.refresh_token ||
-                typeof json.expires_in !== 'number'
-              ) {
+              const credentials = client.credentials;
+              if (!credentials.access_token || !credentials.refresh_token || !credentials.expiry_date) {
                 log.error('google oauth token response missing fields');
                 return { type: 'failed' };
               }
 
               return {
                 type: 'success',
-                refresh: json.refresh_token,
-                access: json.access_token,
-                expires: Date.now() + json.expires_in * 1000,
+                refresh: credentials.refresh_token,
+                access: credentials.access_token,
+                expires: credentials.expiry_date.getTime(),
               };
             } catch (error) {
               log.error('google oauth failed', { error });
@@ -1025,87 +990,117 @@ const GooglePlugin: AuthPlugin = {
       type: 'api',
     },
   ],
-  async loader(getAuth, provider) {
-    const auth = await getAuth();
-    if (!auth || auth.type !== 'oauth') return {};
+    async loader(getAuth, provider) {
+      const auth = await getAuth();
+      if (!auth || auth.type !== 'oauth') return {};
 
-    // Zero out cost for subscription users
-    if (provider?.models) {
-      for (const model of Object.values(provider.models)) {
-        (model as any).cost = {
-          input: 0,
-          output: 0,
-          cache: {
-            read: 0,
-            write: 0,
-          },
-        };
-      }
-    }
-
-    return {
-      apiKey: 'oauth-token-used-via-custom-fetch',
-      async fetch(input: RequestInfo | URL, init?: RequestInit) {
-        let currentAuth = await getAuth();
-        if (!currentAuth || currentAuth.type !== 'oauth')
-          return fetch(input, init);
-
-        // Refresh token if expired (with 5 minute buffer)
-        const FIVE_MIN_MS = 5 * 60 * 1000;
-        if (
-          !currentAuth.access ||
-          currentAuth.expires < Date.now() + FIVE_MIN_MS
-        ) {
-          log.info('refreshing google oauth token');
-          const response = await fetch(GOOGLE_TOKEN_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
+      // Zero out cost for subscription users
+      if (provider?.models) {
+        for (const model of Object.values(provider.models)) {
+          (model as any).cost = {
+            input: 0,
+            output: 0,
+            cache: {
+              read: 0,
+              write: 0,
             },
-            body: new URLSearchParams({
-              client_id: GOOGLE_OAUTH_CLIENT_ID,
-              client_secret: GOOGLE_OAUTH_CLIENT_SECRET,
-              refresh_token: currentAuth.refresh,
-              grant_type: 'refresh_token',
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(`Token refresh failed: ${response.status}`);
-          }
-
-          const json = await response.json();
-          await Auth.set('google', {
-            type: 'oauth',
-            // Google doesn't return a new refresh token on refresh
-            refresh: currentAuth.refresh,
-            access: json.access_token,
-            expires: Date.now() + json.expires_in * 1000,
-          });
-          currentAuth = {
-            type: 'oauth',
-            refresh: currentAuth.refresh,
-            access: json.access_token,
-            expires: Date.now() + json.expires_in * 1000,
           };
         }
+      }
 
-        // Google API uses Bearer token authentication
-        const headers: Record<string, string> = {
-          ...(init?.headers as Record<string, string>),
-          Authorization: `Bearer ${currentAuth.access}`,
-        };
-        // Remove any API key header if present since we're using OAuth
-        delete headers['x-goog-api-key'];
+      return {
+        apiKey: 'oauth-token-used-via-custom-fetch',
+        async fetch(input: RequestInfo | URL, init?: RequestInit) {
+          let currentAuth = await getAuth();
+          if (!currentAuth || currentAuth.type !== 'oauth')
+            return fetch(input, init);
 
-        return fetch(input, {
-          ...init,
-          headers,
-        });
-      },
-    };
-  },
+          // Create OAuth2Client for token management
+          const client = new OAuth2Client({
+            clientId: GOOGLE_OAUTH_CLIENT_ID,
+            clientSecret: GOOGLE_OAUTH_CLIENT_SECRET,
+          });
+
+          client.setCredentials({
+            refresh_token: currentAuth.refresh,
+            access_token: currentAuth.access,
+            expiry_date: currentAuth.expires,
+          });
+
+          // Refresh token if expired (with 5 minute buffer)
+          const FIVE_MIN_MS = 5 * 60 * 1000;
+          if (
+            !currentAuth.access ||
+            currentAuth.expires < Date.now() + FIVE_MIN_MS
+          ) {
+            log.info('refreshing google oauth token');
+            try {
+              const { credentials } = await client.refreshAccessToken();
+              await Auth.set('google', {
+                type: 'oauth',
+                refresh: credentials.refresh_token || currentAuth.refresh,
+                access: credentials.access_token!,
+                expires: credentials.expiry_date!.getTime(),
+              });
+              currentAuth = {
+                type: 'oauth',
+                refresh: credentials.refresh_token || currentAuth.refresh,
+                access: credentials.access_token!,
+                expires: credentials.expiry_date!.getTime(),
+              };
+            } catch (error) {
+              throw new Error(`Token refresh failed: ${error}`);
+            }
+          }
+
+          // Google API uses Bearer token authentication
+          const headers: Record<string, string> = {
+            ...(init?.headers as Record<string, string>),
+            Authorization: `Bearer ${currentAuth.access}`,
+          };
+          // Remove any API key header if present since we're using OAuth
+          delete headers['x-goog-api-key'];
+
+          return fetch(input, {
+            ...init,
+            headers,
+          });
+        },
+      };
+    },
 };
+
+/**
+ * Get an available port for OAuth callback server
+ */
+function getAvailablePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    let port = 0;
+    try {
+      const portStr = process.env['OAUTH_CALLBACK_PORT'];
+      if (portStr) {
+        port = parseInt(portStr, 10);
+        if (isNaN(port) || port <= 0 || port > 65535) {
+          return reject(new Error(`Invalid value for OAUTH_CALLBACK_PORT: "${portStr}"`));
+        }
+        return resolve(port);
+      }
+      const server = net.createServer();
+      server.listen(0, () => {
+        const address = server.address() as net.AddressInfo;
+        port = address.port;
+      });
+      server.on('listening', () => {
+        server.close();
+        server.unref();
+      });
+      server.on('error', (e) => reject(e));
+      server.on('close', () => resolve(port));
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
 
 /**
  * Registry of all auth plugins
