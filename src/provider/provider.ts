@@ -899,37 +899,26 @@ export namespace Provider {
     const cfg = await Config.get();
     if (cfg.model) return parseModel(cfg.model);
 
-    // Prefer opencode provider if available, but verify it can be initialized
+    // Prefer opencode provider if available
     const providers = await list().then((val) => Object.values(val));
     const opencodeProvider = providers.find((p) => p.info.id === 'opencode');
     if (opencodeProvider) {
       const [model] = sort(Object.values(opencodeProvider.info.models));
       if (model) {
-        try {
-          // Try to initialize the opencode provider to ensure it works
-          await getSDK(opencodeProvider.info, model);
-          log.info('using preferred opencode provider as default');
-          return {
-            providerID: opencodeProvider.info.id,
-            modelID: model.id,
-          };
-        } catch (error) {
-          // If opencode provider fails to initialize, log warning and fall back
-          log.warn(
-            'failed to initialize preferred opencode provider, falling back to alternative',
-            {
-              error: error instanceof Error ? error.message : String(error),
-              provider: opencodeProvider.info.id,
-              model: model.id,
-            }
-          );
-        }
+        log.info('using opencode provider as default', {
+          provider: opencodeProvider.info.id,
+          model: model.id,
+        });
+        return {
+          providerID: opencodeProvider.info.id,
+          modelID: model.id,
+        };
       }
     }
 
-    // Fall back to any available provider (skip opencode since it failed)
+    // Fall back to any available provider if opencode is not available
     const provider = providers.find(
-      (p) => p.info.id !== 'opencode' && (!cfg.provider || Object.keys(cfg.provider).includes(p.info.id))
+      (p) => !cfg.provider || Object.keys(cfg.provider).includes(p.info.id)
     );
     if (!provider) throw new Error('no providers found');
     const [model] = sort(Object.values(provider.info.models));

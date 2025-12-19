@@ -199,66 +199,57 @@ FileNotFound: failed copying files from cache to destination for package zod
 
 ## Proposed Solutions
 
-### Solution 1: Add Graceful Fallback (Recommended)
+### Solution 1: Serialized Installation with Retry Logic (Implemented)
 
 **Priority:** High
-**Effort:** Low
-**Impact:** Fixes the issue for all users
+**Effort:** Medium
+**Impact:** Fixes the issue for all users while keeping opencode as default
 
-Modify provider initialization to:
+The root cause was identified as race conditions when multiple packages are installed in parallel. The fix:
 
-1. Catch provider init failures
-2. Log warning instead of crashing
-3. Try next available provider
-4. Only crash if NO providers can be initialized
+1. Serialize package installations using a write lock
+2. Add retry logic for cache-related errors
+3. Improve error detection for various cache corruption symptoms
 
-**Implementation location:** `src/provider/provider.ts:781-790`
+**Implementation location:** `src/bun/index.ts:68-220`
 
 **Benefits:**
 
-- Resilient to transient installation failures
-- Better user experience
-- Maintains backward compatibility
-- Users can still use the agent with other providers
+- opencode/grok-code remains the default provider
+- Resilient to transient cache issues
+- Automatic retry handles temporary failures
+- No fallback to other providers needed
 
 **Code change:**
 
 ```typescript
-// In defaultModel() function
-try {
-  const opencodeProvider = providers.find((p) => p.info.id === 'opencode');
-  if (opencodeProvider) {
-    const [model] = sort(Object.values(opencodeProvider.info.models));
-    if (model) {
-      try {
-        // Verify provider can be initialized
-        await getSDK(opencodeProvider.info, model);
-        return {
-          providerID: opencodeProvider.info.id,
-          modelID: model.id,
-        };
-      } catch (initError) {
-        log.warn(
-          'Failed to initialize preferred opencode provider, falling back',
-          {
-            error:
-              initError instanceof Error
-                ? initError.message
-                : String(initError),
-          }
-        );
-      }
-    }
-  }
-} catch (e) {
-  log.warn('Error checking opencode provider, continuing with fallback');
-}
+// Use a write lock to serialize all package installations
+using _ = await Lock.write(INSTALL_LOCK_KEY);
 
-// Fall back to any available provider
-const provider = providers.find(
-  (p) => !cfg.provider || Object.keys(cfg.provider).includes(p.info.id)
-);
-// ... rest of existing fallback logic
+// Retry logic for cache-related errors
+let lastError: Error | undefined;
+for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+  try {
+    await BunProc.run(args, { cwd: Global.Path.cache });
+    log.info('package installed successfully', { pkg, version, attempt });
+    return mod;
+  } catch (e) {
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    const isCacheError = isCacheRelatedError(errorMsg);
+
+    if (isCacheError && attempt < MAX_RETRIES) {
+      log.info('retrying installation after cache-related error', {
+        pkg,
+        version,
+        attempt,
+        nextAttempt: attempt + 1,
+      });
+      await delay(RETRY_DELAY_MS);
+      continue;
+    }
+    throw new InstallFailedError({ pkg, version, details: errorMsg });
+  }
+}
 ```
 
 ### Solution 2: Provide Cache Clear Instructions
@@ -348,8 +339,12 @@ bun install -g @link-assistant/agent@0.2.1
 
 ## Conclusion
 
-Version 0.3.0 is NOT fundamentally broken in code, but **fails due to Bun runtime cache corruption** when trying to initialize the new default opencode provider. The issue is **environmental** rather than a code defect.
+Version 0.3.0 is NOT fundamentally broken in code, but **fails due to race conditions in parallel package installations** causing Bun cache corruption when trying to initialize the new default opencode provider. The issue is **environmental** rather than a code defect.
 
-**Implemented Fix:** Added graceful fallback in `Provider.defaultModel()` to try opencode provider first, and if it fails, skip it and fall back to other available providers. This makes the agent resilient to provider initialization failures.
+**Implemented Fix:**
 
-**Status:** Fix implemented and tested. Issue should be resolved for users with working alternative providers.
+1. **Serialized package installations** - Added a write lock to ensure only one `bun add` command runs at a time, preventing race conditions
+2. **Retry logic for cache errors** - Added automatic retry (up to 3 attempts) for cache-related errors with a 500ms delay between attempts
+3. **Improved error detection** - Enhanced detection of cache-related errors (FileNotFound, ENOENT, EACCES, EBUSY)
+
+**Status:** Fix implemented and tested. The opencode/grok-code provider remains the default and will work reliably even with transient cache issues.
