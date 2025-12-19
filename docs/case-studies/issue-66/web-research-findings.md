@@ -136,7 +136,7 @@ Research conducted on December 19, 2025, to gather additional facts and data abo
   - Uses identical OAuth credentials (public for desktop apps)
   - Implements local HTTP server for OAuth callback
   - Uses google-auth-library v9.11.0
-  - Scopes: cloud-platform, userinfo.email, userinfo.profile (no generative-language.retriever)
+  - Scopes: cloud-platform, generative-language.retriever, userinfo.email, userinfo.profile
   - Has multiple OAuth-related issues reported
 
 ### Known Gemini CLI OAuth Issues

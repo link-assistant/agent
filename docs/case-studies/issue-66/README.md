@@ -38,7 +38,7 @@ Based on codebase analysis, Google OAuth support appears to be implemented:
 ### Key Components
 
 - **OAuth Client ID/Secret**: Same as Gemini CLI (public for installed apps)
-- **Scopes**: `https://www.googleapis.com/auth/cloud-platform`, `userinfo.email`, `userinfo.profile`
+- **Scopes**: `https://www.googleapis.com/auth/cloud-platform`, `https://www.googleapis.com/auth/generative-language.retriever`, `userinfo.email`, `userinfo.profile`
 - **Flow**: OAuth 2.0 with PKCE, local server callback
 - **Token Management**: Automatic refresh using refresh tokens
 - **Authentication**: Bearer token in Authorization header
@@ -124,7 +124,7 @@ The implementation of Google OAuth support for Gemini subscriptions has been suc
 
 - OAuth Plugin: `src/auth/plugins.ts` (GooglePlugin)
 - Provider Support: `src/provider/provider.ts` (google and google-oauth providers)
-- Required Scopes: cloud-platform, userinfo.email, userinfo.profile (standard Google OAuth scopes)
+- Required Scopes: cloud-platform, generative-language.retriever, userinfo.email, userinfo.profile
 - Authentication Flow: Local HTTP server with automatic browser launch
 - Token Storage: Secure encrypted storage with automatic refresh
 - Security: Public OAuth credentials for installed applications (industry standard)

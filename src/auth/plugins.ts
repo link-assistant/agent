@@ -850,6 +850,7 @@ const GOOGLE_OAUTH_CLIENT_ID =
 const GOOGLE_OAUTH_CLIENT_SECRET = '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';
 const GOOGLE_OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/cloud-platform',
+  'https://www.googleapis.com/auth/generative-language.retriever',
   'https://www.googleapis.com/auth/userinfo.email',
   'https://www.googleapis.com/auth/userinfo.profile',
 ];

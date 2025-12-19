@@ -43,6 +43,7 @@ export namespace GeminiOAuth {
     // Requested scopes for API access
     scopes: [
       'https://www.googleapis.com/auth/cloud-platform',
+      'https://www.googleapis.com/auth/generative-language.retriever',
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/userinfo.profile',
     ],

@@ -51,7 +51,7 @@ The agent CLI only supported API key authentication for Google/Gemini providers,
 
 ### Key Changes
 
-- Removed extra scope `generative-language.retriever` to match reference implementation
+- Added `generative-language.retriever` scope for full Gemini API access as per reference implementation
 - Implemented token refresh logic
 - Added zero-cost billing for subscription users
 
