@@ -111,14 +111,28 @@ export namespace BunProc {
     await BunProc.run(args, {
       cwd: Global.Path.cache,
     }).catch((e) => {
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      const isCacheError =
+        errorMsg.includes('failed copying files from cache') ||
+        errorMsg.includes('FileNotFound');
+
       log.error('package installation failed', {
         pkg,
         version,
-        error: e instanceof Error ? e.message : String(e),
+        error: errorMsg,
         stack: e instanceof Error ? e.stack : undefined,
+        possibleCacheCorruption: isCacheError,
       });
+
+      // Provide helpful recovery instructions for cache-related errors
+      if (isCacheError) {
+        log.error(
+          'Bun package cache may be corrupted. Try clearing the cache with: bun pm cache rm'
+        );
+      }
+
       throw new InstallFailedError(
-        { pkg, version, details: e instanceof Error ? e.message : String(e) },
+        { pkg, version, details: errorMsg },
         {
           cause: e,
         }

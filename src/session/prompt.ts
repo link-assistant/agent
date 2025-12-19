@@ -290,10 +290,27 @@ export namespace SessionPrompt {
           history: msgs,
         });
 
-      const model = await Provider.getModel(
-        lastUser.model.providerID,
-        lastUser.model.modelID
-      );
+      let model;
+      try {
+        model = await Provider.getModel(
+          lastUser.model.providerID,
+          lastUser.model.modelID
+        );
+      } catch (error) {
+        log.warn(
+          'Failed to initialize specified model, falling back to default model',
+          {
+            providerID: lastUser.model.providerID,
+            modelID: lastUser.model.modelID,
+            error: error instanceof Error ? error.message : String(error),
+          }
+        );
+        const defaultModel = await Provider.defaultModel();
+        model = await Provider.getModel(
+          defaultModel.providerID,
+          defaultModel.modelID
+        );
+      }
       const task = tasks.pop();
 
       // pending subtask

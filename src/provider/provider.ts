@@ -899,16 +899,31 @@ export namespace Provider {
     const cfg = await Config.get();
     if (cfg.model) return parseModel(cfg.model);
 
-    // Prefer opencode provider if available
+    // Prefer opencode provider if available, but verify it can be initialized
     const providers = await list().then((val) => Object.values(val));
     const opencodeProvider = providers.find((p) => p.info.id === 'opencode');
     if (opencodeProvider) {
       const [model] = sort(Object.values(opencodeProvider.info.models));
       if (model) {
-        return {
-          providerID: opencodeProvider.info.id,
-          modelID: model.id,
-        };
+        try {
+          // Try to initialize the opencode provider to ensure it works
+          await getSDK(opencodeProvider.info, model);
+          log.info('using preferred opencode provider as default');
+          return {
+            providerID: opencodeProvider.info.id,
+            modelID: model.id,
+          };
+        } catch (error) {
+          // If opencode provider fails to initialize, log warning and fall back
+          log.warn(
+            'failed to initialize preferred opencode provider, falling back to alternative',
+            {
+              error: error instanceof Error ? error.message : String(error),
+              provider: opencodeProvider.info.id,
+              model: model.id,
+            }
+          );
+        }
       }
     }
 
