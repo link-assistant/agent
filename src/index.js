@@ -73,40 +73,67 @@ process.on('unhandledRejection', (reason, _promise) => {
   process.exit(1);
 });
 
-function readStdinWithTimeout(timeout = 100) {
+/**
+ * Read stdin with optional timeout.
+ * @param {number|null} timeout - Timeout in milliseconds. If null, wait indefinitely until EOF.
+ * @returns {Promise<string>} - The stdin content
+ */
+function readStdinWithTimeout(timeout = null) {
   return new Promise((resolve) => {
     let data = '';
     let hasData = false;
-    const timer = setTimeout(() => {
-      if (!hasData) {
-        process.stdin.pause();
-        resolve('');
-      }
-    }, timeout);
-    const onData = (chunk) => {
-      hasData = true;
-      clearTimeout(timer);
-      data += chunk;
-    };
-    const onEnd = () => {
-      clearTimeout(timer);
-      cleanup();
-      resolve(data);
-    };
-    const onError = () => {
-      clearTimeout(timer);
-      cleanup();
-      resolve('');
-    };
+    let timer = null;
+
     const cleanup = () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
       process.stdin.removeListener('data', onData);
       process.stdin.removeListener('end', onEnd);
       process.stdin.removeListener('error', onError);
     };
+
+    const onData = (chunk) => {
+      hasData = true;
+      if (timer) {
+        clearTimeout(timer);
+      }
+      data += chunk;
+    };
+
+    const onEnd = () => {
+      cleanup();
+      resolve(data);
+    };
+
+    const onError = () => {
+      cleanup();
+      resolve('');
+    };
+
+    // Only set timeout if specified (not null)
+    if (timeout !== null) {
+      timer = setTimeout(() => {
+        if (!hasData) {
+          process.stdin.pause();
+          cleanup();
+          resolve('');
+        }
+      }, timeout);
+    }
+
     process.stdin.on('data', onData);
     process.stdin.on('end', onEnd);
     process.stdin.on('error', onError);
   });
+}
+
+/**
+ * Output JSON status message to stdout
+ * @param {object} status - Status object to output
+ */
+function outputStatus(status) {
+  console.log(JSON.stringify(status));
 }
 
 async function runAgentMode(argv, request) {
@@ -589,6 +616,22 @@ async function main() {
           'Use existing Claude OAuth credentials from ~/.claude/.credentials.json (from Claude Code CLI)',
         default: false,
       })
+      .option('prompt', {
+        alias: 'p',
+        type: 'string',
+        description: 'Prompt message to send directly (bypasses stdin reading)',
+      })
+      .option('disable-stdin', {
+        type: 'boolean',
+        description:
+          'Disable stdin streaming mode (requires --prompt or shows help)',
+        default: false,
+      })
+      .option('stdin-stream-timeout', {
+        type: 'number',
+        description:
+          'Optional timeout in milliseconds for stdin reading (default: no timeout)',
+      })
       // Initialize logging early for all CLI commands
       // This prevents debug output from appearing in CLI unless --verbose is used
       .middleware(async (argv) => {
@@ -646,6 +689,26 @@ async function main() {
     const commandExecuted = argv._ && argv._.length > 0;
 
     if (!commandExecuted) {
+      // Check if --prompt flag was provided
+      if (argv.prompt) {
+        // Direct prompt mode - bypass stdin entirely
+        const request = { message: argv.prompt };
+        await runAgentMode(argv, request);
+        return;
+      }
+
+      // Check if --disable-stdin was set without --prompt
+      if (argv['disable-stdin']) {
+        // Output a helpful message suggesting to use --prompt
+        outputStatus({
+          type: 'error',
+          message:
+            'No prompt provided. Use -p/--prompt to specify a message, or remove --disable-stdin to read from stdin.',
+          hint: 'Example: agent -p "Hello, how are you?"',
+        });
+        process.exit(1);
+      }
+
       // Check if stdin is a TTY (interactive terminal)
       // If it is, show help instead of waiting for input
       if (process.stdin.isTTY) {
@@ -653,11 +716,27 @@ async function main() {
         process.exit(0);
       }
 
-      // stdin is piped, try to read input with timeout
-      const input = await readStdinWithTimeout(100);
+      // stdin is piped - enter stdin listening mode
+      // Output status message to inform user what's happening
+      outputStatus({
+        type: 'status',
+        mode: 'stdin-stream',
+        message:
+          'Agent CLI in stdin listening mode. Accepts JSON and plain text input.',
+        hint: 'Press CTRL+C to exit. Use --help for options.',
+        acceptedFormats: ['JSON object with "message" field', 'Plain text'],
+      });
+
+      // Read stdin with optional timeout
+      const timeout = argv['stdin-stream-timeout'] ?? null;
+      const input = await readStdinWithTimeout(timeout);
       const trimmedInput = input.trim();
 
       if (trimmedInput === '') {
+        outputStatus({
+          type: 'status',
+          message: 'No input received. Exiting.',
+        });
         yargsInstance.showHelp();
         process.exit(0);
       }

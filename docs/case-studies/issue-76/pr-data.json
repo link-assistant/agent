@@ -1,0 +1,142 @@
+{
+  "additions": 56,
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "body": "## 🎯 Summary\n\nFixes #76 - When running `agent` without arguments, the CLI now displays help text instead of hanging indefinitely.\n\n## 🔍 Problem\n\nPreviously, running `agent` without any arguments would cause the program to hang, waiting for stdin input that would never come in an interactive terminal. This was confusing for users who expected to see usage information.\n\n## ✅ Solution\n\nThe fix implements two complementary checks:\n\n1. **TTY Detection**: When no command is provided and stdin is a TTY (interactive terminal), immediately show help and exit\n2. **Timeout-based Reading**: Added `readStdinWithTimeout()` function that waits 100ms for stdin input. If no data arrives, it shows help instead of blocking forever\n\nThis approach ensures:\n- Interactive usage (`agent`) shows help immediately\n- Piped input (`echo 'test' | agent`) still works correctly\n- JSON input via stdin continues to function as expected\n\n## 🧪 Testing\n\nTested both scenarios:\n- ✅ Running `agent` without arguments displays help\n- ✅ Piping input to `agent` processes the input correctly\n- ✅ All lint, format, and file-size checks pass\n\n## 📝 Implementation Details\n\n**Key changes in `src/index.js`:**\n- Added `readStdinWithTimeout(timeout = 100)` function to handle stdin with timeout\n- Updated `main()` function to check `process.stdin.isTTY` and show help for interactive terminals\n- Modified stdin reading logic to use timeout-based approach as fallback\n- Refactored `runAgentMode()` to accept pre-parsed request object\n\nThis fix preserves all existing functionality while eliminating the hang behavior.",
+  "changedFiles": 2,
+  "comments": [
+    {
+      "id": "IC_kwDOQYTy3M7bNJwX",
+      "author": { "login": "konard" },
+      "authorAssociation": "MEMBER",
+      "body": "## 🤖 Solution Draft Log\nThis log file contains the complete execution trace of the AI solution draft process.\n\n💰 **Cost estimation:**\n- Public pricing estimate: $2.726451 USD\n- Calculated by Anthropic: $1.505627 USD\n- Difference: $-1.220824 (-44.78%)\n📎 **Log file uploaded as GitHub Gist** (505KB)\n🔗 [View complete solution draft log](https://gist.githubusercontent.com/konard/1efcb707f7a0ff7ad41b0f8b224fbed5/raw/77647a74cfa585afeeb3a9e7024791a0d46714d1/solution-draft-log-pr-1766223890147.txt)\n---\n*Now working session is ended, feel free to review and add any feedback on the solution draft.*",
+      "createdAt": "2025-12-20T09:44:56Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/link-assistant/agent/pull/79#issuecomment-3677658135",
+      "viewerDidAuthor": true
+    },
+    {
+      "id": "IC_kwDOQYTy3M7bNSKx",
+      "author": { "login": "konard" },
+      "authorAssociation": "MEMBER",
+      "body": "Also add `-p` and `--prompt`, which by default should also work as `--no-stdin-stream`, also if we just put `--no-stdin-stream` without `--prompt` we should get suggestion to set a prompt, before we can get any output.\r\n\r\nWe can still add `--stdin-stream-timeout`, but I think for enabling continued interaction with JSON in and out, we better to not set any timeout by default.\r\n\r\nAlso I think by default for the user to understand what is going on we should output JSON statement, that states that agent CLI in stdin listenting mode and accepts both JSON and plain text (converted to JSON messages). So there will be be no situation, when nothing is output on startup on no output.\r\n\r\nIn that case if we treat user nicely, also proposing using CTRL+C + --help for defaults on how everything works, we should manage expectations better.\r\n\r\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
+      "createdAt": "2025-12-20T10:11:52Z",
+      "includesCreatedEdit": true,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/link-assistant/agent/pull/79#issuecomment-3677692593",
+      "viewerDidAuthor": true
+    },
+    {
+      "id": "IC_kwDOQYTy3M7bNSqS",
+      "author": { "login": "konard" },
+      "authorAssociation": "MEMBER",
+      "body": "🤖 **AI Work Session Started**\n\nStarting automated work session at 2025-12-20T10:15:17.186Z\n\nThe PR has been converted to draft mode while work is in progress.\n\n_This comment marks the beginning of an AI work session. Please wait working session to finish, and provide your feedback._",
+      "createdAt": "2025-12-20T10:15:19Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/link-assistant/agent/pull/79#issuecomment-3677694610",
+      "viewerDidAuthor": true
+    }
+  ],
+  "commits": [
+    {
+      "authoredDate": "2025-12-20T09:34:58Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-20T09:34:58Z",
+      "messageBody": "Adding CLAUDE.md with task information for AI processing.\nThis file will be removed when the task is complete.\n\nIssue: https://github.com/link-assistant/agent/issues/76",
+      "messageHeadline": "Initial commit with task details",
+      "oid": "520a104b04a361f22b8dce43e8207a2148f5e7f1"
+    },
+    {
+      "authoredDate": "2025-12-20T09:38:30Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-20T09:38:30Z",
+      "messageBody": "When running 'agent' without arguments, the CLI now displays help text\ninstead of hanging while waiting for stdin input. This fixes the issue\nwhere the command would appear to do nothing.\n\nThe fix adds a timeout to stdin reading and shows help when no input\nis available within 100ms, while preserving the ability to pipe input\nto the agent for processing.",
+      "messageHeadline": "fix: show help when no arguments provided instead of hanging",
+      "oid": "880dea9ab783b8af55a224731856c37033c24359"
+    },
+    {
+      "authoredDate": "2025-12-20T09:41:15Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-20T09:41:15Z",
+      "messageBody": "",
+      "messageHeadline": "chore: fix CLAUDE.md formatting (add trailing newline)",
+      "oid": "94be4eb65a298453fdfbba67ab19f4c4b417f3fa"
+    },
+    {
+      "authoredDate": "2025-12-20T09:42:52Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-20T09:42:52Z",
+      "messageBody": "",
+      "messageHeadline": "chore: add changeset for help display fix",
+      "oid": "54f3ab49331d3403b40e7e4e851992f38177c792"
+    },
+    {
+      "authoredDate": "2025-12-20T09:44:43Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-20T09:44:43Z",
+      "messageBody": "",
+      "messageHeadline": "Revert: Remove CLAUDE.md changes from initial commit",
+      "oid": "eec24a9b2f280b07874c842ce251a70515642d73"
+    }
+  ],
+  "createdAt": "2025-12-20T09:35:06Z",
+  "deletions": 24,
+  "files": [
+    {
+      "path": ".changeset/fix-help-display.md",
+      "additions": 7,
+      "deletions": 0
+    },
+    { "path": "src/index.js", "additions": 49, "deletions": 24 }
+  ],
+  "number": 79,
+  "state": "OPEN",
+  "title": "fix: show help when no arguments provided instead of hanging"
+}
