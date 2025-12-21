@@ -102,8 +102,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Need to checkout the PR branch for push access
+          ref: ${{ github.head_ref || github.ref }}
+          # Use a token with write access for pushing cache commits
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -115,6 +122,27 @@ jobs:
 
       - name: Run unit tests
         run: bun test tests/json-standard-unit.test.js
+
+      - name: Commit cached API responses
+        # Only commit on the primary OS to avoid conflicts
+        if: matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request'
+        run: |
+          # Check if there are any new cached files in data/api-cache
+          if [ -d "data/api-cache" ] && [ -n "$(git status --porcelain data/api-cache/)" ]; then
+            echo "Found uncommitted cached API responses"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/api-cache/
+            git commit -m "chore: commit cached API responses (Links Notation format)
+
+            🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+            Co-Authored-By: Claude <noreply@anthropic.com>"
+            git push
+            echo "Pushed cached API responses to branch"
+          else
+            echo "No new cached API responses to commit"
+          fi
 
   # Release - only runs on main after tests pass (for push events)
   release:

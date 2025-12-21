@@ -446,7 +446,7 @@ export namespace SessionPrompt {
         lastFinished.summary !== true &&
         SessionCompaction.isOverflow({
           tokens: lastFinished.tokens,
-          model: model.info,
+          model: model.info ?? { id: model.modelID },
         })
       ) {
         await SessionCompaction.create({
@@ -487,13 +487,13 @@ export namespace SessionPrompt {
           sessionID,
         })) as MessageV2.Assistant,
         sessionID: sessionID,
-        model: model.info,
+        model: model.info ?? { id: model.modelID },
         providerID: model.providerID,
         abort,
       });
       const system = await resolveSystemPrompt({
         providerID: model.providerID,
-        modelID: model.info.id,
+        modelID: model.info?.id ?? model.modelID,
         agent,
         system: lastUser.system,
         appendSystem: lastUser.appendSystem,
@@ -506,10 +506,11 @@ export namespace SessionPrompt {
         processor,
       });
       const params = {
-        temperature: model.info.temperature
-          ? (agent.temperature ??
-            ProviderTransform.temperature(model.providerID, model.modelID))
-          : undefined,
+        temperature:
+          (model.info?.temperature ?? false)
+            ? (agent.temperature ??
+              ProviderTransform.temperature(model.providerID, model.modelID))
+            : undefined,
         topP:
           agent.topP ?? ProviderTransform.topP(model.providerID, model.modelID),
         options: {
@@ -519,7 +520,7 @@ export namespace SessionPrompt {
             model.npm ?? '',
             sessionID
           ),
-          ...model.info.options,
+          ...(model.info?.options ?? {}),
           ...agent.options,
         },
       };
@@ -549,64 +550,64 @@ export namespace SessionPrompt {
         );
         const totalEstimatedTokens = systemTokens + userTokens;
 
-        log.lazy.info(() => ({
+        log.info(() => ({
           message: '=== VERBOSE: API Request Details ===',
         }));
-        log.lazy.info(() => ({
+        log.info(() => ({
           message: 'Model',
           model: `${model.providerID}/${model.modelID}`,
         }));
-        log.lazy.info(() => ({ message: 'Session ID', sessionID }));
-        log.lazy.info(() => ({ message: 'Agent', agent: agent.name }));
-        log.lazy.info(() => ({
+        log.info(() => ({ message: 'Session ID', sessionID }));
+        log.info(() => ({ message: 'Agent', agent: agent.name }));
+        log.info(() => ({
           message: 'Temperature',
           temperature: params.temperature ?? 'default',
         }));
-        log.lazy.info(() => ({
+        log.info(() => ({
           message: 'Top P',
           topP: params.topP ?? 'default',
         }));
-        log.lazy.info(() => ({
+        log.info(() => ({
           message: 'Active Tools',
           tools: Object.keys(tools).filter((x) => x !== 'invalid'),
         }));
-        log.lazy.info(() => ({ message: '--- System Prompt ---' }));
+        log.info(() => ({ message: '--- System Prompt ---' }));
         for (let i = 0; i < system.length; i++) {
           const tokens = Token.estimate(system[i]);
-          log.lazy.info(() => ({
+          log.info(() => ({
             message: 'System Message',
             index: i + 1,
             tokens,
           }));
-          log.lazy.info(() => ({
+          log.info(() => ({
             message: 'System Message Content',
             content:
               system[i].slice(0, 2000) +
               (system[i].length > 2000 ? '... [truncated]' : ''),
           }));
         }
-        log.lazy.info(() => ({ message: '--- Token Summary ---' }));
-        log.lazy.info(() => ({
+        log.info(() => ({ message: '--- Token Summary ---' }));
+        log.info(() => ({
           message: 'System prompt tokens (estimated)',
           systemTokens,
         }));
-        log.lazy.info(() => ({
+        log.info(() => ({
           message: 'User message tokens (estimated)',
           userTokens,
         }));
-        log.lazy.info(() => ({
+        log.info(() => ({
           message: 'Total estimated tokens',
           totalEstimatedTokens,
         }));
-        log.lazy.info(() => ({
+        log.info(() => ({
           message: 'Model context limit',
-          contextLimit: model.info.limit.context || 'unknown',
+          contextLimit: model.info?.limit?.context || 'unknown',
         }));
-        log.lazy.info(() => ({
+        log.info(() => ({
           message: 'Model output limit',
-          outputLimit: model.info.limit.output || 'unknown',
+          outputLimit: model.info?.limit?.output || 'unknown',
         }));
-        log.lazy.info(() => ({ message: '=== END VERBOSE ===' }));
+        log.info(() => ({ message: '=== END VERBOSE ===' }));
       }
 
       const result = await processor.process(() =>
@@ -643,7 +644,7 @@ export namespace SessionPrompt {
                   'x-opencode-request': lastUser.id,
                 }
               : undefined),
-            ...model.info.headers,
+            ...(model.info?.headers ?? {}),
           },
           // set to 0, we handle loop
           maxRetries: 0,
@@ -651,7 +652,7 @@ export namespace SessionPrompt {
           maxOutputTokens: ProviderTransform.maxOutputTokens(
             model.providerID,
             params.options,
-            model.info.limit.output,
+            model.info?.limit?.output ?? 100000,
             OUTPUT_TOKEN_MAX
           ),
           abortSignal: abort,
@@ -689,7 +690,7 @@ export namespace SessionPrompt {
               })
             ),
           ],
-          tools: model.info.tool_call === false ? undefined : tools,
+          tools: model.info?.tool_call === false ? undefined : tools,
           model: wrapLanguageModel({
             model: model.language,
             middleware: [
@@ -1524,7 +1525,7 @@ export namespace SessionPrompt {
         small.npm ?? '',
         input.session.id
       ),
-      ...small.info.options,
+      ...(small.info?.options ?? {}),
     };
     if (small.providerID === 'openai' || small.modelID.includes('gpt-5')) {
       if (small.modelID.includes('5.1')) {
@@ -1539,7 +1540,7 @@ export namespace SessionPrompt {
       };
     }
     await generateText({
-      maxOutputTokens: small.info.reasoning ? 1500 : 20,
+      maxOutputTokens: small.info?.reasoning ? 1500 : 20,
       providerOptions: ProviderTransform.providerOptions(
         small.npm,
         small.providerID,
@@ -1580,7 +1581,7 @@ export namespace SessionPrompt {
           },
         ]),
       ],
-      headers: small.info.headers,
+      headers: small.info?.headers ?? {},
       model: small.language,
     })
       .then((result) => {
@@ -1599,11 +1600,18 @@ export namespace SessionPrompt {
           });
       })
       .catch((error) => {
+<<<<<<< HEAD
         log.lazy.error(() => ({
           message: 'failed to generate title',
           error,
           model: small.info.id,
         }));
+=======
+        log.error('failed to generate title', {
+          error,
+          model: small.info?.id ?? small.modelID,
+        });
+>>>>>>> origin/main
       });
   }
 }

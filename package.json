@@ -1,6 +1,6 @@
 {
   "name": "@link-assistant/agent",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface. Bun-only runtime.",
   "main": "src/index.js",
   "type": "module",
@@ -84,6 +84,7 @@
     "hono-openapi": "^1.1.1",
     "ignore": "^7.0.5",
     "jsonc-parser": "^3.3.1",
+    "lino-objects-codec": "^0.1.1",
     "log-lazy": "^1.0.4",
     "minimatch": "^10.1.1",
     "remeda": "^2.32.0",

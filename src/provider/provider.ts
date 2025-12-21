@@ -14,6 +14,8 @@ import { Instance } from '../project/instance';
 import { Global } from '../global';
 import { Flag } from '../flag/flag';
 import { iife } from '../util/iife';
+import { createEchoModel } from './echo';
+import { createCacheModel } from './cache';
 
 export namespace Provider {
   const log = Log.create({ service: 'provider' });
@@ -459,6 +461,56 @@ export namespace Provider {
         },
       };
     },
+    /**
+     * Echo provider - synthetic provider for dry-run testing
+     * Echoes back the user's input without making actual API calls.
+     *
+     * This provider is automatically enabled when --dry-run mode is active.
+     * It can also be used explicitly with: --model link-assistant/echo
+     *
+     * @see https://github.com/link-assistant/agent/issues/89
+     */
+    'link-assistant': async () => {
+      // Echo provider is always available - no external dependencies needed
+      return {
+        autoload: Flag.OPENCODE_DRY_RUN, // Auto-load only in dry-run mode
+        async getModel(_sdk: any, modelID: string) {
+          // Return our custom echo model that implements LanguageModelV1
+          return createEchoModel(modelID);
+        },
+        options: {},
+      };
+    },
+    /**
+     * Cache provider - synthetic provider for caching API responses
+     * Caches responses using links notation for deterministic testing.
+     *
+     * This provider caches API responses and falls back to echo behavior.
+     * It can be used explicitly with: --model link-assistant/cache/opencode/grok-code
+     *
+     * @see https://github.com/link-assistant/agent/issues/89
+     */
+    'link-assistant/cache': async () => {
+      // Cache provider is always available - no external dependencies needed
+      return {
+        autoload: false, // Not auto-loaded
+        async getModel(_sdk: any, modelID: string) {
+          // modelID should be in format "provider/model" like "opencode/grok-code"
+          const parts = modelID.split('/');
+          if (parts.length < 2) {
+            throw new Error(
+              `Invalid cache model ID: ${modelID}. Expected format: provider/model`
+            );
+          }
+          const [providerId, ...modelParts] = parts;
+          const actualModelId = modelParts.join('/');
+
+          // Return our custom cache model that implements LanguageModelV1
+          return createCacheModel(providerId, actualModelId);
+        },
+        options: {},
+      };
+    },
   };
 
   const state = Instance.state(async () => {
@@ -561,6 +613,51 @@ export namespace Provider {
       };
       realIdByKey.set('google/gemini-3-pro', 'gemini-3-pro-preview');
     }
+
+    // Add link-assistant echo provider for dry-run testing
+    // This synthetic provider echoes back user input without API calls
+    // @see https://github.com/link-assistant/agent/issues/89
+    database['link-assistant'] = {
+      id: 'link-assistant',
+      name: 'Link Assistant (Echo)',
+      env: [], // No environment variables needed - synthetic provider
+      models: {
+        echo: {
+          id: 'echo',
+          name: 'Echo Model',
+          release_date: '2024-01-01',
+          attachment: false,
+          reasoning: false,
+          temperature: false,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 1000000, // Virtually unlimited
+            output: 100000,
+          },
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          options: {},
+        },
+      },
+    };
+
+    // Add link-assistant/cache provider for caching API responses
+    // This synthetic provider caches responses and falls back to echo
+    // @see https://github.com/link-assistant/agent/issues/89
+    database['link-assistant/cache'] = {
+      id: 'link-assistant/cache',
+      name: 'Link Assistant (Cache)',
+      env: [], // No environment variables needed - synthetic provider
+      models: {}, // Models are dynamically created based on the provider/model syntax
+    };
 
     for (const [providerID, provider] of configProviders) {
       const existing = database[providerID];
@@ -809,27 +906,45 @@ export namespace Provider {
     const s = await state();
     if (s.models.has(key)) return s.models.get(key)!;
 
-    log.lazy.info(() => ({ message: 'getModel', providerID, modelID }));
+    log.info(() => ({ message: 'getModel', providerID, modelID }));
 
     const provider = s.providers[providerID];
     if (!provider) throw new ModelNotFoundError({ providerID, modelID });
-    const info = provider.info.models[modelID];
-    if (!info) throw new ModelNotFoundError({ providerID, modelID });
-    const sdk = await getSDK(provider.info, info);
+
+    // For synthetic providers (like link-assistant/echo and link-assistant/cache), skip SDK loading
+    // These providers have a custom getModel function that creates the model directly
+    const isSyntheticProvider =
+      providerID === 'link-assistant' || providerID === 'link-assistant/cache';
+
+    // For synthetic providers, we don't need model info from the database
+    const info = isSyntheticProvider ? null : provider.info.models[modelID];
+    if (!isSyntheticProvider && !info)
+      throw new ModelNotFoundError({ providerID, modelID });
 
     try {
       const keyReal = `${providerID}/${modelID}`;
-      const realID = s.realIdByKey.get(keyReal) ?? info.id;
-      const language = provider.getModel
-        ? await provider.getModel(sdk, realID, provider.options)
-        : sdk.languageModel(realID);
-      log.lazy.info(() => ({ message: 'found', providerID, modelID }));
+      const realID = s.realIdByKey.get(keyReal) ?? (info ? info.id : modelID);
+
+      let language: LanguageModel;
+      if (isSyntheticProvider && provider.getModel) {
+        // For synthetic providers, call getModel directly without SDK
+        language = await provider.getModel(null, realID, provider.options);
+      } else {
+        // For regular providers, load the SDK first
+        const sdk = await getSDK(provider.info, info!);
+        language = provider.getModel
+          ? await provider.getModel(sdk, realID, provider.options)
+          : sdk.languageModel(realID);
+      }
+      log.info(() => ({ message: 'found', providerID, modelID }));
       s.models.set(key, {
         providerID,
         modelID,
         info,
         language,
-        npm: info.provider?.npm ?? provider.info.npm,
+        npm: isSyntheticProvider
+          ? provider.info.npm
+          : (info.provider?.npm ?? provider.info.npm),
       });
       return {
         modelID,
@@ -904,6 +1019,18 @@ export namespace Provider {
 
   export async function defaultModel() {
     const cfg = await Config.get();
+
+    // In dry-run mode, use the echo provider by default
+    // This allows testing round-trips and multi-turn conversations without API costs
+    // @see https://github.com/link-assistant/agent/issues/89
+    if (Flag.OPENCODE_DRY_RUN) {
+      log.info('dry-run mode enabled, using echo provider as default');
+      return {
+        providerID: 'link-assistant',
+        modelID: 'echo',
+      };
+    }
+
     if (cfg.model) return parseModel(cfg.model);
 
     // Prefer opencode provider if available
