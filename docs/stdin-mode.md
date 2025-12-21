@@ -45,6 +45,162 @@ agent --no-always-accept-stdin
 echo "hi" | agent
 ```
 
+### Interactive Mode with Multiple Inputs
+
+The agent supports continuous multi-turn conversations in interactive terminal mode. When you run `agent` without piped input, it enters listening mode and accepts multiple messages sequentially, maintaining context across the conversation:
+
+**Example Session:**
+
+```bash
+$ agent
+```
+
+**Output:**
+
+```json
+{
+  "type": "status",
+  "mode": "interactive-terminal",
+  "message": "Agent CLI in interactive terminal mode. Type your message and press Enter.",
+  "hint": "Press CTRL+C to exit. Use --help for options.",
+  "acceptedFormats": ["JSON object with \"message\" field", "Plain text"],
+  "options": {
+    "interactive": true,
+    "autoMergeQueuedMessages": true,
+    "alwaysAcceptStdin": true,
+    "compactJson": false
+  }
+}
+```
+
+**User types:** `hi`
+
+**Output:**
+
+```json
+{
+  "type": "step_start",
+  "timestamp": 1766311438146,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405da7400010UjcSOuZnSfLAf",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405da0c5001OUH0I06yBDjpqo",
+    "type": "step-start"
+  }
+}
+{
+  "type": "text",
+  "timestamp": 1766311439905,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405dadab001HzaE19EvBKuiRR",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405da0c5001OUH0I06yBDjpqo",
+    "type": "text",
+    "text": "Hello! How can I help you today?",
+    "time": {
+      "start": 1766311439904,
+      "end": 1766311439904
+    }
+  }
+}
+{
+  "type": "step_finish",
+  "timestamp": 1766311439909,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405dae24001VUScXByqNzrfcl",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405da0c5001OUH0I06yBDjpqo",
+    "type": "step-finish",
+    "reason": "stop",
+    "cost": 0,
+    "tokens": {
+      "input": 8515,
+      "output": 9,
+      "reasoning": 125,
+      "cache": {
+        "read": 192,
+        "write": 0
+      }
+    }
+  }
+}
+```
+
+**User types:** `who are you?`
+
+**Output:**
+
+```json
+{
+  "type": "step_start",
+  "timestamp": 1766311457818,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405df418001uPavQoB76hY1KL",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405defcf001Gil2F3fWY5XIb7",
+    "type": "step-start"
+  }
+}
+{
+  "type": "text",
+  "timestamp": 1766311458745,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405df5f4001oVeAYaU2Rko3ia",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405defcf001Gil2F3fWY5XIb7",
+    "type": "text",
+    "text": "I'm Grok, an AI agent built by xAI, powered by the Grok Code Fast 1 model. I'm designed to help with a wide range of tasks, from answering questions and providing information to assisting with coding, research, and more. I have access to various tools to fetch data, run commands, edit files, and perform other functions when needed. What can I do for you?",
+    "time": {
+      "start": 1766311458744,
+      "end": 1766311458744
+    }
+  }
+}
+{
+  "type": "step_finish",
+  "timestamp": 1766311458746,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405df7ba001WU2YgPNQ1aRqDB",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405defcf001Gil2F3fWY5XIb7",
+    "type": "step-finish",
+    "reason": "stop",
+    "cost": 0,
+    "tokens": {
+      "input": 23,
+      "output": 80,
+      "reasoning": 70,
+      "cache": {
+        "read": 8832,
+        "write": 0
+      }
+    }
+  }
+}
+```
+
+**Key Features Demonstrated:**
+
+1. **Continuous Listening:** The agent doesn't exit after the first response; it continues to accept input
+2. **Session Persistence:** Notice the `sessionID` remains the same (`ses_4bfa26db0ffeRkIzLa0XHXrOFX`) across both messages, maintaining conversation context
+3. **Plain Text Input:** Both inputs (`hi` and `who are you?`) are plain text, automatically converted to JSON messages
+4. **Streaming JSON Events:** Each response includes `step_start`, `text`, and `step_finish` events with detailed metadata
+5. **Token Usage Tracking:** Each `step_finish` event includes token counts for input, output, reasoning, and cache usage
+
+**To Exit:**
+
+- Press `CTRL+C` to exit the agent
+- Send EOF (Ctrl+D on Unix, Ctrl+Z on Windows)
+- Close your terminal
+
+This interactive mode makes it easy to have multi-turn conversations with the agent without needing to restart the process for each question.
+
 ## CLI Flags
 
 ### `-p, --prompt <text>`
