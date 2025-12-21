@@ -673,97 +673,253 @@ async function main() {
       .command(McpCommand)
       // Auth subcommand
       .command(AuthCommand)
-      // Default run mode (when piping stdin)
-      .option('model', {
-        type: 'string',
-        description: 'Model to use in format providerID/modelID',
-        default: 'opencode/grok-code',
-      })
-      .option('json-standard', {
-        type: 'string',
-        description:
-          'JSON output format standard: "opencode" (default) or "claude" (experimental)',
-        default: 'opencode',
-        choices: ['opencode', 'claude'],
-      })
-      .option('system-message', {
-        type: 'string',
-        description: 'Full override of the system message',
-      })
-      .option('system-message-file', {
-        type: 'string',
-        description: 'Full override of the system message from file',
-      })
-      .option('append-system-message', {
-        type: 'string',
-        description: 'Append to the default system message',
-      })
-      .option('append-system-message-file', {
-        type: 'string',
-        description: 'Append to the default system message from file',
-      })
-      .option('server', {
-        type: 'boolean',
-        description: 'Run in server mode (default)',
-        default: true,
-      })
-      .option('verbose', {
-        type: 'boolean',
-        description:
-          'Enable verbose mode to debug API requests (shows system prompt, token counts, etc.)',
-        default: false,
-      })
-      .option('dry-run', {
-        type: 'boolean',
-        description:
-          'Simulate operations without making actual API calls or package installations (useful for testing)',
-        default: false,
-      })
-      .option('use-existing-claude-oauth', {
-        type: 'boolean',
-        description:
-          'Use existing Claude OAuth credentials from ~/.claude/.credentials.json (from Claude Code CLI)',
-        default: false,
-      })
-      .option('prompt', {
-        alias: 'p',
-        type: 'string',
-        description: 'Prompt message to send directly (bypasses stdin reading)',
-      })
-      .option('disable-stdin', {
-        type: 'boolean',
-        description:
-          'Disable stdin streaming mode (requires --prompt or shows help)',
-        default: false,
-      })
-      .option('stdin-stream-timeout', {
-        type: 'number',
-        description:
-          'Optional timeout in milliseconds for stdin reading (default: no timeout)',
-      })
-      .option('auto-merge-queued-messages', {
-        type: 'boolean',
-        description:
-          'Enable auto-merging of rapidly arriving input lines into single messages (default: true)',
-        default: true,
-      })
-      .option('interactive', {
-        type: 'boolean',
-        description:
-          'Enable interactive mode to accept manual input as plain text strings (default: true). Use --no-interactive to only accept JSON input.',
-        default: true,
-      })
-      .option('always-accept-stdin', {
-        type: 'boolean',
-        description:
-          'Keep accepting stdin input even after the agent finishes work (default: true). Use --no-always-accept-stdin for single-message mode.',
-        default: true,
-      })
-      .option('compact-json', {
-        type: 'boolean',
-        description:
-          'Output compact JSON (single line) instead of pretty-printed JSON (default: false). Useful for program-to-program communication.',
-        default: false,
+      // Default command for agent mode (when no subcommand specified)
+      .command({
+        command: '$0',
+        describe: 'Run agent in interactive or stdin mode (default)',
+        builder: (yargs) =>
+          yargs
+            .option('model', {
+              type: 'string',
+              description: 'Model to use in format providerID/modelID',
+              default: 'opencode/grok-code',
+            })
+            .option('json-standard', {
+              type: 'string',
+              description:
+                'JSON output format standard: "opencode" (default) or "claude" (experimental)',
+              default: 'opencode',
+              choices: ['opencode', 'claude'],
+            })
+            .option('system-message', {
+              type: 'string',
+              description: 'Full override of the system message',
+            })
+            .option('system-message-file', {
+              type: 'string',
+              description: 'Full override of the system message from file',
+            })
+            .option('append-system-message', {
+              type: 'string',
+              description: 'Append to the default system message',
+            })
+            .option('append-system-message-file', {
+              type: 'string',
+              description: 'Append to the default system message from file',
+            })
+            .option('server', {
+              type: 'boolean',
+              description: 'Run in server mode (default)',
+              default: true,
+            })
+            .option('verbose', {
+              type: 'boolean',
+              description:
+                'Enable verbose mode to debug API requests (shows system prompt, token counts, etc.)',
+              default: false,
+            })
+            .option('dry-run', {
+              type: 'boolean',
+              description:
+                'Simulate operations without making actual API calls or package installations (useful for testing)',
+              default: false,
+            })
+            .option('use-existing-claude-oauth', {
+              type: 'boolean',
+              description:
+                'Use existing Claude OAuth credentials from ~/.claude/.credentials.json (from Claude Code CLI)',
+              default: false,
+            })
+            .option('prompt', {
+              alias: 'p',
+              type: 'string',
+              description:
+                'Prompt message to send directly (bypasses stdin reading)',
+            })
+            .option('disable-stdin', {
+              type: 'boolean',
+              description:
+                'Disable stdin streaming mode (requires --prompt or shows help)',
+              default: false,
+            })
+            .option('stdin-stream-timeout', {
+              type: 'number',
+              description:
+                'Optional timeout in milliseconds for stdin reading (default: no timeout)',
+            })
+            .option('auto-merge-queued-messages', {
+              type: 'boolean',
+              description:
+                'Enable auto-merging of rapidly arriving input lines into single messages (default: true)',
+              default: true,
+            })
+            .option('interactive', {
+              type: 'boolean',
+              description:
+                'Enable interactive mode to accept manual input as plain text strings (default: true). Use --no-interactive to only accept JSON input.',
+              default: true,
+            })
+            .option('always-accept-stdin', {
+              type: 'boolean',
+              description:
+                'Keep accepting stdin input even after the agent finishes work (default: true). Use --no-always-accept-stdin for single-message mode.',
+              default: true,
+            })
+            .option('compact-json', {
+              type: 'boolean',
+              description:
+                'Output compact JSON (single line) instead of pretty-printed JSON (default: false). Useful for program-to-program communication.',
+              default: false,
+            }),
+        handler: async (argv) => {
+          const compactJson = argv['compact-json'] === true;
+
+          // Check if --prompt flag was provided
+          if (argv.prompt) {
+            // Direct prompt mode - bypass stdin entirely
+            const request = { message: argv.prompt };
+            await runAgentMode(argv, request);
+            return;
+          }
+
+          // Check if --disable-stdin was set without --prompt
+          if (argv['disable-stdin']) {
+            // Output a helpful message suggesting to use --prompt
+            outputStatus(
+              {
+                type: 'error',
+                message:
+                  'No prompt provided. Use -p/--prompt to specify a message, or remove --disable-stdin to read from stdin.',
+                hint: 'Example: agent -p "Hello, how are you?"',
+              },
+              compactJson
+            );
+            process.exit(1);
+          }
+
+          // Check if stdin is a TTY (interactive terminal)
+          if (process.stdin.isTTY) {
+            // Enter interactive terminal mode with continuous listening
+            const isInteractive = argv.interactive !== false;
+            const autoMerge = argv['auto-merge-queued-messages'] !== false;
+            const alwaysAcceptStdin = argv['always-accept-stdin'] !== false;
+
+            // Exit if --no-always-accept-stdin is set (single message mode not supported in TTY)
+            if (!alwaysAcceptStdin) {
+              outputStatus(
+                {
+                  type: 'error',
+                  message:
+                    'Single message mode (--no-always-accept-stdin) is not supported in interactive terminal mode.',
+                  hint: 'Use piped input or --prompt for single messages.',
+                },
+                compactJson
+              );
+              process.exit(1);
+            }
+
+            outputStatus(
+              {
+                type: 'status',
+                mode: 'interactive-terminal',
+                message:
+                  'Agent CLI in interactive terminal mode. Type your message and press Enter.',
+                hint: 'Press CTRL+C to exit. Use --help for options.',
+                acceptedFormats: isInteractive
+                  ? ['JSON object with "message" field', 'Plain text']
+                  : ['JSON object with "message" field'],
+                options: {
+                  interactive: isInteractive,
+                  autoMergeQueuedMessages: autoMerge,
+                  alwaysAcceptStdin,
+                  compactJson,
+                },
+              },
+              compactJson
+            );
+
+            // Use continuous mode for interactive terminal
+            await runContinuousAgentMode(argv);
+            return;
+          }
+
+          // stdin is piped - enter stdin listening mode
+          const isInteractive = argv.interactive !== false;
+          const autoMerge = argv['auto-merge-queued-messages'] !== false;
+          const alwaysAcceptStdin = argv['always-accept-stdin'] !== false;
+
+          outputStatus(
+            {
+              type: 'status',
+              mode: 'stdin-stream',
+              message: alwaysAcceptStdin
+                ? 'Agent CLI in continuous listening mode. Accepts JSON and plain text input.'
+                : 'Agent CLI in single-message mode. Accepts JSON and plain text input.',
+              hint: 'Press CTRL+C to exit. Use --help for options.',
+              acceptedFormats: isInteractive
+                ? ['JSON object with "message" field', 'Plain text']
+                : ['JSON object with "message" field'],
+              options: {
+                interactive: isInteractive,
+                autoMergeQueuedMessages: autoMerge,
+                alwaysAcceptStdin,
+                compactJson,
+              },
+            },
+            compactJson
+          );
+
+          // Use continuous mode if --always-accept-stdin is enabled (default)
+          if (alwaysAcceptStdin) {
+            await runContinuousAgentMode(argv);
+            return;
+          }
+
+          // Single-message mode (--no-always-accept-stdin)
+          const timeout = argv['stdin-stream-timeout'] ?? null;
+          const input = await readStdinWithTimeout(timeout);
+          const trimmedInput = input.trim();
+
+          if (trimmedInput === '') {
+            outputStatus(
+              {
+                type: 'status',
+                message: 'No input received. Exiting.',
+              },
+              compactJson
+            );
+            yargsInstance.showHelp();
+            process.exit(0);
+          }
+
+          // Try to parse as JSON, if it fails treat it as plain text message
+          let request;
+          try {
+            request = JSON.parse(trimmedInput);
+          } catch (_e) {
+            // Not JSON
+            if (!isInteractive) {
+              // In non-interactive mode, only accept JSON
+              outputStatus(
+                {
+                  type: 'error',
+                  message:
+                    'Invalid JSON input. In non-interactive mode (--no-interactive), only JSON input is accepted.',
+                  hint: 'Use --interactive to accept plain text, or provide valid JSON: {"message": "your text"}',
+                },
+                compactJson
+              );
+              process.exit(1);
+            }
+            // In interactive mode, treat as plain text message
+            request = {
+              message: trimmedInput,
+            };
+          }
+
+          // Run agent mode
+          await runAgentMode(argv, request);
+        },
       })
       // Initialize logging early for all CLI commands
       // This prevents debug output from appearing in CLI unless --verbose is used
@@ -815,124 +971,8 @@ async function main() {
       })
       .help();
 
-    const argv = await yargsInstance.argv;
-
-    // If a command was executed (like mcp), yargs handles it
-    // Otherwise, check if we should run in agent mode (stdin piped)
-    const commandExecuted = argv._ && argv._.length > 0;
-
-    if (!commandExecuted) {
-      const compactJson = argv['compact-json'] === true;
-
-      // Check if --prompt flag was provided
-      if (argv.prompt) {
-        // Direct prompt mode - bypass stdin entirely
-        const request = { message: argv.prompt };
-        await runAgentMode(argv, request);
-        return;
-      }
-
-      // Check if --disable-stdin was set without --prompt
-      if (argv['disable-stdin']) {
-        // Output a helpful message suggesting to use --prompt
-        outputStatus(
-          {
-            type: 'error',
-            message:
-              'No prompt provided. Use -p/--prompt to specify a message, or remove --disable-stdin to read from stdin.',
-            hint: 'Example: agent -p "Hello, how are you?"',
-          },
-          compactJson
-        );
-        process.exit(1);
-      }
-
-      // Check if stdin is a TTY (interactive terminal)
-      // If it is, show help instead of waiting for input
-      if (process.stdin.isTTY) {
-        yargsInstance.showHelp();
-        process.exit(0);
-      }
-
-      // stdin is piped - enter stdin listening mode
-      // Output status message to inform user what's happening
-      const isInteractive = argv.interactive !== false;
-      const autoMerge = argv['auto-merge-queued-messages'] !== false;
-      const alwaysAcceptStdin = argv['always-accept-stdin'] !== false;
-
-      outputStatus(
-        {
-          type: 'status',
-          mode: 'stdin-stream',
-          message: alwaysAcceptStdin
-            ? 'Agent CLI in continuous listening mode. Accepts JSON and plain text input.'
-            : 'Agent CLI in single-message mode. Accepts JSON and plain text input.',
-          hint: 'Press CTRL+C to exit. Use --help for options.',
-          acceptedFormats: isInteractive
-            ? ['JSON object with "message" field', 'Plain text']
-            : ['JSON object with "message" field'],
-          options: {
-            interactive: isInteractive,
-            autoMergeQueuedMessages: autoMerge,
-            alwaysAcceptStdin,
-            compactJson,
-          },
-        },
-        compactJson
-      );
-
-      // Use continuous mode if --always-accept-stdin is enabled (default)
-      if (alwaysAcceptStdin) {
-        await runContinuousAgentMode(argv);
-        return;
-      }
-
-      // Single-message mode (--no-always-accept-stdin)
-      // Read stdin with optional timeout
-      const timeout = argv['stdin-stream-timeout'] ?? null;
-      const input = await readStdinWithTimeout(timeout);
-      const trimmedInput = input.trim();
-
-      if (trimmedInput === '') {
-        outputStatus(
-          {
-            type: 'status',
-            message: 'No input received. Exiting.',
-          },
-          compactJson
-        );
-        yargsInstance.showHelp();
-        process.exit(0);
-      }
-
-      // Try to parse as JSON, if it fails treat it as plain text message
-      let request;
-      try {
-        request = JSON.parse(trimmedInput);
-      } catch (_e) {
-        // Not JSON
-        if (!isInteractive) {
-          // In non-interactive mode, only accept JSON
-          outputStatus(
-            {
-              type: 'error',
-              message:
-                'Invalid JSON input. In non-interactive mode (--no-interactive), only JSON input is accepted.',
-              hint: 'Use --interactive to accept plain text, or provide valid JSON: {"message": "your text"}',
-            },
-            compactJson
-          );
-          process.exit(1);
-        }
-        // In interactive mode, treat as plain text message
-        request = {
-          message: trimmedInput,
-        };
-      }
-
-      // Run agent mode
-      await runAgentMode(argv, request);
-    }
+    // Parse arguments (handlers will be called automatically)
+    await yargsInstance.argv;
   } catch (error) {
     hasError = true;
     console.error(
