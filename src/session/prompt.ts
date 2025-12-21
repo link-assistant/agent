@@ -447,7 +447,7 @@ export namespace SessionPrompt {
         lastFinished.summary !== true &&
         SessionCompaction.isOverflow({
           tokens: lastFinished.tokens,
-          model: model.info,
+          model: model.info ?? { id: model.modelID },
         })
       ) {
         await SessionCompaction.create({
@@ -488,13 +488,13 @@ export namespace SessionPrompt {
           sessionID,
         })) as MessageV2.Assistant,
         sessionID: sessionID,
-        model: model.info,
+        model: model.info ?? { id: model.modelID },
         providerID: model.providerID,
         abort,
       });
       const system = await resolveSystemPrompt({
         providerID: model.providerID,
-        modelID: model.info.id,
+        modelID: model.info?.id ?? model.modelID,
         agent,
         system: lastUser.system,
         appendSystem: lastUser.appendSystem,
@@ -507,10 +507,11 @@ export namespace SessionPrompt {
         processor,
       });
       const params = {
-        temperature: model.info.temperature
-          ? (agent.temperature ??
-            ProviderTransform.temperature(model.providerID, model.modelID))
-          : undefined,
+        temperature:
+          (model.info?.temperature ?? false)
+            ? (agent.temperature ??
+              ProviderTransform.temperature(model.providerID, model.modelID))
+            : undefined,
         topP:
           agent.topP ?? ProviderTransform.topP(model.providerID, model.modelID),
         options: {
@@ -520,7 +521,7 @@ export namespace SessionPrompt {
             model.npm ?? '',
             sessionID
           ),
-          ...model.info.options,
+          ...(model.info?.options ?? {}),
           ...agent.options,
         },
       };
@@ -575,9 +576,11 @@ export namespace SessionPrompt {
         log.info(`User message tokens (estimated): ${userTokens}`);
         log.info(`Total estimated tokens: ${totalEstimatedTokens}`);
         log.info(
-          `Model context limit: ${model.info.limit.context || 'unknown'}`
+          `Model context limit: ${model.info?.limit?.context || 'unknown'}`
         );
-        log.info(`Model output limit: ${model.info.limit.output || 'unknown'}`);
+        log.info(
+          `Model output limit: ${model.info?.limit?.output || 'unknown'}`
+        );
         log.info('=== END VERBOSE ===');
       }
 
@@ -616,7 +619,7 @@ export namespace SessionPrompt {
                   'x-opencode-request': lastUser.id,
                 }
               : undefined),
-            ...model.info.headers,
+            ...(model.info?.headers ?? {}),
           },
           // set to 0, we handle loop
           maxRetries: 0,
@@ -624,7 +627,7 @@ export namespace SessionPrompt {
           maxOutputTokens: ProviderTransform.maxOutputTokens(
             model.providerID,
             params.options,
-            model.info.limit.output,
+            model.info?.limit?.output ?? 100000,
             OUTPUT_TOKEN_MAX
           ),
           abortSignal: abort,
@@ -662,7 +665,7 @@ export namespace SessionPrompt {
               })
             ),
           ],
-          tools: model.info.tool_call === false ? undefined : tools,
+          tools: model.info?.tool_call === false ? undefined : tools,
           model: wrapLanguageModel({
             model: model.language,
             middleware: [
@@ -1494,7 +1497,7 @@ export namespace SessionPrompt {
         small.npm ?? '',
         input.session.id
       ),
-      ...small.info.options,
+      ...(small.info?.options ?? {}),
     };
     if (small.providerID === 'openai' || small.modelID.includes('gpt-5')) {
       if (small.modelID.includes('5.1')) {
@@ -1509,7 +1512,7 @@ export namespace SessionPrompt {
       };
     }
     await generateText({
-      maxOutputTokens: small.info.reasoning ? 1500 : 20,
+      maxOutputTokens: small.info?.reasoning ? 1500 : 20,
       providerOptions: ProviderTransform.providerOptions(
         small.npm,
         small.providerID,
@@ -1550,7 +1553,7 @@ export namespace SessionPrompt {
           },
         ]),
       ],
-      headers: small.info.headers,
+      headers: small.info?.headers ?? {},
       model: small.language,
     })
       .then((result) => {
@@ -1569,7 +1572,10 @@ export namespace SessionPrompt {
           });
       })
       .catch((error) => {
-        log.error('failed to generate title', { error, model: small.info.id });
+        log.error('failed to generate title', {
+          error,
+          model: small.info?.id ?? small.modelID,
+        });
       });
   }
 }
