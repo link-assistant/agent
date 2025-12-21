@@ -42,9 +42,6 @@ describe('GeminiOAuth', () => {
       expect(GeminiOAuth.Config.scopes).toContain(
         'https://www.googleapis.com/auth/cloud-platform'
       );
-      expect(GeminiOAuth.Config.scopes).toContain(
-        'https://www.googleapis.com/auth/generative-language.retriever'
-      );
     });
   });
 

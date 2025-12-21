@@ -1,105 +1,176 @@
-# Case Study: Issue #66 - Full support for Gemini OAuth (subscriptions login)
+# Issue #66: Full support for Gemini OAuth (subscriptions login)
 
 ## Issue Summary
 
-- **Title**: Full support for Gemini OAuth (subscriptions login)
-- **Opened**: December 16, 2025
-- **Closed**: With PRs #67 and #74
-- **Description**: Currently only API token support for Gemini, need OAuth support for subscriptions like Claude Pro/Max
+The issue reports that the agent currently only supports API tokens for Gemini authentication, but needs to support OAuth for Gemini subscriptions like it does for Claude Pro/Max subscriptions.
 
-## Timeline Reconstruction
+## Current Implementation Analysis
 
-1. **December 16, 2025**: Issue opened with description and screenshot showing lack of OAuth support
-2. **Subsequent days**: PR #67 and #74 created to implement Google OAuth authentication
-3. **Issue closed**: After implementation completed
+### Existing Code
+
+The codebase already contains a complete Gemini OAuth implementation:
+
+- `src/auth/gemini-oauth.ts`: Full OAuth 2.0 with PKCE implementation
+- `src/auth/plugins.ts`: GooglePlugin that integrates with GeminiOAuth
+- `src/provider/provider.ts`: Google provider supports OAuth authentication
+- `src/cli/cmd/auth.ts`: Auth command includes Google OAuth option
+
+### OAuth Flow
+
+The implementation provides:
+
+1. PKCE-based authorization URL generation
+2. Local HTTP server for callback handling
+3. Token exchange and storage
+4. Token refresh capability
+5. Authenticated fetch wrapper
+
+## Comparison with Reference Implementations
+
+### reference-gemini-cli
+
+- Uses `google-auth-library` OAuth2Client
+- Does NOT use PKCE
+- Scopes: `cloud-platform`, `userinfo.email`, `userinfo.profile`
+- Uses encrypted credential storage
+- Client ID/Secret: Same as our implementation
+
+### Our Implementation
+
+- Custom OAuth implementation with fetch
+- Uses PKCE
+- Scopes: `cloud-platform`, `generative-language.retriever`, `userinfo.email`, `userinfo.profile`
+- Plain JSON credential storage
+- Same Client ID/Secret
 
 ## Root Cause Analysis
 
-### Primary Cause
+### 1. Scope Mismatch
 
-The agent CLI only supported API key authentication for Google/Gemini providers, but Google AI Pro/Premium subscriptions require OAuth 2.0 authentication for access to the Gemini API.
+**Issue**: Our implementation includes `generative-language.retriever` scope not present in reference.
+**Impact**: May cause authorization failures or unnecessary permission requests.
 
-### Contributing Factors
+### 2. PKCE Implementation
 
-- Google AI API supports both API keys (free tier) and OAuth (paid subscriptions)
-- Claude already had OAuth support for Pro/Max subscriptions
-- Reference implementation existed in Gemini CLI with working OAuth flow
-- Agent used same OAuth client ID as Gemini CLI but lacked the authentication flow
+**Issue**: Reference implementation doesn't use PKCE, ours does.
+**Impact**: PKCE is security best practice but may not be required for this client.
 
-### Technical Details
+### 3. Storage Security
 
-- Google AI API endpoint: generativelanguage.googleapis.com
-- OAuth client ID: 681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com (public for installed apps)
-- Required scopes: cloud-platform, userinfo.email, userinfo.profile
-- Authentication flow: OAuth 2.0 with PKCE, local server callback
+**Issue**: Reference uses encrypted storage, ours uses plain JSON.
+**Impact**: Security concern for stored credentials.
 
-## Solution Implemented
+### 4. Library vs Custom Implementation
 
-### OAuth Plugin Addition
+**Issue**: Reference uses battle-tested google-auth-library, ours uses custom fetch calls.
+**Impact**: Potential edge cases not handled in custom implementation.
 
-- Added Google OAuth authentication plugin in `src/auth/plugins.ts`
-- Supports both web browser flow and manual code entry
-- Uses same client credentials as official Gemini CLI
-- Stores tokens securely in `~/.local/share/agent/auth.json`
+## Research on OAuth Scopes
 
-### Provider Integration
+### Gemini Cookbook OAuth Example
 
-- Updated `google` provider to support OAuth tokens
-- Falls back to API keys if no OAuth credentials
-- Added `google-oauth` provider for OAuth-only usage
-- Custom fetch function adds Bearer token for authenticated requests
+Scopes used: `cloud-platform`, `generative-language.tuning`, `generative-language.retriever`
 
-### Key Changes
+### Google AI Documentation
 
-- Added `generative-language.retriever` scope for full Gemini API access as per reference implementation
-- Implemented token refresh logic
-- Added zero-cost billing for subscription users
+- Basic Gemini API: API keys
+- Advanced features (tuning, retrieval): OAuth required
+- Subscription access: Likely requires `cloud-platform` scope
 
-## Additional Research Findings
+### Google OAuth Scopes Documentation
 
-### Google Documentation
+- `cloud-platform`: Full access to Google Cloud services
+- `generative-language.*`: Specific to Gemini API features
+- `userinfo.*`: User profile information
 
-- Gemini API supports OAuth for Pro/Premium subscriptions: https://ai.google.dev/gemini-api/docs/oauth
-- OAuth 2.0 scopes: https://developers.google.com/identity/protocols/oauth2/scopes
-- Client secret is intentionally public for installed applications
+## Proposed Solutions
 
-### Related Issues
+### Solution 1: Update Scopes to Match Reference
 
-- Gemini CLI issue #10110: Authentication fails for Google AI Pro accounts
-- Support thread: Using existing Gemini Pro subscription for integration
+**Change**: Remove `generative-language.retriever` scope to match reference-gemini-cli.
 
-### Implementation References
+**Rationale**: Reference implementation works for Gemini CLI subscriptions.
 
-- Gemini CLI OAuth implementation in `packages/core/src/code_assist/oauth2.ts`
-- Claude OAuth implementation in `src/auth/claude-oauth.ts`
-- OpenCode auth plugins
+**Implementation**:
 
-## Impact Assessment
+```typescript
+scopes: [
+  'https://www.googleapis.com/auth/cloud-platform',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+],
+```
 
-### User Impact
+### Solution 2: Remove PKCE
 
-- Gemini Pro/Premium subscribers can now authenticate via OAuth
-- Eliminates need for separate API key management
-- Consistent experience with Claude Pro/Max authentication
+**Change**: Remove PKCE implementation to match reference.
 
-### Technical Impact
+**Rationale**: Reference doesn't use PKCE and works.
 
-- Added OAuth support without breaking existing API key users
-- Secure token storage with automatic refresh
-- Reused existing provider architecture
+**Implementation**: Modify `generateAuthUrl` and `exchangeCode` to not use PKCE.
 
-## Lessons Learned
+### Solution 3: Use google-auth-library
 
-1. **Consistency**: Maintain authentication parity across providers
-2. **Reference Code**: Leverage official CLI implementations for auth flows
-3. **Scopes**: Use minimal required scopes to avoid permission issues
-4. **Fallback**: Support both OAuth and API key for flexibility
-5. **Security**: Use established OAuth libraries and secure storage
+**Change**: Replace custom OAuth implementation with google-auth-library.
 
-## Recommendations
+**Rationale**: More reliable, battle-tested implementation.
 
-1. **Testing**: Add integration tests for OAuth flows
-2. **Documentation**: Update auth guide with Gemini OAuth instructions
-3. **Monitoring**: Track OAuth success/failure rates
-4. **User Education**: Highlight subscription benefits in auth prompts
-5. **Future**: Consider unified auth experience across all providers
+**Implementation**: Refactor gemini-oauth.ts to use OAuth2Client.
+
+### Solution 4: Add Encrypted Storage
+
+**Change**: Implement encrypted credential storage.
+
+**Rationale**: Better security following reference implementation.
+
+**Implementation**: Add encryption similar to reference-gemini-cli.
+
+## Cost Analysis
+
+### Authentication Method Costs
+
+- **API Keys**: No additional cost, direct API access
+- **OAuth**: No additional cost, same API usage pricing
+- **Token Refresh**: Minimal API calls, no significant cost impact
+
+### Implementation Costs
+
+- **Development**: Low - OAuth already implemented
+- **Testing**: Medium - Requires OAuth flow testing
+- **Maintenance**: Low - Similar to existing Claude OAuth
+
+## Implementation Status
+
+### Completed Changes
+
+1. **Phase 1 - COMPLETED (Dec 21, 2025)**: Update scopes to match reference
+   - Removed `generative-language.retriever` scope from `src/auth/gemini-oauth.ts`
+   - Removed `generative-language.retriever` scope from `src/auth/plugins.ts`
+   - Updated tests to reflect scope changes
+   - All tests pass ✅
+
+### Remaining Phases
+
+2. **Phase 2**: Test OAuth flow with updated scopes (PENDING)
+3. **Phase 3**: If issues persist, implement google-auth-library replacement (PENDING)
+4. **Phase 4**: Add encrypted storage for production security (PENDING)
+
+## Timeline
+
+- Phase 1: COMPLETED
+- Phase 2: 1-2 days testing
+- Phase 3: 3-5 days (if needed)
+- Phase 4: 2-3 days
+
+## Risk Assessment
+
+- **Low Risk**: Scope changes ✅ COMPLETED
+- **Medium Risk**: Library replacement
+- **Low Risk**: Encrypted storage addition
+
+## Success Criteria
+
+- OAuth authentication flow completes successfully
+- Gemini models accessible via OAuth credentials
+- Token refresh works automatically
+- No breaking changes to existing API key authentication

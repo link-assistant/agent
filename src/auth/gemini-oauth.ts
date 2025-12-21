@@ -40,13 +40,12 @@ export namespace GeminiOAuth {
       '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com',
     clientSecret: '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',
 
-    // Requested scopes for API access
-    scopes: [
-      'https://www.googleapis.com/auth/cloud-platform',
-      'https://www.googleapis.com/auth/generative-language.retriever',
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile',
-    ],
+     // Requested scopes for API access
+     scopes: [
+       'https://www.googleapis.com/auth/cloud-platform',
+       'https://www.googleapis.com/auth/userinfo.email',
+       'https://www.googleapis.com/auth/userinfo.profile',
+     ],
 
     // Success/failure URLs for user feedback
     successUrl:
@@ -327,8 +326,7 @@ export namespace GeminiOAuth {
         log.warn('token expired', {
           expiresAt: new Date(parsed.expiry_date).toISOString(),
         });
-        // TODO: Implement token refresh using refreshToken
-        // For now, user needs to re-authenticate
+        // Token refresh is handled by the OAuth loader in plugins.ts
       }
 
       log.info('loaded oauth credentials', {
