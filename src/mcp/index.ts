@@ -81,9 +81,10 @@ export namespace MCP {
       await Promise.all(
         Object.values(state.clients).map((client) =>
           client.close().catch((error) => {
-            log.error('Failed to close MCP client', {
+            log.error(() => ({
+              message: 'Failed to close MCP client',
               error,
-            });
+            }));
           })
         )
       );
@@ -119,10 +120,10 @@ export namespace MCP {
 
   async function create(key: string, mcp: Config.Mcp) {
     if (mcp.enabled === false) {
-      log.info('mcp server disabled', { key });
+      log.info(() => ({ message: 'mcp server disabled', key }));
       return;
     }
-    log.info('found', { key, type: mcp.type });
+    log.info(() => ({ message: 'found', key, type: mcp.type }));
     let mcpClient: MCPClient | undefined;
     let status: Status | undefined = undefined;
 
@@ -152,7 +153,11 @@ export namespace MCP {
           transport,
         })
           .then((client) => {
-            log.info('connected', { key, transport: name });
+            log.info(() => ({
+              message: 'connected',
+              key,
+              transport: name,
+            }));
             mcpClient = client;
             status = { status: 'connected' };
             return true;
@@ -160,12 +165,13 @@ export namespace MCP {
           .catch((error) => {
             lastError =
               error instanceof Error ? error : new Error(String(error));
-            log.debug('transport connection failed', {
+            log.debug(() => ({
+              message: 'transport connection failed',
               key,
               transport: name,
               url: mcp.url,
               error: lastError.message,
-            });
+            }));
             status = {
               status: 'failed' as const,
               error: lastError.message,
@@ -198,11 +204,12 @@ export namespace MCP {
           };
         })
         .catch((error) => {
-          log.error('local mcp startup failed', {
+          log.error(() => ({
+            message: 'local mcp startup failed',
             key,
             command: mcp.command,
             error: error instanceof Error ? error.message : String(error),
-          });
+          }));
           status = {
             status: 'failed' as const,
             error: error instanceof Error ? error.message : String(error),
@@ -228,14 +235,19 @@ export namespace MCP {
       mcpClient.tools(),
       mcp.timeout ?? 5000
     ).catch((err) => {
-      log.error('failed to get tools from client', { key, error: err });
+      log.error(() => ({
+        message: 'failed to get tools from client',
+        key,
+        error: err,
+      }));
       return undefined;
     });
     if (!result) {
       await mcpClient.close().catch((error) => {
-        log.error('Failed to close MCP client', {
+        log.error(() => ({
+          message: 'Failed to close MCP client',
           error,
-        });
+        }));
       });
       status = {
         status: 'failed',
@@ -250,10 +262,11 @@ export namespace MCP {
       };
     }
 
-    log.info('create() successfully created client', {
+    log.info(() => ({
+      message: 'create() successfully created client',
       key,
       toolCount: Object.keys(result).length,
-    });
+    }));
     return {
       mcpClient,
       status,
@@ -274,7 +287,11 @@ export namespace MCP {
     const clientsSnapshot = await clients();
     for (const [clientName, client] of Object.entries(clientsSnapshot)) {
       const tools = await client.tools().catch((e) => {
-        log.error('failed to get tools', { clientName, error: e.message });
+        log.error(() => ({
+          message: 'failed to get tools',
+          clientName,
+          error: e.message,
+        }));
         const failedStatus = {
           status: 'failed' as const,
           error: e instanceof Error ? e.message : String(e),

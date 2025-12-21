@@ -55,9 +55,7 @@ export namespace Server {
   export const App = lazy(() =>
     app
       .onError((err, c) => {
-        log.error('failed', {
-          error: err,
-        });
+        log.error(() => ({ message: 'failed', error: err }));
         if (err instanceof NamedError) {
           let status: ContentfulStatusCode;
           if (err instanceof Storage.NotFoundError) status = 404;
@@ -71,10 +69,11 @@ export namespace Server {
         });
       })
       .use(async (c, next) => {
-        log.info('request', {
+        log.info(() => ({
+          message: 'request',
           method: c.req.method,
           path: c.req.path,
-        });
+        }));
         const timer = log.time('request', {
           method: c.req.method,
           path: c.req.path,

@@ -532,13 +532,13 @@ export namespace Patch {
 
           await fs.writeFile(hunk.path, hunk.contents, 'utf-8');
           added.push(hunk.path);
-          log.info(`Added file: ${hunk.path}`);
+          log.info(() => ({ message: 'Added file', path: hunk.path }));
           break;
 
         case 'delete':
           await fs.unlink(hunk.path);
           deleted.push(hunk.path);
-          log.info(`Deleted file: ${hunk.path}`);
+          log.info(() => ({ message: 'Deleted file', path: hunk.path }));
           break;
 
         case 'update':
@@ -557,12 +557,16 @@ export namespace Patch {
             await fs.writeFile(hunk.move_path, fileUpdate.content, 'utf-8');
             await fs.unlink(hunk.path);
             modified.push(hunk.move_path);
-            log.info(`Moved file: ${hunk.path} -> ${hunk.move_path}`);
+            log.info(() => ({
+              message: 'Moved file',
+              from: hunk.path,
+              to: hunk.move_path,
+            }));
           } else {
             // Regular update
             await fs.writeFile(hunk.path, fileUpdate.content, 'utf-8');
             modified.push(hunk.path);
-            log.info(`Updated file: ${hunk.path}`);
+            log.info(() => ({ message: 'Updated file', path: hunk.path }));
           }
           break;
       }

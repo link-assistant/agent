@@ -115,7 +115,7 @@ export namespace SessionSummary {
         headers: small.info.headers,
         model: small.language,
       });
-      log.info('title', { title: result.text });
+      log.info(() => ({ message: 'title', title: result.text }));
       userMsg.summary.title = result.text;
       await Session.updateMessage(userMsg);
     }
@@ -152,7 +152,7 @@ export namespace SessionSummary {
         if (result) summary = result.text;
       }
       userMsg.summary.body = summary;
-      log.info('body', { body: summary });
+      log.info(() => ({ message: 'body', body: summary }));
       await Session.updateMessage(userMsg);
     }
   }

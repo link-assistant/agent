@@ -17,10 +17,11 @@ export namespace BunProc {
     cmd: string[],
     options?: Bun.SpawnOptions.OptionsObject<any, any, any>
   ) {
-    log.info('running', {
+    log.info(() => ({
+      message: 'running',
       cmd: [which(), ...cmd],
       ...options,
-    });
+    }));
     const result = Bun.spawn([which(), ...cmd], {
       ...options,
       stdout: 'pipe',
@@ -42,11 +43,7 @@ export namespace BunProc {
         ? result.stderr
         : await readableStreamToText(result.stderr)
       : undefined;
-    log.info('done', {
-      code,
-      stdout,
-      stderr,
-    });
+    log.info(() => ({ message: 'done', code, stdout, stderr }));
     if (code !== 0) {
       const parts = [`Command failed with exit code ${result.exitCode}`];
       if (stderr) parts.push(`stderr: ${stderr}`);
@@ -111,14 +108,13 @@ export namespace BunProc {
 
     // Check for dry-run mode
     if (Flag.OPENCODE_DRY_RUN) {
-      log.info(
-        '[DRY RUN] Would install package (skipping actual installation)',
-        {
-          pkg,
-          version,
-          targetPath: mod,
-        }
-      );
+      log.info(() => ({
+        message:
+          '[DRY RUN] Would install package (skipping actual installation)',
+        pkg,
+        version,
+        targetPath: mod,
+      }));
       // In dry-run mode, pretend the package is installed
       return mod;
     }
@@ -137,10 +133,11 @@ export namespace BunProc {
     // - If .npmrc files exist, Bun will use them automatically
     // - If no .npmrc files exist, Bun will default to https://registry.npmjs.org
     // - No need to pass --registry flag
-    log.info("installing package using Bun's default registry resolution", {
+    log.info(() => ({
+      message: "installing package using Bun's default registry resolution",
       pkg,
       version,
-    });
+    }));
 
     // Retry logic for cache-related errors
     let lastError: Error | undefined;
@@ -150,7 +147,12 @@ export namespace BunProc {
           cwd: Global.Path.cache,
         });
 
-        log.info('package installed successfully', { pkg, version, attempt });
+        log.info(() => ({
+          message: 'package installed successfully',
+          pkg,
+          version,
+          attempt,
+        }));
         parsed.dependencies[pkg] = version;
         await Bun.write(pkgjson.name!, JSON.stringify(parsed, null, 2));
         return mod;
@@ -158,43 +160,47 @@ export namespace BunProc {
         const errorMsg = e instanceof Error ? e.message : String(e);
         const isCacheError = isCacheRelatedError(errorMsg);
 
-        log.warn('package installation attempt failed', {
+        log.warn(() => ({
+          message: 'package installation attempt failed',
           pkg,
           version,
           attempt,
           maxRetries: MAX_RETRIES,
           error: errorMsg,
           isCacheError,
-        });
+        }));
 
         if (isCacheError && attempt < MAX_RETRIES) {
-          log.info('retrying installation after cache-related error', {
+          log.info(() => ({
+            message: 'retrying installation after cache-related error',
             pkg,
             version,
             attempt,
             nextAttempt: attempt + 1,
             delayMs: RETRY_DELAY_MS,
-          });
+          }));
           await delay(RETRY_DELAY_MS);
           lastError = e instanceof Error ? e : new Error(errorMsg);
           continue;
         }
 
         // Non-cache error or final attempt - log and throw
-        log.error('package installation failed', {
+        log.error(() => ({
+          message: 'package installation failed',
           pkg,
           version,
           error: errorMsg,
           stack: e instanceof Error ? e.stack : undefined,
           possibleCacheCorruption: isCacheError,
           attempts: attempt,
-        });
+        }));
 
         // Provide helpful recovery instructions for cache-related errors
         if (isCacheError) {
-          log.error(
-            'Bun package cache may be corrupted. Try clearing the cache with: bun pm cache rm'
-          );
+          log.error(() => ({
+            message:
+              'Bun package cache may be corrupted. Try clearing the cache with: bun pm cache rm',
+          }));
         }
 
         throw new InstallFailedError(

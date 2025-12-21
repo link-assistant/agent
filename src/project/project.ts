@@ -24,7 +24,7 @@ export namespace Project {
   export type Info = z.infer<typeof Info>;
 
   export async function fromDirectory(directory: string) {
-    log.info('fromDirectory', { directory });
+    log.info(() => ({ message: 'fromDirectory', directory }));
     const matches = Filesystem.up({ targets: ['.git'], start: directory });
     const git = await matches.next().then((x) => x.value);
     await matches.return();

@@ -37,7 +37,7 @@ export namespace Provider {
       // Check if OAuth credentials are available via the auth plugin
       const auth = await Auth.get('anthropic');
       if (auth?.type === 'oauth') {
-        log.info('using anthropic oauth credentials');
+        log.info(() => ({ message: 'using anthropic oauth credentials' }));
         const loaderFn = await AuthPlugins.getLoader('anthropic');
         if (loaderFn) {
           const result = await loaderFn(() => Auth.get('anthropic'), input);
@@ -330,7 +330,7 @@ export namespace Provider {
     google: async (input) => {
       const auth = await Auth.get('google');
       if (auth?.type === 'oauth') {
-        log.info('using google oauth credentials');
+        log.info(() => ({ message: 'using google oauth credentials' }));
         const loaderFn = await AuthPlugins.getLoader('google');
         if (loaderFn) {
           const result = await loaderFn(() => Auth.get('google'), input);
@@ -355,7 +355,9 @@ export namespace Provider {
     'github-copilot': async (input) => {
       const auth = await Auth.get('github-copilot');
       if (auth?.type === 'oauth') {
-        log.info('using github copilot oauth credentials');
+        log.info(() => ({
+          message: 'using github copilot oauth credentials',
+        }));
         const loaderFn = await AuthPlugins.getLoader('github-copilot');
         if (loaderFn) {
           const result = await loaderFn(
@@ -383,7 +385,9 @@ export namespace Provider {
     'github-copilot-enterprise': async (input) => {
       const auth = await Auth.get('github-copilot-enterprise');
       if (auth?.type === 'oauth') {
-        log.info('using github copilot enterprise oauth credentials');
+        log.info(() => ({
+          message: 'using github copilot enterprise oauth credentials',
+        }));
         const loaderFn = await AuthPlugins.getLoader('github-copilot');
         if (loaderFn) {
           const result = await loaderFn(
@@ -435,7 +439,10 @@ export namespace Provider {
         return { autoload: false };
       }
 
-      log.info('using claude oauth credentials', { source: tokenSource });
+      log.info(() => ({
+        message: 'using claude oauth credentials',
+        source: tokenSource,
+      }));
 
       // Create authenticated fetch with Bearer token and OAuth beta header
       const customFetch = ClaudeOAuth.createAuthenticatedFetch(oauthToken);
@@ -537,7 +544,7 @@ export namespace Provider {
     // Maps `${provider}/${key}` to the provider’s actual model ID for custom aliases.
     const realIdByKey = new Map<string, string>();
 
-    log.info('init');
+    log.info(() => ({ message: 'init' }));
 
     function mergeProvider(
       id: string,
@@ -783,7 +790,7 @@ export namespace Provider {
         delete providers[providerID];
         continue;
       }
-      log.info('found', { providerID });
+      log.info(() => ({ message: 'found', providerID }));
     }
 
     return {
@@ -818,19 +825,21 @@ export namespace Provider {
 
       let installedPath: string;
       if (!pkg.startsWith('file://')) {
-        log.info('installing provider package', {
+        log.info(() => ({
+          message: 'installing provider package',
           providerID: provider.id,
           pkg,
           version: 'latest',
-        });
+        }));
         installedPath = await BunProc.install(pkg, 'latest');
-        log.info('provider package installed successfully', {
+        log.info(() => ({
+          message: 'provider package installed successfully',
           providerID: provider.id,
           pkg,
           installedPath,
-        });
+        }));
       } else {
-        log.info('loading local provider', { pkg });
+        log.info(() => ({ message: 'loading local provider', pkg }));
         installedPath = pkg;
       }
 
@@ -876,13 +885,14 @@ export namespace Provider {
       s.sdk.set(key, loaded);
       return loaded as SDK;
     })().catch((e) => {
-      log.error('provider initialization failed', {
+      log.error(() => ({
+        message: 'provider initialization failed',
         providerID: provider.id,
         pkg: model.provider?.npm ?? provider.npm ?? provider.id,
         error: e instanceof Error ? e.message : String(e),
         stack: e instanceof Error ? e.stack : undefined,
         cause: e instanceof Error && e.cause ? String(e.cause) : undefined,
-      });
+      }));
       throw new InitError({ providerID: provider.id }, { cause: e });
     });
   }
@@ -896,10 +906,7 @@ export namespace Provider {
     const s = await state();
     if (s.models.has(key)) return s.models.get(key)!;
 
-    log.info('getModel', {
-      providerID,
-      modelID,
-    });
+    log.info(() => ({ message: 'getModel', providerID, modelID }));
 
     const provider = s.providers[providerID];
     if (!provider) throw new ModelNotFoundError({ providerID, modelID });
@@ -929,7 +936,7 @@ export namespace Provider {
           ? await provider.getModel(sdk, realID, provider.options)
           : sdk.languageModel(realID);
       }
-      log.info('found', { providerID, modelID });
+      log.info(() => ({ message: 'found', providerID, modelID }));
       s.models.set(key, {
         providerID,
         modelID,
@@ -1032,10 +1039,11 @@ export namespace Provider {
     if (opencodeProvider) {
       const [model] = sort(Object.values(opencodeProvider.info.models));
       if (model) {
-        log.info('using opencode provider as default', {
+        log.info(() => ({
+          message: 'using opencode provider as default',
           provider: opencodeProvider.info.id,
           model: model.id,
-        });
+        }));
         return {
           providerID: opencodeProvider.info.id,
           modelID: model.id,

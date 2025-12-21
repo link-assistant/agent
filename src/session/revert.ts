@@ -72,7 +72,7 @@ export namespace SessionRevert {
   }
 
   export async function unrevert(input: { sessionID: string }) {
-    log.info('unreverting', input);
+    log.info(() => ({ message: 'unreverting', ...input }));
     SessionPrompt.assertNotBusy(input.sessionID);
     const session = await Session.get(input.sessionID);
     if (!session.revert) return session;

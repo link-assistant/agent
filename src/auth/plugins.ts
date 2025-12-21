@@ -162,9 +162,10 @@ const AnthropicPlugin: AuthPlugin = {
             );
 
             if (!result.ok) {
-              log.error('anthropic oauth token exchange failed', {
+              log.error(() => ({
+                message: 'anthropic oauth token exchange failed',
                 status: result.status,
-              });
+              }));
               return { type: 'failed' };
             }
 
@@ -229,9 +230,10 @@ const AnthropicPlugin: AuthPlugin = {
             );
 
             if (!tokenResult.ok) {
-              log.error('anthropic oauth token exchange failed', {
+              log.error(() => ({
+                message: 'anthropic oauth token exchange failed',
                 status: tokenResult.status,
-              });
+              }));
               return { type: 'failed' };
             }
 
@@ -286,7 +288,9 @@ const AnthropicPlugin: AuthPlugin = {
 
         // Refresh token if expired
         if (!currentAuth.access || currentAuth.expires < Date.now()) {
-          log.info('refreshing anthropic oauth token');
+          log.info(() => ({
+            message: 'refreshing anthropic oauth token',
+          }));
           const response = await fetch(
             'https://console.anthropic.com/v1/oauth/token',
             {
@@ -566,7 +570,7 @@ const GitHubCopilotPlugin: AuthPlugin = {
             : 'github.com';
           const urls = getCopilotUrls(domain);
 
-          log.info('refreshing github copilot token');
+          log.info(() => ({ message: 'refreshing github copilot token' }));
           const response = await fetch(urls.COPILOT_API_KEY_URL, {
             headers: {
               Accept: 'application/json',
@@ -720,7 +724,9 @@ const OpenAIPlugin: AuthPlugin = {
             }
 
             if (!code) {
-              log.error('openai oauth no code provided');
+              log.error(() => ({
+                message: 'openai oauth no code provided',
+              }));
               return { type: 'failed' };
             }
 
@@ -740,9 +746,10 @@ const OpenAIPlugin: AuthPlugin = {
             });
 
             if (!tokenResult.ok) {
-              log.error('openai oauth token exchange failed', {
+              log.error(() => ({
+                message: 'openai oauth token exchange failed',
                 status: tokenResult.status,
-              });
+              }));
               return { type: 'failed' };
             }
 
@@ -752,7 +759,9 @@ const OpenAIPlugin: AuthPlugin = {
               !json.refresh_token ||
               typeof json.expires_in !== 'number'
             ) {
-              log.error('openai oauth token response missing fields');
+              log.error(() => ({
+                message: 'openai oauth token response missing fields',
+              }));
               return { type: 'failed' };
             }
 
@@ -787,7 +796,7 @@ const OpenAIPlugin: AuthPlugin = {
 
         // Refresh token if expired
         if (!currentAuth.access || currentAuth.expires < Date.now()) {
-          log.info('refreshing openai oauth token');
+          log.info(() => ({ message: 'refreshing openai oauth token' }));
           const response = await fetch(OPENAI_TOKEN_URL, {
             method: 'POST',
             headers: {
@@ -992,9 +1001,10 @@ const GooglePlugin: AuthPlugin = {
               });
 
               if (!tokenResult.ok) {
-                log.error('google oauth token exchange failed', {
+                log.error(() => ({
+                  message: 'google oauth token exchange failed',
                   status: tokenResult.status,
-                });
+                }));
                 return { type: 'failed' };
               }
 
@@ -1004,7 +1014,9 @@ const GooglePlugin: AuthPlugin = {
                 !json.refresh_token ||
                 typeof json.expires_in !== 'number'
               ) {
-                log.error('google oauth token response missing fields');
+                log.error(() => ({
+                  message: 'google oauth token response missing fields',
+                }));
                 return { type: 'failed' };
               }
 
@@ -1015,7 +1027,7 @@ const GooglePlugin: AuthPlugin = {
                 expires: Date.now() + json.expires_in * 1000,
               };
             } catch (error) {
-              log.error('google oauth failed', { error });
+              log.error(() => ({ message: 'google oauth failed', error }));
               return { type: 'failed' };
             }
           },
@@ -1058,7 +1070,7 @@ const GooglePlugin: AuthPlugin = {
           !currentAuth.access ||
           currentAuth.expires < Date.now() + FIVE_MIN_MS
         ) {
-          log.info('refreshing google oauth token');
+          log.info(() => ({ message: 'refreshing google oauth token' }));
           const response = await fetch(GOOGLE_TOKEN_URL, {
             method: 'POST',
             headers: {

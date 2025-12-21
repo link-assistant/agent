@@ -246,22 +246,19 @@ async function readSystemMessages(argv) {
 }
 
 async function runAgentMode(argv, request) {
-  // Note: verbose flag and logging are now initialized in middleware
-  // See main() function for the middleware that sets up Flag and Log.init()
-
-  // Log version and command info in verbose mode
-  if (Flag.OPENCODE_VERBOSE) {
-    console.error(`Agent version: ${pkg.version}`);
-    console.error(`Command: ${process.argv.join(' ')}`);
-    console.error(`Working directory: ${process.cwd()}`);
-    console.error(`Script path: ${import.meta.path}`);
-  }
-
-  // Log dry-run mode if enabled
+  // Log version and command info in verbose mode using lazy logging
+  Log.Default.lazy.info(() => ({
+    message: 'Agent started',
+    version: pkg.version,
+    command: process.argv.join(' '),
+    workingDirectory: process.cwd(),
+    scriptPath: import.meta.path,
+  }));
   if (Flag.OPENCODE_DRY_RUN) {
-    console.error(
-      `[DRY RUN MODE] No actual API calls or package installations will be made`
-    );
+    Log.Default.lazy.info(() => ({
+      message: 'Dry run mode enabled',
+      mode: 'dry-run',
+    }));
   }
 
   const { providerID, modelID } = await parseModelConfig(argv);
@@ -269,9 +266,11 @@ async function runAgentMode(argv, request) {
   // Validate and get JSON standard
   const jsonStandard = argv['json-standard'];
   if (!isValidJsonStandard(jsonStandard)) {
-    console.error(
-      `Invalid JSON standard: ${jsonStandard}. Use "opencode" or "claude".`
-    );
+    outputStatus({
+      type: 'error',
+      errorType: 'ValidationError',
+      message: `Invalid JSON standard: ${jsonStandard}. Use "opencode" or "claude".`,
+    });
     process.exit(1);
   }
 
@@ -317,24 +316,20 @@ async function runAgentMode(argv, request) {
  * @param {object} argv - Command line arguments
  */
 async function runContinuousAgentMode(argv) {
-  // Note: verbose flag and logging are now initialized in middleware
-  // See main() function for the middleware that sets up Flag and Log.init()
-
   const compactJson = argv['compact-json'] === true;
-
-  // Log version and command info in verbose mode
-  if (Flag.OPENCODE_VERBOSE) {
-    console.error(`Agent version: ${pkg.version}`);
-    console.error(`Command: ${process.argv.join(' ')}`);
-    console.error(`Working directory: ${process.cwd()}`);
-    console.error(`Script path: ${import.meta.path}`);
-  }
-
-  // Log dry-run mode if enabled
+  // Log version and command info in verbose mode using lazy logging
+  Log.Default.lazy.info(() => ({
+    message: 'Agent started (continuous mode)',
+    version: pkg.version,
+    command: process.argv.join(' '),
+    workingDirectory: process.cwd(),
+    scriptPath: import.meta.path,
+  }));
   if (Flag.OPENCODE_DRY_RUN) {
-    console.error(
-      `[DRY RUN MODE] No actual API calls or package installations will be made`
-    );
+    Log.Default.lazy.info(() => ({
+      message: 'Dry run mode enabled',
+      mode: 'dry-run',
+    }));
   }
 
   const { providerID, modelID } = await parseModelConfig(argv);
@@ -935,7 +930,7 @@ async function main() {
         }
 
         // Initialize logging system
-        // - If verbose: print logs to stderr for debugging
+        // - If verbose: print logs to stderr for debugging in JSON format
         // - Otherwise: write logs to file to keep CLI output clean
         await Log.init({
           print: Flag.OPENCODE_VERBOSE,

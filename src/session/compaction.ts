@@ -52,7 +52,7 @@ export namespace SessionCompaction {
   // tool calls that are no longer relevant.
   export async function prune(input: { sessionID: string }) {
     if (Flag.OPENCODE_DISABLE_PRUNE) return;
-    log.info('pruning');
+    log.info(() => ({ message: 'pruning' }));
     const msgs = await Session.messages({ sessionID: input.sessionID });
     let total = 0;
     let pruned = 0;
@@ -78,7 +78,7 @@ export namespace SessionCompaction {
           }
       }
     }
-    log.info('found', { pruned, total });
+    log.info(() => ({ message: 'found', pruned, total }));
     if (pruned > PRUNE_MINIMUM) {
       for (const part of toPrune) {
         if (part.state.status === 'completed') {
@@ -86,7 +86,7 @@ export namespace SessionCompaction {
           await Session.updatePart(part);
         }
       }
-      log.info('pruned', { count: toPrune.length });
+      log.info(() => ({ message: 'pruned', count: toPrune.length }));
     }
   }
 
@@ -139,9 +139,7 @@ export namespace SessionCompaction {
     const result = await processor.process(() =>
       streamText({
         onError(error) {
-          log.error('stream error', {
-            error,
-          });
+          log.error(() => ({ message: 'stream error', error }));
         },
         // set to 0, we handle loop
         maxRetries: 0,

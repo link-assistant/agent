@@ -36,16 +36,20 @@ export namespace State {
     const entries = recordsByKey.get(key);
     if (!entries) return;
 
-    log.info('waiting for state disposal to complete', { key });
+    log.info(() => ({
+      message: 'waiting for state disposal to complete',
+      key,
+    }));
 
     let disposalFinished = false;
 
     setTimeout(() => {
       if (!disposalFinished) {
-        log.warn(
-          'state disposal is taking an unusually long time - if it does not complete in a reasonable time, please report this as a bug',
-          { key }
-        );
+        log.warn(() => ({
+          message:
+            'state disposal is taking an unusually long time - if it does not complete in a reasonable time, please report this as a bug',
+          key,
+        }));
       }
     }, 10000).unref();
 
@@ -56,7 +60,11 @@ export namespace State {
       const task = Promise.resolve(entry.state)
         .then((state) => entry.dispose!(state))
         .catch((error) => {
-          log.error('Error while disposing state:', { error, key });
+          log.error(() => ({
+            message: 'Error while disposing state',
+            error,
+            key,
+          }));
         });
 
       tasks.push(task);
@@ -64,6 +72,6 @@ export namespace State {
     await Promise.all(tasks);
     recordsByKey.delete(key);
     disposalFinished = true;
-    log.info('state disposal completed', { key });
+    log.info(() => ({ message: 'state disposal completed', key }));
   }
 }

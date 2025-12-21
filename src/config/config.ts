@@ -53,16 +53,21 @@ export namespace Config {
       if (!newDirExists) {
         try {
           // Perform migration by copying the entire directory
-          log.info(
-            `Migrating config from ${oldDir} to ${newDir} for smooth transition`
-          );
+          log.info(() => ({
+            message: `Migrating config from ${oldDir} to ${newDir} for smooth transition`,
+          }));
 
           // Use fs-extra style recursive copy
           await copyDirectory(oldDir, newDir);
 
-          log.info(`Successfully migrated config to ${newDir}`);
+          log.info(() => ({
+            message: `Successfully migrated config to ${newDir}`,
+          }));
         } catch (error) {
-          log.error(`Failed to migrate config from ${oldDir}:`, error);
+          log.error(() => ({
+            message: `Failed to migrate config from ${oldDir}:`,
+            error,
+          }));
           // Don't throw - allow the app to continue with the old config
         }
       }
@@ -83,14 +88,19 @@ export namespace Config {
         .catch(() => false);
 
       if (oldGlobalExists && !newGlobalExists) {
-        log.info(
-          `Migrating global config from ${oldGlobalPath} to ${newGlobalPath}`
-        );
+        log.info(() => ({
+          message: `Migrating global config from ${oldGlobalPath} to ${newGlobalPath}`,
+        }));
         await copyDirectory(oldGlobalPath, newGlobalPath);
-        log.info(`Successfully migrated global config to ${newGlobalPath}`);
+        log.info(() => ({
+          message: `Successfully migrated global config to ${newGlobalPath}`,
+        }));
       }
     } catch (error) {
-      log.error('Failed to migrate global config:', error);
+      log.error(() => ({
+        message: 'Failed to migrate global config:',
+        error,
+      }));
       // Don't throw - allow the app to continue
     }
   }
@@ -126,7 +136,10 @@ export namespace Config {
     // Override with custom config if provided
     if (Flag.OPENCODE_CONFIG) {
       result = mergeDeep(result, await loadFile(Flag.OPENCODE_CONFIG));
-      log.debug('loaded custom config', { path: Flag.OPENCODE_CONFIG });
+      log.debug(() => ({
+        message: 'loaded custom config',
+        path: Flag.OPENCODE_CONFIG,
+      }));
     }
 
     for (const file of ['opencode.jsonc', 'opencode.json']) {
@@ -142,7 +155,9 @@ export namespace Config {
 
     if (Flag.OPENCODE_CONFIG_CONTENT) {
       result = mergeDeep(result, JSON.parse(Flag.OPENCODE_CONFIG_CONTENT));
-      log.debug('loaded custom config from OPENCODE_CONFIG_CONTENT');
+      log.debug(() => ({
+        message: 'loaded custom config from OPENCODE_CONFIG_CONTENT',
+      }));
     }
 
     for (const [key, value] of Object.entries(auth)) {
@@ -182,12 +197,11 @@ export namespace Config {
     const filteredDirs = foundDirs.filter((dir) => {
       // If .link-assistant-agent exists, exclude .opencode directories
       if (hasNewConfig && dir.endsWith('.opencode')) {
-        log.debug(
-          'Skipping .opencode directory (using .link-assistant-agent):',
-          {
-            path: dir,
-          }
-        );
+        log.debug(() => ({
+          message:
+            'Skipping .opencode directory (using .link-assistant-agent):',
+          path: dir,
+        }));
         return false;
       }
       return true;
@@ -197,9 +211,10 @@ export namespace Config {
 
     if (Flag.OPENCODE_CONFIG_DIR) {
       directories.push(Flag.OPENCODE_CONFIG_DIR);
-      log.debug('loading config from LINK_ASSISTANT_AGENT_CONFIG_DIR', {
+      log.debug(() => ({
+        message: 'loading config from LINK_ASSISTANT_AGENT_CONFIG_DIR',
         path: Flag.OPENCODE_CONFIG_DIR,
-      });
+      }));
     }
 
     const promises: Promise<void>[] = [];
@@ -212,7 +227,9 @@ export namespace Config {
         dir === Flag.OPENCODE_CONFIG_DIR
       ) {
         for (const file of ['opencode.jsonc', 'opencode.json']) {
-          log.debug(`loading config from ${path.join(dir, file)}`);
+          log.debug(() => ({
+            message: `loading config from ${path.join(dir, file)}`,
+          }));
           result = mergeDeep(result, await loadFile(path.join(dir, file)));
           // to satisy the type checker
           result.agent ??= {};
@@ -932,7 +949,7 @@ export namespace Config {
   });
 
   async function loadFile(filepath: string): Promise<Info> {
-    log.info('loading', { path: filepath });
+    log.info(() => ({ message: 'loading', path: filepath }));
     let text = await Bun.file(filepath)
       .text()
       .catch((err) => {

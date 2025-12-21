@@ -178,7 +178,7 @@ export namespace Session {
         updated: Date.now(),
       },
     };
-    log.info('created', result);
+    log.info(() => ({ message: 'created', ...result }));
     await Storage.write(['session', Instance.project.id, result.id], result);
     Bus.publish(Event.Created, {
       info: result,
@@ -273,7 +273,7 @@ export namespace Session {
         info: session,
       });
     } catch (e) {
-      log.error(e);
+      log.error(() => ({ error: e }));
     }
   });
 

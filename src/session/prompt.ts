@@ -216,7 +216,7 @@ export namespace SessionPrompt {
   }
 
   export function cancel(sessionID: string) {
-    log.info('cancel', { sessionID });
+    log.info(() => ({ message: 'cancel', sessionID }));
     const s = state();
     const match = s[sessionID];
     if (!match) return;
@@ -242,7 +242,7 @@ export namespace SessionPrompt {
 
     let step = 0;
     while (true) {
-      log.info('loop', { step, sessionID });
+      log.info(() => ({ message: 'loop', step, sessionID }));
       if (abort.aborted) break;
       let msgs = await MessageV2.filterCompacted(MessageV2.stream(sessionID));
 
@@ -276,7 +276,7 @@ export namespace SessionPrompt {
         lastAssistant.finish !== 'tool-calls' &&
         lastUser.id < lastAssistant.id
       ) {
-        log.info('exiting loop', { sessionID });
+        log.info(() => ({ message: 'exiting loop', sessionID }));
         break;
       }
 
@@ -297,14 +297,13 @@ export namespace SessionPrompt {
           lastUser.model.modelID
         );
       } catch (error) {
-        log.warn(
-          'Failed to initialize specified model, falling back to default model',
-          {
-            providerID: lastUser.model.providerID,
-            modelID: lastUser.model.modelID,
-            error: error instanceof Error ? error.message : String(error),
-          }
-        );
+        log.warn(() => ({
+          message:
+            'Failed to initialize specified model, falling back to default model',
+          providerID: lastUser.model.providerID,
+          modelID: lastUser.model.modelID,
+          error: error instanceof Error ? error.message : String(error),
+        }));
         const defaultModel = await Provider.defaultModel();
         model = await Provider.getModel(
           defaultModel.providerID,
@@ -551,53 +550,79 @@ export namespace SessionPrompt {
         );
         const totalEstimatedTokens = systemTokens + userTokens;
 
-        log.info('=== VERBOSE: API Request Details ===');
-        log.info(`Model: ${model.providerID}/${model.modelID}`);
-        log.info(`Session ID: ${sessionID}`);
-        log.info(`Agent: ${agent.name}`);
-        log.info(`Temperature: ${params.temperature ?? 'default'}`);
-        log.info(`Top P: ${params.topP ?? 'default'}`);
-        log.info(
-          `Active Tools: ${Object.keys(tools)
-            .filter((x) => x !== 'invalid')
-            .join(', ')}`
-        );
-        log.info('--- System Prompt ---');
+        log.info(() => ({
+          message: '=== VERBOSE: API Request Details ===',
+        }));
+        log.info(() => ({
+          message: 'Model',
+          model: `${model.providerID}/${model.modelID}`,
+        }));
+        log.info(() => ({ message: 'Session ID', sessionID }));
+        log.info(() => ({ message: 'Agent', agent: agent.name }));
+        log.info(() => ({
+          message: 'Temperature',
+          temperature: params.temperature ?? 'default',
+        }));
+        log.info(() => ({
+          message: 'Top P',
+          topP: params.topP ?? 'default',
+        }));
+        log.info(() => ({
+          message: 'Active Tools',
+          tools: Object.keys(tools).filter((x) => x !== 'invalid'),
+        }));
+        log.info(() => ({ message: '--- System Prompt ---' }));
         for (let i = 0; i < system.length; i++) {
           const tokens = Token.estimate(system[i]);
-          log.info(`System Message ${i + 1} (${tokens} tokens estimated):`);
-          log.info(
-            system[i].slice(0, 2000) +
-              (system[i].length > 2000 ? '... [truncated]' : '')
-          );
+          log.info(() => ({
+            message: 'System Message',
+            index: i + 1,
+            tokens,
+          }));
+          log.info(() => ({
+            message: 'System Message Content',
+            content:
+              system[i].slice(0, 2000) +
+              (system[i].length > 2000 ? '... [truncated]' : ''),
+          }));
         }
-        log.info('--- Token Summary ---');
-        log.info(`System prompt tokens (estimated): ${systemTokens}`);
-        log.info(`User message tokens (estimated): ${userTokens}`);
-        log.info(`Total estimated tokens: ${totalEstimatedTokens}`);
-        log.info(
-          `Model context limit: ${model.info?.limit?.context || 'unknown'}`
-        );
-        log.info(
-          `Model output limit: ${model.info?.limit?.output || 'unknown'}`
-        );
-        log.info('=== END VERBOSE ===');
+        log.info(() => ({ message: '--- Token Summary ---' }));
+        log.info(() => ({
+          message: 'System prompt tokens (estimated)',
+          systemTokens,
+        }));
+        log.info(() => ({
+          message: 'User message tokens (estimated)',
+          userTokens,
+        }));
+        log.info(() => ({
+          message: 'Total estimated tokens',
+          totalEstimatedTokens,
+        }));
+        log.info(() => ({
+          message: 'Model context limit',
+          contextLimit: model.info?.limit?.context || 'unknown',
+        }));
+        log.info(() => ({
+          message: 'Model output limit',
+          outputLimit: model.info?.limit?.output || 'unknown',
+        }));
+        log.info(() => ({ message: '=== END VERBOSE ===' }));
       }
 
       const result = await processor.process(() =>
         streamText({
           onError(error) {
-            log.error('stream error', {
-              error,
-            });
+            log.error(() => ({ message: 'stream error', error }));
           },
           async experimental_repairToolCall(input) {
             const lower = input.toolCall.toolName.toLowerCase();
             if (lower !== input.toolCall.toolName && tools[lower]) {
-              log.info('repairing tool call', {
+              log.info(() => ({
+                message: 'repairing tool call',
                 tool: input.toolCall.toolName,
                 repaired: lower,
-              });
+              }));
               return {
                 ...input.toolCall,
                 toolName: lower,
@@ -945,7 +970,7 @@ export namespace SessionPrompt {
               }
               break;
             case 'file:':
-              log.info('file', { mime: part.mime });
+              log.info(() => ({ message: 'file', mime: part.mime }));
               // have to normalize, symbol search returns absolute paths
               // Decode the pathname since URL constructor doesn't automatically decode it
               const filepath = fileURLToPath(part.url);
@@ -1012,7 +1037,10 @@ export namespace SessionPrompt {
                     );
                   })
                   .catch((error) => {
-                    log.error('failed to read file', { error });
+                    log.error(() => ({
+                      message: 'failed to read file',
+                      error,
+                    }));
                     const message =
                       error instanceof Error ? error.message : error.toString();
                     Bus.publish(Session.Event.Error, {
@@ -1376,7 +1404,7 @@ export namespace SessionPrompt {
    */
 
   export async function command(input: CommandInput) {
-    log.info('command', input);
+    log.info(() => ({ message: 'command', ...input }));
     const command = await Command.get(input.command);
     const agentName = command.agent ?? input.agent ?? 'build';
 
@@ -1572,10 +1600,11 @@ export namespace SessionPrompt {
           });
       })
       .catch((error) => {
-        log.error('failed to generate title', {
+        log.error(() => ({
+          message: 'failed to generate title',
           error,
           model: small.info?.id ?? small.modelID,
-        });
+        }));
       });
   }
 }

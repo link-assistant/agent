@@ -15,7 +15,7 @@ export namespace FileTime {
   });
 
   export function read(sessionID: string, file: string) {
-    log.info('read', { sessionID, file });
+    log.info(() => ({ message: 'read', sessionID, file }));
     const { read } = state();
     read[sessionID] = read[sessionID] || {};
     read[sessionID][file] = new Date();

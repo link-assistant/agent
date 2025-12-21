@@ -28,7 +28,7 @@ export namespace Storage {
         cwd: project,
         onlyFiles: false,
       })) {
-        log.info(`migrating project ${projectDir}`);
+        log.info(() => ({ message: 'migrating project', projectDir }));
         let projectID = projectDir;
         const fullProjectDir = path.join(project, projectDir);
         let worktree = '/';
@@ -74,7 +74,10 @@ export namespace Storage {
             })
           );
 
-          log.info(`migrating sessions for project ${projectID}`);
+          log.info(() => ({
+            message: 'migrating sessions for project',
+            projectID,
+          }));
           for await (const sessionFile of new Bun.Glob(
             'storage/session/info/*.json'
           ).scan({
@@ -87,13 +90,13 @@ export namespace Storage {
               projectID,
               path.basename(sessionFile)
             );
-            log.info('copying', {
-              sessionFile,
-              dest,
-            });
+            log.info(() => ({ message: 'copying', sessionFile, dest }));
             const session = await Bun.file(sessionFile).json();
             await Bun.write(dest, JSON.stringify(session));
-            log.info(`migrating messages for session ${session.id}`);
+            log.info(() => ({
+              message: 'migrating messages for session',
+              sessionID: session.id,
+            }));
             for await (const msgFile of new Bun.Glob(
               `storage/session/message/${session.id}/*.json`
             ).scan({
@@ -106,14 +109,14 @@ export namespace Storage {
                 session.id,
                 path.basename(msgFile)
               );
-              log.info('copying', {
-                msgFile,
-                dest,
-              });
+              log.info(() => ({ message: 'copying', msgFile, dest }));
               const message = await Bun.file(msgFile).json();
               await Bun.write(dest, JSON.stringify(message));
 
-              log.info(`migrating parts for message ${message.id}`);
+              log.info(() => ({
+                message: 'migrating parts for message',
+                messageID: message.id,
+              }));
               for await (const partFile of new Bun.Glob(
                 `storage/session/part/${session.id}/${message.id}/*.json`
               ).scan({
@@ -127,10 +130,7 @@ export namespace Storage {
                   path.basename(partFile)
                 );
                 const part = await Bun.file(partFile).json();
-                log.info('copying', {
-                  partFile,
-                  dest,
-                });
+                log.info(() => ({ message: 'copying', partFile, dest }));
                 await Bun.write(dest, JSON.stringify(part));
               }
             }
@@ -178,10 +178,10 @@ export namespace Storage {
       .then((x) => parseInt(x))
       .catch(() => 0);
     for (let index = migration; index < MIGRATIONS.length; index++) {
-      log.info('running migration', { index });
+      log.info(() => ({ message: 'running migration', index }));
       const migration = MIGRATIONS[index];
       await migration(dir).catch(() =>
-        log.error('failed to run migration', { index })
+        log.error(() => ({ message: 'failed to run migration', index }))
       );
       await Bun.write(path.join(dir, 'migration'), (index + 1).toString());
     }

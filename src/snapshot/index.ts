@@ -28,7 +28,7 @@ export namespace Snapshot {
       await $`git --git-dir ${git} config core.autocrlf false`
         .quiet()
         .nothrow();
-      log.info('initialized');
+      log.info(() => ({ message: 'initialized' }));
     }
     await $`git --git-dir ${git} --work-tree ${Instance.worktree} add .`
       .quiet()
@@ -40,7 +40,12 @@ export namespace Snapshot {
         .cwd(Instance.directory)
         .nothrow()
         .text();
-    log.info('tracking', { hash, cwd: Instance.directory, git });
+    log.info(() => ({
+      message: 'tracking',
+      hash,
+      cwd: Instance.directory,
+      git,
+    }));
     return hash.trim();
   }
 
@@ -64,7 +69,11 @@ export namespace Snapshot {
 
     // If git diff fails, return empty patch
     if (result.exitCode !== 0) {
-      log.warn('failed to get diff', { hash, exitCode: result.exitCode });
+      log.warn(() => ({
+        message: 'failed to get diff',
+        hash,
+        exitCode: result.exitCode,
+      }));
       return { hash, files: [] };
     }
 
@@ -81,7 +90,7 @@ export namespace Snapshot {
   }
 
   export async function restore(snapshot: string) {
-    log.info('restore', { commit: snapshot });
+    log.info(() => ({ message: 'restore', commit: snapshot }));
     const git = gitdir();
     const result =
       await $`git --git-dir ${git} --work-tree ${Instance.worktree} read-tree ${snapshot} && git --git-dir ${git} --work-tree ${Instance.worktree} checkout-index -a -f`
@@ -90,12 +99,13 @@ export namespace Snapshot {
         .nothrow();
 
     if (result.exitCode !== 0) {
-      log.error('failed to restore snapshot', {
+      log.error(() => ({
+        message: 'failed to restore snapshot',
         snapshot,
         exitCode: result.exitCode,
         stderr: result.stderr.toString(),
         stdout: result.stdout.toString(),
-      });
+      }));
     }
   }
 
@@ -105,7 +115,7 @@ export namespace Snapshot {
     for (const item of patches) {
       for (const file of item.files) {
         if (files.has(file)) continue;
-        log.info('reverting', { file, hash: item.hash });
+        log.info(() => ({ message: 'reverting', file, hash: item.hash }));
         const result =
           await $`git --git-dir ${git} --work-tree ${Instance.worktree} checkout ${item.hash} -- ${file}`
             .quiet()
@@ -119,11 +129,15 @@ export namespace Snapshot {
               .cwd(Instance.worktree)
               .nothrow();
           if (checkTree.exitCode === 0 && checkTree.text().trim()) {
-            log.info('file existed in snapshot but checkout failed, keeping', {
+            log.info(() => ({
+              message: 'file existed in snapshot but checkout failed, keeping',
               file,
-            });
+            }));
           } else {
-            log.info('file did not exist in snapshot, deleting', { file });
+            log.info(() => ({
+              message: 'file did not exist in snapshot, deleting',
+              file,
+            }));
             await fs.unlink(file).catch(() => {});
           }
         }
@@ -145,12 +159,13 @@ export namespace Snapshot {
         .nothrow();
 
     if (result.exitCode !== 0) {
-      log.warn('failed to get diff', {
+      log.warn(() => ({
+        message: 'failed to get diff',
         hash,
         exitCode: result.exitCode,
         stderr: result.stderr.toString(),
         stdout: result.stdout.toString(),
-      });
+      }));
       return '';
     }
 

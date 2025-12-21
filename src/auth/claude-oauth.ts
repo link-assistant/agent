@@ -147,9 +147,10 @@ export namespace ClaudeOAuth {
    */
   export async function saveState(state: OAuthState): Promise<void> {
     await Bun.write(statePath, JSON.stringify(state, null, 2));
-    log.info('saved oauth state', {
+    log.info(() => ({
+      message: 'saved oauth state',
       expiresAt: new Date(state.expiresAt).toISOString(),
-    });
+    }));
   }
 
   /**
@@ -165,14 +166,14 @@ export namespace ClaudeOAuth {
       const parsed = OAuthState.parse(content);
 
       if (parsed.expiresAt < Date.now()) {
-        log.warn('oauth state expired');
+        log.warn(() => ({ message: 'oauth state expired' }));
         await clearState();
         return undefined;
       }
 
       return parsed;
     } catch (error) {
-      log.error('failed to load oauth state', { error });
+      log.error(() => ({ message: 'failed to load oauth state', error }));
       return undefined;
     }
   }
@@ -190,7 +191,7 @@ export namespace ClaudeOAuth {
         await fs.unlink(statePath).catch(() => {});
       }
     } catch (error) {
-      log.error('failed to clear oauth state', { error });
+      log.error(() => ({ message: 'failed to clear oauth state', error }));
     }
   }
 
@@ -213,7 +214,9 @@ export namespace ClaudeOAuth {
       code_verifier: codeVerifier,
     });
 
-    log.info('exchanging authorization code for tokens');
+    log.info(() => ({
+      message: 'exchanging authorization code for tokens',
+    }));
 
     const response = await fetch(Config.tokenUrl, {
       method: 'POST',
@@ -225,7 +228,11 @@ export namespace ClaudeOAuth {
 
     if (!response.ok) {
       const error = await response.text();
-      log.error('token exchange failed', { status: response.status, error });
+      log.error(() => ({
+        message: 'token exchange failed',
+        status: response.status,
+        error,
+      }));
       throw new Error(`Token exchange failed: ${response.status} ${error}`);
     }
 
@@ -267,9 +274,10 @@ export namespace ClaudeOAuth {
     };
 
     await Bun.write(credentialsPath, JSON.stringify(credentials, null, 2));
-    log.info('saved credentials', {
+    log.info(() => ({
+      message: 'saved credentials',
       expiresAt: new Date(credentials.claudeAiOauth!.expiresAt).toISOString(),
-    });
+    }));
   }
 
   /**
@@ -283,7 +291,10 @@ export namespace ClaudeOAuth {
     try {
       const file = Bun.file(credentialsPath);
       if (!(await file.exists())) {
-        log.info('credentials file not found', { path: credentialsPath });
+        log.info(() => ({
+          message: 'credentials file not found',
+          path: credentialsPath,
+        }));
         return undefined;
       }
 
@@ -291,27 +302,31 @@ export namespace ClaudeOAuth {
       const parsed = Credentials.parse(content);
 
       if (!parsed.claudeAiOauth) {
-        log.info('no claudeAiOauth credentials found');
+        log.info(() => ({
+          message: 'no claudeAiOauth credentials found',
+        }));
         return undefined;
       }
 
       // Check if token is expired
       if (parsed.claudeAiOauth.expiresAt < Date.now()) {
-        log.warn('token expired', {
+        log.warn(() => ({
+          message: 'token expired',
           expiresAt: new Date(parsed.claudeAiOauth.expiresAt).toISOString(),
-        });
+        }));
         // TODO: Implement token refresh using refreshToken
         // For now, user needs to re-authenticate
       }
 
-      log.info('loaded oauth credentials', {
+      log.info(() => ({
+        message: 'loaded oauth credentials',
         subscriptionType: parsed.claudeAiOauth.subscriptionType,
         scopes: parsed.claudeAiOauth.scopes,
-      });
+      }));
 
       return parsed.claudeAiOauth;
     } catch (error) {
-      log.error('failed to read credentials', { error });
+      log.error(() => ({ message: 'failed to read credentials', error }));
       return undefined;
     }
   }
@@ -344,7 +359,9 @@ export namespace ClaudeOAuth {
   export async function completeAuth(code: string): Promise<boolean> {
     const state = await loadState();
     if (!state) {
-      log.error('no oauth state found - please start login flow first');
+      log.error(() => ({
+        message: 'no oauth state found - please start login flow first',
+      }));
       return false;
     }
 
@@ -352,10 +369,15 @@ export namespace ClaudeOAuth {
       const tokens = await exchangeCode(code, state.codeVerifier);
       await saveCredentials(tokens);
       await clearState();
-      log.info('authentication completed successfully');
+      log.info(() => ({
+        message: 'authentication completed successfully',
+      }));
       return true;
     } catch (error) {
-      log.error('failed to complete authentication', { error });
+      log.error(() => ({
+        message: 'failed to complete authentication',
+        error,
+      }));
       await clearState();
       return false;
     }
@@ -367,7 +389,7 @@ export namespace ClaudeOAuth {
   export async function refreshToken(): Promise<boolean> {
     const creds = await getCredentials();
     if (!creds?.refreshToken) {
-      log.error('no refresh token available');
+      log.error(() => ({ message: 'no refresh token available' }));
       return false;
     }
 
@@ -377,7 +399,7 @@ export namespace ClaudeOAuth {
       refresh_token: creds.refreshToken,
     });
 
-    log.info('refreshing access token');
+    log.info(() => ({ message: 'refreshing access token' }));
 
     try {
       const response = await fetch(Config.tokenUrl, {
@@ -390,16 +412,20 @@ export namespace ClaudeOAuth {
 
       if (!response.ok) {
         const error = await response.text();
-        log.error('token refresh failed', { status: response.status, error });
+        log.error(() => ({
+          message: 'token refresh failed',
+          status: response.status,
+          error,
+        }));
         return false;
       }
 
       const tokens = TokenResponse.parse(await response.json());
       await saveCredentials(tokens);
-      log.info('token refreshed successfully');
+      log.info(() => ({ message: 'token refreshed successfully' }));
       return true;
     } catch (error) {
-      log.error('failed to refresh token', { error });
+      log.error(() => ({ message: 'failed to refresh token', error }));
       return false;
     }
   }

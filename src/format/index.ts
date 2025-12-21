@@ -29,7 +29,7 @@ export namespace Format {
 
     const formatters: Record<string, Formatter.Info> = {};
     if (cfg.formatter === false) {
-      log.info('all formatters are disabled');
+      log.info(() => ({ message: 'all formatters are disabled' }));
       return {
         enabled,
         formatters,
@@ -77,10 +77,10 @@ export namespace Format {
     const formatters = await state().then((x) => x.formatters);
     const result = [];
     for (const item of Object.values(formatters)) {
-      log.info('checking', { name: item.name, ext });
+      log.info(() => ({ message: 'checking', name: item.name, ext }));
       if (!item.extensions.includes(ext)) continue;
       if (!(await isEnabled(item))) continue;
-      log.info('enabled', { name: item.name, ext });
+      log.info(() => ({ message: 'enabled', name: item.name, ext }));
       result.push(item);
     }
     return result;
@@ -101,14 +101,14 @@ export namespace Format {
   }
 
   export function init() {
-    log.info('init');
+    log.info(() => ({ message: 'init' }));
     Bus.subscribe(File.Event.Edited, async (payload) => {
       const file = payload.properties.file;
-      log.info('formatting', { file });
+      log.info(() => ({ message: 'formatting', file }));
       const ext = path.extname(file);
 
       for (const item of await getFormatter(ext)) {
-        log.info('running', { command: item.command });
+        log.info(() => ({ message: 'running', command: item.command }));
         try {
           const proc = Bun.spawn({
             cmd: item.command.map((x) => x.replace('$FILE', file)),
@@ -119,17 +119,19 @@ export namespace Format {
           });
           const exit = await proc.exited;
           if (exit !== 0)
-            log.error('failed', {
+            log.error(() => ({
+              message: 'failed',
               command: item.command,
               ...item.environment,
-            });
+            }));
         } catch (error) {
-          log.error('failed to format file', {
+          log.error(() => ({
+            message: 'failed to format file',
             error,
             command: item.command,
             ...item.environment,
             file,
-          });
+          }));
         }
       }
     });

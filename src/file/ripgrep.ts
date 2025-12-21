@@ -275,7 +275,7 @@ export namespace Ripgrep {
   }
 
   export async function tree(input: { cwd: string; limit?: number }) {
-    log.info('tree', input);
+    log.info(() => ({ message: 'tree', ...input }));
     const files = await Array.fromAsync(Ripgrep.files({ cwd: input.cwd }));
     interface Node {
       path: string[];

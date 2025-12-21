@@ -36,7 +36,7 @@ export namespace FileWatcher {
   const state = Instance.state(
     async () => {
       if (Instance.project.vcs !== 'git') return {};
-      log.info('init');
+      log.info(() => ({ message: 'init' }));
       const cfg = await Config.get();
       const backend = (() => {
         if (process.platform === 'win32') return 'windows';
@@ -44,18 +44,23 @@ export namespace FileWatcher {
         if (process.platform === 'linux') return 'inotify';
       })();
       if (!backend) {
-        log.error('watcher backend not supported', {
+        log.error(() => ({
+          message: 'watcher backend not supported',
           platform: process.platform,
-        });
+        }));
         return {};
       }
-      log.info('watcher backend', { platform: process.platform, backend });
+      log.info(() => ({
+        message: 'watcher backend',
+        platform: process.platform,
+        backend,
+      }));
       const sub = await watcher().subscribe(
         Instance.directory,
         (err, evts) => {
           if (err) return;
           for (const evt of evts) {
-            log.info('event', evt);
+            log.info(() => ({ message: 'event', ...evt }));
             if (evt.type === 'create')
               Bus.publish(Event.Updated, { file: evt.path, event: 'add' });
             if (evt.type === 'update')
