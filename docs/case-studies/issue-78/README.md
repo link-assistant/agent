@@ -112,8 +112,25 @@ async authorize() {
 
 1. **Created `getGoogleOAuthPort()` function**: Discovers an available port and waits for it to be assigned
 2. **Port is assigned before redirect URI is built**: Eliminates the race condition
-3. **Added environment variable support**: `GOOGLE_OAUTH_CALLBACK_PORT` for container environments
+3. **Added environment variable support**: `OAUTH_CALLBACK_PORT` (Gemini CLI compatible) and `GOOGLE_OAUTH_CALLBACK_PORT`
 4. **Server listens on pre-determined port**: No race condition with port assignment
+
+### Additional Improvements (December 2025 Update)
+
+Based on review of the [Gemini CLI implementation](https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/code_assist/oauth2.ts), additional authentication modes were added:
+
+1. **Manual Code Entry Mode**: For headless environments (SSH, Docker, WSL), uses Google's Code Assist redirect URI (`https://codeassist.google.com/authcode`) which displays the authorization code for manual copy/paste
+2. **OAUTH_CALLBACK_HOST support**: Allows binding to different hosts (e.g., `0.0.0.0` in Docker)
+3. **NO_BROWSER environment variable**: When set to `true`, users can opt for manual code entry flow
+
+#### Environment Variables
+
+| Variable                     | Description                                                    |
+| ---------------------------- | -------------------------------------------------------------- |
+| `OAUTH_CALLBACK_PORT`        | Fixed port for OAuth callback server (Gemini CLI compatible)   |
+| `GOOGLE_OAUTH_CALLBACK_PORT` | Alternative name for callback port (legacy support)            |
+| `OAUTH_CALLBACK_HOST`        | Host to bind callback server to (default: localhost)           |
+| `NO_BROWSER`                 | Set to `true` to use manual code entry instead of browser flow |
 
 ## Comparison with Gemini CLI
 

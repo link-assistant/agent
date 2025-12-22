@@ -12,12 +12,12 @@ Select "Google AI Pro/Ultra (OAuth)" when prompted.
 
 ## Authentication Methods
 
-### 1. OAuth Login (Recommended for Subscribers)
+### 1. OAuth Login with Browser (Recommended)
 
 If you have a Google AI Pro or Google AI Ultra subscription, use OAuth authentication:
 
 1. Run `agent auth google`
-2. Select "Google AI Pro/Ultra (OAuth)"
+2. Select "Google AI Pro/Ultra (OAuth - Browser)"
 3. A browser window will open with Google's login page
 4. Sign in with your Google account that has the subscription
 5. Authorize the application
@@ -25,7 +25,20 @@ If you have a Google AI Pro or Google AI Ultra subscription, use OAuth authentic
 
 Your credentials will be stored securely and automatically refreshed when needed.
 
-### 2. API Key (Alternative)
+### 2. OAuth Login with Manual Code Entry (Headless/SSH)
+
+For headless environments, SSH sessions, or when browser can't be opened automatically:
+
+1. Run `agent auth google`
+2. Select "Google AI Pro/Ultra (OAuth - Manual Code Entry)"
+3. Copy the URL displayed and open it in any browser
+4. Sign in with your Google account
+5. After authorization, copy the authorization code shown on the page
+6. Paste the code back into the terminal
+
+This method uses Google's Code Assist redirect (`https://codeassist.google.com/authcode`) which displays the authorization code instead of redirecting to localhost.
+
+### 3. API Key (Alternative)
 
 If you prefer to use an API key instead of OAuth:
 
@@ -115,10 +128,13 @@ Even with a subscription, you may encounter rate limits. The agent will automati
 
 ## Environment Variables
 
-| Variable                     | Description                                              |
-| ---------------------------- | -------------------------------------------------------- |
-| `GOOGLE_API_KEY`             | API key for Google AI (alternative to OAuth)             |
-| `GOOGLE_OAUTH_CALLBACK_PORT` | Fixed port for OAuth callback server (useful for Docker) |
+| Variable                     | Description                                                                      |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `GOOGLE_API_KEY`             | API key for Google AI (alternative to OAuth)                                     |
+| `OAUTH_CALLBACK_PORT`        | Fixed port for OAuth callback server (Gemini CLI compatible)                     |
+| `GOOGLE_OAUTH_CALLBACK_PORT` | Alternative name for callback port (legacy support)                              |
+| `OAUTH_CALLBACK_HOST`        | Host to bind callback server to (e.g., `0.0.0.0` for Docker, default: localhost) |
+| `NO_BROWSER`                 | Set to `true` or `1` to skip browser launch and use manual code entry            |
 
 ## See Also
 
