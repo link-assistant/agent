@@ -21,8 +21,7 @@ If you have a Google AI Pro or Google AI Ultra subscription, use OAuth authentic
 3. A browser window will open with Google's login page
 4. Sign in with your Google account that has the subscription
 5. Authorize the application
-6. Copy the authorization code displayed on the page
-7. Paste the code back in the terminal
+6. The browser will redirect back automatically and authentication completes
 
 Your credentials will be stored securely and automatically refreshed when needed.
 
@@ -59,7 +58,7 @@ With Google AI Pro/Ultra subscription via OAuth:
 
 - Authorization: `https://accounts.google.com/o/oauth2/v2/auth`
 - Token: `https://oauth2.googleapis.com/token`
-- Redirect: Out-of-band flow (`urn:ietf:wg:oauth:2.0:oob:auto`)
+- Redirect: Localhost callback (`http://localhost:{port}/oauth/callback`)
 
 ### Scopes
 
@@ -116,9 +115,10 @@ Even with a subscription, you may encounter rate limits. The agent will automati
 
 ## Environment Variables
 
-| Variable         | Description                                  |
-| ---------------- | -------------------------------------------- |
-| `GOOGLE_API_KEY` | API key for Google AI (alternative to OAuth) |
+| Variable                     | Description                                              |
+| ---------------------------- | -------------------------------------------------------- |
+| `GOOGLE_API_KEY`             | API key for Google AI (alternative to OAuth)             |
+| `GOOGLE_OAUTH_CALLBACK_PORT` | Fixed port for OAuth callback server (useful for Docker) |
 
 ## See Also
 
