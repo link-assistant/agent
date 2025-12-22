@@ -335,14 +335,7 @@ export namespace Log {
     };
 
     // Add lazy property for backward compatibility
-    // Use Object.defineProperty to ensure it's always available
-    Object.defineProperty(result, 'lazy', {
-      get() {
-        return result;
-      },
-      enumerable: false,
-      configurable: false,
-    });
+    result.lazy = result;
 
     if (service && typeof service === 'string') {
       loggers.set(service, result);
