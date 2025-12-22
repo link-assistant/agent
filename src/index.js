@@ -18,6 +18,7 @@ import { AuthCommand } from './cli/cmd/auth.ts';
 import { Flag } from './flag/flag.ts';
 import { FormatError } from './cli/error.ts';
 import { UI } from './cli/ui.ts';
+import { Provider } from './provider/provider.ts';
 import {
   runContinuousServerMode,
   runContinuousDirectMode,
@@ -152,9 +153,15 @@ function outputStatus(status, compact = false) {
  */
 async function parseModelConfig(argv) {
   // Parse model argument (handle model IDs with slashes like groq/qwen/qwen3-32b)
-  const modelParts = argv.model.split('/');
-  let providerID = modelParts[0] || 'opencode';
-  let modelID = modelParts.slice(1).join('/') || 'grok-code';
+  let modelString = argv.model;
+  if (!modelString) {
+    // No model specified, use the default model (which may be echo in dry-run mode)
+    const defaultModel = await Provider.defaultModel();
+    modelString = `${defaultModel.providerID}/${defaultModel.modelID}`;
+  }
+  const modelParts = modelString.split('/');
+  let providerID = modelParts[0];
+  let modelID = modelParts.slice(1).join('/');
 
   // Handle --use-existing-claude-oauth option
   // This reads OAuth credentials from ~/.claude/.credentials.json (Claude Code CLI)
