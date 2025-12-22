@@ -1,5 +1,0 @@
-Issue to solve: https://github.com/link-assistant/agent/issues/96
-Your prepared branch: issue-96-109dff6454e6
-Your prepared working directory: /tmp/gh-issue-solver-1766430951574
-
-Proceed.

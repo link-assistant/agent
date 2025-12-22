@@ -939,6 +939,8 @@ async function main() {
         // Set dry-run flag if requested
         if (argv['dry-run']) {
           Flag.setDryRun(true);
+          // In dry-run mode, clear the model so defaultModel() will be used
+          argv.model = undefined;
         }
 
         // Initialize logging system

@@ -7,6 +7,7 @@
 **Reporter:** @konard
 **Date:** 2025-12-22
 **Labels:** bug
+**Status:** ✅ **CLOSED** (Fixed in PRs #97 and #98)
 
 ## Problem Description
 
@@ -315,7 +316,7 @@ This case study includes the following data files for comprehensive analysis:
 
 ## Final Status
 
-**Issue Status:** ✅ **RESOLVED**
+**Issue Status:** ✅ **CLOSED** (Merged in PRs #97 and #98)
 
 - Root cause identified and fixed
 - Additional robustness improvements implemented
