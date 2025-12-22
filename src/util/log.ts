@@ -46,36 +46,36 @@ export namespace Log {
    * Lazy logging: The function is only called if logging is enabled for that level,
    * avoiding expensive computations when logs are disabled.
    */
-   export type Logger = {
-     // Unified logging - supports both immediate and lazy (callback) styles
-     debug(
-       message?: any | (() => { message?: string; [key: string]: any }),
-       extra?: Record<string, any>
-     ): void;
-     info(
-       message?: any | (() => { message?: string; [key: string]: any }),
-       extra?: Record<string, any>
-     ): void;
-     error(
-       message?: any | (() => { message?: string; [key: string]: any }),
-       extra?: Record<string, any>
-     ): void;
-     warn(
-       message?: any | (() => { message?: string; [key: string]: any }),
-       extra?: Record<string, any>
-     ): void;
+  export type Logger = {
+    // Unified logging - supports both immediate and lazy (callback) styles
+    debug(
+      message?: any | (() => { message?: string; [key: string]: any }),
+      extra?: Record<string, any>
+    ): void;
+    info(
+      message?: any | (() => { message?: string; [key: string]: any }),
+      extra?: Record<string, any>
+    ): void;
+    error(
+      message?: any | (() => { message?: string; [key: string]: any }),
+      extra?: Record<string, any>
+    ): void;
+    warn(
+      message?: any | (() => { message?: string; [key: string]: any }),
+      extra?: Record<string, any>
+    ): void;
 
-     tag(key: string, value: string): Logger;
-     clone(): Logger;
-     time(
-       message: string,
-       extra?: Record<string, any>
-     ): {
-       stop(): void;
-       [Symbol.dispose](): void;
-     };
-     lazy: Logger;
-   };
+    tag(key: string, value: string): Logger;
+    clone(): Logger;
+    time(
+      message: string,
+      extra?: Record<string, any>
+    ): {
+      stop(): void;
+      [Symbol.dispose](): void;
+    };
+    lazy?: Logger;
+  };
 
   const loggers = new Map<string, Logger>();
 
@@ -315,25 +315,27 @@ export namespace Log {
       clone() {
         return Log.create({ ...tags });
       },
-       time(message: string, extra?: Record<string, any>) {
-         const now = Date.now();
-         result.info(message, { status: 'started', ...extra });
-         function stop() {
-           result.info(message, {
-             status: 'completed',
-             duration: Date.now() - now,
-             ...extra,
-           });
-         }
-         return {
-           stop,
-           [Symbol.dispose]() {
-             stop();
-           },
-         };
-       },
-       lazy: result,
-     };
+      time(message: string, extra?: Record<string, any>) {
+        const now = Date.now();
+        result.info(message, { status: 'started', ...extra });
+        function stop() {
+          result.info(message, {
+            status: 'completed',
+            duration: Date.now() - now,
+            ...extra,
+          });
+        }
+        return {
+          stop,
+          [Symbol.dispose]() {
+            stop();
+          },
+        };
+      },
+    };
+
+    // Add lazy property for backward compatibility
+    (result as any).lazy = result;
 
     if (service && typeof service === 'string') {
       loggers.set(service, result);

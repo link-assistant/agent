@@ -251,6 +251,25 @@ describe('Echo provider (dry-run mode)', () => {
     console.log('\n✅ dry-run mode uses link-assistant/echo provider');
   });
 
+  test('explicit link-assistant/echo model works without logging errors', async () => {
+    const input = '{"message":"explicit echo test"}';
+    const result = await sh(
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+    );
+    const events = parseJSONOutput(result.stdout);
+
+    // Verify no logging errors in stderr (the main issue #96)
+    expect(result.stderr).not.toContain('undefined is not an object');
+    expect(result.stderr).not.toContain('Log.Default.lazy.info');
+
+    // Verify the agent started and produced some output
+    expect(events.length > 0).toBeTruthy();
+
+    console.log(
+      '\n✅ explicit link-assistant/echo model works without logging errors'
+    );
+  });
+
   test('dry-run mode incurs zero cost', async () => {
     const input = '{"message":"cost check"}';
     const result = await sh(

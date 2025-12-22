@@ -33,6 +33,45 @@ describe('Log Lazy JSON Output', () => {
       expect(typeof Log.syncWithVerboseFlag).toBe('function');
     });
 
+    it('should support lazy logging with callback functions', async () => {
+      const { Log } = await import('../src/util/log.ts');
+
+      const logger = Log.create({ service: 'lazy-test' });
+
+      // Test that info method accepts callback functions for lazy evaluation
+      const testCallback = () => ({
+        message: 'test lazy logging',
+        data: 'test',
+      });
+
+      // This should not throw an error and should accept the callback
+      expect(() => {
+        logger.info(testCallback);
+      }).not.toThrow();
+
+      // The callback should be accepted (though not necessarily executed depending on log level)
+      expect(typeof testCallback).toBe('function');
+    });
+
+    it('Log.Default should support lazy logging callbacks', async () => {
+      const { Log } = await import('../src/util/log.ts');
+
+      // Test that Log.Default.info accepts callback functions (issue #96 fix)
+      const testCallback = () => ({
+        message: 'Log.Default lazy test',
+        version: '1.0.0',
+      });
+
+      // This should not throw an error - Log.Default should accept callbacks
+      expect(() => {
+        Log.Default.info(testCallback);
+      }).not.toThrow();
+
+      // Verify Log.Default exists and has info method
+      expect(Log.Default).toBeDefined();
+      expect(typeof Log.Default.info).toBe('function');
+    });
+
     it('should support all standard log levels', async () => {
       const { Log } = await import('../src/util/log.ts');
 
