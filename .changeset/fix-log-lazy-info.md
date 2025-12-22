@@ -5,7 +5,7 @@
 fix: Resolve 'undefined is not an object (evaluating Log.Default.lazy.info)' error
 
 - Fixed `Log.Default.lazy.info()` calls in `src/index.js` by removing `.lazy`
-- Added backward compatibility by adding `lazy` property to Logger that references itself
+- Added backward compatibility by adding `lazy` property to Logger using Object.defineProperty for robustness
 - Added tests to verify lazy logging with callbacks works correctly
 - Added comprehensive case study documentation in `docs/case-studies/issue-96/`
 
