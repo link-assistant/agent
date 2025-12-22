@@ -72,6 +72,30 @@ describe('Log Lazy JSON Output', () => {
       expect(typeof Log.Default.info).toBe('function');
     });
 
+    it('Log.Default.lazy should provide backward compatibility', async () => {
+      const { Log } = await import('../src/util/log.ts');
+
+      // Test backward compatibility for Log.Default.lazy.info syntax (issue #96)
+      const testCallback = () => ({
+        message: 'Log.Default.lazy backward compatibility test',
+        compatibility: true,
+      });
+
+      // Log.Default.lazy should exist and be equal to Log.Default
+      expect(Log.Default.lazy).toBeDefined();
+      expect(Log.Default.lazy).toBe(Log.Default);
+
+      // Log.Default.lazy.info should work the same as Log.Default.info
+      expect(() => {
+        Log.Default.lazy.info(testCallback);
+      }).not.toThrow();
+
+      // Verify lazy property is not enumerable (internal implementation detail)
+      expect(
+        Object.getOwnPropertyDescriptor(Log.Default, 'lazy')?.enumerable
+      ).toBe(false);
+    });
+
     it('should support all standard log levels', async () => {
       const { Log } = await import('../src/util/log.ts');
 
