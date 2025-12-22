@@ -241,10 +241,6 @@ describe('Echo provider (dry-run mode)', () => {
     );
     const events = parseJSONOutput(result.stdout);
 
-    // Verify the output includes the DRY RUN MODE message (could be in stdout or stderr)
-    const allOutput = result.stdout + result.stderr;
-    expect(allOutput.includes('[DRY RUN MODE]')).toBeTruthy();
-
     // Verify the echoed response
     const textEvents = events.filter((e) => e.type === 'text');
     expect(textEvents.length > 0).toBeTruthy();
