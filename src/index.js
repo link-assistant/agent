@@ -247,7 +247,7 @@ async function readSystemMessages(argv) {
 
 async function runAgentMode(argv, request) {
   // Log version and command info in verbose mode using lazy logging
-  Log.Default.lazy.info(() => ({
+  Log.Default.info(() => ({
     message: 'Agent started',
     version: pkg.version,
     command: process.argv.join(' '),
@@ -255,7 +255,7 @@ async function runAgentMode(argv, request) {
     scriptPath: import.meta.path,
   }));
   if (Flag.OPENCODE_DRY_RUN) {
-    Log.Default.lazy.info(() => ({
+    Log.Default.info(() => ({
       message: 'Dry run mode enabled',
       mode: 'dry-run',
     }));
@@ -318,7 +318,7 @@ async function runAgentMode(argv, request) {
 async function runContinuousAgentMode(argv) {
   const compactJson = argv['compact-json'] === true;
   // Log version and command info in verbose mode using lazy logging
-  Log.Default.lazy.info(() => ({
+  Log.Default.info(() => ({
     message: 'Agent started (continuous mode)',
     version: pkg.version,
     command: process.argv.join(' '),
@@ -326,7 +326,7 @@ async function runContinuousAgentMode(argv) {
     scriptPath: import.meta.path,
   }));
   if (Flag.OPENCODE_DRY_RUN) {
-    Log.Default.lazy.info(() => ({
+    Log.Default.info(() => ({
       message: 'Dry run mode enabled',
       mode: 'dry-run',
     }));
