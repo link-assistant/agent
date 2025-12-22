@@ -1,0 +1,27 @@
+{
+  "author": {
+    "id": "MDQ6VXNlcjYzOTIzMTE=",
+    "is_bot": false,
+    "login": "andchir",
+    "name": "Andrei"
+  },
+  "body": "agent auth login - авторизация через Google не работает. Первые два варианта авторизации дают ссылку, которая не работает в браузере.\n\n- Google AI Pro/Ultra (OAuth - Browser)\n- Google AI Pro/Ultra (OAuth - Manual Code Entry)\n\nПолучаю сообщение в браузере:\n\n~~~\nДоступ заблокирован: ошибка авторизации\nUnregistered scope(s) in the request: https://www.googleapis.com/auth/generative-language.tuning, https://www.googleapis.com/auth/generative-language.retriever\nЕсли вы разработчик этого приложения, прочитайте\n.\nОшибка 403: restricted_client\n~~~\n\n![Image](https://github.com/user-attachments/assets/5b115eb4-a1f3-4f62-8e85-774605d2c757)",
+  "comments": [
+    {
+      "id": "IC_kwDOQYTy3M7biKbP",
+      "author": { "login": "konard" },
+      "authorAssociation": "MEMBER",
+      "body": "We should look at how \n\n[reference-gemini-cli @ 26f050f](https://github.com/google-gemini/gemini-cli/tree/26f050ff10dd90a8c4e6e125effe79d0272aa474)\n[reference-gemini-cookbook @ aa218e8](https://github.com/google-gemini/cookbook/tree/aa218e8c403f86f2d942f645f1e99ca8ed7f7080)\n\nAre implemented and try to use code as close to it as possible.\n\nAlso may be https://github.com/sst/opencode/tree/0068cb305f617a99556289c72b8a5ddc2bbda746 has an answer on how to do it for Google?\n\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
+      "createdAt": "2025-12-22T17:51:44Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/link-assistant/agent/issues/93#issuecomment-3683165903",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2025-12-22T14:51:32Z",
+  "title": "agent auth login через Google не работает",
+  "updatedAt": "2025-12-22T17:51:44Z"
+}
