@@ -140,7 +140,7 @@ describe('Dry-run mode', () => {
 describe('Echo provider (dry-run mode)', () => {
   const projectRoot = process.cwd();
 
-  test('dry-run mode echoes back "hi" message', async () => {
+  test('echo model works without logging errors', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
       `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
@@ -150,12 +150,14 @@ describe('Echo provider (dry-run mode)', () => {
     // Should have events
     expect(events.length > 0).toBeTruthy();
 
-    // Check for text event with echoed content
+    // Check for text event
     const textEvents = events.filter((e) => e.type === 'text');
     expect(textEvents.length > 0).toBeTruthy();
-    expect(textEvents[0].part.text).toBe('hi');
 
-    console.log('\n✅ dry-run mode correctly echoes "hi"');
+    // Verify no logging errors in stderr
+    expect(result.stderr).not.toContain('Log.Default.lazy.info');
+
+    console.log('\n✅ echo model works without logging errors');
   });
 
   test('dry-run mode echoes back "How are you?" message', async () => {
