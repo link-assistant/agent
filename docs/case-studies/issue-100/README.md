@@ -65,19 +65,61 @@ const GOOGLE_OAUTH_SCOPES = [
 ];
 ```
 
-### What Google API Requires
+### What Our API Requires
 
-The Google Generative Language API (used by gemini-3-pro) requires one of these scopes:
+We make API calls to `generativelanguage.googleapis.com` which requires specific scopes:
 
 - `https://www.googleapis.com/auth/generative-language`
 - `https://www.googleapis.com/auth/generative-language.tuning`
 - `https://www.googleapis.com/auth/generative-language.retriever`
 
-### The Mismatch
+### The Real Difference: API Endpoint
 
-**Problem**: The `cloud-platform` scope grants broad access to Google Cloud Platform resources, but it does NOT automatically grant access to the Generative Language API which uses a different scope hierarchy.
+**Our Implementation**:
+- Uses `generativelanguage.googleapis.com` (standard Generative Language API)
+- This API requires `generative-language.*` scopes
+- OAuth client doesn't have these scopes registered → **SCOPE MISMATCH**
 
-**Gemini CLI Approach**: The official Gemini CLI (https://github.com/google-gemini/gemini-cli) also uses `cloud-platform` scope, suggesting that scope should work. However, the key difference may be in how the API is being called.
+**Gemini CLI Implementation**:
+- Uses `https://cloudcode-pa.googleapis.com/v1internal` (Cloud Code API)
+- This is a **different API endpoint** that wraps the Generative Language API
+- The Cloud Code API accepts `cloud-platform` scope!
+- Same OAuth client, same scopes, but **different API that works with those scopes**
+
+### Gemini CLI Architecture (Key Discovery)
+
+```
+User OAuth (cloud-platform scope)
+    ↓
+Gemini CLI → Cloud Code API (cloudcode-pa.googleapis.com/v1internal)
+    ↓
+Cloud Code Server → Generative Language API (internal)
+```
+
+The Gemini CLI doesn't call `generativelanguage.googleapis.com` directly. It calls Google's **Cloud Code API** which:
+1. Accepts `cloud-platform` OAuth tokens
+2. Handles subscription validation (FREE tier, STANDARD tier)
+3. Proxies requests to the Generative Language API internally
+
+### Code Evidence from Gemini CLI
+
+From `/tmp/gemini-cli/packages/core/src/code_assist/server.ts`:
+
+```typescript
+export const CODE_ASSIST_ENDPOINT = 'https://cloudcode-pa.googleapis.com';
+export const CODE_ASSIST_API_VERSION = 'v1internal';
+
+export class CodeAssistServer implements ContentGenerator {
+  // Makes requests to cloudcode-pa.googleapis.com, not generativelanguage.googleapis.com
+  async generateContentStream(req, userPromptId) {
+    return this.requestStreamingPost('streamGenerateContent', ...);
+  }
+
+  getMethodUrl(method: string): string {
+    return `${CODE_ASSIST_ENDPOINT}/${CODE_ASSIST_API_VERSION}:${method}`;
+  }
+}
+```
 
 ## Key Findings
 
@@ -127,7 +169,27 @@ Auth credentials are stored by provider ID, meaning:
 
 ## Proposed Solutions
 
-### Solution 1: Add Generative Language Scopes to OAuth
+### Solution 1: Use Cloud Code API (Recommended - Matches Gemini CLI)
+
+**The proper fix**: Use the same API endpoint as Gemini CLI.
+
+When Google OAuth is active, route API calls through:
+- `https://cloudcode-pa.googleapis.com/v1internal:streamGenerateContent`
+
+Instead of:
+- `https://generativelanguage.googleapis.com/v1beta/models/...:streamGenerateContent`
+
+**Pros**:
+- Exact same approach as official Gemini CLI
+- Works with existing `cloud-platform` scope
+- Supports subscription tiers (FREE, STANDARD, etc.)
+- No need for users to set API keys
+
+**Cons**:
+- Requires implementing Cloud Code API request/response translation
+- More complex implementation
+
+### Solution 2: Add Generative Language Scopes to OAuth
 
 Update `GOOGLE_OAUTH_SCOPES` in `src/auth/plugins.ts`:
 
@@ -141,39 +203,40 @@ const GOOGLE_OAUTH_SCOPES = [
 ```
 
 **Pros**: Simple fix
-**Cons**: Users must re-authenticate; scope may not be available for all Google accounts
+**Cons**:
+- Won't work - scopes aren't registered for the OAuth client (causes `403: restricted_client`)
+- See issue #93
 
-### Solution 2: Credential Fallback Mechanism (Recommended)
+### Solution 3: Credential Fallback Mechanism (Current Implementation)
 
-Implement a fallback strategy in `src/provider/provider.ts`:
+Implement a fallback strategy in `src/auth/plugins.ts`:
 
 1. Try OAuth credentials first
 2. If OAuth fails with scope error (403), try API key
 3. If API key fails, report the original error
 
-This allows users who have both OAuth and API keys to seamlessly use whichever works.
-
-### Solution 3: Multiple Credential Storage
-
-Allow storing multiple credentials per provider:
-
-- OAuth tokens for subscription access
-- API keys for direct API access
-
-The system could try each credential in priority order until one succeeds.
+**Pros**: Works as workaround
+**Cons**:
+- Requires users to have an API key set
+- Doesn't leverage subscription benefits properly
+- Not the same experience as Gemini CLI
 
 ## Implementation Recommendation
 
-**Primary Fix**: Solution 2 - Credential Fallback Mechanism
+**Proper Fix**: Solution 1 - Use Cloud Code API
 
-1. Modify the Google provider loader to attempt API key auth if OAuth fails
-2. Add error detection for scope-related 403 errors
-3. Log which credential method was used for transparency
-4. Maintain backward compatibility
+This requires implementing a `CodeAssistServer`-like client that:
+1. Calls `https://cloudcode-pa.googleapis.com/v1internal` endpoints
+2. Translates between our request format and Cloud Code API format
+3. Uses the `google-auth-library` OAuth client for Bearer token authentication
 
-**Secondary Enhancement**: Solution 1 - Update OAuth Scopes
+The Gemini CLI has already implemented this in:
+- `/packages/core/src/code_assist/server.ts` - API client
+- `/packages/core/src/code_assist/converter.ts` - Request/response translation
 
-After implementing fallback, also update the OAuth scopes to reduce the likelihood of scope errors for new authentications.
+**Temporary Fix**: Solution 3 - Credential Fallback (Already Implemented)
+
+Until Solution 1 is implemented, users can set an API key as a fallback.
 
 ## Implementation
 
