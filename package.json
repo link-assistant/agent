@@ -2,13 +2,13 @@
   "name": "@link-assistant/agent",
   "version": "0.7.0",
   "description": "A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface. Bun-only runtime.",
-  "main": "src/index.js",
+  "main": "js/src/index.js",
   "type": "module",
   "bin": {
-    "agent": "./src/index.js"
+    "agent": "./js/src/index.js"
   },
   "scripts": {
-    "dev": "bun run src/index.js",
+    "dev": "bun run js/src/index.js",
     "test": "bun test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -42,7 +42,7 @@
     "access": "public"
   },
   "files": [
-    "src/",
+    "js/src/",
     "package.json",
     "README.md",
     "MODELS.md",

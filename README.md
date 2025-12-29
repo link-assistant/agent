@@ -454,7 +454,7 @@ bun run dev
 Or run directly:
 
 ```bash
-bun run src/index.js
+bun run js/src/index.js
 ```
 
 ### Testing
@@ -521,10 +521,10 @@ Both plain text and JSON input work:
 
 ```bash
 # Plain text
-echo "hello" | bun run src/index.js
+echo "hello" | bun run js/src/index.js
 
 # JSON
-echo '{"message":"hello"}' | bun run src/index.js
+echo '{"message":"hello"}' | bun run js/src/index.js
 ```
 
 Plain text is automatically converted to `{"message":"your text"}` format.
@@ -586,10 +586,19 @@ This agent-cli reproduces OpenCode's `run --format json` command architecture:
 
 ## Files
 
-- `src/index.js` - Main entry point with JSON/plain text input support
-- `src/session/agent.js` - Agent implementation
-- `src/tool/` - Tool implementations
-- `tests/` - Comprehensive test suite
+### JavaScript Implementation (js/)
+
+- `js/src/index.js` - Main entry point with JSON/plain text input support
+- `js/src/session/` - Session management and agent implementation
+- `js/src/tool/` - Tool implementations
+- `js/tests/` - Comprehensive test suite
+
+### Rust Implementation (rust/)
+
+- `rust/` - Rust implementation of the CLI agent (work in progress)
+
+### Documentation
+
 - [MODELS.md](MODELS.md) - Available models and pricing
 - [TOOLS.md](TOOLS.md) - Complete tool documentation
 - [EXAMPLES.md](EXAMPLES.md) - Usage examples for each tool
