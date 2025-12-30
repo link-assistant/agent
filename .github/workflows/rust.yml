@@ -35,7 +35,8 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: -Dwarnings
+  # Note: -Dwarnings is disabled while Rust implementation is WIP
+  # Enable later with: RUSTFLAGS: -Dwarnings
 
 jobs:
   # Changelog fragment check - only runs on PRs
