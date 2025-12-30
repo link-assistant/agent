@@ -337,7 +337,11 @@ mod tests {
     #[tokio::test]
     async fn test_grep_simple() {
         let temp = TempDir::new().unwrap();
-        fs::write(temp.path().join("test.txt"), "hello world\nfoo bar\nhello again").unwrap();
+        fs::write(
+            temp.path().join("test.txt"),
+            "hello world\nfoo bar\nhello again",
+        )
+        .unwrap();
 
         let tool = GrepTool;
         let ctx = create_context(temp.path());

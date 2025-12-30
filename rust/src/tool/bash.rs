@@ -83,16 +83,28 @@ impl Tool for BashTool {
         let params: BashParams = serde_json::from_value(params)
             .map_err(|e| AgentError::invalid_arguments("bash", e.to_string()))?;
 
-        let timeout_ms = params.timeout.unwrap_or(DEFAULT_TIMEOUT_MS).min(MAX_TIMEOUT_MS);
+        let timeout_ms = params
+            .timeout
+            .unwrap_or(DEFAULT_TIMEOUT_MS)
+            .min(MAX_TIMEOUT_MS);
         let timeout_duration = Duration::from_millis(timeout_ms);
 
         let title = params.description.unwrap_or_else(|| {
             // Extract first part of command for title
-            params.command.split_whitespace().take(3).collect::<Vec<_>>().join(" ")
+            params
+                .command
+                .split_whitespace()
+                .take(3)
+                .collect::<Vec<_>>()
+                .join(" ")
         });
 
         // Execute command
-        let result = timeout(timeout_duration, execute_command(&params.command, &ctx.working_directory)).await;
+        let result = timeout(
+            timeout_duration,
+            execute_command(&params.command, &ctx.working_directory),
+        )
+        .await;
 
         match result {
             Ok(Ok((stdout, stderr, exit_code))) => {
@@ -247,6 +259,9 @@ mod tests {
 
         let result = tool.execute(params, &ctx).await.unwrap();
 
-        assert!(result.output.trim().ends_with(temp.path().file_name().unwrap().to_str().unwrap()));
+        assert!(result
+            .output
+            .trim()
+            .ends_with(temp.path().file_name().unwrap().to_str().unwrap()));
     }
 }

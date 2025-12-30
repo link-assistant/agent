@@ -3,14 +3,14 @@
 //! This module provides all the tool implementations that the agent can use,
 //! mirroring the JavaScript implementation's tool/ directory.
 
+pub mod bash;
 pub mod context;
-pub mod read;
-pub mod write;
 pub mod edit;
-pub mod list;
 pub mod glob;
 pub mod grep;
-pub mod bash;
+pub mod list;
+pub mod read;
+pub mod write;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -97,7 +97,10 @@ impl ToolRegistry {
 
     /// Get tool descriptions for system prompt
     pub fn descriptions(&self) -> Vec<(&'static str, &'static str)> {
-        self.tools.iter().map(|t| (t.id(), t.description())).collect()
+        self.tools
+            .iter()
+            .map(|t| (t.id(), t.description()))
+            .collect()
     }
 }
 

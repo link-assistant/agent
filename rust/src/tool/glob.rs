@@ -73,7 +73,10 @@ impl Tool for GlobTool {
         let full_pattern = if params.pattern.starts_with('/') {
             params.pattern.clone()
         } else {
-            base_path.join(&params.pattern).to_string_lossy().to_string()
+            base_path
+                .join(&params.pattern)
+                .to_string_lossy()
+                .to_string()
         };
 
         let title = params.pattern.clone();
@@ -81,9 +84,9 @@ impl Tool for GlobTool {
         // Execute glob and collect results
         let mut matches: Vec<(std::path::PathBuf, std::time::SystemTime)> = Vec::new();
 
-        for entry in glob_match(&full_pattern).map_err(|e| {
-            AgentError::tool_execution("glob", format!("Invalid pattern: {}", e))
-        })? {
+        for entry in glob_match(&full_pattern)
+            .map_err(|e| AgentError::tool_execution("glob", format!("Invalid pattern: {}", e)))?
+        {
             match entry {
                 Ok(path) => {
                     if path.is_file() {

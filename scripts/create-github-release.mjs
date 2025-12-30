@@ -37,10 +37,15 @@ const config = makeConfig({
         type: 'string',
         default: getenv('REPOSITORY', ''),
         describe: 'GitHub repository (e.g., owner/repo)',
+      })
+      .option('prefix', {
+        type: 'string',
+        default: getenv('PREFIX', ''),
+        describe: 'Tag prefix (e.g., "js-" or "rust-")',
       }),
 });
 
-const { releaseVersion: version, repository } = config;
+const { releaseVersion: version, repository, prefix } = config;
 
 if (!version || !repository) {
   console.error('Error: Missing required arguments');
@@ -50,13 +55,19 @@ if (!version || !repository) {
   process.exit(1);
 }
 
-const tag = `v${version}`;
+const tag = `${prefix}v${version}`;
 
 console.log(`Creating GitHub release for ${tag}...`);
 
 try {
-  // Read CHANGELOG.md
-  const changelog = readFileSync('./CHANGELOG.md', 'utf8');
+  // Read CHANGELOG.md - check prefix for appropriate changelog location
+  const changelogPath = prefix === 'rust-' ? './rust/CHANGELOG.md' : './CHANGELOG.md';
+  let changelog = '';
+  try {
+    changelog = readFileSync(changelogPath, 'utf8');
+  } catch {
+    console.log(`No changelog found at ${changelogPath}, using default release notes`);
+  }
 
   // Extract changelog entry for this version
   // Read from CHANGELOG.md between this version header and the next version header
@@ -76,9 +87,10 @@ try {
   // Create release using GitHub API with JSON input
   // This avoids shell escaping issues that occur when passing text via command-line arguments
   // (Previously caused apostrophes like "didn't" to appear as "didn'''" in releases)
+  const releaseName = prefix ? `${prefix.replace(/-$/, '')} ${version}` : version;
   const payload = JSON.stringify({
     tag_name: tag,
-    name: version,
+    name: releaseName,
     body: releaseNotes,
   });
 

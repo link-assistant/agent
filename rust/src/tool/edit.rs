@@ -115,7 +115,10 @@ impl Tool for EditTool {
 
         // Read existing file
         if !filepath.exists() {
-            return Err(AgentError::file_not_found(filepath.to_string_lossy(), vec![]));
+            return Err(AgentError::file_not_found(
+                filepath.to_string_lossy(),
+                vec![],
+            ));
         }
 
         let content_old = fs::read_to_string(&filepath).await?;
@@ -214,7 +217,9 @@ fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool)
     }
 
     // Try whitespace-normalized matching
-    if let Some(result) = try_whitespace_normalized_replace(content, old_string, new_string, replace_all) {
+    if let Some(result) =
+        try_whitespace_normalized_replace(content, old_string, new_string, replace_all)
+    {
         return Ok(result);
     }
 
@@ -223,7 +228,10 @@ fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool)
         return Ok(result);
     }
 
-    Err(AgentError::tool_execution("edit", "oldString not found in content"))
+    Err(AgentError::tool_execution(
+        "edit",
+        "oldString not found in content",
+    ))
 }
 
 /// Try exact string replacement
@@ -254,7 +262,12 @@ fn try_exact_replace(content: &str, old: &str, new: &str, replace_all: bool) -> 
 }
 
 /// Try line-trimmed matching (ignore leading/trailing whitespace per line)
-fn try_line_trimmed_replace(content: &str, old: &str, new: &str, replace_all: bool) -> Option<String> {
+fn try_line_trimmed_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    replace_all: bool,
+) -> Option<String> {
     let content_lines: Vec<&str> = content.lines().collect();
     let search_lines: Vec<&str> = old.lines().collect();
 
@@ -302,7 +315,12 @@ fn try_line_trimmed_replace(content: &str, old: &str, new: &str, replace_all: bo
 }
 
 /// Try whitespace-normalized matching
-fn try_whitespace_normalized_replace(content: &str, old: &str, new: &str, replace_all: bool) -> Option<String> {
+fn try_whitespace_normalized_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    replace_all: bool,
+) -> Option<String> {
     fn normalize_whitespace(s: &str) -> String {
         s.split_whitespace().collect::<Vec<_>>().join(" ")
     }
@@ -339,7 +357,12 @@ fn try_whitespace_normalized_replace(content: &str, old: &str, new: &str, replac
 }
 
 /// Try block anchor matching (match by first and last line)
-fn try_block_anchor_replace(content: &str, old: &str, new: &str, replace_all: bool) -> Option<String> {
+fn try_block_anchor_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    replace_all: bool,
+) -> Option<String> {
     let content_lines: Vec<&str> = content.lines().collect();
     let search_lines: Vec<&str> = old.lines().collect();
 

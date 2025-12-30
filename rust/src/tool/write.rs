@@ -155,6 +155,9 @@ mod tests {
         tool.execute(params, &ctx).await.unwrap();
 
         assert!(file_path.exists());
-        assert_eq!(std_fs::read_to_string(&file_path).unwrap(), "nested content");
+        assert_eq!(
+            std_fs::read_to_string(&file_path).unwrap(),
+            "nested content"
+        );
     }
 }

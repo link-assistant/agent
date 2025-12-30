@@ -111,7 +111,7 @@ impl Filesystem {
 
 // Add pathdiff dependency for path difference calculation
 mod pathdiff {
-    use std::path::{Path, PathBuf, Component};
+    use std::path::{Component, Path, PathBuf};
 
     /// Calculate the relative path from base to target
     pub fn diff_paths<P: AsRef<Path>, Q: AsRef<Path>>(target: P, base: Q) -> Result<PathBuf, ()> {
@@ -172,8 +172,12 @@ mod tests {
         tokio::fs::create_dir_all(&nested).await.unwrap();
 
         // Create target files at different levels
-        tokio::fs::write(base.join("target.txt"), "root").await.unwrap();
-        tokio::fs::write(base.join("a").join("target.txt"), "a").await.unwrap();
+        tokio::fs::write(base.join("target.txt"), "root")
+            .await
+            .unwrap();
+        tokio::fs::write(base.join("a").join("target.txt"), "a")
+            .await
+            .unwrap();
 
         // Find from deepest level
         let found = Filesystem::find_up("target.txt", &nested, None).await;

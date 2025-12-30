@@ -7,15 +7,14 @@ use std::path::Path;
 
 /// Known binary file extensions
 const BINARY_EXTENSIONS: &[&str] = &[
-    ".zip", ".tar", ".gz", ".exe", ".dll", ".so", ".class", ".jar", ".war",
-    ".7z", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods",
-    ".odp", ".bin", ".dat", ".obj", ".o", ".a", ".lib", ".wasm", ".pyc", ".pyo",
+    ".zip", ".tar", ".gz", ".exe", ".dll", ".so", ".class", ".jar", ".war", ".7z", ".doc", ".docx",
+    ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp", ".bin", ".dat", ".obj", ".o", ".a",
+    ".lib", ".wasm", ".pyc", ".pyo",
 ];
 
 /// Known image file extensions
 const IMAGE_EXTENSIONS: &[&str] = &[
-    ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif",
-    ".svg", ".ico", ".avif",
+    ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif", ".svg", ".ico", ".avif",
 ];
 
 /// Check if a file extension indicates a binary file
@@ -31,23 +30,21 @@ fn is_binary_extension(path: &Path) -> bool {
 
 /// Check if a file extension indicates an image file
 pub fn is_image_extension(path: &Path) -> Option<&'static str> {
-    path.extension()
-        .and_then(|e| e.to_str())
-        .and_then(|ext| {
-            let ext_lower = format!(".{}", ext.to_lowercase());
-            match ext_lower.as_str() {
-                ".jpg" | ".jpeg" => Some("JPEG"),
-                ".png" => Some("PNG"),
-                ".gif" => Some("GIF"),
-                ".bmp" => Some("BMP"),
-                ".webp" => Some("WebP"),
-                ".tiff" | ".tif" => Some("TIFF"),
-                ".svg" => Some("SVG"),
-                ".ico" => Some("ICO"),
-                ".avif" => Some("AVIF"),
-                _ => None,
-            }
-        })
+    path.extension().and_then(|e| e.to_str()).and_then(|ext| {
+        let ext_lower = format!(".{}", ext.to_lowercase());
+        match ext_lower.as_str() {
+            ".jpg" | ".jpeg" => Some("JPEG"),
+            ".png" => Some("PNG"),
+            ".gif" => Some("GIF"),
+            ".bmp" => Some("BMP"),
+            ".webp" => Some("WebP"),
+            ".tiff" | ".tif" => Some("TIFF"),
+            ".svg" => Some("SVG"),
+            ".ico" => Some("ICO"),
+            ".avif" => Some("AVIF"),
+            _ => None,
+        }
+    })
 }
 
 /// Check if file content appears to be binary
@@ -133,9 +130,7 @@ pub fn validate_image_format(bytes: &[u8], expected_format: &str) -> bool {
                 && bytes.len() >= 12
                 && &bytes[8..12] == signatures::WEBP_WEBP
         }
-        "TIFF" => {
-            bytes.starts_with(signatures::TIFF_LE) || bytes.starts_with(signatures::TIFF_BE)
-        }
+        "TIFF" => bytes.starts_with(signatures::TIFF_LE) || bytes.starts_with(signatures::TIFF_BE),
         "ICO" => bytes.starts_with(signatures::ICO),
         "SVG" => {
             let text = String::from_utf8_lossy(&bytes[..bytes.len().min(1000)]);
@@ -174,7 +169,10 @@ mod tests {
 
     #[test]
     fn test_image_extension_detection() {
-        assert_eq!(is_image_extension(&PathBuf::from("photo.jpg")), Some("JPEG"));
+        assert_eq!(
+            is_image_extension(&PathBuf::from("photo.jpg")),
+            Some("JPEG")
+        );
         assert_eq!(is_image_extension(&PathBuf::from("icon.PNG")), Some("PNG"));
         assert_eq!(is_image_extension(&PathBuf::from("code.rs")), None);
     }

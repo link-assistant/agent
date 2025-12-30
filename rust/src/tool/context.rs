@@ -50,7 +50,11 @@ impl ToolContext {
     }
 
     /// Set the provider and model IDs
-    pub fn with_model(mut self, provider_id: impl Into<String>, model_id: impl Into<String>) -> Self {
+    pub fn with_model(
+        mut self,
+        provider_id: impl Into<String>,
+        model_id: impl Into<String>,
+    ) -> Self {
         self.provider_id = Some(provider_id.into());
         self.model_id = Some(model_id.into());
         self

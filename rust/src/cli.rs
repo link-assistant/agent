@@ -140,9 +140,10 @@ fn timestamp_ms() -> u64 {
 
 /// Run the CLI with parsed arguments
 pub async fn run(args: Args) -> Result<()> {
-    let working_dir = args.working_directory.clone().unwrap_or_else(|| {
-        std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
-    });
+    let working_dir = args
+        .working_directory
+        .clone()
+        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
 
     // Handle direct prompt mode
     if let Some(ref prompt) = args.prompt {

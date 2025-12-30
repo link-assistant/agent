@@ -5,7 +5,7 @@
 //! in ascending or descending order for different use cases.
 
 use rand::Rng;
-use std::sync::atomic::{AtomicU64, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Prefix types for different entity identifiers

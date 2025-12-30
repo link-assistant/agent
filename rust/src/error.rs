@@ -33,7 +33,10 @@ pub enum AgentError {
     Authentication { message: String },
 
     #[error("Session error: {message}")]
-    Session { session_id: Option<String>, message: String },
+    Session {
+        session_id: Option<String>,
+        message: String,
+    },
 
     #[error("Configuration error: {message}")]
     Config { message: String },
@@ -128,7 +131,10 @@ impl AgentError {
                     "message": message,
                 }
             }),
-            Self::Session { session_id, message } => serde_json::json!({
+            Self::Session {
+                session_id,
+                message,
+            } => serde_json::json!({
                 "name": "SessionError",
                 "data": {
                     "sessionID": session_id,
@@ -175,10 +181,13 @@ mod tests {
 
     #[test]
     fn test_file_not_found_error() {
-        let err = AgentError::file_not_found("/path/to/file.txt", vec![
-            "/path/to/file.ts".to_string(),
-            "/path/to/file.js".to_string(),
-        ]);
+        let err = AgentError::file_not_found(
+            "/path/to/file.txt",
+            vec![
+                "/path/to/file.ts".to_string(),
+                "/path/to/file.js".to_string(),
+            ],
+        );
 
         let json = err.to_json();
         assert_eq!(json["name"], "FileNotFound");

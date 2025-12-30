@@ -65,7 +65,10 @@ impl Tool for ListTool {
         let title = ctx.relative_path(&dir_path);
 
         if !dir_path.exists() {
-            return Err(AgentError::file_not_found(dir_path.to_string_lossy(), vec![]));
+            return Err(AgentError::file_not_found(
+                dir_path.to_string_lossy(),
+                vec![],
+            ));
         }
 
         if !dir_path.is_dir() {
@@ -78,7 +81,11 @@ impl Tool for ListTool {
         let entries = list_directory(&dir_path)?;
 
         Ok(ToolResult {
-            title: if title.is_empty() { ".".to_string() } else { title },
+            title: if title.is_empty() {
+                ".".to_string()
+            } else {
+                title
+            },
             output: entries.join("\n"),
             metadata: json!({
                 "count": entries.len(),

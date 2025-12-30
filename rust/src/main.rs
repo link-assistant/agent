@@ -17,8 +17,7 @@ use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize logging
-    let filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("info"));
+    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
 
     tracing_subscriber::registry()
         .with(fmt::layer().json())
