@@ -54,15 +54,15 @@ try {
   console.log(`\nBumping version (${bumpType})...`);
 
   // Get current version
-  const packageJson = JSON.parse(readFileSync('package.json', 'utf-8'));
+  const packageJson = JSON.parse(readFileSync('js/package.json', 'utf-8'));
   const oldVersion = packageJson.version;
   console.log(`Current version: ${oldVersion}`);
 
   // Bump version using npm version (doesn't create git tag)
-  await $`npm version ${bumpType} --no-git-tag-version`;
+  await $`cd js && npm version ${bumpType} --no-git-tag-version`;
 
   // Get new version
-  const updatedPackageJson = JSON.parse(readFileSync('package.json', 'utf-8'));
+  const updatedPackageJson = JSON.parse(readFileSync('js/package.json', 'utf-8'));
   const newVersion = updatedPackageJson.version;
   console.log(`New version: ${newVersion}`);
 
@@ -108,7 +108,7 @@ try {
 
   // Synchronize package-lock.json
   console.log('\nSynchronizing package-lock.json...');
-  await $`npm install --package-lock-only`;
+  await $`cd js && npm install --package-lock-only`;
 
   console.log('\n✅ Instant version bump complete');
   console.log(`Version: ${oldVersion} → ${newVersion}`);

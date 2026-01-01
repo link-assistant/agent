@@ -41,6 +41,7 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+        working-directory: js
 
       - name: Run integration tests
         run: |
@@ -49,6 +50,7 @@ jobs:
           else
             bun test
           fi
+        working-directory: js
 
       - name: Test MCP CLI commands
         run: |
@@ -63,6 +65,7 @@ jobs:
 
           # Test mcp list command
           bun run src/index.js mcp list
+        working-directory: js
 
   test-all:
     name: Integration Tests (${{ matrix.os }})
@@ -88,6 +91,7 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+        working-directory: js
 
       - name: Run integration tests
         run: |
@@ -96,6 +100,7 @@ jobs:
           else
             bun test
           fi
+        working-directory: js
 
       - name: Test MCP CLI commands
         run: |
@@ -110,3 +115,4 @@ jobs:
 
           # Test mcp list command
           bun run src/index.js mcp list
+        working-directory: js

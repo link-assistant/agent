@@ -1,9 +1,5 @@
 # Development files
-.git/
-.gitignore
-.gitmodules
 .DS_Store
-.claude/
 
 # Test files
 tests/
@@ -11,7 +7,6 @@ tmp/
 *.test.js
 
 # Development directories
-original-opencode/
 node_modules/
 
 # Build artifacts
@@ -44,10 +39,11 @@ coverage/
 
 # Lock files (keep for reference but not needed in published package)
 bun.lock
+package-lock.json
 
 # Config files
 bunfig.toml
 tsconfig.json
-
-# Documentation sources (we include final docs in files array)
-# Keep README.md, TOOLS.md, EXAMPLES.md as they're in the files array
+eslint.config.js
+.prettierrc
+.prettierignore

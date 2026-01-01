@@ -14,7 +14,7 @@ const PACKAGE_NAME = '@link-assistant/agent';
 
 try {
   // Count changeset files (excluding README.md and config.json)
-  const changesetDir = '.changeset';
+  const changesetDir = 'js/.changeset';
   const changesetFiles = readdirSync(changesetDir).filter(
     (file) => file.endsWith('.md') && file !== 'README.md'
   );

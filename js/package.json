@@ -14,11 +14,11 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check:file-size": "node scripts/check-file-size.mjs",
+    "check:file-size": "node ../scripts/check-file-size.mjs",
     "check": "npm run lint && npm run format:check && npm run check:file-size",
-    "prepare": "husky || true",
+    "prepare": "cd .. && husky || true",
     "changeset": "changeset",
-    "changeset:version": "node scripts/changeset-version.mjs",
+    "changeset:version": "node ../scripts/changeset-version.mjs",
     "changeset:publish": "changeset publish",
     "changeset:status": "changeset status --since=origin/main"
   },
@@ -44,11 +44,11 @@
   "files": [
     "src/",
     "package.json",
-    "README.md",
-    "MODELS.md",
-    "TOOLS.md",
-    "EXAMPLES.md",
-    "LICENSE"
+    "../README.md",
+    "../MODELS.md",
+    "../TOOLS.md",
+    "../EXAMPLES.md",
+    "../LICENSE"
   ],
   "dependencies": {
     "@actions/core": "^1.11.1",

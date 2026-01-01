@@ -112,7 +112,7 @@ function setOutput(key, value) {
  */
 function countChangesets() {
   try {
-    const changesetDir = '.changeset';
+    const changesetDir = 'js/.changeset';
     const files = readdirSync(changesetDir);
     return files.filter((f) => f.endsWith('.md') && f !== 'README.md').length;
   } catch {
@@ -126,12 +126,12 @@ function countChangesets() {
  */
 async function getVersion(source = 'local') {
   if (source === 'remote') {
-    const result = await $`git show origin/main:package.json`.run({
+    const result = await $`git show origin/main:js/package.json`.run({
       capture: true,
     });
     return JSON.parse(result.stdout).version;
   }
-  return JSON.parse(readFileSync('./package.json', 'utf8')).version;
+  return JSON.parse(readFileSync('./js/package.json', 'utf8')).version;
 }
 
 async function main() {
@@ -196,7 +196,7 @@ async function main() {
     } else {
       console.log('Running changeset version...');
       // Run changeset version to bump versions and update CHANGELOG
-      await $`npm run changeset:version`;
+      await $`cd js && npm run changeset:version`;
     }
 
     // Get new version after bump

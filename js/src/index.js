@@ -30,11 +30,11 @@ import { fileURLToPath } from 'url';
 const require = createRequire(import.meta.url);
 let pkg;
 try {
-  pkg = require('../package.json');
+  pkg = require('../../package.json');
 } catch (_e) {
   // Fallback: read package.json directly
   const __dirname = dirname(fileURLToPath(import.meta.url));
-  const pkgPath = join(__dirname, '../package.json');
+  const pkgPath = join(__dirname, '../../package.json');
   const pkgContent = readFileSync(pkgPath, 'utf8');
   pkg = JSON.parse(pkgContent);
 }

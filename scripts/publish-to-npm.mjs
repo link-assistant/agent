@@ -69,7 +69,7 @@ async function main() {
     }
 
     // Get current version
-    const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'));
+    const packageJson = JSON.parse(readFileSync('./js/package.json', 'utf8'));
     const currentVersion = packageJson.version;
     console.log(`Current version to publish: ${currentVersion}`);
 

@@ -41,10 +41,15 @@ const config = makeConfig({
         type: 'string',
         default: getenv('COMMIT_SHA', ''),
         describe: 'Commit SHA for PR detection',
+      })
+      .option('prefix', {
+        type: 'string',
+        default: getenv('PREFIX', ''),
+        describe: 'Tag prefix (e.g., "js-" or "rust-")',
       }),
 });
 
-const { releaseVersion: version, repository, commitSha } = config;
+const { releaseVersion: version, repository, commitSha, prefix } = config;
 
 if (!version || !repository || !commitSha) {
   console.error('Error: Missing required arguments');
@@ -54,7 +59,7 @@ if (!version || !repository || !commitSha) {
   process.exit(1);
 }
 
-const tag = `v${version}`;
+const tag = `${prefix}v${version}`;
 
 try {
   // Get the release ID for this version

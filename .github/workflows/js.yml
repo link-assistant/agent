@@ -1,14 +1,19 @@
-name: Checks and release
+name: JS CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'js/**'
+      - 'scripts/**'
+      - '.github/workflows/js.yml'
   pull_request:
     types: [opened, synchronize, reopened]
-  # Manual release support - consolidated here to work with npm trusted publishing
-  # npm only allows ONE workflow file as trusted publisher, so all publishing
-  # must go through this workflow (release.yml)
+    paths:
+      - 'js/**'
+      - 'scripts/**'
+      - '.github/workflows/js.yml'
   workflow_dispatch:
     inputs:
       release_mode:
@@ -32,7 +37,9 @@ on:
         required: false
         type: string
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency:
+  group: js-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Changeset check - only runs on PRs
@@ -52,6 +59,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+        working-directory: js
 
       - name: Check for changesets
         run: |
@@ -69,7 +77,7 @@ jobs:
     name: Lint and Format Check
     runs-on: ubuntu-latest
     needs: [changeset-check]
-    if: always() && (github.event_name == 'push' || needs.changeset-check.result == 'success')
+    if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success')
     steps:
       - uses: actions/checkout@v4
 
@@ -80,15 +88,19 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+        working-directory: js
 
       - name: Run ESLint
         run: npm run lint
+        working-directory: js
 
       - name: Check formatting
         run: npm run format:check
+        working-directory: js
 
       - name: Check file size limit
         run: npm run check:file-size
+        working-directory: js
 
   # Test with Bun (this project is Bun-only)
   # Only runs unit tests (no external dependencies/API calls)
@@ -97,7 +109,7 @@ jobs:
     name: Unit Tests (Bun on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: [changeset-check]
-    if: always() && (github.event_name == 'push' || needs.changeset-check.result == 'success')
+    if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success')
     strategy:
       fail-fast: false
       matrix:
@@ -119,9 +131,11 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+        working-directory: js
 
       - name: Run unit tests
         run: bun test tests/json-standard-unit.test.js
+        working-directory: js
 
       - name: Commit cached API responses
         # Only commit on the primary OS to avoid conflicts
@@ -170,6 +184,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+        working-directory: js
 
       - name: Update npm for OIDC trusted publishing
         run: node scripts/setup-npm.mjs
@@ -178,7 +193,7 @@ jobs:
         id: check_changesets
         run: |
           # Count changeset files (excluding README.md and config.json)
-          CHANGESET_COUNT=$(find .changeset -name "*.md" ! -name "README.md" | wc -l)
+          CHANGESET_COUNT=$(find js/.changeset -name "*.md" ! -name "README.md" | wc -l)
           echo "Found $CHANGESET_COUNT changeset file(s)"
           echo "has_changesets=$([[ $CHANGESET_COUNT -gt 0 ]] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
 
@@ -197,16 +212,16 @@ jobs:
         if: steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/create-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}"
+        run: node scripts/create-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --prefix "js-"
 
       - name: Format GitHub release notes
         if: steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/format-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}"
+        run: node scripts/format-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "js-"
 
   # Manual Instant Release - triggered via workflow_dispatch with instant mode
-  # This job is in release.yml because npm trusted publishing
+  # This job is in js.yml because npm trusted publishing
   # only allows one workflow file to be registered as a trusted publisher
   instant-release:
     name: Instant Release
@@ -230,6 +245,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+        working-directory: js
 
       - name: Update npm for OIDC trusted publishing
         run: node scripts/setup-npm.mjs
@@ -248,13 +264,13 @@ jobs:
         if: steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/create-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}"
+        run: node scripts/create-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --prefix "js-"
 
       - name: Format GitHub release notes
         if: steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/format-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}"
+        run: node scripts/format-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "js-"
 
   # Manual Changeset PR - creates a pull request with the changeset for review
   changeset-pr:
@@ -276,6 +292,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+        working-directory: js
 
       - name: Create changeset file
         run: node scripts/create-manual-changeset.mjs --bump-type "${{ github.event.inputs.bump_type }}" --description "${{ github.event.inputs.description }}"
@@ -283,7 +300,7 @@ jobs:
       - name: Format changeset with Prettier
         run: |
           # Run Prettier on the changeset file to ensure it matches project style
-          npx prettier --write ".changeset/*.md" || true
+          cd js && npx prettier --write ".changeset/*.md" || true
 
           echo "Formatted changeset files"
 
