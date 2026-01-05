@@ -432,6 +432,20 @@ export namespace Config {
         .describe(
           'Timeout in ms for fetching tools from the MCP server. Defaults to 5000 (5 seconds) if not specified.'
         ),
+      tool_call_timeout: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Default timeout in ms for MCP tool execution. Defaults to 120000 (2 minutes) if not specified. Set per-tool overrides in tool_timeouts.'
+        ),
+      tool_timeouts: z
+        .record(z.string(), z.number().int().positive())
+        .optional()
+        .describe(
+          'Per-tool timeout overrides in ms. Keys are tool names (e.g., "browser_run_code": 300000 for 5 minutes).'
+        ),
     })
     .strict()
     .meta({
@@ -457,6 +471,20 @@ export namespace Config {
         .optional()
         .describe(
           'Timeout in ms for fetching tools from the MCP server. Defaults to 5000 (5 seconds) if not specified.'
+        ),
+      tool_call_timeout: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Default timeout in ms for MCP tool execution. Defaults to 120000 (2 minutes) if not specified. Set per-tool overrides in tool_timeouts.'
+        ),
+      tool_timeouts: z
+        .record(z.string(), z.number().int().positive())
+        .optional()
+        .describe(
+          'Per-tool timeout overrides in ms. Keys are tool names (e.g., "browser_run_code": 300000 for 5 minutes).'
         ),
     })
     .strict()

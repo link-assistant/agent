@@ -13,6 +13,12 @@ import { withTimeout } from '../util/timeout';
 export namespace MCP {
   const log = Log.create({ service: 'mcp' });
 
+  /** Default timeout for MCP tool execution (2 minutes) */
+  export const DEFAULT_TOOL_CALL_TIMEOUT = 120000;
+
+  /** Maximum allowed timeout for MCP tool execution (10 minutes) */
+  export const MAX_TOOL_CALL_TIMEOUT = 600000;
+
   export const Failed = NamedError.create(
     'MCPFailed',
     z.object({
@@ -21,6 +27,14 @@ export namespace MCP {
   );
 
   type Client = Awaited<ReturnType<typeof experimental_createMCPClient>>;
+
+  /** Timeout configuration for an MCP server */
+  export interface TimeoutConfig {
+    /** Default timeout for all tool calls from this server */
+    defaultTimeout: number;
+    /** Per-tool timeout overrides */
+    toolTimeouts: Record<string, number>;
+  }
 
   export const Status = z
     .discriminatedUnion('status', [
@@ -59,6 +73,7 @@ export namespace MCP {
       const config = cfg.mcp ?? {};
       const clients: Record<string, Client> = {};
       const status: Record<string, Status> = {};
+      const timeoutConfigs: Record<string, TimeoutConfig> = {};
 
       await Promise.all(
         Object.entries(config).map(async ([key, mcp]) => {
@@ -66,6 +81,19 @@ export namespace MCP {
           if (!result) return;
 
           status[key] = result.status;
+
+          // Store timeout configuration for this MCP server
+          const envTimeout = process.env.MCP_DEFAULT_TOOL_CALL_TIMEOUT
+            ? parseInt(process.env.MCP_DEFAULT_TOOL_CALL_TIMEOUT, 10)
+            : undefined;
+          const defaultTimeout = Math.min(
+            mcp.tool_call_timeout ?? envTimeout ?? DEFAULT_TOOL_CALL_TIMEOUT,
+            MAX_TOOL_CALL_TIMEOUT
+          );
+          timeoutConfigs[key] = {
+            defaultTimeout,
+            toolTimeouts: mcp.tool_timeouts ?? {},
+          };
 
           if (result.mcpClient) {
             clients[key] = result.mcpClient;
@@ -75,6 +103,7 @@ export namespace MCP {
       return {
         status,
         clients,
+        timeoutConfigs,
       };
     },
     async (state) => {
@@ -309,5 +338,60 @@ export namespace MCP {
       }
     }
     return result;
+  }
+
+  /**
+   * Get the timeout configuration for all MCP servers
+   */
+  export async function getTimeoutConfigs(): Promise<
+    Record<string, TimeoutConfig>
+  > {
+    const s = await state();
+    return s.timeoutConfigs;
+  }
+
+  /**
+   * Get the timeout for a specific MCP tool
+   * @param fullToolName The full tool name in format "serverName_toolName"
+   * @returns Timeout in milliseconds
+   */
+  export async function getToolTimeout(fullToolName: string): Promise<number> {
+    const s = await state();
+
+    // Parse the full tool name to extract server name and tool name
+    // Format: serverName_toolName (where both are sanitized)
+    const underscoreIndex = fullToolName.indexOf('_');
+    if (underscoreIndex === -1) {
+      return DEFAULT_TOOL_CALL_TIMEOUT;
+    }
+
+    const serverName = fullToolName.substring(0, underscoreIndex);
+    const toolName = fullToolName.substring(underscoreIndex + 1);
+
+    // Find the server config (need to handle sanitization)
+    const config = s.timeoutConfigs[serverName];
+    if (!config) {
+      // Try to find by iterating (in case of sanitization differences)
+      for (const [key, cfg] of Object.entries(s.timeoutConfigs)) {
+        const sanitizedKey = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+        if (sanitizedKey === serverName) {
+          // Check for per-tool timeout override
+          const perToolTimeout = cfg.toolTimeouts[toolName];
+          if (perToolTimeout !== undefined) {
+            return Math.min(perToolTimeout, MAX_TOOL_CALL_TIMEOUT);
+          }
+          return cfg.defaultTimeout;
+        }
+      }
+      return DEFAULT_TOOL_CALL_TIMEOUT;
+    }
+
+    // Check for per-tool timeout override
+    const perToolTimeout = config.toolTimeouts[toolName];
+    if (perToolTimeout !== undefined) {
+      return Math.min(perToolTimeout, MAX_TOOL_CALL_TIMEOUT);
+    }
+
+    return config.defaultTimeout;
   }
 }
