@@ -874,6 +874,29 @@ export namespace Config {
         .record(z.string(), Mcp)
         .optional()
         .describe('MCP (Model Context Protocol) server configurations'),
+      mcp_defaults: z
+        .object({
+          tool_call_timeout: z
+            .number()
+            .int()
+            .positive()
+            .optional()
+            .describe(
+              'Global default timeout in ms for MCP tool execution. Defaults to 120000 (2 minutes). Can be overridden per-server or per-tool.'
+            ),
+          max_tool_call_timeout: z
+            .number()
+            .int()
+            .positive()
+            .optional()
+            .describe(
+              'Maximum allowed timeout in ms for MCP tool execution. Defaults to 600000 (10 minutes). Tool timeouts will be capped at this value.'
+            ),
+        })
+        .optional()
+        .describe(
+          'Global default settings for MCP tool call timeouts. Can be overridden at the server level.'
+        ),
       formatter: z
         .union([
           z.literal(false),

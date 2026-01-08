@@ -35,12 +35,22 @@ describe('MCP Tool Call Timeout', () => {
   });
 
   describe('MCP timeout constants', () => {
-    test('DEFAULT_TOOL_CALL_TIMEOUT is 2 minutes', () => {
-      expect(MCP.DEFAULT_TOOL_CALL_TIMEOUT).toBe(120000);
+    test('BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT is 2 minutes', () => {
+      expect(MCP.BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT).toBe(120000);
     });
 
-    test('MAX_TOOL_CALL_TIMEOUT is 10 minutes', () => {
-      expect(MCP.MAX_TOOL_CALL_TIMEOUT).toBe(600000);
+    test('BUILTIN_MAX_TOOL_CALL_TIMEOUT is 10 minutes', () => {
+      expect(MCP.BUILTIN_MAX_TOOL_CALL_TIMEOUT).toBe(600000);
+    });
+
+    test('deprecated DEFAULT_TOOL_CALL_TIMEOUT equals BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT', () => {
+      expect(MCP.DEFAULT_TOOL_CALL_TIMEOUT).toBe(
+        MCP.BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT
+      );
+    });
+
+    test('deprecated MAX_TOOL_CALL_TIMEOUT equals BUILTIN_MAX_TOOL_CALL_TIMEOUT', () => {
+      expect(MCP.MAX_TOOL_CALL_TIMEOUT).toBe(MCP.BUILTIN_MAX_TOOL_CALL_TIMEOUT);
     });
   });
 
@@ -166,6 +176,84 @@ describe('MCP Tool Call Timeout', () => {
   });
 });
 
+describe('Global MCP defaults configuration', () => {
+  test('mcp_defaults schema accepts tool_call_timeout', async () => {
+    const { Config } = await import('../src/config/config');
+
+    const validConfig = {
+      mcp_defaults: {
+        tool_call_timeout: 180000,
+      },
+    };
+
+    const result = Config.Info.safeParse(validConfig);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.mcp_defaults?.tool_call_timeout).toBe(180000);
+    }
+  });
+
+  test('mcp_defaults schema accepts max_tool_call_timeout', async () => {
+    const { Config } = await import('../src/config/config');
+
+    const validConfig = {
+      mcp_defaults: {
+        max_tool_call_timeout: 900000, // 15 minutes
+      },
+    };
+
+    const result = Config.Info.safeParse(validConfig);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.mcp_defaults?.max_tool_call_timeout).toBe(900000);
+    }
+  });
+
+  test('mcp_defaults schema accepts both timeout options', async () => {
+    const { Config } = await import('../src/config/config');
+
+    const validConfig = {
+      mcp_defaults: {
+        tool_call_timeout: 180000,
+        max_tool_call_timeout: 1200000, // 20 minutes
+      },
+    };
+
+    const result = Config.Info.safeParse(validConfig);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.mcp_defaults?.tool_call_timeout).toBe(180000);
+      expect(result.data.mcp_defaults?.max_tool_call_timeout).toBe(1200000);
+    }
+  });
+
+  test('mcp_defaults timeouts must be positive integers', async () => {
+    const { Config } = await import('../src/config/config');
+
+    const invalidConfig = {
+      mcp_defaults: {
+        tool_call_timeout: -1000,
+      },
+    };
+
+    const result = Config.Info.safeParse(invalidConfig);
+    expect(result.success).toBe(false);
+  });
+
+  test('mcp_defaults max_tool_call_timeout must be positive integer', async () => {
+    const { Config } = await import('../src/config/config');
+
+    const invalidConfig = {
+      mcp_defaults: {
+        max_tool_call_timeout: 0,
+      },
+    };
+
+    const result = Config.Info.safeParse(invalidConfig);
+    expect(result.success).toBe(false);
+  });
+});
+
 describe('Full MCP configuration example', () => {
   test('complete config with all timeout options validates', async () => {
     const { Config } = await import('../src/config/config');
@@ -195,6 +283,37 @@ describe('Full MCP configuration example', () => {
         browser_install: 600000,
         browser_navigate: 60000,
       });
+    }
+  });
+
+  test('complete config with global mcp_defaults validates', async () => {
+    const { Config } = await import('../src/config/config');
+
+    // This represents the full configuration with global defaults
+    const fullConfig = {
+      mcp_defaults: {
+        tool_call_timeout: 180000, // 3 minutes global default
+        max_tool_call_timeout: 1800000, // 30 minutes global max
+      },
+      mcp: {
+        playwright: {
+          type: 'local' as const,
+          command: ['npx', '@playwright/mcp@latest'],
+          // Per-server override
+          tool_call_timeout: 300000, // 5 minutes for this server
+          tool_timeouts: {
+            browser_install: 600000, // 10 minutes for installation
+          },
+        },
+      },
+    };
+
+    const result = Config.Info.safeParse(fullConfig);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.mcp_defaults?.tool_call_timeout).toBe(180000);
+      expect(result.data.mcp_defaults?.max_tool_call_timeout).toBe(1800000);
+      expect(result.data.mcp?.playwright?.tool_call_timeout).toBe(300000);
     }
   });
 });
