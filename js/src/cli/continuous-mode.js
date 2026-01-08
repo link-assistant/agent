@@ -10,6 +10,7 @@ import { Session } from '../session/index.ts';
 import { SessionPrompt } from '../session/prompt.ts';
 import { createEventHandler } from '../json-standard/index.ts';
 import { createContinuousStdinReader } from './input-queue.js';
+import { Log } from '../util/log.ts';
 
 // Shared error tracking
 let hasError = false;
@@ -42,6 +43,155 @@ function outputStatus(status, compact = false) {
   console.error(json);
 }
 
+// Logger for resume operations
+const log = Log.create({ service: 'resume' });
+
+/**
+ * Resolve the session to use based on --resume, --continue, and --no-fork options.
+ * Returns the session ID to use, handling forking as needed.
+ * @param {object} argv - Command line arguments
+ * @param {boolean} compactJson - Whether to use compact JSON output
+ * @returns {Promise<{sessionID: string, wasResumed: boolean, wasForked: boolean} | null>} - Session info or null if new session should be created
+ * @export
+ */
+export async function resolveResumeSession(argv, compactJson) {
+  const resumeSessionID = argv.resume;
+  const shouldContinue = argv.continue === true;
+  const noFork = argv['no-fork'] === true;
+
+  // If neither --resume nor --continue is specified, return null to create new session
+  if (!resumeSessionID && !shouldContinue) {
+    return null;
+  }
+
+  let targetSessionID = resumeSessionID;
+
+  // If --continue is specified, find the most recent session
+  if (shouldContinue && !targetSessionID) {
+    let mostRecentSession = null;
+    let mostRecentTime = 0;
+
+    for await (const session of Session.list()) {
+      // Skip child sessions (those with parentID) - find top-level sessions only
+      if (session.parentID) {
+        continue;
+      }
+
+      if (session.time.updated > mostRecentTime) {
+        mostRecentTime = session.time.updated;
+        mostRecentSession = session;
+      }
+    }
+
+    if (!mostRecentSession) {
+      outputStatus(
+        {
+          type: 'error',
+          errorType: 'SessionNotFound',
+          message:
+            'No existing sessions found to continue. Start a new session first.',
+        },
+        compactJson
+      );
+      process.exit(1);
+    }
+
+    targetSessionID = mostRecentSession.id;
+    log.info(() => ({
+      message: 'Found most recent session to continue',
+      sessionID: targetSessionID,
+      title: mostRecentSession.title,
+    }));
+  }
+
+  // Verify the session exists
+  let existingSession;
+  try {
+    existingSession = await Session.get(targetSessionID);
+  } catch (_error) {
+    // Session.get throws an error when the session doesn't exist
+    outputStatus(
+      {
+        type: 'error',
+        errorType: 'SessionNotFound',
+        message: `Session not found: ${targetSessionID}`,
+      },
+      compactJson
+    );
+    process.exit(1);
+  }
+
+  if (!existingSession) {
+    outputStatus(
+      {
+        type: 'error',
+        errorType: 'SessionNotFound',
+        message: `Session not found: ${targetSessionID}`,
+      },
+      compactJson
+    );
+    process.exit(1);
+  }
+
+  log.info(() => ({
+    message: 'Resuming session',
+    sessionID: targetSessionID,
+    title: existingSession.title,
+    noFork,
+  }));
+
+  // If --no-fork is specified, continue in the same session
+  if (noFork) {
+    outputStatus(
+      {
+        type: 'status',
+        mode: 'resume',
+        message: `Continuing session without forking: ${targetSessionID}`,
+        sessionID: targetSessionID,
+        title: existingSession.title,
+        forked: false,
+      },
+      compactJson
+    );
+
+    return {
+      sessionID: targetSessionID,
+      wasResumed: true,
+      wasForked: false,
+    };
+  }
+
+  // Fork the session to a new UUID (default behavior)
+  const forkedSession = await Session.fork({
+    sessionID: targetSessionID,
+  });
+
+  outputStatus(
+    {
+      type: 'status',
+      mode: 'resume',
+      message: `Forked session ${targetSessionID} to new session: ${forkedSession.id}`,
+      originalSessionID: targetSessionID,
+      sessionID: forkedSession.id,
+      title: forkedSession.title,
+      forked: true,
+    },
+    compactJson
+  );
+
+  log.info(() => ({
+    message: 'Forked session',
+    originalSessionID: targetSessionID,
+    newSessionID: forkedSession.id,
+  }));
+
+  return {
+    sessionID: forkedSession.id,
+    wasResumed: true,
+    wasForked: true,
+  };
+}
+
 /**
  * Run server mode with continuous stdin input
  * Keeps the session alive and processes messages as they arrive
@@ -64,20 +214,30 @@ export async function runContinuousServerMode(
   let stdinReader = null;
 
   try {
-    // Create a session
-    const createRes = await fetch(
-      `http://${server.hostname}:${server.port}/session`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      }
-    );
-    const session = await createRes.json();
-    const sessionID = session.id;
+    // Check if we should resume an existing session
+    const resumeInfo = await resolveResumeSession(argv, compactJson);
 
-    if (!sessionID) {
-      throw new Error('Failed to create session');
+    let sessionID;
+
+    if (resumeInfo) {
+      // Use the resumed/forked session
+      sessionID = resumeInfo.sessionID;
+    } else {
+      // Create a new session
+      const createRes = await fetch(
+        `http://${server.hostname}:${server.port}/session`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        }
+      );
+      const session = await createRes.json();
+      sessionID = session.id;
+
+      if (!sessionID) {
+        throw new Error('Failed to create session');
+      }
     }
 
     // Create event handler for the selected JSON standard
@@ -275,11 +435,21 @@ export async function runContinuousDirectMode(
   let stdinReader = null;
 
   try {
-    // Create a session directly
-    const session = await Session.createNext({
-      directory: process.cwd(),
-    });
-    const sessionID = session.id;
+    // Check if we should resume an existing session
+    const resumeInfo = await resolveResumeSession(argv, compactJson);
+
+    let sessionID;
+
+    if (resumeInfo) {
+      // Use the resumed/forked session
+      sessionID = resumeInfo.sessionID;
+    } else {
+      // Create a new session directly
+      const session = await Session.createNext({
+        directory: process.cwd(),
+      });
+      sessionID = session.id;
+    }
 
     // Create event handler for the selected JSON standard
     const eventHandler = createEventHandler(jsonStandard, sessionID);

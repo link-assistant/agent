@@ -193,6 +193,29 @@ agent -p "What is 2+2?"
 result=$(agent -p "Summarize: $(cat file.txt)")
 ```
 
+### Session Resume
+
+Resume or continue previous sessions:
+
+```bash
+# Continue the most recent session (creates a fork with new UUID by default)
+echo "Continue where we left off" | agent --continue
+
+# Short form
+echo "Continue where we left off" | agent -c
+
+# Resume a specific session by ID (creates a fork with new UUID by default)
+echo "Let's continue" | agent --resume ses_abc123xyz
+
+# Continue in the same session without forking
+echo "Keep going" | agent --continue --no-fork
+
+# Resume specific session without forking
+echo "Keep going" | agent --resume ses_abc123xyz --no-fork
+```
+
+**Note**: By default, `--resume` and `--continue` create a new session ID (fork) to preserve the original conversation history. Use `--no-fork` to continue in the same session.
+
 ### CLI Options
 
 ```bash
@@ -221,6 +244,14 @@ Stdin Mode Options:
   --always-accept-stdin          Keep accepting input after agent finishes (default: true)
   --no-always-accept-stdin       Single-message mode - exit after first response
   --compact-json                 Output compact JSON for program-to-program use
+
+Session Resume Options:
+  -r, --resume <sessionID>       Resume a specific session by ID
+                                 By default, forks with a new UUID
+  -c, --continue                 Continue the most recent session
+                                 By default, forks with a new UUID
+  --no-fork                      When used with --resume or --continue,
+                                 continue in the same session without forking
 
   --help                         Show help
   --version                      Show version number
