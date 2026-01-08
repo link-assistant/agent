@@ -13,6 +13,18 @@ import { withTimeout } from '../util/timeout';
 export namespace MCP {
   const log = Log.create({ service: 'mcp' });
 
+  /** Built-in default timeout for MCP tool execution (2 minutes) */
+  export const BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT = 120000;
+
+  /** Built-in maximum timeout for MCP tool execution (10 minutes) */
+  export const BUILTIN_MAX_TOOL_CALL_TIMEOUT = 600000;
+
+  /** @deprecated Use BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT instead */
+  export const DEFAULT_TOOL_CALL_TIMEOUT = BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT;
+
+  /** @deprecated Use BUILTIN_MAX_TOOL_CALL_TIMEOUT instead */
+  export const MAX_TOOL_CALL_TIMEOUT = BUILTIN_MAX_TOOL_CALL_TIMEOUT;
+
   export const Failed = NamedError.create(
     'MCPFailed',
     z.object({
@@ -21,6 +33,22 @@ export namespace MCP {
   );
 
   type Client = Awaited<ReturnType<typeof experimental_createMCPClient>>;
+
+  /** Global timeout defaults from configuration */
+  export interface GlobalTimeoutDefaults {
+    /** Global default timeout for MCP tool calls */
+    defaultTimeout: number;
+    /** Global maximum timeout for MCP tool calls */
+    maxTimeout: number;
+  }
+
+  /** Timeout configuration for an MCP server */
+  export interface TimeoutConfig {
+    /** Default timeout for all tool calls from this server */
+    defaultTimeout: number;
+    /** Per-tool timeout overrides */
+    toolTimeouts: Record<string, number>;
+  }
 
   export const Status = z
     .discriminatedUnion('status', [
@@ -59,6 +87,26 @@ export namespace MCP {
       const config = cfg.mcp ?? {};
       const clients: Record<string, Client> = {};
       const status: Record<string, Status> = {};
+      const timeoutConfigs: Record<string, TimeoutConfig> = {};
+
+      // Determine global timeout defaults from config and environment variables
+      const envDefaultTimeout = process.env.MCP_DEFAULT_TOOL_CALL_TIMEOUT
+        ? parseInt(process.env.MCP_DEFAULT_TOOL_CALL_TIMEOUT, 10)
+        : undefined;
+      const envMaxTimeout = process.env.MCP_MAX_TOOL_CALL_TIMEOUT
+        ? parseInt(process.env.MCP_MAX_TOOL_CALL_TIMEOUT, 10)
+        : undefined;
+
+      const globalDefaults: GlobalTimeoutDefaults = {
+        defaultTimeout:
+          cfg.mcp_defaults?.tool_call_timeout ??
+          envDefaultTimeout ??
+          BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT,
+        maxTimeout:
+          cfg.mcp_defaults?.max_tool_call_timeout ??
+          envMaxTimeout ??
+          BUILTIN_MAX_TOOL_CALL_TIMEOUT,
+      };
 
       await Promise.all(
         Object.entries(config).map(async ([key, mcp]) => {
@@ -66,6 +114,17 @@ export namespace MCP {
           if (!result) return;
 
           status[key] = result.status;
+
+          // Store timeout configuration for this MCP server
+          // Per-server timeout overrides global default, but is capped at global max
+          const defaultTimeout = Math.min(
+            mcp.tool_call_timeout ?? globalDefaults.defaultTimeout,
+            globalDefaults.maxTimeout
+          );
+          timeoutConfigs[key] = {
+            defaultTimeout,
+            toolTimeouts: mcp.tool_timeouts ?? {},
+          };
 
           if (result.mcpClient) {
             clients[key] = result.mcpClient;
@@ -75,6 +134,8 @@ export namespace MCP {
       return {
         status,
         clients,
+        timeoutConfigs,
+        globalDefaults,
       };
     },
     async (state) => {
@@ -309,5 +370,69 @@ export namespace MCP {
       }
     }
     return result;
+  }
+
+  /**
+   * Get the timeout configuration for all MCP servers
+   */
+  export async function getTimeoutConfigs(): Promise<
+    Record<string, TimeoutConfig>
+  > {
+    const s = await state();
+    return s.timeoutConfigs;
+  }
+
+  /**
+   * Get the global timeout defaults from configuration
+   */
+  export async function getGlobalDefaults(): Promise<GlobalTimeoutDefaults> {
+    const s = await state();
+    return s.globalDefaults;
+  }
+
+  /**
+   * Get the timeout for a specific MCP tool
+   * @param fullToolName The full tool name in format "serverName_toolName"
+   * @returns Timeout in milliseconds
+   */
+  export async function getToolTimeout(fullToolName: string): Promise<number> {
+    const s = await state();
+    const maxTimeout = s.globalDefaults.maxTimeout;
+
+    // Parse the full tool name to extract server name and tool name
+    // Format: serverName_toolName (where both are sanitized)
+    const underscoreIndex = fullToolName.indexOf('_');
+    if (underscoreIndex === -1) {
+      return s.globalDefaults.defaultTimeout;
+    }
+
+    const serverName = fullToolName.substring(0, underscoreIndex);
+    const toolName = fullToolName.substring(underscoreIndex + 1);
+
+    // Find the server config (need to handle sanitization)
+    const config = s.timeoutConfigs[serverName];
+    if (!config) {
+      // Try to find by iterating (in case of sanitization differences)
+      for (const [key, cfg] of Object.entries(s.timeoutConfigs)) {
+        const sanitizedKey = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+        if (sanitizedKey === serverName) {
+          // Check for per-tool timeout override
+          const perToolTimeout = cfg.toolTimeouts[toolName];
+          if (perToolTimeout !== undefined) {
+            return Math.min(perToolTimeout, maxTimeout);
+          }
+          return cfg.defaultTimeout;
+        }
+      }
+      return s.globalDefaults.defaultTimeout;
+    }
+
+    // Check for per-tool timeout override
+    const perToolTimeout = config.toolTimeouts[toolName];
+    if (perToolTimeout !== undefined) {
+      return Math.min(perToolTimeout, maxTimeout);
+    }
+
+    return config.defaultTimeout;
   }
 }

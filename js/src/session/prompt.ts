@@ -34,6 +34,7 @@ import { mergeDeep, pipe } from 'remeda';
 import { ToolRegistry } from '../tool/registry';
 import { Wildcard } from '../util/wildcard';
 import { MCP } from '../mcp';
+import { withTimeout } from '../util/timeout';
 import { ReadTool } from '../tool/read';
 import { ListTool } from '../tool/ls';
 import { FileTime } from '../file/time';
@@ -877,7 +878,28 @@ export namespace SessionPrompt {
       const execute = item.execute;
       if (!execute) continue;
       item.execute = async (args, opts) => {
-        const result = await execute(args, opts);
+        // Get timeout for this specific tool
+        const timeout = await MCP.getToolTimeout(key);
+
+        // Wrap the execute call with timeout to prevent indefinite hangs
+        let result;
+        try {
+          result = await withTimeout(execute(args, opts), timeout);
+        } catch (error) {
+          // Check if it's a timeout error
+          if (
+            error instanceof Error &&
+            error.message.includes('timed out after')
+          ) {
+            const timeoutSec = Math.round(timeout / 1000);
+            throw new Error(
+              `MCP tool "${key}" timed out after ${timeoutSec} seconds. ` +
+                `The operation did not complete within the configured timeout. ` +
+                `You can increase the timeout in the MCP server configuration using tool_call_timeout or tool_timeouts.`
+            );
+          }
+          throw error;
+        }
 
         const textParts: string[] = [];
         const attachments: MessageV2.FilePart[] = [];

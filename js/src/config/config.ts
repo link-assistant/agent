@@ -432,6 +432,20 @@ export namespace Config {
         .describe(
           'Timeout in ms for fetching tools from the MCP server. Defaults to 5000 (5 seconds) if not specified.'
         ),
+      tool_call_timeout: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Default timeout in ms for MCP tool execution. Defaults to 120000 (2 minutes) if not specified. Set per-tool overrides in tool_timeouts.'
+        ),
+      tool_timeouts: z
+        .record(z.string(), z.number().int().positive())
+        .optional()
+        .describe(
+          'Per-tool timeout overrides in ms. Keys are tool names (e.g., "browser_run_code": 300000 for 5 minutes).'
+        ),
     })
     .strict()
     .meta({
@@ -457,6 +471,20 @@ export namespace Config {
         .optional()
         .describe(
           'Timeout in ms for fetching tools from the MCP server. Defaults to 5000 (5 seconds) if not specified.'
+        ),
+      tool_call_timeout: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Default timeout in ms for MCP tool execution. Defaults to 120000 (2 minutes) if not specified. Set per-tool overrides in tool_timeouts.'
+        ),
+      tool_timeouts: z
+        .record(z.string(), z.number().int().positive())
+        .optional()
+        .describe(
+          'Per-tool timeout overrides in ms. Keys are tool names (e.g., "browser_run_code": 300000 for 5 minutes).'
         ),
     })
     .strict()
@@ -846,6 +874,29 @@ export namespace Config {
         .record(z.string(), Mcp)
         .optional()
         .describe('MCP (Model Context Protocol) server configurations'),
+      mcp_defaults: z
+        .object({
+          tool_call_timeout: z
+            .number()
+            .int()
+            .positive()
+            .optional()
+            .describe(
+              'Global default timeout in ms for MCP tool execution. Defaults to 120000 (2 minutes). Can be overridden per-server or per-tool.'
+            ),
+          max_tool_call_timeout: z
+            .number()
+            .int()
+            .positive()
+            .optional()
+            .describe(
+              'Maximum allowed timeout in ms for MCP tool execution. Defaults to 600000 (10 minutes). Tool timeouts will be capped at this value.'
+            ),
+        })
+        .optional()
+        .describe(
+          'Global default settings for MCP tool call timeouts. Can be overridden at the server level.'
+        ),
       formatter: z
         .union([
           z.literal(false),
