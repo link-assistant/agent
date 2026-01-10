@@ -6,6 +6,13 @@ export namespace SessionRetry {
   export const RETRY_BACKOFF_FACTOR = 2;
   export const RETRY_MAX_DELAY_NO_HEADERS = 30_000; // 30 seconds
 
+  // Socket connection error retry configuration
+  // Bun's fetch() has a known 10-second idle timeout issue
+  // See: https://github.com/oven-sh/bun/issues/14439
+  export const SOCKET_ERROR_MAX_RETRIES = 3;
+  export const SOCKET_ERROR_INITIAL_DELAY = 1000; // 1 second
+  export const SOCKET_ERROR_BACKOFF_FACTOR = 2;
+
   export async function sleep(ms: number, signal: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(resolve, ms);
@@ -51,6 +58,17 @@ export namespace SessionRetry {
     return Math.min(
       RETRY_INITIAL_DELAY * Math.pow(RETRY_BACKOFF_FACTOR, attempt - 1),
       RETRY_MAX_DELAY_NO_HEADERS
+    );
+  }
+
+  /**
+   * Calculate delay for socket connection error retries.
+   * Uses exponential backoff: 1s, 2s, 4s, etc.
+   */
+  export function socketErrorDelay(attempt: number): number {
+    return (
+      SOCKET_ERROR_INITIAL_DELAY *
+      Math.pow(SOCKET_ERROR_BACKOFF_FACTOR, attempt - 1)
     );
   }
 }

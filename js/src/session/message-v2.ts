@@ -42,6 +42,22 @@ export namespace MessageV2 {
   );
   export type APIError = z.infer<typeof APIError.Schema>;
 
+  /**
+   * Socket connection error - typically caused by Bun's 10-second idle timeout
+   * in Bun.serve() context. These errors are transient and should be retried.
+   * See: https://github.com/oven-sh/bun/issues/14439
+   */
+  export const SocketConnectionError = NamedError.create(
+    'SocketConnectionError',
+    z.object({
+      message: z.string(),
+      isRetryable: z.literal(true),
+    })
+  );
+  export type SocketConnectionError = z.infer<
+    typeof SocketConnectionError.Schema
+  >;
+
   const PartBase = z.object({
     id: z.string(),
     sessionID: z.string(),
@@ -787,11 +803,24 @@ export namespace MessageV2 {
           },
           { cause: e }
         ).toObject();
-      case e instanceof Error:
+      case e instanceof Error: {
+        const message = e.message || e.toString();
+        // Detect Bun socket connection errors (known Bun issue with 10s idle timeout)
+        // See: https://github.com/oven-sh/bun/issues/14439
+        const isSocketError =
+          message.includes('socket connection was closed') ||
+          message.includes('closed unexpectedly');
+        if (isSocketError) {
+          return new MessageV2.SocketConnectionError(
+            { message, isRetryable: true },
+            { cause: e }
+          ).toObject();
+        }
         return new NamedError.Unknown(
           { message: e.toString() },
           { cause: e }
         ).toObject();
+      }
       default:
         return new NamedError.Unknown(
           { message: JSON.stringify(e) },
