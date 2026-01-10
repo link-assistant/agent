@@ -108,7 +108,7 @@ try {
 
   // Synchronize package-lock.json
   console.log('\nSynchronizing package-lock.json...');
-  await $`cd js && npm install --package-lock-only`;
+  await $`cd js && npm install --package-lock-only --legacy-peer-deps`;
 
   console.log('\n✅ Instant version bump complete');
   console.log(`Version: ${oldVersion} → ${newVersion}`);

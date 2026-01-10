@@ -26,7 +26,7 @@ try {
   await $`npx changeset version`;
 
   console.log('\nSynchronizing package-lock.json...');
-  await $`npm install --package-lock-only`;
+  await $`npm install --package-lock-only --legacy-peer-deps`;
 
   console.log('\n✅ Version bump complete with synchronized package-lock.json');
 } catch (error) {
