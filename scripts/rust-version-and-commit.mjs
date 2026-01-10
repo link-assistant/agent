@@ -18,6 +18,14 @@ import {
 import { join } from 'path';
 import { execSync } from 'child_process';
 
+import {
+  getRustRoot,
+  getCargoTomlPath,
+  getChangelogDir,
+  getChangelogPath,
+  parseRustRootConfig,
+} from './rust-paths.mjs';
+
 // Simple CLI argument parsing
 const args = process.argv.slice(2);
 const getArg = (name, defaultValue) => {
@@ -28,16 +36,21 @@ const getArg = (name, defaultValue) => {
 const bumpType = getArg('bump-type', process.env.BUMP_TYPE || '');
 const description = getArg('description', process.env.DESCRIPTION || '');
 
+// Get Rust package root (auto-detect or use explicit config)
+const rustRootConfig = getArg('rust-root', '') || parseRustRootConfig();
+const rustRoot = getRustRoot({ rustRoot: rustRootConfig || undefined, verbose: true });
+
 if (!bumpType || !['major', 'minor', 'patch'].includes(bumpType)) {
   console.error(
-    'Usage: node scripts/rust-version-and-commit.mjs --bump-type <major|minor|patch> [--description <desc>]'
+    'Usage: node scripts/rust-version-and-commit.mjs --bump-type <major|minor|patch> [--description <desc>] [--rust-root <path>]'
   );
   process.exit(1);
 }
 
-const CARGO_TOML = 'rust/Cargo.toml';
-const CHANGELOG_DIR = 'rust/changelog.d';
-const CHANGELOG_FILE = 'rust/CHANGELOG.md';
+// Get paths based on detected/configured rust root
+const CARGO_TOML = getCargoTomlPath({ rustRoot });
+const CHANGELOG_DIR = getChangelogDir({ rustRoot });
+const CHANGELOG_FILE = getChangelogPath({ rustRoot });
 
 /**
  * Append to GitHub Actions output file

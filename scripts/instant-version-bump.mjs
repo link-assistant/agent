@@ -14,6 +14,13 @@
 
 import { readFileSync, writeFileSync } from 'fs';
 
+import {
+  getJsRoot,
+  getPackageJsonPath,
+  needsCd,
+  parseJsRootConfig,
+} from './js-paths.mjs';
+
 // Load use-m dynamically
 const { use } = eval(
   await (await fetch('https://unpkg.com/use-m/use.js')).text()
@@ -37,11 +44,24 @@ const config = makeConfig({
         type: 'string',
         default: getenv('DESCRIPTION', ''),
         describe: 'Description for the version bump',
+      })
+      .option('js-root', {
+        type: 'string',
+        default: getenv('JS_ROOT', ''),
+        describe: 'JavaScript package root directory (auto-detected if not specified)',
       }),
 });
 
+// Store the original working directory to restore after cd commands
+// IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
+const originalCwd = process.cwd();
+
 try {
-  const { bumpType, description } = config;
+  const { bumpType, description, jsRoot: jsRootArg } = config;
+
+  // Get JavaScript package root (auto-detect or use explicit config)
+  const jsRootConfig = jsRootArg || parseJsRootConfig();
+  const jsRoot = getJsRoot({ jsRoot: jsRootConfig, verbose: true });
   const finalDescription = description || `Manual ${bumpType} release`;
 
   if (!bumpType || !['major', 'minor', 'patch'].includes(bumpType)) {
@@ -54,15 +74,22 @@ try {
   console.log(`\nBumping version (${bumpType})...`);
 
   // Get current version
-  const packageJson = JSON.parse(readFileSync('js/package.json', 'utf-8'));
+  const packageJsonPath = getPackageJsonPath({ jsRoot });
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
   const oldVersion = packageJson.version;
   console.log(`Current version: ${oldVersion}`);
 
   // Bump version using npm version (doesn't create git tag)
-  await $`cd js && npm version ${bumpType} --no-git-tag-version`;
+  // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
+  if (needsCd({ jsRoot })) {
+    await $`cd ${jsRoot} && npm version ${bumpType} --no-git-tag-version`;
+    process.chdir(originalCwd);
+  } else {
+    await $`npm version ${bumpType} --no-git-tag-version`;
+  }
 
   // Get new version
-  const updatedPackageJson = JSON.parse(readFileSync('js/package.json', 'utf-8'));
+  const updatedPackageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
   const newVersion = updatedPackageJson.version;
   console.log(`New version: ${newVersion}`);
 
@@ -108,7 +135,13 @@ try {
 
   // Synchronize package-lock.json
   console.log('\nSynchronizing package-lock.json...');
-  await $`cd js && npm install --package-lock-only --legacy-peer-deps`;
+  // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
+  if (needsCd({ jsRoot })) {
+    await $`cd ${jsRoot} && npm install --package-lock-only --legacy-peer-deps`;
+    process.chdir(originalCwd);
+  } else {
+    await $`npm install --package-lock-only --legacy-peer-deps`;
+  }
 
   console.log('\n✅ Instant version bump complete');
   console.log(`Version: ${oldVersion} → ${newVersion}`);

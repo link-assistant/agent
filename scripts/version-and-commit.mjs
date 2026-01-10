@@ -14,6 +14,14 @@
 
 import { readFileSync, appendFileSync, readdirSync } from 'fs';
 
+import {
+  getJsRoot,
+  getPackageJsonPath,
+  getChangesetDir,
+  needsCd,
+  parseJsRootConfig,
+} from './js-paths.mjs';
+
 // Load use-m dynamically
 const { use } = eval(
   await (await fetch('https://unpkg.com/use-m/use.js')).text()
@@ -42,16 +50,26 @@ const config = makeConfig({
         type: 'string',
         default: getenv('DESCRIPTION', ''),
         describe: 'Description for instant version bump',
+      })
+      .option('js-root', {
+        type: 'string',
+        default: getenv('JS_ROOT', ''),
+        describe: 'JavaScript package root directory (auto-detected if not specified)',
       }),
 });
 
-const { mode, bumpType, description } = config;
+const { mode, bumpType, description, jsRoot: jsRootArg } = config;
+
+// Get JavaScript package root (auto-detect or use explicit config)
+const jsRootConfig = jsRootArg || parseJsRootConfig();
+const jsRoot = getJsRoot({ jsRoot: jsRootConfig, verbose: true });
 
 // Debug: Log parsed configuration
 console.log('Parsed configuration:', {
   mode,
   bumpType,
   description: description || '(none)',
+  jsRoot,
 });
 
 // Detect if positional arguments were used (common mistake)
@@ -112,7 +130,7 @@ function setOutput(key, value) {
  */
 function countChangesets() {
   try {
-    const changesetDir = 'js/.changeset';
+    const changesetDir = getChangesetDir({ jsRoot });
     const files = readdirSync(changesetDir);
     return files.filter((f) => f.endsWith('.md') && f !== 'README.md').length;
   } catch {
@@ -125,16 +143,24 @@ function countChangesets() {
  * @param {string} source - 'local' or 'remote'
  */
 async function getVersion(source = 'local') {
+  const packageJsonPath = getPackageJsonPath({ jsRoot });
   if (source === 'remote') {
-    const result = await $`git show origin/main:js/package.json`.run({
+    // For remote, we need the path relative to repo root (without ./ prefix)
+    const remotePath = packageJsonPath.replace(/^\.\//, '');
+    const result = await $`git show origin/main:${remotePath}`.run({
       capture: true,
     });
     return JSON.parse(result.stdout).version;
   }
-  return JSON.parse(readFileSync('./js/package.json', 'utf8')).version;
+  return JSON.parse(readFileSync(packageJsonPath, 'utf8')).version;
 }
 
 async function main() {
+  // Store the original working directory to restore after cd commands
+  // IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
+  // This means `cd js` actually changes the Node.js process's working directory
+  const originalCwd = process.cwd();
+
   try {
     // Configure git
     await $`git config user.name "github-actions[bot]"`;
@@ -186,17 +212,26 @@ async function main() {
 
     if (mode === 'instant') {
       console.log('Running instant version bump...');
-      // Run instant version bump script
+      // Run instant version bump script, passing js-root for consistent path handling
       // Rely on command-stream's auto-quoting for proper argument handling
       if (description) {
-        await $`node scripts/instant-version-bump.mjs --bump-type ${bumpType} --description ${description}`;
+        await $`node scripts/instant-version-bump.mjs --bump-type ${bumpType} --description ${description} --js-root ${jsRoot}`;
       } else {
-        await $`node scripts/instant-version-bump.mjs --bump-type ${bumpType}`;
+        await $`node scripts/instant-version-bump.mjs --bump-type ${bumpType} --js-root ${jsRoot}`;
       }
     } else {
       console.log('Running changeset version...');
       // Run changeset version to bump versions and update CHANGELOG
-      await $`cd js && npm run changeset:version`;
+      // IMPORTANT: cd is a virtual command in command-stream that calls process.chdir()
+      // We need to restore the original directory after this command
+      if (needsCd({ jsRoot })) {
+        await $`cd ${jsRoot} && npm run changeset:version`;
+        // Restore the original working directory
+        process.chdir(originalCwd);
+      } else {
+        // Single-language repo - run in current directory
+        await $`npm run changeset:version`;
+      }
     }
 
     // Get new version after bump

@@ -15,8 +15,29 @@ import {
 } from 'fs';
 import { join } from 'path';
 
-const CHANGELOG_DIR = 'rust/changelog.d';
-const CHANGELOG_FILE = 'rust/CHANGELOG.md';
+import {
+  getRustRoot,
+  getCargoTomlPath,
+  getChangelogDir,
+  getChangelogPath,
+  parseRustRootConfig,
+} from './rust-paths.mjs';
+
+// Simple CLI argument parsing
+const args = process.argv.slice(2);
+const getArg = (name, defaultValue) => {
+  const index = args.indexOf(`--${name}`);
+  return index >= 0 && args[index + 1] ? args[index + 1] : defaultValue;
+};
+
+// Get Rust package root (auto-detect or use explicit config)
+const rustRootConfig = getArg('rust-root', '') || parseRustRootConfig();
+const rustRoot = getRustRoot({ rustRoot: rustRootConfig || undefined, verbose: true });
+
+// Get paths based on detected/configured rust root
+const CARGO_TOML = getCargoTomlPath({ rustRoot });
+const CHANGELOG_DIR = getChangelogDir({ rustRoot });
+const CHANGELOG_FILE = getChangelogPath({ rustRoot });
 const INSERT_MARKER = '<!-- changelog-insert-here -->';
 
 /**
@@ -24,11 +45,11 @@ const INSERT_MARKER = '<!-- changelog-insert-here -->';
  * @returns {string}
  */
 function getVersionFromCargo() {
-  const cargoToml = readFileSync('rust/Cargo.toml', 'utf-8');
+  const cargoToml = readFileSync(CARGO_TOML, 'utf-8');
   const match = cargoToml.match(/^version\s*=\s*"([^"]+)"/m);
 
   if (!match) {
-    console.error('Error: Could not find version in rust/Cargo.toml');
+    console.error(`Error: Could not find version in ${CARGO_TOML}`);
     process.exit(1);
   }
 

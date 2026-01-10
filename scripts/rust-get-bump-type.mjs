@@ -20,6 +20,12 @@
 import { readFileSync, readdirSync, existsSync, appendFileSync } from 'fs';
 import { join } from 'path';
 
+import {
+  getRustRoot,
+  getChangelogDir,
+  parseRustRootConfig,
+} from './rust-paths.mjs';
+
 // Simple CLI argument parsing
 const args = process.argv.slice(2);
 const getArg = (name, defaultValue) => {
@@ -29,7 +35,12 @@ const getArg = (name, defaultValue) => {
 
 const defaultBump = getArg('default', process.env.DEFAULT_BUMP || 'patch');
 
-const CHANGELOG_DIR = 'rust/changelog.d';
+// Get Rust package root (auto-detect or use explicit config)
+const rustRootConfig = getArg('rust-root', '') || parseRustRootConfig();
+const rustRoot = getRustRoot({ rustRoot: rustRootConfig || undefined, verbose: true });
+
+// Get paths based on detected/configured rust root
+const CHANGELOG_DIR = getChangelogDir({ rustRoot });
 
 // Bump type priority (higher = more significant)
 const BUMP_PRIORITY = {
