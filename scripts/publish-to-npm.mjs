@@ -58,12 +58,52 @@ const jsRoot = getJsRoot({ jsRoot: jsRootConfig, verbose: true });
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 10000; // 10 seconds
 
+// Patterns that indicate publish failure in changeset output
+const FAILURE_PATTERNS = [
+  'packages failed to publish',
+  'error occurred while publishing',
+  'npm error code E',
+  'npm error 404',
+  'npm error 401',
+  'npm error 403',
+  'Access token expired',
+  'ENEEDAUTH',
+];
+
 /**
  * Sleep for specified milliseconds
  * @param {number} ms
  */
 function sleep(ms) {
   return new Promise((resolve) => globalThis.setTimeout(resolve, ms));
+}
+
+/**
+ * Check if the output contains any failure patterns
+ * @param {string} output - Combined stdout and stderr
+ * @returns {string|null} - The matched failure pattern or null if no failure detected
+ */
+function detectPublishFailure(output) {
+  const lowerOutput = output.toLowerCase();
+  for (const pattern of FAILURE_PATTERNS) {
+    if (lowerOutput.includes(pattern.toLowerCase())) {
+      return pattern;
+    }
+  }
+  return null;
+}
+
+/**
+ * Verify that a package version is published on npm
+ * @param {string} packageName
+ * @param {string} version
+ * @returns {Promise<boolean>}
+ */
+async function verifyPublished(packageName, version) {
+  const result = await $`npm view "${packageName}@${version}" version`.run({
+    capture: true,
+  });
+  return result.code === 0 && result.stdout.trim().includes(version);
 }
 
 /**
@@ -122,26 +162,77 @@ async function main() {
     // Publish to npm using OIDC trusted publishing with retry logic
     for (let i = 1; i <= MAX_RETRIES; i++) {
       console.log(`Publish attempt ${i} of ${MAX_RETRIES}...`);
+      let publishResult;
+      let lastError = null;
+
       try {
         // Run changeset:publish from the js directory where package.json with this script exists
+        // IMPORTANT: Use .run({ capture: true }) to capture output for failure detection
         // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
         if (needsCd({ jsRoot })) {
-          await $`cd ${jsRoot} && npm run changeset:publish`;
+          publishResult = await $`cd ${jsRoot} && npm run changeset:publish`.run({ capture: true });
           process.chdir(originalCwd);
         } else {
-          await $`npm run changeset:publish`;
+          publishResult = await $`npm run changeset:publish`.run({ capture: true });
         }
-        setOutput('published', 'true');
-        setOutput('published_version', currentVersion);
-        console.log(
-          `\u2705 Published ${PACKAGE_NAME}@${currentVersion} to npm`
-        );
-        return;
-      } catch (_error) {
+      } catch (error) {
         // Restore cwd on error before retry
         if (needsCd({ jsRoot })) {
           process.chdir(originalCwd);
         }
+        lastError = error;
+      }
+
+      // Check for failures in multiple ways:
+      // 1. Check if command threw an exception
+      // 2. Check exit code (changeset may not return non-zero, but check anyway)
+      // 3. Check output for failure patterns (most reliable for changeset)
+      // 4. Verify package is actually on npm (ultimate verification)
+
+      const combinedOutput = publishResult
+        ? `${publishResult.stdout || ''}\n${publishResult.stderr || ''}`
+        : '';
+
+      // Log the output for debugging
+      if (combinedOutput.trim()) {
+        console.log('Changeset output:', combinedOutput);
+      }
+
+      // Check for failure patterns in output
+      const failurePattern = detectPublishFailure(combinedOutput);
+      if (failurePattern) {
+        console.error(`Detected publish failure: "${failurePattern}"`);
+        lastError = new Error(`Publish failed: detected "${failurePattern}" in output`);
+      }
+
+      // Check exit code (if available and non-zero)
+      if (publishResult && publishResult.code !== 0) {
+        console.error(`Changeset exited with code ${publishResult.code}`);
+        lastError = lastError || new Error(`Publish failed with exit code ${publishResult.code}`);
+      }
+
+      // If no errors detected so far, verify the package is actually on npm
+      if (!lastError) {
+        console.log('Verifying package was published to npm...');
+        // Wait a moment for npm registry to propagate
+        await sleep(2000);
+        const isPublished = await verifyPublished(PACKAGE_NAME, currentVersion);
+
+        if (isPublished) {
+          setOutput('published', 'true');
+          setOutput('published_version', currentVersion);
+          console.log(
+            `\u2705 Published ${PACKAGE_NAME}@${currentVersion} to npm`
+          );
+          return;
+        } else {
+          console.error('Verification failed: package not found on npm after publish');
+          lastError = new Error('Package not found on npm after publish attempt');
+        }
+      }
+
+      // If we have an error, either retry or fail
+      if (lastError) {
         if (i < MAX_RETRIES) {
           console.log(
             `Publish failed, waiting ${RETRY_DELAY / 1000}s before retry...`
