@@ -62,6 +62,10 @@ function setOutput(key, value) {
 }
 
 async function main() {
+  // Store the original working directory to restore after cd commands
+  // IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
+  const originalCwd = process.cwd();
+
   try {
     if (shouldPull) {
       // Pull the latest changes we just pushed
@@ -101,7 +105,10 @@ async function main() {
     for (let i = 1; i <= MAX_RETRIES; i++) {
       console.log(`Publish attempt ${i} of ${MAX_RETRIES}...`);
       try {
-        await $`npm run changeset:publish`;
+        // Run changeset:publish from the js directory where package.json with this script exists
+        // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
+        await $`cd js && npm run changeset:publish`;
+        process.chdir(originalCwd);
         setOutput('published', 'true');
         setOutput('published_version', currentVersion);
         console.log(
@@ -109,6 +116,8 @@ async function main() {
         );
         return;
       } catch (_error) {
+        // Restore cwd on error before retry
+        process.chdir(originalCwd);
         if (i < MAX_RETRIES) {
           console.log(
             `Publish failed, waiting ${RETRY_DELAY / 1000}s before retry...`

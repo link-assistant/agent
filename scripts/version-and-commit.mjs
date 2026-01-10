@@ -135,6 +135,11 @@ async function getVersion(source = 'local') {
 }
 
 async function main() {
+  // Store the original working directory to restore after cd commands
+  // IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
+  // This means `cd js` actually changes the Node.js process's working directory
+  const originalCwd = process.cwd();
+
   try {
     // Configure git
     await $`git config user.name "github-actions[bot]"`;
@@ -196,7 +201,11 @@ async function main() {
     } else {
       console.log('Running changeset version...');
       // Run changeset version to bump versions and update CHANGELOG
+      // IMPORTANT: cd is a virtual command in command-stream that calls process.chdir()
+      // We need to restore the original directory after this command
       await $`cd js && npm run changeset:version`;
+      // Restore the original working directory
+      process.chdir(originalCwd);
     }
 
     // Get new version after bump

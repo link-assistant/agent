@@ -40,6 +40,10 @@ const config = makeConfig({
       }),
 });
 
+// Store the original working directory to restore after cd commands
+// IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
+const originalCwd = process.cwd();
+
 try {
   const { bumpType, description } = config;
   const finalDescription = description || `Manual ${bumpType} release`;
@@ -59,7 +63,9 @@ try {
   console.log(`Current version: ${oldVersion}`);
 
   // Bump version using npm version (doesn't create git tag)
+  // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
   await $`cd js && npm version ${bumpType} --no-git-tag-version`;
+  process.chdir(originalCwd);
 
   // Get new version
   const updatedPackageJson = JSON.parse(readFileSync('js/package.json', 'utf-8'));
@@ -108,7 +114,9 @@ try {
 
   // Synchronize package-lock.json
   console.log('\nSynchronizing package-lock.json...');
+  // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
   await $`cd js && npm install --package-lock-only --legacy-peer-deps`;
+  process.chdir(originalCwd);
 
   console.log('\n✅ Instant version bump complete');
   console.log(`Version: ${oldVersion} → ${newVersion}`);
