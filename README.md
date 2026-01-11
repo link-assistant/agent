@@ -4,14 +4,14 @@
 
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
-> **SECURITY WARNING: 100% UNSAFE AND AUTONOMOUS**
+> 🚨 **SECURITY WARNING: 100% UNSAFE AND AUTONOMOUS** 🚨
 >
 > This agent operates with **ZERO RESTRICTIONS** and **FULL AUTONOMY**:
 >
-> - No Sandbox - Complete unrestricted file system access
-> - No Permissions System - No approval required for any actions
-> - No Safety Guardrails - Can execute ANY command with full privileges
-> - Autonomous Execution - Makes decisions and executes actions independently
+> - ❌ **No Sandbox** - Complete unrestricted file system access
+> - ❌ **No Permissions System** - No approval required for any actions
+> - ❌ **No Safety Guardrails** - Can execute ANY command with full privileges
+> - ⚠️ **Autonomous Execution** - Makes decisions and executes actions independently
 >
 > **ONLY use in isolated environments** (VMs, Docker containers) where AI agents can have unrestricted access. **NOT SAFE** for personal computers, production servers, or systems with sensitive data.
 
@@ -40,7 +40,12 @@ bun install -g @link-assistant/agent
 echo "hi" | agent
 ```
 
-See [js/README.md](js/README.md) for full documentation.
+See [js/README.md](js/README.md) for full documentation including:
+- Complete CLI options reference
+- Model selection examples
+- Session resume functionality
+- MCP (Model Context Protocol) configuration
+- JSON output standards (OpenCode and Claude formats)
 
 ### Rust Implementation
 
@@ -96,7 +101,7 @@ echo "hi" | agent --model opencode/grok-code
 agent -p "What is 2+2?"
 ```
 
-See [EXAMPLES.md](EXAMPLES.md) for more usage examples.
+See [js/README.md](js/README.md#usage) for more usage examples including model selection, session resume, and JSON output standards.
 
 ## Supported Tools
 
@@ -113,19 +118,21 @@ All 13 tools are **enabled by default** with **no configuration required**. See 
 
 - **`glob`** - File pattern matching (`**/*.js`)
 - **`grep`** - Text search with regex support
-- **`websearch`** - Web search via Exa API (no config needed!)
-- **`codesearch`** - Code search via Exa API (no config needed!)
+- **`websearch`** ✨ - Web search via Exa API (no config needed!)
+- **`codesearch`** ✨ - Code search via Exa API (no config needed!)
 
 ### Execution Tools
 
 - **`bash`** - Execute shell commands
-- **`batch`** - Batch multiple tool calls (no config needed!)
+- **`batch`** ✨ - Batch multiple tool calls (no config needed!)
 - **`task`** - Launch subagent tasks
 
 ### Utility Tools
 
 - **`todo`** - Task tracking
 - **`webfetch`** - Fetch and process URLs
+
+✨ = Always enabled (no experimental flags or environment variables needed)
 
 ## Architecture
 
@@ -147,7 +154,10 @@ The agent supports the Model Context Protocol (MCP), allowing you to extend func
 agent mcp add playwright npx @playwright/mcp@latest
 ```
 
-See [js/README.md](js/README.md#mcp-model-context-protocol-support) for full MCP documentation.
+See [js/README.md](js/README.md#mcp-model-context-protocol-support) for full MCP documentation including:
+- Available Playwright tools (22+ browser automation capabilities)
+- MCP server configuration
+- Usage examples
 
 ## Documentation
 
@@ -157,7 +167,7 @@ See [js/README.md](js/README.md#mcp-model-context-protocol-support) for full MCP
 | [TOOLS.md](TOOLS.md) | Complete tool documentation |
 | [EXAMPLES.md](EXAMPLES.md) | Usage examples for each tool |
 | [TESTING.md](TESTING.md) | Testing guide |
-| [js/README.md](js/README.md) | JavaScript/Bun implementation |
+| [js/README.md](js/README.md) | JavaScript/Bun implementation (full docs) |
 | [rust/README.md](rust/README.md) | Rust implementation |
 
 ## Files
@@ -191,6 +201,8 @@ To initialize all submodules:
 ```bash
 git submodule update --init --recursive
 ```
+
+These reference implementations provide valuable insights into different approaches for building AI agents and can serve as learning resources for developers working with this codebase.
 
 ## License
 
