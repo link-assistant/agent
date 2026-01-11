@@ -323,6 +323,18 @@ export namespace Session {
     return part;
   });
 
+  /**
+   * Sanitizes numeric values to prevent Decimal.js errors.
+   * Returns 0 for NaN, Infinity, -Infinity, or non-numeric values.
+   * This is necessary because some AI providers may return unexpected
+   * token usage data that would crash the Decimal.js constructor.
+   * @see https://github.com/link-assistant/agent/issues/119
+   */
+  export const safe = (value: number): number => {
+    if (!Number.isFinite(value)) return 0;
+    return value;
+  };
+
   export const getUsage = fn(
     z.object({
       model: z.custom<ModelsDev.Model>(),
@@ -330,24 +342,28 @@ export namespace Session {
       metadata: z.custom<ProviderMetadata>().optional(),
     }),
     (input) => {
-      const cachedInputTokens = input.usage.cachedInputTokens ?? 0;
+      const cachedInputTokens = safe(input.usage.cachedInputTokens ?? 0);
       const excludesCachedTokens = !!(
         input.metadata?.['anthropic'] || input.metadata?.['bedrock']
       );
       const adjustedInputTokens = excludesCachedTokens
-        ? (input.usage.inputTokens ?? 0)
-        : (input.usage.inputTokens ?? 0) - cachedInputTokens;
+        ? safe(input.usage.inputTokens ?? 0)
+        : safe(input.usage.inputTokens ?? 0) - cachedInputTokens;
 
       const tokens = {
-        input: adjustedInputTokens,
-        output: input.usage.outputTokens ?? 0,
-        reasoning: input.usage?.reasoningTokens ?? 0,
+        input: safe(adjustedInputTokens),
+        output: safe(input.usage.outputTokens ?? 0),
+        reasoning: safe(input.usage?.reasoningTokens ?? 0),
         cache: {
-          write: (input.metadata?.['anthropic']?.['cacheCreationInputTokens'] ??
-            // @ts-expect-error
-            input.metadata?.['bedrock']?.['usage']?.['cacheWriteInputTokens'] ??
-            0) as number,
-          read: cachedInputTokens,
+          write: safe(
+            (input.metadata?.['anthropic']?.['cacheCreationInputTokens'] ??
+              // @ts-expect-error
+              input.metadata?.['bedrock']?.['usage']?.[
+                'cacheWriteInputTokens'
+              ] ??
+              0) as number
+          ),
+          read: safe(cachedInputTokens),
         },
       };
 
@@ -356,32 +372,49 @@ export namespace Session {
         tokens.input + tokens.cache.read > 200_000
           ? input.model.cost.context_over_200k
           : input.model.cost;
+
+      let cost = 0;
+      try {
+        cost = safe(
+          new Decimal(0)
+            .add(
+              new Decimal(tokens.input).mul(costInfo?.input ?? 0).div(1_000_000)
+            )
+            .add(
+              new Decimal(tokens.output)
+                .mul(costInfo?.output ?? 0)
+                .div(1_000_000)
+            )
+            .add(
+              new Decimal(tokens.cache.read)
+                .mul(costInfo?.cache_read ?? 0)
+                .div(1_000_000)
+            )
+            .add(
+              new Decimal(tokens.cache.write)
+                .mul(costInfo?.cache_write ?? 0)
+                .div(1_000_000)
+            )
+            // TODO: update models.dev to have better pricing model, for now:
+            // charge reasoning tokens at the same rate as output tokens
+            .add(
+              new Decimal(tokens.reasoning)
+                .mul(costInfo?.output ?? 0)
+                .div(1_000_000)
+            )
+            .toNumber()
+        );
+      } catch (error) {
+        log.warn(() => ({
+          message: 'Failed to calculate cost',
+          error,
+          tokens,
+        }));
+        cost = 0;
+      }
+
       return {
-        cost: new Decimal(0)
-          .add(
-            new Decimal(tokens.input).mul(costInfo?.input ?? 0).div(1_000_000)
-          )
-          .add(
-            new Decimal(tokens.output).mul(costInfo?.output ?? 0).div(1_000_000)
-          )
-          .add(
-            new Decimal(tokens.cache.read)
-              .mul(costInfo?.cache_read ?? 0)
-              .div(1_000_000)
-          )
-          .add(
-            new Decimal(tokens.cache.write)
-              .mul(costInfo?.cache_write ?? 0)
-              .div(1_000_000)
-          )
-          // TODO: update models.dev to have better pricing model, for now:
-          // charge reasoning tokens at the same rate as output tokens
-          .add(
-            new Decimal(tokens.reasoning)
-              .mul(costInfo?.output ?? 0)
-              .div(1_000_000)
-          )
-          .toNumber(),
+        cost,
         tokens,
       };
     }
