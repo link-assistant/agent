@@ -1,64 +1,100 @@
 import { test, expect, describe } from 'bun:test';
+import { Decimal } from 'decimal.js';
 import { Session } from '../src/session';
 
 /**
- * Unit tests for Session.safe() and Session.getUsage()
+ * Unit tests for Session.toDecimal() and Session.getUsage()
  * These tests verify the fix for issue #119: DecimalError when token data contains
  * non-numeric values (objects, NaN, Infinity).
  *
  * @see https://github.com/link-assistant/agent/issues/119
  */
 
-describe('Session.safe() - numeric value sanitization', () => {
-  test('returns 0 for NaN', () => {
-    expect(Session.safe(NaN)).toBe(0);
+describe('Session.toDecimal() - safe Decimal conversion', () => {
+  test('returns valid Decimal for finite positive numbers', () => {
+    const result = Session.toDecimal(42);
+    expect(result.toNumber()).toBe(42);
+    expect(result.isNaN()).toBe(false);
   });
 
-  test('returns 0 for Infinity', () => {
-    expect(Session.safe(Infinity)).toBe(0);
+  test('returns valid Decimal for finite negative numbers', () => {
+    const result = Session.toDecimal(-100);
+    expect(result.toNumber()).toBe(-100);
+    expect(result.isNaN()).toBe(false);
   });
 
-  test('returns 0 for -Infinity', () => {
-    expect(Session.safe(-Infinity)).toBe(0);
+  test('returns valid Decimal for zero', () => {
+    const result = Session.toDecimal(0);
+    expect(result.toNumber()).toBe(0);
+    expect(result.isNaN()).toBe(false);
   });
 
-  test('returns original value for positive finite number', () => {
-    expect(Session.safe(42)).toBe(42);
-    expect(Session.safe(3.14159)).toBe(3.14159);
-    expect(Session.safe(1000000)).toBe(1000000);
+  test('returns valid Decimal for decimal numbers', () => {
+    const result = Session.toDecimal(3.14159);
+    expect(result.toNumber()).toBeCloseTo(3.14159, 5);
+    expect(result.isNaN()).toBe(false);
   });
 
-  test('returns original value for negative finite number', () => {
-    expect(Session.safe(-100)).toBe(-100);
-    expect(Session.safe(-0.5)).toBe(-0.5);
+  test('returns Decimal(NaN) for NaN input', () => {
+    const result = Session.toDecimal(NaN);
+    expect(result.isNaN()).toBe(true);
   });
 
-  test('returns original value for zero', () => {
-    expect(Session.safe(0)).toBe(0);
-    // Note: JavaScript treats -0 === 0 as true, but Object.is(-0, 0) is false
-    // The safe() function correctly returns -0 as-is (which is a finite number)
-    expect(Number.isFinite(Session.safe(-0))).toBe(true);
+  test('returns Decimal(NaN) for Infinity', () => {
+    const result = Session.toDecimal(Infinity);
+    expect(result.isNaN()).toBe(true);
   });
 
-  test('returns 0 for object coerced to number (becomes NaN)', () => {
-    // When an object is passed where a number is expected, Number() coerces it to NaN
-    const objectAsNumber = Number({ count: 100 });
-    expect(Session.safe(objectAsNumber)).toBe(0);
+  test('returns Decimal(NaN) for -Infinity', () => {
+    const result = Session.toDecimal(-Infinity);
+    expect(result.isNaN()).toBe(true);
   });
 
-  test('returns 0 for undefined coerced to number', () => {
-    const undefinedAsNumber = Number(undefined);
-    expect(Session.safe(undefinedAsNumber)).toBe(0);
+  test('returns Decimal(NaN) for object input', () => {
+    const result = Session.toDecimal({ count: 100 } as unknown);
+    expect(result.isNaN()).toBe(true);
   });
 
-  test('handles result of division by zero (Infinity)', () => {
-    expect(Session.safe(1 / 0)).toBe(0);
-    expect(Session.safe(-1 / 0)).toBe(0);
+  test('returns Decimal(NaN) for string input', () => {
+    const result = Session.toDecimal('42' as unknown);
+    expect(result.isNaN()).toBe(true);
   });
 
-  test('handles result of invalid arithmetic (NaN)', () => {
-    expect(Session.safe(0 / 0)).toBe(0);
-    expect(Session.safe(Math.sqrt(-1))).toBe(0);
+  test('returns Decimal(NaN) for undefined input', () => {
+    const result = Session.toDecimal(undefined);
+    expect(result.isNaN()).toBe(true);
+  });
+
+  test('returns Decimal(NaN) for null input', () => {
+    const result = Session.toDecimal(null);
+    expect(result.isNaN()).toBe(true);
+  });
+
+  test('returns Decimal(NaN) for array input', () => {
+    const result = Session.toDecimal([1, 2, 3] as unknown);
+    expect(result.isNaN()).toBe(true);
+  });
+
+  test('accepts optional context parameter for debugging', () => {
+    // Context parameter should not affect behavior, just for logging
+    const result1 = Session.toDecimal(42, 'inputTokens');
+    const result2 = Session.toDecimal(NaN, 'outputTokens');
+    expect(result1.toNumber()).toBe(42);
+    expect(result2.isNaN()).toBe(true);
+  });
+
+  test('can be used in Decimal arithmetic', () => {
+    const a = Session.toDecimal(100);
+    const b = Session.toDecimal(50);
+    const result = a.add(b).mul(2);
+    expect(result.toNumber()).toBe(300);
+  });
+
+  test('NaN propagates through Decimal arithmetic', () => {
+    const valid = Session.toDecimal(100);
+    const invalid = Session.toDecimal(NaN);
+    const result = valid.add(invalid);
+    expect(result.isNaN()).toBe(true);
   });
 });
 
@@ -271,5 +307,41 @@ describe('Session.getUsage() - token usage calculation', () => {
     expect(Object.keys(validResult.tokens.cache)).toEqual(
       Object.keys(invalidResult.tokens.cache)
     );
+  });
+
+  test('handles object passed as token value (the original bug scenario)', () => {
+    // This is the exact scenario from issue #119 where an object was passed
+    // instead of a number, causing [DecimalError] Invalid argument: [object Object]
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: { nested: 'object' } as any, // Object instead of number
+        outputTokens: 100,
+      },
+    });
+
+    // Should not crash, should return 0 for the invalid field
+    expect(result.tokens.input).toBe(0);
+    expect(result.tokens.output).toBe(100);
+    expect(typeof result.cost).toBe('number');
+    expect(Number.isFinite(result.cost)).toBe(true);
+  });
+
+  test('handles mixed valid and invalid token values', () => {
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: 1000, // valid
+        outputTokens: { invalid: true } as any, // invalid object
+        cachedInputTokens: Infinity, // invalid
+        reasoningTokens: 500, // valid
+      },
+    });
+
+    expect(result.tokens.input).toBe(1000);
+    expect(result.tokens.output).toBe(0);
+    expect(result.tokens.cache.read).toBe(0);
+    expect(result.tokens.reasoning).toBe(500);
+    expect(typeof result.cost).toBe('number');
   });
 });

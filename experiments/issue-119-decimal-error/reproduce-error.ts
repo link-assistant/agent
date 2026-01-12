@@ -106,47 +106,85 @@ for (const testCase of testCases) {
   console.log();
 }
 
-// Now test with safe() wrapper
-console.log('=== Testing FIXED implementation (with safe wrapper) ===\n');
+// Now test with toDecimal() wrapper - the new implementation
+console.log('=== Testing FIXED implementation (with toDecimal wrapper) ===\n');
 
-const safe = (value: number): number => {
-  if (!Number.isFinite(value)) return 0;
-  return value;
+/**
+ * toDecimal - Safe Decimal conversion that returns Decimal(NaN) for invalid values.
+ * This is the new implementation requested in PR review.
+ */
+const toDecimal = (value: unknown, context?: string): Decimal => {
+  try {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      // In verbose mode, this would log details about the invalid value
+      console.log(
+        `  [DEBUG] toDecimal received invalid value: context=${context}, type=${typeof value}, value=${typeof value === 'object' ? JSON.stringify(value) : String(value)}`
+      );
+      return new Decimal(NaN);
+    }
+    return new Decimal(value);
+  } catch (error) {
+    console.warn(`  [WARN] toDecimal failed: ${(error as Error).message}`);
+    return new Decimal(NaN);
+  }
+};
+
+/**
+ * safeTokenValue - Extract a safe numeric value from API response data.
+ */
+const safeTokenValue = (value: unknown, context: string): number => {
+  if (value === undefined || value === null) {
+    return 0;
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  console.log(
+    `  [DEBUG] Invalid token value: context=${context}, type=${typeof value}, value=${typeof value === 'object' ? JSON.stringify(value) : String(value)}`
+  );
+  return 0;
 };
 
 function getUsageFixed(usage: {
-  inputTokens?: number;
-  outputTokens?: number;
-  cachedInputTokens?: number;
-  reasoningTokens?: number;
+  inputTokens?: unknown;
+  outputTokens?: unknown;
+  cachedInputTokens?: unknown;
+  reasoningTokens?: unknown;
 }) {
-  const cachedInputTokens = safe(usage.cachedInputTokens ?? 0);
-  const adjustedInputTokens =
-    safe(usage.inputTokens ?? 0) - cachedInputTokens;
+  const cachedInputTokens = safeTokenValue(
+    usage.cachedInputTokens,
+    'cachedInputTokens'
+  );
+  const rawInputTokens = safeTokenValue(usage.inputTokens, 'inputTokens');
+  const adjustedInputTokens = rawInputTokens - cachedInputTokens;
 
   const tokens = {
-    input: safe(adjustedInputTokens),
-    output: safe(usage.outputTokens ?? 0),
-    reasoning: safe(usage.reasoningTokens ?? 0),
+    input: Math.max(0, adjustedInputTokens),
+    output: safeTokenValue(usage.outputTokens, 'outputTokens'),
+    reasoning: safeTokenValue(usage.reasoningTokens, 'reasoningTokens'),
     cache: {
       write: 0,
-      read: safe(cachedInputTokens),
+      read: cachedInputTokens,
     },
   };
 
-  try {
-    const cost = safe(
-      new Decimal(0)
-        .add(new Decimal(tokens.input).mul(0.003).div(1_000_000))
-        .add(new Decimal(tokens.output).mul(0.015).div(1_000_000))
-        .toNumber()
+  // Use toDecimal for safe Decimal construction
+  const costDecimal = toDecimal(0, 'cost_base')
+    .add(
+      toDecimal(tokens.input, 'tokens.input')
+        .mul(toDecimal(0.003, 'rate.input'))
+        .div(1_000_000)
+    )
+    .add(
+      toDecimal(tokens.output, 'tokens.output')
+        .mul(toDecimal(0.015, 'rate.output'))
+        .div(1_000_000)
     );
 
-    return { cost, tokens };
-  } catch (error) {
-    console.warn('Failed to calculate cost:', error);
-    return { cost: 0, tokens };
-  }
+  // Convert to number, defaulting to 0 if result is NaN
+  const cost = costDecimal.isNaN() ? 0 : costDecimal.toNumber();
+
+  return { cost, tokens };
 }
 
 for (const testCase of testCases) {
@@ -154,7 +192,7 @@ for (const testCase of testCases) {
   console.log(`  Input: ${JSON.stringify(testCase.usage)}`);
 
   try {
-    const result = getUsageFixed(testCase.usage);
+    const result = getUsageFixed(testCase.usage as any);
     console.log(`  Result: ${JSON.stringify(result)}`);
     console.log(`  OK: Completed without crash`);
   } catch (error) {
@@ -165,3 +203,10 @@ for (const testCase of testCases) {
 }
 
 console.log('=== Experiment Complete ===');
+console.log('\nKey improvements in the new implementation:');
+console.log('1. toDecimal() returns Decimal(NaN) instead of crashing');
+console.log(
+  '2. Debug logging shows exact values when invalid data is received'
+);
+console.log('3. safeTokenValue() converts invalid token values to 0');
+console.log('4. Final cost calculation handles NaN by returning 0');
