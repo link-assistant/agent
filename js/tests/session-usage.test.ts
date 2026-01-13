@@ -40,14 +40,20 @@ describe('Session.toDecimal() - safe Decimal conversion', () => {
     expect(result.isNaN()).toBe(true);
   });
 
-  test('returns Decimal(NaN) for Infinity', () => {
+  test('returns Decimal(Infinity) for Infinity (Decimal accepts Infinity)', () => {
     const result = Session.toDecimal(Infinity);
-    expect(result.isNaN()).toBe(true);
+    // Decimal.js accepts Infinity and creates Decimal(Infinity)
+    expect(result.isNaN()).toBe(false);
+    expect(result.isFinite()).toBe(false);
+    expect(result.toString()).toBe('Infinity');
   });
 
-  test('returns Decimal(NaN) for -Infinity', () => {
+  test('returns Decimal(-Infinity) for -Infinity (Decimal accepts -Infinity)', () => {
     const result = Session.toDecimal(-Infinity);
-    expect(result.isNaN()).toBe(true);
+    // Decimal.js accepts -Infinity and creates Decimal(-Infinity)
+    expect(result.isNaN()).toBe(false);
+    expect(result.isFinite()).toBe(false);
+    expect(result.toString()).toBe('-Infinity');
   });
 
   test('returns Decimal(NaN) for object input', () => {
@@ -55,8 +61,15 @@ describe('Session.toDecimal() - safe Decimal conversion', () => {
     expect(result.isNaN()).toBe(true);
   });
 
-  test('returns Decimal(NaN) for string input', () => {
+  test('returns valid Decimal for numeric string input (Decimal accepts strings)', () => {
+    // Decimal.js supports string input for numbers
     const result = Session.toDecimal('42' as unknown);
+    expect(result.toNumber()).toBe(42);
+    expect(result.isNaN()).toBe(false);
+  });
+
+  test('returns Decimal(NaN) for non-numeric string input', () => {
+    const result = Session.toDecimal('abc' as unknown);
     expect(result.isNaN()).toBe(true);
   });
 

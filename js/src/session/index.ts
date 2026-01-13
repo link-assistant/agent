@@ -20,46 +20,58 @@ export namespace Session {
 
   /**
    * Safely converts a value to a Decimal instance.
-   * Returns Decimal(NaN) for invalid values (non-finite numbers, objects, etc.)
-   * and logs a warning in verbose mode to help identify data issues.
+   * Attempts to create a Decimal from the input value (supports numbers, strings, etc.)
+   * and returns Decimal(NaN) only if the Decimal constructor throws an error.
+   *
+   * Logs input data in verbose mode at all stages to help identify data issues.
    *
    * This is necessary because AI providers may return unexpected token usage data
    * that would crash the Decimal.js constructor with "[DecimalError] Invalid argument".
    *
-   * @param value - The value to convert to Decimal
+   * @param value - The value to convert to Decimal (number, string, etc.)
    * @param context - Optional context string for debugging (e.g., "inputTokens")
-   * @returns A Decimal instance, or Decimal(NaN) if the value is invalid
+   * @returns A Decimal instance, or Decimal(NaN) if the Decimal constructor fails
    * @see https://github.com/link-assistant/agent/issues/119
    */
   export const toDecimal = (value: unknown, context?: string): Decimal => {
-    try {
-      // Check if value is a valid finite number
-      if (typeof value !== 'number' || !Number.isFinite(value)) {
-        // Log in verbose mode to help identify the root cause of invalid data
-        if (Flag.OPENCODE_VERBOSE) {
-          log.debug(() => ({
-            message: 'toDecimal received invalid value',
-            context,
-            valueType: typeof value,
-            value:
-              typeof value === 'object' ? JSON.stringify(value) : String(value),
-            isFinite:
-              typeof value === 'number' ? Number.isFinite(value) : false,
-          }));
-        }
-        return new Decimal(NaN);
-      }
-      return new Decimal(value);
-    } catch (error) {
-      // Catch any unexpected Decimal constructor errors
-      log.warn(() => ({
-        message: 'toDecimal failed to create Decimal',
+    // Log input data in verbose mode to help identify issues
+    if (Flag.OPENCODE_VERBOSE) {
+      log.debug(() => ({
+        message: 'toDecimal input',
         context,
         valueType: typeof value,
         value:
           typeof value === 'object' ? JSON.stringify(value) : String(value),
-        error: error instanceof Error ? error.message : String(error),
       }));
+    }
+
+    try {
+      // Let Decimal handle the conversion - it supports numbers, strings, and more
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = new Decimal(value as any);
+
+      // Log successful conversion in verbose mode
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toDecimal success',
+          context,
+          result: result.toString(),
+        }));
+      }
+
+      return result;
+    } catch (error) {
+      // Log the error and return Decimal(NaN)
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toDecimal error - returning Decimal(NaN)',
+          context,
+          valueType: typeof value,
+          value:
+            typeof value === 'object' ? JSON.stringify(value) : String(value),
+          error: error instanceof Error ? error.message : String(error),
+        }));
+      }
       return new Decimal(NaN);
     }
   };
@@ -493,8 +505,11 @@ export namespace Session {
             .div(1_000_000)
         );
 
-      // Convert to number, defaulting to 0 if result is NaN
-      const cost = costDecimal.isNaN() ? 0 : costDecimal.toNumber();
+      // Convert to number, defaulting to 0 if result is NaN or not finite
+      const cost =
+        costDecimal.isNaN() || !costDecimal.isFinite()
+          ? 0
+          : costDecimal.toNumber();
 
       return {
         cost,
