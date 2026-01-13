@@ -1,0 +1,86 @@
+{
+  "issue": {
+    "number": 119,
+    "title": "[DecimalError] Invalid argument: getUsage() crashes when token data contains objects",
+    "url": "https://github.com/link-assistant/agent/issues/119",
+    "state": "open",
+    "created_at": "2026-01-11T00:00:00Z"
+  },
+  "error": {
+    "type": "DecimalError",
+    "message": "[DecimalError] Invalid argument: [object Object]",
+    "location": {
+      "file": "js/src/session/index.ts",
+      "function": "getUsage",
+      "lines": "326-388"
+    },
+    "trigger": {
+      "file": "js/src/session/processor.ts",
+      "event": "finish-step",
+      "lines": "221-226"
+    }
+  },
+  "root_cause": {
+    "type": "missing_input_validation",
+    "description": "The safe() wrapper function from upstream OpenCode is missing, allowing non-finite numeric values (NaN, Infinity, objects) to be passed to Decimal.js constructor",
+    "upstream_fix": {
+      "repository": "sst/opencode",
+      "branch": "dev",
+      "file": "packages/opencode/src/session/index.ts",
+      "function": "safe",
+      "implementation": "const safe = (value: number) => { if (!Number.isFinite(value)) return 0; return value; }"
+    }
+  },
+  "affected_models": [
+    "opencode/grok-code"
+  ],
+  "related_issues": [
+    {
+      "repository": "sst/opencode",
+      "number": 6161,
+      "title": "bug: DecimalError",
+      "url": "https://github.com/sst/opencode/issues/6161",
+      "status": "closed"
+    },
+    {
+      "repository": "link-assistant/hive-mind",
+      "number": 1112,
+      "title": "DecimalError related issue",
+      "url": "https://github.com/link-assistant/hive-mind/issues/1112"
+    }
+  ],
+  "solution": {
+    "approach": "defensive_input_validation",
+    "changes": [
+      {
+        "file": "js/src/session/index.ts",
+        "type": "add_function",
+        "description": "Add safe() wrapper function to sanitize numeric inputs"
+      },
+      {
+        "file": "js/src/session/index.ts",
+        "type": "modify_function",
+        "function": "getUsage",
+        "description": "Apply safe() wrapper to all token values and final cost result"
+      },
+      {
+        "file": "js/src/session/index.ts",
+        "type": "add_error_handling",
+        "description": "Add try-catch around Decimal calculations as additional safety"
+      },
+      {
+        "file": "js/tests/session-usage.test.ts",
+        "type": "add_tests",
+        "description": "Add unit tests for safe() function and getUsage() edge cases"
+      }
+    ]
+  },
+  "reproduction": {
+    "steps": [
+      "Use agent with opencode/grok-code model or other providers returning malformed token data",
+      "Execute a task that triggers step_finish events",
+      "If token usage data contains unexpected values (objects, NaN, Infinity), the crash occurs"
+    ],
+    "probability": "model_dependent"
+  }
+}

@@ -18,6 +18,64 @@ import { Snapshot } from '../snapshot';
 export namespace Session {
   const log = Log.create({ service: 'session' });
 
+  /**
+   * Safely converts a value to a Decimal instance.
+   * Attempts to create a Decimal from the input value (supports numbers, strings, etc.)
+   * and returns Decimal(NaN) only if the Decimal constructor throws an error.
+   *
+   * Logs input data in verbose mode at all stages to help identify data issues.
+   *
+   * This is necessary because AI providers may return unexpected token usage data
+   * that would crash the Decimal.js constructor with "[DecimalError] Invalid argument".
+   *
+   * @param value - The value to convert to Decimal (number, string, etc.)
+   * @param context - Optional context string for debugging (e.g., "inputTokens")
+   * @returns A Decimal instance, or Decimal(NaN) if the Decimal constructor fails
+   * @see https://github.com/link-assistant/agent/issues/119
+   */
+  export const toDecimal = (value: unknown, context?: string): Decimal => {
+    // Log input data in verbose mode to help identify issues
+    if (Flag.OPENCODE_VERBOSE) {
+      log.debug(() => ({
+        message: 'toDecimal input',
+        context,
+        valueType: typeof value,
+        value:
+          typeof value === 'object' ? JSON.stringify(value) : String(value),
+      }));
+    }
+
+    try {
+      // Let Decimal handle the conversion - it supports numbers, strings, and more
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = new Decimal(value as any);
+
+      // Log successful conversion in verbose mode
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toDecimal success',
+          context,
+          result: result.toString(),
+        }));
+      }
+
+      return result;
+    } catch (error) {
+      // Log the error and return Decimal(NaN)
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toDecimal error - returning Decimal(NaN)',
+          context,
+          valueType: typeof value,
+          value:
+            typeof value === 'object' ? JSON.stringify(value) : String(value),
+          error: error instanceof Error ? error.message : String(error),
+        }));
+      }
+      return new Decimal(NaN);
+    }
+  };
+
   const parentTitlePrefix = 'New session - ';
   const childTitlePrefix = 'Child session - ';
 
@@ -323,6 +381,73 @@ export namespace Session {
     return part;
   });
 
+  /**
+   * Safely converts a value to a number.
+   * Attempts to parse/convert the input value and returns NaN if conversion fails.
+   *
+   * Logs input data in verbose mode at all stages to help identify data issues.
+   *
+   * This is necessary because AI providers may return unexpected token usage data
+   * that would cause issues if not handled properly.
+   *
+   * @param value - The value to convert to number (number, string, etc.)
+   * @param context - Optional context string for debugging (e.g., "inputTokens")
+   * @returns A number, or NaN if conversion fails
+   * @see https://github.com/link-assistant/agent/issues/119
+   */
+  export const toNumber = (value: unknown, context?: string): number => {
+    // Log input data in verbose mode to help identify issues
+    if (Flag.OPENCODE_VERBOSE) {
+      log.debug(() => ({
+        message: 'toNumber input',
+        context,
+        valueType: typeof value,
+        value:
+          typeof value === 'object' ? JSON.stringify(value) : String(value),
+      }));
+    }
+
+    try {
+      // Handle undefined/null explicitly - Number() would convert these to 0 or NaN
+      if (value === undefined || value === null) {
+        throw new Error(`Cannot convert ${value} to number`);
+      }
+
+      // Try to convert to number
+      const result = Number(value);
+
+      // Check if conversion produced a valid result
+      // Note: Number({}) returns NaN, Number([1]) returns 1, Number([1,2]) returns NaN
+      if (Number.isNaN(result)) {
+        throw new Error(`Conversion to number resulted in NaN`);
+      }
+
+      // Log successful conversion in verbose mode
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toNumber success',
+          context,
+          result,
+        }));
+      }
+
+      return result;
+    } catch (error) {
+      // Log the error and return NaN
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toNumber error - returning NaN',
+          context,
+          valueType: typeof value,
+          value:
+            typeof value === 'object' ? JSON.stringify(value) : String(value),
+          error: error instanceof Error ? error.message : String(error),
+        }));
+      }
+      return NaN;
+    }
+  };
+
   export const getUsage = fn(
     z.object({
       model: z.custom<ModelsDev.Model>(),
@@ -330,23 +455,50 @@ export namespace Session {
       metadata: z.custom<ProviderMetadata>().optional(),
     }),
     (input) => {
-      const cachedInputTokens = input.usage.cachedInputTokens ?? 0;
+      // Log raw usage data in verbose mode for debugging
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'getUsage called with raw data',
+          rawUsage: JSON.stringify(input.usage),
+          rawMetadata: input.metadata ? JSON.stringify(input.metadata) : 'none',
+        }));
+      }
+
+      // Helper: convert toNumber result to 0 if NaN or not finite (for safe calculations)
+      const safeNum = (n: number): number =>
+        Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
+
+      const cachedInputTokens = safeNum(
+        toNumber(input.usage.cachedInputTokens, 'cachedInputTokens')
+      );
       const excludesCachedTokens = !!(
         input.metadata?.['anthropic'] || input.metadata?.['bedrock']
       );
+
+      const rawInputTokens = safeNum(
+        toNumber(input.usage.inputTokens, 'inputTokens')
+      );
       const adjustedInputTokens = excludesCachedTokens
-        ? (input.usage.inputTokens ?? 0)
-        : (input.usage.inputTokens ?? 0) - cachedInputTokens;
+        ? rawInputTokens
+        : rawInputTokens - cachedInputTokens;
+
+      const cacheWriteTokens = safeNum(
+        toNumber(
+          input.metadata?.['anthropic']?.['cacheCreationInputTokens'] ??
+            // @ts-expect-error - bedrock metadata structure may vary
+            input.metadata?.['bedrock']?.['usage']?.['cacheWriteInputTokens'],
+          'cacheWriteTokens'
+        )
+      );
 
       const tokens = {
-        input: adjustedInputTokens,
-        output: input.usage.outputTokens ?? 0,
-        reasoning: input.usage?.reasoningTokens ?? 0,
+        input: Math.max(0, adjustedInputTokens), // Ensure non-negative
+        output: safeNum(toNumber(input.usage.outputTokens, 'outputTokens')),
+        reasoning: safeNum(
+          toNumber(input.usage?.reasoningTokens, 'reasoningTokens')
+        ),
         cache: {
-          write: (input.metadata?.['anthropic']?.['cacheCreationInputTokens'] ??
-            // @ts-expect-error
-            input.metadata?.['bedrock']?.['usage']?.['cacheWriteInputTokens'] ??
-            0) as number,
+          write: cacheWriteTokens,
           read: cachedInputTokens,
         },
       };
@@ -356,32 +508,47 @@ export namespace Session {
         tokens.input + tokens.cache.read > 200_000
           ? input.model.cost.context_over_200k
           : input.model.cost;
+
+      // Calculate cost using toDecimal for safe Decimal construction
+      const costDecimal = toDecimal(0, 'cost_base')
+        .add(
+          toDecimal(tokens.input, 'tokens.input')
+            .mul(toDecimal(costInfo?.input ?? 0, 'costInfo.input'))
+            .div(1_000_000)
+        )
+        .add(
+          toDecimal(tokens.output, 'tokens.output')
+            .mul(toDecimal(costInfo?.output ?? 0, 'costInfo.output'))
+            .div(1_000_000)
+        )
+        .add(
+          toDecimal(tokens.cache.read, 'tokens.cache.read')
+            .mul(toDecimal(costInfo?.cache_read ?? 0, 'costInfo.cache_read'))
+            .div(1_000_000)
+        )
+        .add(
+          toDecimal(tokens.cache.write, 'tokens.cache.write')
+            .mul(toDecimal(costInfo?.cache_write ?? 0, 'costInfo.cache_write'))
+            .div(1_000_000)
+        )
+        // TODO: update models.dev to have better pricing model, for now:
+        // charge reasoning tokens at the same rate as output tokens
+        .add(
+          toDecimal(tokens.reasoning, 'tokens.reasoning')
+            .mul(
+              toDecimal(costInfo?.output ?? 0, 'costInfo.output_for_reasoning')
+            )
+            .div(1_000_000)
+        );
+
+      // Convert to number, defaulting to 0 if result is NaN or not finite
+      const cost =
+        costDecimal.isNaN() || !costDecimal.isFinite()
+          ? 0
+          : costDecimal.toNumber();
+
       return {
-        cost: new Decimal(0)
-          .add(
-            new Decimal(tokens.input).mul(costInfo?.input ?? 0).div(1_000_000)
-          )
-          .add(
-            new Decimal(tokens.output).mul(costInfo?.output ?? 0).div(1_000_000)
-          )
-          .add(
-            new Decimal(tokens.cache.read)
-              .mul(costInfo?.cache_read ?? 0)
-              .div(1_000_000)
-          )
-          .add(
-            new Decimal(tokens.cache.write)
-              .mul(costInfo?.cache_write ?? 0)
-              .div(1_000_000)
-          )
-          // TODO: update models.dev to have better pricing model, for now:
-          // charge reasoning tokens at the same rate as output tokens
-          .add(
-            new Decimal(tokens.reasoning)
-              .mul(costInfo?.output ?? 0)
-              .div(1_000_000)
-          )
-          .toNumber(),
+        cost,
         tokens,
       };
     }
