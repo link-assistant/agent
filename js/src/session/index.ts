@@ -382,37 +382,70 @@ export namespace Session {
   });
 
   /**
-   * Safely extracts a numeric token value from API response data.
-   * Returns 0 for invalid values and logs details in verbose mode.
+   * Safely converts a value to a number.
+   * Attempts to parse/convert the input value and returns NaN if conversion fails.
    *
-   * @param value - The raw value from API response (may be number, object, undefined, etc.)
-   * @param context - Field name for debugging (e.g., "inputTokens")
-   * @returns A safe numeric value (0 if invalid)
+   * Logs input data in verbose mode at all stages to help identify data issues.
+   *
+   * This is necessary because AI providers may return unexpected token usage data
+   * that would cause issues if not handled properly.
+   *
+   * @param value - The value to convert to number (number, string, etc.)
+   * @param context - Optional context string for debugging (e.g., "inputTokens")
+   * @returns A number, or NaN if conversion fails
+   * @see https://github.com/link-assistant/agent/issues/119
    */
-  const safeTokenValue = (value: unknown, context: string): number => {
-    // Handle undefined/null
-    if (value === undefined || value === null) {
-      return 0;
-    }
-
-    // Check if it's a valid finite number
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value;
-    }
-
-    // Invalid value - log details in verbose mode to help identify root cause
+  export const toNumber = (value: unknown, context?: string): number => {
+    // Log input data in verbose mode to help identify issues
     if (Flag.OPENCODE_VERBOSE) {
       log.debug(() => ({
-        message: 'Invalid token value received from API',
+        message: 'toNumber input',
         context,
         valueType: typeof value,
         value:
           typeof value === 'object' ? JSON.stringify(value) : String(value),
-        hint: 'This may indicate the API response format has changed or contains unexpected data',
       }));
     }
 
-    return 0;
+    try {
+      // Handle undefined/null explicitly - Number() would convert these to 0 or NaN
+      if (value === undefined || value === null) {
+        throw new Error(`Cannot convert ${value} to number`);
+      }
+
+      // Try to convert to number
+      const result = Number(value);
+
+      // Check if conversion produced a valid result
+      // Note: Number({}) returns NaN, Number([1]) returns 1, Number([1,2]) returns NaN
+      if (Number.isNaN(result)) {
+        throw new Error(`Conversion to number resulted in NaN`);
+      }
+
+      // Log successful conversion in verbose mode
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toNumber success',
+          context,
+          result,
+        }));
+      }
+
+      return result;
+    } catch (error) {
+      // Log the error and return NaN
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toNumber error - returning NaN',
+          context,
+          valueType: typeof value,
+          value:
+            typeof value === 'object' ? JSON.stringify(value) : String(value),
+          error: error instanceof Error ? error.message : String(error),
+        }));
+      }
+      return NaN;
+    }
   };
 
   export const getUsage = fn(
@@ -431,35 +464,38 @@ export namespace Session {
         }));
       }
 
-      const cachedInputTokens = safeTokenValue(
-        input.usage.cachedInputTokens,
-        'cachedInputTokens'
+      // Helper: convert toNumber result to 0 if NaN or not finite (for safe calculations)
+      const safeNum = (n: number): number =>
+        Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
+
+      const cachedInputTokens = safeNum(
+        toNumber(input.usage.cachedInputTokens, 'cachedInputTokens')
       );
       const excludesCachedTokens = !!(
         input.metadata?.['anthropic'] || input.metadata?.['bedrock']
       );
 
-      const rawInputTokens = safeTokenValue(
-        input.usage.inputTokens,
-        'inputTokens'
+      const rawInputTokens = safeNum(
+        toNumber(input.usage.inputTokens, 'inputTokens')
       );
       const adjustedInputTokens = excludesCachedTokens
         ? rawInputTokens
         : rawInputTokens - cachedInputTokens;
 
-      const cacheWriteTokens = safeTokenValue(
-        input.metadata?.['anthropic']?.['cacheCreationInputTokens'] ??
-          // @ts-expect-error - bedrock metadata structure may vary
-          input.metadata?.['bedrock']?.['usage']?.['cacheWriteInputTokens'],
-        'cacheWriteTokens'
+      const cacheWriteTokens = safeNum(
+        toNumber(
+          input.metadata?.['anthropic']?.['cacheCreationInputTokens'] ??
+            // @ts-expect-error - bedrock metadata structure may vary
+            input.metadata?.['bedrock']?.['usage']?.['cacheWriteInputTokens'],
+          'cacheWriteTokens'
+        )
       );
 
       const tokens = {
         input: Math.max(0, adjustedInputTokens), // Ensure non-negative
-        output: safeTokenValue(input.usage.outputTokens, 'outputTokens'),
-        reasoning: safeTokenValue(
-          input.usage?.reasoningTokens,
-          'reasoningTokens'
+        output: safeNum(toNumber(input.usage.outputTokens, 'outputTokens')),
+        reasoning: safeNum(
+          toNumber(input.usage?.reasoningTokens, 'reasoningTokens')
         ),
         cache: {
           write: cacheWriteTokens,

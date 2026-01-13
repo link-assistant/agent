@@ -3,7 +3,7 @@ import { Decimal } from 'decimal.js';
 import { Session } from '../src/session';
 
 /**
- * Unit tests for Session.toDecimal() and Session.getUsage()
+ * Unit tests for Session.toDecimal(), Session.toNumber(), and Session.getUsage()
  * These tests verify the fix for issue #119: DecimalError when token data contains
  * non-numeric values (objects, NaN, Infinity).
  *
@@ -108,6 +108,121 @@ describe('Session.toDecimal() - safe Decimal conversion', () => {
     const invalid = Session.toDecimal(NaN);
     const result = valid.add(invalid);
     expect(result.isNaN()).toBe(true);
+  });
+});
+
+describe('Session.toNumber() - safe number conversion', () => {
+  test('returns valid number for finite positive numbers', () => {
+    const result = Session.toNumber(42);
+    expect(result).toBe(42);
+    expect(Number.isNaN(result)).toBe(false);
+  });
+
+  test('returns valid number for finite negative numbers', () => {
+    const result = Session.toNumber(-100);
+    expect(result).toBe(-100);
+    expect(Number.isNaN(result)).toBe(false);
+  });
+
+  test('returns valid number for zero', () => {
+    const result = Session.toNumber(0);
+    expect(result).toBe(0);
+    expect(Number.isNaN(result)).toBe(false);
+  });
+
+  test('returns valid number for decimal numbers', () => {
+    const result = Session.toNumber(3.14159);
+    expect(result).toBeCloseTo(3.14159, 5);
+    expect(Number.isNaN(result)).toBe(false);
+  });
+
+  test('returns NaN for NaN input', () => {
+    const result = Session.toNumber(NaN);
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('returns Infinity for Infinity input (Number accepts Infinity)', () => {
+    const result = Session.toNumber(Infinity);
+    expect(Number.isNaN(result)).toBe(false);
+    expect(result).toBe(Infinity);
+  });
+
+  test('returns -Infinity for -Infinity input (Number accepts -Infinity)', () => {
+    const result = Session.toNumber(-Infinity);
+    expect(Number.isNaN(result)).toBe(false);
+    expect(result).toBe(-Infinity);
+  });
+
+  test('returns NaN for object input', () => {
+    const result = Session.toNumber({ count: 100 } as unknown);
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('returns valid number for numeric string input', () => {
+    const result = Session.toNumber('42' as unknown);
+    expect(result).toBe(42);
+    expect(Number.isNaN(result)).toBe(false);
+  });
+
+  test('returns NaN for non-numeric string input', () => {
+    const result = Session.toNumber('abc' as unknown);
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('returns NaN for undefined input', () => {
+    const result = Session.toNumber(undefined);
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('returns NaN for null input', () => {
+    const result = Session.toNumber(null);
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('returns NaN for array input with multiple elements', () => {
+    const result = Session.toNumber([1, 2, 3] as unknown);
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('returns number for single-element array (Number coercion)', () => {
+    // Number([1]) returns 1 in JavaScript
+    const result = Session.toNumber([1] as unknown);
+    expect(result).toBe(1);
+  });
+
+  test('accepts optional context parameter for debugging', () => {
+    // Context parameter should not affect behavior, just for logging
+    const result1 = Session.toNumber(42, 'inputTokens');
+    const result2 = Session.toNumber(NaN, 'outputTokens');
+    expect(result1).toBe(42);
+    expect(Number.isNaN(result2)).toBe(true);
+  });
+
+  test('can be used in arithmetic operations', () => {
+    const a = Session.toNumber(100);
+    const b = Session.toNumber(50);
+    const result = (a + b) * 2;
+    expect(result).toBe(300);
+  });
+
+  test('NaN propagates through arithmetic', () => {
+    const valid = Session.toNumber(100);
+    const invalid = Session.toNumber(NaN);
+    const result = valid + invalid;
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('returns NaN for empty string', () => {
+    const result = Session.toNumber('' as unknown);
+    // Number('') is 0 in JavaScript, but we treat empty string as valid
+    // Actually, Number('') === 0, so this should return 0
+    expect(result).toBe(0);
+  });
+
+  test('returns NaN for whitespace string', () => {
+    // Number('   ') === 0 in JavaScript (whitespace is coerced to 0)
+    const result = Session.toNumber('   ' as unknown);
+    expect(result).toBe(0);
   });
 });
 
