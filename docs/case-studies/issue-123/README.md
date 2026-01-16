@@ -170,11 +170,11 @@ const npmBadge = `[![npm version](https://img.shields.io/badge/npm-${encodedVers
 
 ### Files Collected
 
-- `logs/release-info.json` - Release metadata from GitHub API
-- `logs/pr-122-info.json` - PR #122 details and commits
-- `logs/pr-122-diff.txt` - PR #122 code changes
-- `logs/issue-121-details.txt` - Original issue that triggered the fix
-- `logs/ci-run-21057802787.log` - CI workflow logs showing the release process
+- `data/release-info.json` - Release metadata from GitHub API
+- `data/pr-122-info.json` - PR #122 details and commits
+- `data/pr-122-diff.txt` - PR #122 code changes
+- `data/issue-121-details.txt` - Original issue that triggered the fix
+- `data/ci-run-21057802787.log` - CI workflow logs showing the release process
 - `screenshots/badge-not-found.png` - Screenshot showing the 404 badge error
 
 ### Key Log Evidence
