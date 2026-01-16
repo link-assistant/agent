@@ -79,7 +79,10 @@ try {
     console.log(`Formatting release notes for ${tag}...`);
     // Pass the trigger commit SHA for PR detection
     // This allows proper PR lookup even if the changelog doesn't have a commit hash
-    await $`node scripts/format-release-notes.mjs --release-id "${releaseId}" --release-version "${tag}" --repository "${repository}" --commit-sha "${commitSha}"`;
+    // IMPORTANT: Pass version with v-prefix only (e.g., "v0.8.4"), NOT the full tag (e.g., "js-v0.8.4")
+    // The format-release-notes.mjs script uses this for shields.io badge URL which uses dashes as delimiters
+    // See: docs/case-studies/issue-123 for detailed root cause analysis
+    await $`node scripts/format-release-notes.mjs --release-id "${releaseId}" --release-version "v${version}" --repository "${repository}" --commit-sha "${commitSha}"`;
     console.log(`\u2705 Formatted release notes for ${tag}`);
   }
 } catch (error) {
