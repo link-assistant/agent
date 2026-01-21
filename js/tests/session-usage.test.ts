@@ -169,14 +169,17 @@ describe('Session.toNumber() - safe number conversion', () => {
     expect(Number.isNaN(result)).toBe(true);
   });
 
-  test('returns NaN for undefined input', () => {
+  test('returns 0 for undefined input (issue #127)', () => {
+    // undefined is common for optional fields like cachedInputTokens, reasoningTokens
+    // toNumber should gracefully return 0 instead of NaN
     const result = Session.toNumber(undefined);
-    expect(Number.isNaN(result)).toBe(true);
+    expect(result).toBe(0);
   });
 
-  test('returns NaN for null input', () => {
+  test('returns 0 for null input (issue #127)', () => {
+    // null should be treated the same as undefined - return 0 gracefully
     const result = Session.toNumber(null);
-    expect(Number.isNaN(result)).toBe(true);
+    expect(result).toBe(0);
   });
 
   test('returns NaN for array input with multiple elements', () => {
@@ -485,8 +488,12 @@ describe('Session.getUsage() - token usage calculation', () => {
     });
 
     // Should extract 'total' from objects instead of returning 0
-    expect(result.tokens.input).toBe(8707);
+    // With issue #127 fix, cacheRead (2368) is extracted and subtracted from total
+    // input = 8707 - 2368 = 6339
+    expect(result.tokens.input).toBe(6339);
     expect(result.tokens.output).toBe(9);
+    expect(result.tokens.cache.read).toBe(2368);
+    expect(result.tokens.reasoning).toBe(128);
     expect(typeof result.cost).toBe('number');
     expect(Number.isFinite(result.cost)).toBe(true);
   });
@@ -623,5 +630,135 @@ describe('Session.toFinishReason() - safe string conversion', () => {
   test('handles empty object', () => {
     const result = Session.toFinishReason({});
     expect(result).toBe('{}');
+  });
+});
+
+/**
+ * Unit tests for issue #127 - nested token extraction
+ * Tests for extracting cacheRead from inputTokens and reasoning from outputTokens
+ *
+ * @see https://github.com/link-assistant/agent/issues/127
+ */
+describe('Session.getUsage() - nested token extraction (issue #127)', () => {
+  const mockModel = {
+    id: 'test-model',
+    name: 'Test Model',
+    provider: 'test',
+    cost: {
+      input: 3,
+      output: 15,
+      cache_read: 0.3,
+      cache_write: 3.75,
+    },
+  };
+
+  test('extracts cacheRead from inputTokens object when cachedInputTokens is undefined', () => {
+    // This is the exact scenario from issue #127 with opencode/grok-code
+    // cachedInputTokens is undefined, but cacheRead is nested inside inputTokens
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: { total: 12703, noCache: 12511, cacheRead: 192 } as any,
+        outputTokens: { total: 562, text: -805, reasoning: 1367 } as any,
+        // cachedInputTokens is not provided
+      },
+    });
+
+    expect(result.tokens.cache.read).toBe(192);
+    // Input should be total minus cacheRead: 12703 - 192 = 12511
+    expect(result.tokens.input).toBe(12511);
+  });
+
+  test('extracts reasoning from outputTokens object when reasoningTokens is undefined', () => {
+    // reasoningTokens is undefined, but reasoning is nested inside outputTokens
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: { total: 12703, noCache: 12511, cacheRead: 192 } as any,
+        outputTokens: { total: 562, text: -805, reasoning: 1367 } as any,
+        // reasoningTokens is not provided
+      },
+    });
+
+    expect(result.tokens.reasoning).toBe(1367);
+    expect(result.tokens.output).toBe(562);
+  });
+
+  test('prefers top-level cachedInputTokens over nested cacheRead', () => {
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: { total: 1000, cacheRead: 100 } as any,
+        outputTokens: 500,
+        cachedInputTokens: 200, // Top-level takes precedence
+      },
+    });
+
+    expect(result.tokens.cache.read).toBe(200);
+    // Input should be total minus cachedInputTokens: 1000 - 200 = 800
+    expect(result.tokens.input).toBe(800);
+  });
+
+  test('prefers top-level reasoningTokens over nested reasoning', () => {
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: 1000,
+        outputTokens: { total: 500, reasoning: 100 } as any,
+        reasoningTokens: 200, // Top-level takes precedence
+      },
+    });
+
+    expect(result.tokens.reasoning).toBe(200);
+    expect(result.tokens.output).toBe(500);
+  });
+
+  test('handles inputTokens as plain number (no nested cacheRead)', () => {
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: 1000,
+        outputTokens: 500,
+        // No cachedInputTokens, inputTokens is plain number
+      },
+    });
+
+    expect(result.tokens.cache.read).toBe(0);
+    expect(result.tokens.input).toBe(1000);
+  });
+
+  test('handles outputTokens as plain number (no nested reasoning)', () => {
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: 1000,
+        outputTokens: 500,
+        // No reasoningTokens, outputTokens is plain number
+      },
+    });
+
+    expect(result.tokens.reasoning).toBe(0);
+    expect(result.tokens.output).toBe(500);
+  });
+
+  test('handles all undefined optional fields gracefully (issue #127 fix)', () => {
+    // This tests that toNumber returns 0 for undefined instead of NaN
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: 1000,
+        outputTokens: 500,
+        // cachedInputTokens: undefined
+        // reasoningTokens: undefined
+      },
+    });
+
+    expect(result.tokens.input).toBe(1000);
+    expect(result.tokens.output).toBe(500);
+    expect(result.tokens.cache.read).toBe(0);
+    expect(result.tokens.reasoning).toBe(0);
+    expect(result.tokens.cache.write).toBe(0);
+    expect(typeof result.cost).toBe('number');
+    expect(Number.isFinite(result.cost)).toBe(true);
   });
 });

@@ -408,9 +408,18 @@ export namespace Session {
     }
 
     try {
-      // Handle undefined/null explicitly - Number() would convert these to 0 or NaN
+      // Handle undefined/null gracefully by returning 0
+      // These are expected for optional fields like cachedInputTokens, reasoningTokens
+      // See: https://github.com/link-assistant/agent/issues/127
       if (value === undefined || value === null) {
-        throw new Error(`Cannot convert ${value} to number`);
+        if (Flag.OPENCODE_VERBOSE) {
+          log.debug(() => ({
+            message: 'toNumber received undefined/null, returning 0',
+            context,
+            valueType: typeof value,
+          }));
+        }
+        return 0;
       }
 
       // Handle objects with a 'total' field (e.g., { total: 8707, noCache: 6339, cacheRead: 2368 })
@@ -572,9 +581,28 @@ export namespace Session {
       const safeNum = (n: number): number =>
         Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
 
-      const cachedInputTokens = safeNum(
+      // Extract top-level cachedInputTokens
+      const topLevelCachedInputTokens = safeNum(
         toNumber(input.usage.cachedInputTokens, 'cachedInputTokens')
       );
+
+      // Some providers (e.g., opencode/grok-code) nest cacheRead inside inputTokens object
+      // e.g., inputTokens: { total: 12703, noCache: 12511, cacheRead: 192 }
+      // See: https://github.com/link-assistant/agent/issues/127
+      const inputTokensObj = input.usage.inputTokens;
+      const nestedCacheRead =
+        typeof inputTokensObj === 'object' && inputTokensObj !== null
+          ? safeNum(
+              toNumber(
+                (inputTokensObj as { cacheRead?: unknown }).cacheRead,
+                'inputTokens.cacheRead'
+              )
+            )
+          : 0;
+
+      // Use top-level if available, otherwise fall back to nested
+      const cachedInputTokens = topLevelCachedInputTokens || nestedCacheRead;
+
       const excludesCachedTokens = !!(
         input.metadata?.['anthropic'] || input.metadata?.['bedrock']
       );
@@ -595,12 +623,28 @@ export namespace Session {
         )
       );
 
+      // Extract reasoning tokens - some providers nest it inside outputTokens
+      // e.g., outputTokens: { total: 562, text: -805, reasoning: 1367 }
+      // See: https://github.com/link-assistant/agent/issues/127
+      const topLevelReasoningTokens = safeNum(
+        toNumber(input.usage?.reasoningTokens, 'reasoningTokens')
+      );
+      const outputTokensObj = input.usage.outputTokens;
+      const nestedReasoning =
+        typeof outputTokensObj === 'object' && outputTokensObj !== null
+          ? safeNum(
+              toNumber(
+                (outputTokensObj as { reasoning?: unknown }).reasoning,
+                'outputTokens.reasoning'
+              )
+            )
+          : 0;
+      const reasoningTokens = topLevelReasoningTokens || nestedReasoning;
+
       const tokens = {
         input: Math.max(0, adjustedInputTokens), // Ensure non-negative
         output: safeNum(toNumber(input.usage.outputTokens, 'outputTokens')),
-        reasoning: safeNum(
-          toNumber(input.usage?.reasoningTokens, 'reasoningTokens')
-        ),
+        reasoning: reasoningTokens,
         cache: {
           write: cacheWriteTokens,
           read: cachedInputTokens,
