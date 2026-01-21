@@ -224,12 +224,17 @@ export namespace SessionProcessor {
                     usage: value.usage,
                     metadata: value.providerMetadata,
                   });
-                  input.assistantMessage.finish = value.finishReason;
+                  // Use toFinishReason to safely convert object/string finishReason to string
+                  // See: https://github.com/link-assistant/agent/issues/125
+                  const finishReason = Session.toFinishReason(
+                    value.finishReason
+                  );
+                  input.assistantMessage.finish = finishReason;
                   input.assistantMessage.cost += usage.cost;
                   input.assistantMessage.tokens = usage.tokens;
                   await Session.updatePart({
                     id: Identifier.ascending('part'),
-                    reason: value.finishReason,
+                    reason: finishReason,
                     snapshot: await Snapshot.track(),
                     messageID: input.assistantMessage.id,
                     sessionID: input.assistantMessage.sessionID,
@@ -274,13 +279,19 @@ export namespace SessionProcessor {
 
                 case 'text-delta':
                   if (currentText) {
-                    currentText.text += value.text;
+                    // Handle case where value.text might be an object instead of string
+                    // See: https://github.com/link-assistant/agent/issues/125
+                    const textDelta =
+                      typeof value.text === 'string'
+                        ? value.text
+                        : String(value.text);
+                    currentText.text += textDelta;
                     if (value.providerMetadata)
                       currentText.metadata = value.providerMetadata;
                     if (currentText.text)
                       await Session.updatePart({
                         part: currentText,
-                        delta: value.text,
+                        delta: textDelta,
                       });
                   }
                   break;

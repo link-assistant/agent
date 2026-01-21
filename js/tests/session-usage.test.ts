@@ -472,4 +472,156 @@ describe('Session.getUsage() - token usage calculation', () => {
     expect(result.tokens.reasoning).toBe(500);
     expect(typeof result.cost).toBe('number');
   });
+
+  test('handles object with total field for inputTokens (issue #125 scenario)', () => {
+    // This is the exact scenario from issue #125 where an object with 'total' field
+    // is returned instead of a plain number on certain Bun versions
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: { total: 8707, noCache: 6339, cacheRead: 2368 } as any,
+        outputTokens: { total: 9, text: -119, reasoning: 128 } as any,
+      },
+    });
+
+    // Should extract 'total' from objects instead of returning 0
+    expect(result.tokens.input).toBe(8707);
+    expect(result.tokens.output).toBe(9);
+    expect(typeof result.cost).toBe('number');
+    expect(Number.isFinite(result.cost)).toBe(true);
+  });
+});
+
+/**
+ * Unit tests for Session.toNumber() - extended tests for issue #125
+ * Tests for handling objects with 'total' field
+ *
+ * @see https://github.com/link-assistant/agent/issues/125
+ */
+describe('Session.toNumber() - object with total field (issue #125)', () => {
+  test('extracts total from object with total field', () => {
+    const result = Session.toNumber({
+      total: 8707,
+      noCache: 6339,
+      cacheRead: 2368,
+    } as unknown);
+    expect(result).toBe(8707);
+    expect(Number.isNaN(result)).toBe(false);
+  });
+
+  test('extracts total from object with only total field', () => {
+    const result = Session.toNumber({ total: 100 } as unknown);
+    expect(result).toBe(100);
+  });
+
+  test('extracts total from object with nested structure', () => {
+    const result = Session.toNumber({
+      total: 9,
+      text: -119,
+      reasoning: 128,
+    } as unknown);
+    expect(result).toBe(9);
+  });
+
+  test('returns NaN for object without total field', () => {
+    const result = Session.toNumber({ count: 100, value: 200 } as unknown);
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('returns NaN for object with non-numeric total field', () => {
+    const result = Session.toNumber({ total: 'not a number' } as unknown);
+    expect(Number.isNaN(result)).toBe(true);
+  });
+
+  test('extracts total 0 from object correctly', () => {
+    const result = Session.toNumber({ total: 0, other: 100 } as unknown);
+    expect(result).toBe(0);
+    expect(Number.isNaN(result)).toBe(false);
+  });
+
+  test('extracts negative total from object', () => {
+    const result = Session.toNumber({ total: -50 } as unknown);
+    expect(result).toBe(-50);
+  });
+});
+
+/**
+ * Unit tests for Session.toFinishReason() - safe conversion of finishReason
+ * Tests for handling string, object, and edge cases
+ *
+ * @see https://github.com/link-assistant/agent/issues/125
+ */
+describe('Session.toFinishReason() - safe string conversion', () => {
+  test('returns string unchanged', () => {
+    expect(Session.toFinishReason('stop')).toBe('stop');
+    expect(Session.toFinishReason('tool-calls')).toBe('tool-calls');
+    expect(Session.toFinishReason('length')).toBe('length');
+  });
+
+  test('returns "unknown" for undefined', () => {
+    expect(Session.toFinishReason(undefined)).toBe('unknown');
+  });
+
+  test('returns "unknown" for null', () => {
+    expect(Session.toFinishReason(null)).toBe('unknown');
+  });
+
+  test('extracts type field from object', () => {
+    expect(Session.toFinishReason({ type: 'stop' })).toBe('stop');
+    expect(Session.toFinishReason({ type: 'tool-calls', other: 'data' })).toBe(
+      'tool-calls'
+    );
+  });
+
+  test('extracts finishReason field from object', () => {
+    expect(Session.toFinishReason({ finishReason: 'stop' })).toBe('stop');
+    expect(Session.toFinishReason({ finishReason: 'tool-calls' })).toBe(
+      'tool-calls'
+    );
+  });
+
+  test('extracts reason field from object', () => {
+    expect(Session.toFinishReason({ reason: 'stop' })).toBe('stop');
+  });
+
+  test('prioritizes type over finishReason and reason', () => {
+    expect(
+      Session.toFinishReason({
+        type: 'type-value',
+        finishReason: 'fr-value',
+        reason: 'r-value',
+      })
+    ).toBe('type-value');
+  });
+
+  test('falls back to finishReason when type is not a string', () => {
+    expect(Session.toFinishReason({ type: 123, finishReason: 'stop' })).toBe(
+      'stop'
+    );
+  });
+
+  test('falls back to reason when type and finishReason are not strings', () => {
+    expect(
+      Session.toFinishReason({ type: {}, finishReason: null, reason: 'stop' })
+    ).toBe('stop');
+  });
+
+  test('returns JSON for object without recognized fields', () => {
+    const result = Session.toFinishReason({ unknown: 'value' });
+    expect(result).toBe('{"unknown":"value"}');
+  });
+
+  test('converts number to string', () => {
+    expect(Session.toFinishReason(123)).toBe('123');
+  });
+
+  test('converts boolean to string', () => {
+    expect(Session.toFinishReason(true)).toBe('true');
+    expect(Session.toFinishReason(false)).toBe('false');
+  });
+
+  test('handles empty object', () => {
+    const result = Session.toFinishReason({});
+    expect(result).toBe('{}');
+  });
 });

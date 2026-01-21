@@ -413,6 +413,26 @@ export namespace Session {
         throw new Error(`Cannot convert ${value} to number`);
       }
 
+      // Handle objects with a 'total' field (e.g., { total: 8707, noCache: 6339, cacheRead: 2368 })
+      // Some AI providers return token counts as objects instead of plain numbers
+      // See: https://github.com/link-assistant/agent/issues/125
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        'total' in value &&
+        typeof (value as { total: unknown }).total === 'number'
+      ) {
+        const result = (value as { total: number }).total;
+        if (Flag.OPENCODE_VERBOSE) {
+          log.debug(() => ({
+            message: 'toNumber extracted total from object',
+            context,
+            result,
+          }));
+        }
+        return result;
+      }
+
       // Try to convert to number
       const result = Number(value);
 
@@ -446,6 +466,90 @@ export namespace Session {
       }
       return NaN;
     }
+  };
+
+  /**
+   * Safely converts a finishReason value to a string.
+   * Some AI providers return finishReason as an object instead of a string.
+   *
+   * For example, OpenCode provider on certain Bun versions may return:
+   * - { type: "stop" } instead of "stop"
+   * - { finishReason: "tool-calls" } instead of "tool-calls"
+   *
+   * This function handles these cases gracefully.
+   *
+   * @param value - The finishReason value (string, object, or undefined)
+   * @returns A string representing the finish reason, or 'unknown' if conversion fails
+   * @see https://github.com/link-assistant/agent/issues/125
+   */
+  export const toFinishReason = (value: unknown): string => {
+    // Log input data in verbose mode to help identify issues
+    if (Flag.OPENCODE_VERBOSE) {
+      log.debug(() => ({
+        message: 'toFinishReason input',
+        valueType: typeof value,
+        value:
+          typeof value === 'object' ? JSON.stringify(value) : String(value),
+      }));
+    }
+
+    // If it's already a string, return it
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    // If it's undefined or null, return 'unknown'
+    if (value === undefined || value === null) {
+      return 'unknown';
+    }
+
+    // If it's an object, try to extract a meaningful string
+    if (typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+
+      // Try common field names that might contain the reason
+      if (typeof obj.type === 'string') {
+        if (Flag.OPENCODE_VERBOSE) {
+          log.debug(() => ({
+            message: 'toFinishReason extracted type from object',
+            result: obj.type,
+          }));
+        }
+        return obj.type;
+      }
+
+      if (typeof obj.finishReason === 'string') {
+        if (Flag.OPENCODE_VERBOSE) {
+          log.debug(() => ({
+            message: 'toFinishReason extracted finishReason from object',
+            result: obj.finishReason,
+          }));
+        }
+        return obj.finishReason;
+      }
+
+      if (typeof obj.reason === 'string') {
+        if (Flag.OPENCODE_VERBOSE) {
+          log.debug(() => ({
+            message: 'toFinishReason extracted reason from object',
+            result: obj.reason,
+          }));
+        }
+        return obj.reason;
+      }
+
+      // If we can't extract a specific field, return JSON representation
+      if (Flag.OPENCODE_VERBOSE) {
+        log.debug(() => ({
+          message: 'toFinishReason could not extract string, using JSON',
+          result: JSON.stringify(value),
+        }));
+      }
+      return JSON.stringify(value);
+    }
+
+    // For any other type, convert to string
+    return String(value);
   };
 
   export const getUsage = fn(
