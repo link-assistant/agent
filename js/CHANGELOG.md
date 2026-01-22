@@ -1,5 +1,17 @@
 # @link-assistant/agent
 
+## 0.8.9
+
+### Patch Changes
+
+- 6029187: Handle AI SDK unified/raw format in toFinishReason
+  - Added handling for `unified` field in `toFinishReason()` function
+  - AI SDK may return finishReason as `{unified: "tool-calls", raw: "tool_calls"}`
+  - Previously this caused JSON.stringify fallback, breaking loop exit condition
+  - Agent now correctly continues processing after tool calls
+
+  Fixes #129
+
 ## 0.8.7
 
 ### Patch Changes
