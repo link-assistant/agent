@@ -547,6 +547,18 @@ export namespace Session {
         return obj.reason;
       }
 
+      // Handle AI SDK unified/raw format: {unified: "tool-calls", raw: "tool_calls"}
+      // See: https://github.com/link-assistant/agent/issues/129
+      if (typeof obj.unified === 'string') {
+        if (Flag.OPENCODE_VERBOSE) {
+          log.debug(() => ({
+            message: 'toFinishReason extracted unified from object',
+            result: obj.unified,
+          }));
+        }
+        return obj.unified;
+      }
+
       // If we can't extract a specific field, return JSON representation
       if (Flag.OPENCODE_VERBOSE) {
         log.debug(() => ({

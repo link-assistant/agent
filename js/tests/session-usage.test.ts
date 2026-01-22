@@ -631,6 +631,79 @@ describe('Session.toFinishReason() - safe string conversion', () => {
     const result = Session.toFinishReason({});
     expect(result).toBe('{}');
   });
+
+  // Issue #129: AI SDK returns finishReason as {unified: "tool-calls", raw: "tool_calls"}
+  // This caused the loop to exit prematurely because the comparison with 'tool-calls' failed
+  // @see https://github.com/link-assistant/agent/issues/129
+  test('extracts unified field from AI SDK format object (issue #129)', () => {
+    // This is the exact format returned by opencode provider
+    expect(
+      Session.toFinishReason({ unified: 'tool-calls', raw: 'tool_calls' })
+    ).toBe('tool-calls');
+  });
+
+  test('extracts unified field for different finish reasons', () => {
+    expect(Session.toFinishReason({ unified: 'stop', raw: 'stop' })).toBe(
+      'stop'
+    );
+    expect(Session.toFinishReason({ unified: 'length', raw: 'length' })).toBe(
+      'length'
+    );
+    expect(
+      Session.toFinishReason({ unified: 'end-turn', raw: 'end_turn' })
+    ).toBe('end-turn');
+  });
+
+  test('prioritizes type over unified field', () => {
+    // If both type and unified are present, type should win (existing behavior)
+    expect(
+      Session.toFinishReason({
+        type: 'type-value',
+        unified: 'unified-value',
+        raw: 'raw-value',
+      })
+    ).toBe('type-value');
+  });
+
+  test('prioritizes finishReason over unified field', () => {
+    expect(
+      Session.toFinishReason({
+        finishReason: 'fr-value',
+        unified: 'unified-value',
+      })
+    ).toBe('fr-value');
+  });
+
+  test('prioritizes reason over unified field', () => {
+    expect(
+      Session.toFinishReason({
+        reason: 'reason-value',
+        unified: 'unified-value',
+      })
+    ).toBe('reason-value');
+  });
+
+  test('falls back to unified when other fields are not strings', () => {
+    expect(
+      Session.toFinishReason({
+        type: 123,
+        finishReason: null,
+        reason: {},
+        unified: 'tool-calls',
+      })
+    ).toBe('tool-calls');
+  });
+
+  test('handles unified field with empty string', () => {
+    // Empty string is still a valid string, so it should be returned
+    expect(Session.toFinishReason({ unified: '', raw: 'tool_calls' })).toBe('');
+  });
+
+  test('ignores non-string unified field', () => {
+    // If unified is not a string, fall back to JSON
+    const result = Session.toFinishReason({ unified: 123, raw: 'tool_calls' });
+    expect(result).toBe('{"unified":123,"raw":"tool_calls"}');
+  });
 });
 
 /**
