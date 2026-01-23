@@ -328,7 +328,7 @@ export async function runContinuousServerMode(
           });
         }
 
-        if (part.type === 'tool' && part.state.status === 'completed') {
+        if (part.type === 'tool') {
           eventHandler.output({
             type: 'tool_use',
             timestamp: Date.now(),
@@ -533,7 +533,7 @@ export async function runContinuousDirectMode(
           });
         }
 
-        if (part.type === 'tool' && part.state.status === 'completed') {
+        if (part.type === 'tool') {
           eventHandler.output({
             type: 'tool_use',
             timestamp: Date.now(),

@@ -146,13 +146,14 @@ export function createEventHandler(standard: JsonStandard, sessionID: string) {
      * Format and output an event
      */
     output(event: OpenCodeEvent): void {
+      const outputStream = process.stdout;
       if (standard === 'claude') {
         const claudeEvent = convertOpenCodeToClaude(event, startTime);
         if (claudeEvent) {
-          process.stdout.write(serializeOutput(claudeEvent, standard));
+          outputStream.write(serializeOutput(claudeEvent, standard));
         }
       } else {
-        process.stdout.write(serializeOutput(event, standard));
+        outputStream.write(serializeOutput(event, standard));
       }
     },
 

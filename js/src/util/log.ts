@@ -32,7 +32,7 @@ export namespace Log {
 
   let level: Level = 'INFO';
   let jsonOutput = false; // Whether to output JSON format (enabled in verbose mode)
-  let compactJsonOutput = Flag.COMPACT_JSON; // Whether to use compact JSON (single line)
+  let compactJsonOutput = Flag.COMPACT_JSON(); // Whether to use compact JSON (single line)
 
   function shouldLog(input: Level): boolean {
     return levelPriority[input] >= levelPriority[level];
@@ -99,54 +99,55 @@ export namespace Log {
   // Initialize log-lazy for controlling lazy log execution
   let lazyLogInstance = makeLog({ level: 0 }); // Start disabled
 
-   export async function init(options: Options) {
-     if (options.level) level = options.level;
-     if (options.compactJson !== undefined) compactJsonOutput = options.compactJson;
-     cleanup(Global.Path.log);
+  export async function init(options: Options) {
+    if (options.level) level = options.level;
+    if (options.compactJson !== undefined)
+      compactJsonOutput = options.compactJson;
+    cleanup(Global.Path.log);
 
-     // Always use JSON output format for logs
-     jsonOutput = true;
+    // Always use JSON output format for logs
+    jsonOutput = true;
 
-     // Configure lazy logging level based on verbose flag
-     if (Flag.OPENCODE_VERBOSE || options.print) {
-       // Enable all levels for lazy logging when verbose
-       lazyLogInstance = makeLog({
-         level: levels.debug | levels.info | levels.warn | levels.error,
-       });
-     } else {
-       // Disable lazy logging when not verbose
-       lazyLogInstance = makeLog({ level: 0 });
-     }
+    // Configure lazy logging level based on verbose flag
+    if (Flag.OPENCODE_VERBOSE || options.print) {
+      // Enable all levels for lazy logging when verbose
+      lazyLogInstance = makeLog({
+        level: levels.debug | levels.info | levels.warn | levels.error,
+      });
+    } else {
+      // Disable lazy logging when not verbose
+      lazyLogInstance = makeLog({ level: 0 });
+    }
 
-      // Output logs to stdout only when verbose/print mode is enabled
-      // Otherwise, logs go to file only to keep CLI output clean
-      logpath = path.join(
-        Global.Path.log,
-        options.dev
-          ? 'dev.log'
-          : new Date().toISOString().split('.')[0].replace(/:/g, '') + '.log'
-      );
-      const logfile = Bun.file(logpath);
-      await fs.truncate(logpath).catch(() => {});
-      const writer = logfile.writer();
-      // Write to file
-      const fileWrite = async (msg: any) => {
-        const num = writer.write(msg);
-        writer.flush();
-        return num;
+    // Output logs to stdout only when verbose/print mode is enabled
+    // Otherwise, logs go to file only to keep CLI output clean
+    logpath = path.join(
+      Global.Path.log,
+      options.dev
+        ? 'dev.log'
+        : new Date().toISOString().split('.')[0].replace(/:/g, '') + '.log'
+    );
+    const logfile = Bun.file(logpath);
+    await fs.truncate(logpath).catch(() => {});
+    const writer = logfile.writer();
+    // Write to file
+    const fileWrite = async (msg: any) => {
+      const num = writer.write(msg);
+      writer.flush();
+      return num;
+    };
+
+    if (Flag.OPENCODE_VERBOSE || options.print) {
+      // When verbose, write to both stdout and file
+      write = async (msg: any) => {
+        process.stdout.write(msg);
+        fileWrite(msg);
       };
-
-      if (Flag.OPENCODE_VERBOSE || options.print) {
-        // When verbose, write to both stdout and file
-        write = async (msg: any) => {
-          Bun.stdout.write(msg);
-          fileWrite(msg);
-        };
-      } else {
-        // When not verbose, write to file only
-        write = fileWrite;
-      }
-   }
+    } else {
+      // When not verbose, write to file only
+      write = fileWrite;
+    }
+  }
 
   async function cleanup(dir: string) {
     const glob = new Bun.Glob('????-??-??T??????.log');
@@ -209,7 +210,7 @@ export namespace Log {
 
     // Use compact or pretty format based on configuration
     // Check both local setting and global Flag
-    const useCompact = compactJsonOutput || Flag.COMPACT_JSON;
+    const useCompact = compactJsonOutput || Flag.COMPACT_JSON();
     return useCompact
       ? JSON.stringify(logEntry)
       : JSON.stringify(logEntry, null, 2);
@@ -375,7 +376,7 @@ export namespace Log {
     if (Flag.OPENCODE_VERBOSE) {
       jsonOutput = true;
       // Use stdout for verbose output (following Unix conventions)
-      write = (msg: any) => Bun.stdout.write(msg);
+      write = (msg: any) => process.stdout.write(msg);
       lazyLogInstance = makeLog({
         level: levels.debug | levels.info | levels.warn | levels.error,
       });

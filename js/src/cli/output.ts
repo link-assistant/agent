@@ -40,9 +40,9 @@ export interface OutputMessage {
 
 /**
  * Global compact JSON setting (can be set once at startup)
- * Initialized from Flag.COMPACT_JSON which checks AGENT_CLI_COMPACT env var
+ * Initialized lazily from Flag.COMPACT_JSON() which checks AGENT_CLI_COMPACT env var
  */
-let globalCompactJson = Flag.COMPACT_JSON;
+let globalCompactJson: boolean | null = null;
 
 /**
  * Set the global compact JSON setting
@@ -57,7 +57,8 @@ export function setCompactJson(compact: boolean): void {
  * Get the current compact JSON setting
  */
 export function isCompactJson(): boolean {
-  return globalCompactJson || Flag.COMPACT_JSON;
+  if (globalCompactJson !== null) return globalCompactJson;
+  return Flag.COMPACT_JSON();
 }
 
 /**
@@ -67,7 +68,7 @@ export function isCompactJson(): boolean {
  */
 export function formatJson(message: OutputMessage, compact?: boolean): string {
   // Check local, global, and Flag settings for compact mode
-  const useCompact = compact ?? globalCompactJson ?? Flag.COMPACT_JSON;
+  const useCompact = compact ?? isCompactJson();
   return useCompact
     ? JSON.stringify(message)
     : JSON.stringify(message, null, 2);
@@ -114,7 +115,7 @@ export function outputStatus(
   compact?: boolean
 ): void {
   const message: OutputMessage = {
-    type: 'status',
+    type: status.type || 'status',
     ...status,
   };
   output(message, compact);

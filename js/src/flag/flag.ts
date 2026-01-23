@@ -65,9 +65,16 @@ export namespace Flag {
 
   // Compact JSON mode - output JSON on single lines (NDJSON format)
   // Enabled by AGENT_CLI_COMPACT env var or --compact-json flag
-  export let COMPACT_JSON =
-    truthy('AGENT_CLI_COMPACT') ||
-    truthyCompat('LINK_ASSISTANT_AGENT_COMPACT_JSON', 'OPENCODE_COMPACT_JSON');
+  // Uses getter to check env var at runtime for tests
+  let _compactJson: boolean | null = null;
+
+  export function COMPACT_JSON(): boolean {
+    if (_compactJson !== null) return _compactJson;
+    return (
+      truthy('AGENT_CLI_COMPACT') ||
+      truthyCompat('LINK_ASSISTANT_AGENT_COMPACT_JSON', 'OPENCODE_COMPACT_JSON')
+    );
+  }
 
   // Allow setting verbose mode programmatically (e.g., from CLI --verbose flag)
   export function setVerbose(value: boolean) {
@@ -81,7 +88,7 @@ export namespace Flag {
 
   // Allow setting compact JSON mode programmatically (e.g., from CLI --compact-json flag)
   export function setCompactJson(value: boolean) {
-    COMPACT_JSON = value;
+    _compactJson = value;
   }
 
   function truthy(key: string) {

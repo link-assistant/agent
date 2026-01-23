@@ -61,7 +61,7 @@ export function createBusEventSubscription({
         });
       }
 
-      if (part.type === 'tool' && part.state.status === 'completed') {
+      if (part.type === 'tool') {
         eventHandler.output({
           type: 'tool_use',
           timestamp: Date.now(),
