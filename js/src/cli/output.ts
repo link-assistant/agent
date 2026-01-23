@@ -3,7 +3,7 @@
  *
  * Centralized output handling for the Agent CLI.
  * Ensures consistent JSON formatting and proper stream routing:
- * - stdout: Normal output (status, events, data)
+ * - stdout: Normal output (status, events, data, logs, warnings)
  * - stderr: Errors only
  *
  * All output includes a `type` field for easy parsing.
@@ -156,12 +156,12 @@ export function outputWarning(
     type: 'warning',
     ...warning,
   };
-  writeStderr(message, compact);
+  writeStdout(message, compact);
 }
 
 /**
  * Output a log message to stdout
- * This uses the flattened format: { "type": "log", "level": "info", ... }
+ * This uses the flattened format: { "type": "log", "level": "...", ... }
  */
 export function outputLog(
   log: {
@@ -176,7 +176,7 @@ export function outputLog(
     type: 'log',
     ...log,
   };
-  writeStderr(message, compact);
+  writeStdout(message, compact);
 }
 
 /**
@@ -196,7 +196,7 @@ export function outputInput(
     timestamp: new Date().toISOString(),
     ...input,
   };
-  writeStderr(message, compact);
+  writeStdout(message, compact);
 }
 
 // Re-export for backward compatibility
