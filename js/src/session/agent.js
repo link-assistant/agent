@@ -3,7 +3,7 @@
 // Permalink: https://github.com/sst/opencode/blob/main/packages/opencode/src/provider/provider.ts
 
 import { ToolRegistry } from '../tool/registry.ts';
-import { outputLog } from '../cli/output.ts';
+import { outputError } from '../cli/output.ts';
 
 export class Agent {
   constructor() {
@@ -97,10 +97,9 @@ export class Agent {
             const errorTime = Date.now();
             const callID = `call_${Math.floor(Math.random() * 100000000)}`;
 
-            // Log full error to stdout in flattened JSON format
-            outputLog({
-              level: 'error',
-              timestamp: new Date().toISOString(),
+            // Log full error to stderr in flattened JSON format
+            outputError({
+              errorType: 'ToolExecutionError',
               message: 'Tool execution error',
               tool: tool.name,
               error: {

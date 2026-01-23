@@ -1,5 +1,5 @@
 import makeLog, { levels, LogLevel } from 'log-lazy';
-import { Flag } from '../flag/flag.ts';
+import { Flag } from '../flag/flag';
 
 /**
  * JSON Lazy Logger
@@ -53,7 +53,7 @@ const LEVEL_PRESETS = {
 
 type LevelPreset = keyof typeof LEVEL_PRESETS;
 
-import { Flag } from '../flag/flag.ts';
+import { Flag } from '../flag/flag';
 
 // Compact JSON mode (can be set at runtime, initialized from Flag)
 let compactJsonMode = Flag.COMPACT_JSON();
