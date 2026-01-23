@@ -24,6 +24,12 @@ import {
   resolveResumeSession,
 } from './cli/continuous-mode.js';
 import { createBusEventSubscription } from './cli/event-handler.js';
+import {
+  outputStatus,
+  outputError,
+  setCompactJson,
+  outputInput,
+} from './cli/output.ts';
 import { createRequire } from 'module';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
@@ -47,35 +53,21 @@ let hasError = false;
 // Install global error handlers to ensure non-zero exit codes
 process.on('uncaughtException', (error) => {
   hasError = true;
-  console.error(
-    JSON.stringify(
-      {
-        type: 'error',
-        errorType: error.name || 'UncaughtException',
-        message: error.message,
-        stack: error.stack,
-      },
-      null,
-      2
-    )
-  );
+  outputError({
+    errorType: error.name || 'UncaughtException',
+    message: error.message,
+    stack: error.stack,
+  });
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, _promise) => {
   hasError = true;
-  console.error(
-    JSON.stringify(
-      {
-        type: 'error',
-        errorType: 'UnhandledRejection',
-        message: reason?.message || String(reason),
-        stack: reason?.stack,
-      },
-      null,
-      2
-    )
-  );
+  outputError({
+    errorType: 'UnhandledRejection',
+    message: reason?.message || String(reason),
+    stack: reason?.stack,
+  });
   process.exit(1);
 });
 
@@ -134,18 +126,8 @@ function readStdinWithTimeout(timeout = null) {
   });
 }
 
-/**
- * Output JSON status message to stderr
- * This prevents the status message from interfering with JSON output parsing
- * @param {object} status - Status object to output
- * @param {boolean} compact - If true, output compact JSON (single line)
- */
-function outputStatus(status, compact = false) {
-  const json = compact
-    ? JSON.stringify(status)
-    : JSON.stringify(status, null, 2);
-  console.error(json);
-}
+// outputStatus is now imported from './cli/output.ts'
+// It outputs to stdout for non-error messages, stderr for errors
 
 /**
  * Parse model configuration from argv
@@ -221,9 +203,10 @@ async function readSystemMessages(argv) {
     );
     const file = Bun.file(resolvedPath);
     if (!(await file.exists())) {
-      console.error(
-        `System message file not found: ${argv['system-message-file']}`
-      );
+      outputError({
+        errorType: 'FileNotFound',
+        message: `System message file not found: ${argv['system-message-file']}`,
+      });
       process.exit(1);
     }
     systemMessage = await file.text();
@@ -236,9 +219,10 @@ async function readSystemMessages(argv) {
     );
     const file = Bun.file(resolvedPath);
     if (!(await file.exists())) {
-      console.error(
-        `Append system message file not found: ${argv['append-system-message-file']}`
-      );
+      outputError({
+        errorType: 'FileNotFound',
+        message: `Append system message file not found: ${argv['append-system-message-file']}`,
+      });
       process.exit(1);
     }
     appendSystemMessage = await file.text();
@@ -837,6 +821,16 @@ async function main() {
             };
           }
 
+          // Output input confirmation in JSON format
+          outputInput(
+            {
+              raw: trimmedInput,
+              parsed: request,
+              format: isInteractive ? 'text' : 'json',
+            },
+            compactJson
+          );
+
           // Run agent mode
           await runAgentMode(argv, request);
         },
@@ -844,6 +838,11 @@ async function main() {
       // Initialize logging early for all CLI commands
       // This prevents debug output from appearing in CLI unless --verbose is used
       .middleware(async (argv) => {
+        // Set global compact JSON setting
+        if (argv['compact-json']) {
+          setCompactJson(true);
+        }
+
         // Set verbose flag if requested
         if (argv.verbose) {
           Flag.setVerbose(true);
@@ -855,11 +854,12 @@ async function main() {
         }
 
         // Initialize logging system
-        // - If verbose: print logs to stderr for debugging in JSON format
-        // - Otherwise: write logs to file to keep CLI output clean
+        // - Always print logs to stdout in JSON format by default
+        // - Use verbose flag to enable DEBUG level logging
         await Log.init({
-          print: Flag.OPENCODE_VERBOSE,
+          print: true,
           level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
+          compactJson: argv['compact-json'] === true,
         });
       })
       .fail((msg, err, yargs) => {
@@ -874,18 +874,27 @@ async function main() {
           // Format other errors using FormatError
           const formatted = FormatError(err);
           if (formatted) {
-            console.error(formatted);
+            outputError({
+              errorType: err.name || 'Error',
+              message: formatted,
+            });
           } else {
             // Fallback to default error formatting
-            console.error(err.message || err);
+            outputError({
+              errorType: err.name || 'Error',
+              message: err.message || String(err),
+            });
           }
           process.exit(1);
         }
 
         // Handle validation errors (msg without err)
         if (msg) {
-          console.error(msg);
-          console.error(`\n${yargs.help()}`);
+          outputError({
+            errorType: 'ValidationError',
+            message: msg,
+            hint: yargs.help(),
+          });
           process.exit(1);
         }
       })
@@ -895,19 +904,12 @@ async function main() {
     await yargsInstance.argv;
   } catch (error) {
     hasError = true;
-    console.error(
-      JSON.stringify(
-        {
-          type: 'error',
-          timestamp: Date.now(),
-          errorType: error instanceof Error ? error.name : 'Error',
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        },
-        null,
-        2
-      )
-    );
+    outputError({
+      timestamp: Date.now(),
+      errorType: error instanceof Error ? error.name : 'Error',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     process.exit(1);
   }
 }

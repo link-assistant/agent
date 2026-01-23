@@ -9,12 +9,13 @@ import { Flag } from '../flag/flag.ts';
  * Logging module with JSON output and lazy evaluation support.
  *
  * Features:
- * - JSON formatted output: All logs are wrapped in { log: { ... } } structure
+ * - JSON formatted output: All logs use { "type": "log", "level": "...", ... } structure
  * - Lazy evaluation: Use lazy() methods to defer expensive computations
  * - Level control: Respects --verbose flag and log level settings
  * - File logging: Writes to file when not in verbose/print mode
+ * - Stdout by default: In print mode, logs go to stdout (not stderr) to follow Unix conventions
  *
- * The JSON format ensures all output is parsable, separating logs from regular output.
+ * The JSON format with `type` field ensures all output is consistent with other CLI output.
  */
 export namespace Log {
   export const Level = z
@@ -31,6 +32,7 @@ export namespace Log {
 
   let level: Level = 'INFO';
   let jsonOutput = false; // Whether to output JSON format (enabled in verbose mode)
+  let compactJsonOutput = false; // Whether to use compact JSON (single line)
 
   function shouldLog(input: Level): boolean {
     return levelPriority[input] >= levelPriority[level];
@@ -84,56 +86,61 @@ export namespace Log {
     print: boolean;
     dev?: boolean;
     level?: Level;
+    compactJson?: boolean;
   }
 
   let logpath = '';
   export function file() {
     return logpath;
   }
-  let write = (msg: any) => Bun.stderr.write(msg);
+  // Default to stdout for log output (following Unix conventions: stdout for data, stderr for errors)
+  let write = (msg: any) => Bun.stdout.write(msg);
 
   // Initialize log-lazy for controlling lazy log execution
   let lazyLogInstance = makeLog({ level: 0 }); // Start disabled
 
-  export async function init(options: Options) {
-    if (options.level) level = options.level;
-    cleanup(Global.Path.log);
+   export async function init(options: Options) {
+     if (options.level) level = options.level;
+     if (options.compactJson !== undefined) compactJsonOutput = options.compactJson;
+     cleanup(Global.Path.log);
 
-    // Always use JSON output format for logs
-    jsonOutput = true;
+     // Always use JSON output format for logs
+     jsonOutput = true;
 
-    // Configure lazy logging level based on verbose flag
-    if (Flag.OPENCODE_VERBOSE || options.print) {
-      // Enable all levels for lazy logging when verbose
-      lazyLogInstance = makeLog({
-        level: levels.debug | levels.info | levels.warn | levels.error,
-      });
-    } else {
-      // Disable lazy logging when not verbose
-      lazyLogInstance = makeLog({ level: 0 });
-    }
+     // Configure lazy logging level based on verbose flag
+     if (Flag.OPENCODE_VERBOSE || options.print) {
+       // Enable all levels for lazy logging when verbose
+       lazyLogInstance = makeLog({
+         level: levels.debug | levels.info | levels.warn | levels.error,
+       });
+     } else {
+       // Disable lazy logging when not verbose
+       lazyLogInstance = makeLog({ level: 0 });
+     }
 
-    if (options.print) {
-      // In print mode, output to stderr
-      // No file logging needed
-    } else {
-      // In normal mode, write to file
-      logpath = path.join(
-        Global.Path.log,
-        options.dev
-          ? 'dev.log'
-          : new Date().toISOString().split('.')[0].replace(/:/g, '') + '.log'
-      );
-      const logfile = Bun.file(logpath);
-      await fs.truncate(logpath).catch(() => {});
-      const writer = logfile.writer();
-      write = async (msg: any) => {
-        const num = writer.write(msg);
-        writer.flush();
-        return num;
-      };
-    }
-  }
+     // Always output logs to stdout as JSON (following the issue requirement)
+     // Logs should be formatted as JSON output by default
+     write = (msg: any) => Bun.stdout.write(msg);
+
+     // Still create log file for debugging if needed, but primary output is stdout
+     logpath = path.join(
+       Global.Path.log,
+       options.dev
+         ? 'dev.log'
+         : new Date().toISOString().split('.')[0].replace(/:/g, '') + '.log'
+     );
+     const logfile = Bun.file(logpath);
+     await fs.truncate(logpath).catch(() => {});
+     const writer = logfile.writer();
+     // Also write to file for debugging purposes
+     const originalWrite = write;
+     write = async (msg: any) => {
+       originalWrite(msg);
+       const num = writer.write(msg);
+       writer.flush();
+       return num;
+     };
+   }
 
   async function cleanup(dir: string) {
     const glob = new Bun.Glob('????-??-??T??????.log');
@@ -159,7 +166,8 @@ export namespace Log {
   }
 
   /**
-   * Format log entry as JSON object wrapped in { log: { ... } }
+   * Format log entry as JSON object with { "type": "log", "level": "...", ... } structure
+   * This flattened format is consistent with other CLI JSON output.
    */
   function formatJson(
     logLevel: Level,
@@ -169,6 +177,7 @@ export namespace Log {
   ): string {
     const timestamp = new Date().toISOString();
     const logEntry: Record<string, any> = {
+      type: 'log',
       level: logLevel.toLowerCase(),
       timestamp,
       ...tags,
@@ -192,7 +201,10 @@ export namespace Log {
       }
     }
 
-    return JSON.stringify({ log: logEntry });
+    // Use compact or pretty format based on configuration
+    return compactJsonOutput
+      ? JSON.stringify(logEntry)
+      : JSON.stringify(logEntry, null, 2);
   }
 
   let last = Date.now();
@@ -354,11 +366,27 @@ export namespace Log {
   export function syncWithVerboseFlag(): void {
     if (Flag.OPENCODE_VERBOSE) {
       jsonOutput = true;
+      // Use stdout for verbose output (following Unix conventions)
+      write = (msg: any) => Bun.stdout.write(msg);
       lazyLogInstance = makeLog({
         level: levels.debug | levels.info | levels.warn | levels.error,
       });
     } else {
       lazyLogInstance = makeLog({ level: 0 });
     }
+  }
+
+  /**
+   * Set compact JSON output mode
+   */
+  export function setCompactJson(compact: boolean): void {
+    compactJsonOutput = compact;
+  }
+
+  /**
+   * Check if compact JSON output mode is enabled
+   */
+  export function isCompactJson(): boolean {
+    return compactJsonOutput;
   }
 }

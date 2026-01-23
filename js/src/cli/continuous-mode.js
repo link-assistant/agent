@@ -11,6 +11,7 @@ import { SessionPrompt } from '../session/prompt.ts';
 import { createEventHandler } from '../json-standard/index.ts';
 import { createContinuousStdinReader } from './input-queue.js';
 import { Log } from '../util/log.ts';
+import { outputStatus, outputError } from './output.ts';
 
 // Shared error tracking
 let hasError = false;
@@ -31,17 +32,8 @@ export function getHasError() {
   return hasError;
 }
 
-/**
- * Output JSON status message to stderr
- * @param {object} status - Status object to output
- * @param {boolean} compact - If true, output compact JSON (single line)
- */
-function outputStatus(status, compact = false) {
-  const json = compact
-    ? JSON.stringify(status)
-    : JSON.stringify(status, null, 2);
-  console.error(json);
-}
+// outputStatus is now imported from './output.ts'
+// It outputs to stdout for non-error messages, stderr for errors
 
 // Logger for resume operations
 const log = Log.create({ service: 'resume' });
@@ -84,9 +76,8 @@ export async function resolveResumeSession(argv, compactJson) {
     }
 
     if (!mostRecentSession) {
-      outputStatus(
+      outputError(
         {
-          type: 'error',
           errorType: 'SessionNotFound',
           message:
             'No existing sessions found to continue. Start a new session first.',
@@ -110,9 +101,8 @@ export async function resolveResumeSession(argv, compactJson) {
     existingSession = await Session.get(targetSessionID);
   } catch (_error) {
     // Session.get throws an error when the session doesn't exist
-    outputStatus(
+    outputError(
       {
-        type: 'error',
         errorType: 'SessionNotFound',
         message: `Session not found: ${targetSessionID}`,
       },
@@ -122,9 +112,8 @@ export async function resolveResumeSession(argv, compactJson) {
   }
 
   if (!existingSession) {
-    outputStatus(
+    outputError(
       {
-        type: 'error',
         errorType: 'SessionNotFound',
         message: `Session not found: ${targetSessionID}`,
       },
