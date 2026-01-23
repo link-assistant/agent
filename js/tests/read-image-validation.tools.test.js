@@ -111,8 +111,8 @@ test('Read tool rejects HTML file with .png extension', async () => {
         .quiet()
         .nothrow();
 
-    const combinedOutput = result.stdout.toString() + result.stderr.toString();
-    const lines = combinedOutput
+    const lines = result.stdout
+      .toString()
       .trim()
       .split('\n')
       .filter((line) => line.trim());
@@ -251,8 +251,8 @@ test('Read tool rejects file smaller than minimum image size', async () => {
         .quiet()
         .nothrow();
 
-    const combinedOutput = result.stdout.toString() + result.stderr.toString();
-    const lines = combinedOutput
+    const lines = result.stdout
+      .toString()
       .trim()
       .split('\n')
       .filter((line) => line.trim());

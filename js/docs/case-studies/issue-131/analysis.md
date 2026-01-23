@@ -2,61 +2,54 @@
 
 ## Issue Summary
 
-The Agent CLI was outputting all data including logs, status messages, and errors to stderr instead of stdout, making it difficult for programs to parse the output correctly.
+The Agent CLI was outputting tool execution errors to stderr in a nested JSON format instead of using the standardized output system, and error messages were not being routed to stderr as required by Unix conventions.
 
 ## Root Cause Analysis
 
-### Primary Issue: Incorrect Output Stream Usage
+### Primary Issue: Direct stderr Usage in Agent Code
 
-- **Problem**: The CLI was sending all JSON output (logs, status, errors) to stderr
-- **Expected**: Everything except errors should go to stdout, with errors optionally to stderr
-- **Impact**: Programs consuming the CLI output could not easily parse stdout for data while treating stderr as errors
+- **Problem**: `src/session/agent.js` was using `process.stderr.write` directly for error logging with nested JSON format `{log: {...}}`
+- **Expected**: All output should use the centralized `output.ts` functions, with flattened JSON format `{type: 'log', ...}`, and errors should go to stderr
+- **Impact**: Inconsistent output formatting and stream usage
 
 ### Secondary Issues Identified During Investigation
 
-1. **Log Output Format**: Logs were not consistently formatted as JSON with `type` field
-2. **Input Confirmation**: Continuous mode lacked JSON confirmation of user input
-3. **Error Routing**: Errors were going to stderr but should be JSON to stdout for consistency
+1. **Error Routing**: The `output()` function was sending all messages to stdout, including errors, violating Unix conventions
+2. **Log Format**: Direct stderr writes used nested format instead of flattened format with `type` field
 
 ## Technical Details
 
 ### Code Locations Affected
 
-- `src/cli/output.ts`: Output functions routing to wrong streams
-- `src/util/log.ts`: Log initialization not outputting to stdout by default
-- `src/cli/continuous-mode.js`: Missing input confirmation output
+- `src/session/agent.js`: Direct `process.stderr.write` for error logging
+- `src/cli/output.ts`: `output()` function not routing errors to stderr
 
 ### Changes Made
 
-1. **Fixed Output Routing**:
+1. **Fixed Agent Error Logging**:
+   - Replaced direct `process.stderr.write` with `outputLog()` call
+   - Changed nested format `{log: {...}}` to flattened format `{type: 'log', ...}`
+
+2. **Fixed Error Output Routing**:
    - Modified `output()` function to route `type: 'error'` messages to stderr, all others to stdout
-   - Changed `outputError` to use `output()` instead of `writeStdout` directly
-   - Updated `json-standard/index.ts` eventHandler to route errors to stderr
-
-2. **Fixed Log Output**:
-   - Modified `Log.init` to output logs to stdout by default
-   - Changed `Bun.stdout.write` to `process.stdout.write` for correct stream usage
-
-3. **Added Input Confirmation**:
-   - Added `outputInput` calls in continuous mode `processMessage` functions
-   - Ensures JSON confirmation of parsed input is output
+   - Updated `outputError()` to use `writeStderr()` directly
 
 ## Timeline
 
 - Issue reported: January 23, 2026
-- Investigation: Identified stream routing and format issues
-- Fix implemented: Changed output functions and log initialization
-- Testing: Verified output goes to correct streams
+- Investigation: Found direct stderr usage in agent.js and incorrect error routing
+- Fix implemented: Centralized error logging and fixed output routing
+- Testing: Verified proper stream separation and JSON formatting
 
 ## Lessons Learned
 
-- CLI tools should output structured data to stdout for easy parsing
-- Consistent JSON formatting with `type` fields improves interoperability
-- Log output should be configurable but default to stdout for CLI tools
-- Input confirmation helps with debugging and verification
+- All CLI output should go through centralized functions for consistency
+- Unix conventions require errors on stderr, data on stdout
+- JSON output should always include `type` field for easy parsing
+- Direct stream writes should be avoided in favor of abstraction layers
 
 ## Verification
 
-- Run CLI with `--dry-run` and verify JSON output appears on stdout
-- Check that `{"type": "log", ...}` messages go to stdout
-- Confirm error messages are JSON with `{"type": "error", ...}` on stderr
+- Run CLI and check that logs appear on stdout with `{"type": "log", ...}` format
+- Verify error messages go to stderr with `{"type": "error", ...}` format
+- Confirm all output uses consistent JSON structure

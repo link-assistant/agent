@@ -137,16 +137,12 @@ export namespace Log {
       return num;
     };
 
-    // Write to stdout only when verbose for clean CLI output
-    // Always write to file for debugging
-    if (Flag.OPENCODE_VERBOSE || options.print) {
-      write = async (msg: any) => {
-        process.stdout.write(msg);
-        fileWrite(msg);
-      };
-    } else {
-      write = fileWrite;
-    }
+    // Always write to stdout for JSON output consistency
+    // Also write to file for debugging purposes
+    write = async (msg: any) => {
+      process.stdout.write(msg);
+      fileWrite(msg);
+    };
   }
 
   async function cleanup(dir: string) {

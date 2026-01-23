@@ -862,7 +862,7 @@ async function main() {
         await Log.init({
           print: Flag.OPENCODE_VERBOSE,
           level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
-          compactJson: argv['compact-json'] === true,
+          compactJson: isCompact,
         });
       })
       .fail((msg, err, yargs) => {

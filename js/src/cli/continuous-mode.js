@@ -11,6 +11,7 @@ import { SessionPrompt } from '../session/prompt.ts';
 import { createEventHandler } from '../json-standard/index.ts';
 import { createContinuousStdinReader } from './input-queue.js';
 import { Log } from '../util/log.ts';
+import { Flag } from '../flag/flag.ts';
 import { outputStatus, outputError, outputInput } from './output.ts';
 
 // Shared error tracking
@@ -193,7 +194,8 @@ export async function runContinuousServerMode(
   appendSystemMessage,
   jsonStandard
 ) {
-  const compactJson = argv['compact-json'] === true;
+  // Check both CLI flag and environment variable for compact JSON mode
+  const compactJson = argv['compact-json'] === true || Flag.COMPACT_JSON();
   const isInteractive = argv.interactive !== false;
   const autoMerge = argv['auto-merge-queued-messages'] !== false;
 
@@ -427,7 +429,8 @@ export async function runContinuousDirectMode(
   appendSystemMessage,
   jsonStandard
 ) {
-  const compactJson = argv['compact-json'] === true;
+  // Check both CLI flag and environment variable for compact JSON mode
+  const compactJson = argv['compact-json'] === true || Flag.COMPACT_JSON();
   const isInteractive = argv.interactive !== false;
   const autoMerge = argv['auto-merge-queued-messages'] !== false;
 

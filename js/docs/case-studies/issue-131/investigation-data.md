@@ -2,69 +2,66 @@
 
 ## Problem Description
 
-The Agent CLI was outputting all JSON messages to stdout, including errors, instead of following Unix conventions where errors should go to stderr and data to stdout.
+The Agent CLI was using direct `process.stderr.write` calls for error logging in `src/session/agent.js`, bypassing the centralized output system and using inconsistent JSON formatting.
 
 ## Root Cause Analysis
 
 ### Code Analysis
 
-1. **Output Routing**: The `output()` function in `src/cli/output.ts` was not routing messages based on type - all messages were going to stdout regardless of type.
-
-2. **Error Handling**: Error messages were being sent to stdout instead of stderr, violating Unix conventions.
-
-3. **Event Handler**: The event handler in `src/json-standard/index.ts` outputs to stdout, which is correct for data events.
+1. **Direct stderr Usage**: `src/session/agent.js` contained direct `process.stderr.write` calls for tool execution errors
+2. **Inconsistent Formatting**: Error logs used nested JSON format `{log: {...}}` instead of flattened `{type: 'log', ...}`
+3. **Output Routing**: The `output()` function was routing all messages to stdout, including errors
 
 ### Root Causes
 
-1. **Missing Type-Based Routing**: The `output()` function lacked logic to route error messages to stderr.
-
-2. **Unix Convention Violation**: CLI tools should send data to stdout and errors to stderr for proper tool integration.
+1. **Bypassed Abstraction**: Direct stream writes circumvented the centralized output system
+2. **Format Inconsistency**: Nested log format didn't match the required flattened format
+3. **Stream Misrouting**: Errors were going to stdout instead of stderr
 
 ## Proposed Solutions
 
-### Solution 1: Type-Based Output Routing
+### Solution 1: Centralized Error Logging
 
-- Modify `output()` function to check message type
-- Route `type: 'error'` messages to stderr
-- Route all other messages to stdout
-- This follows Unix conventions: stdout for data, stderr for errors
+- Replace direct `process.stderr.write` with `outputLog()` calls
+- Use flattened JSON format with `type: 'log'` field
+- Ensure errors go to stderr via proper routing
 
 ## Implemented Solution
 
 We implemented Solution 1:
 
-1. Updated `output()` function to route based on message type
-2. Error messages now go to stderr, all others to stdout
-3. All messages remain in JSON format with `type` field
+1. **Fixed Agent Logging**: Replaced `process.stderr.write` with `outputLog()` in `src/session/agent.js`
+2. **Updated Output Routing**: Modified `output()` function to route errors to stderr
+3. **Consistent Formatting**: All logs now use `{type: 'log', ...}` format
 
 This ensures:
 
 - Errors go to stderr (following Unix conventions)
 - Data (status, logs, events) goes to stdout
 - Consistent JSON formatting with `type` field
-- Easy integration with other tools that can handle separated streams
+- Centralized output handling
 
 ## Impact Assessment
 
 ### Positive Impacts
 
 - Follows Unix CLI conventions
-- Errors can be redirected separately from data
-- Easier error handling in scripts
-- All output has `type` field for parsing
+- Consistent JSON output format
+- Centralized output management
+- Better error stream separation
 
 ## Testing
 
 The changes were tested by:
 
-- Running CLI with valid input - status and data messages go to stdout
-- Running CLI with invalid input - error messages go to stderr
-- Manual testing confirms proper stream separation
-- All JSON output includes required `type` field
+- Running CLI with tool execution - logs go to stdout in correct format
+- Verifying error routing to stderr
+- Checking JSON structure consistency
+- All output includes required `type` field
 
 ## Future Considerations
 
-- Consider adding `--quiet` flag to suppress all output
-- Add `--log-stdout` flag to force logs to stdout
-- Monitor user feedback on error output location</content>
+- Monitor for other direct stream writes
+- Ensure all logging uses centralized functions
+- Maintain Unix convention compliance</content>
   <parameter name="filePath">/tmp/gh-issue-solver-1769196616847/js/docs/case-studies/issue-131/investigation-data.md
