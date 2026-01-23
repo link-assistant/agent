@@ -68,6 +68,16 @@ export function createBusEventSubscription({
           sessionID,
           part,
         });
+
+        // If tool failed, also output an error event
+        if (part.state?.status === 'failed') {
+          eventHandler.output({
+            type: 'error',
+            timestamp: Date.now(),
+            sessionID,
+            error: part.state.error || 'Tool execution failed',
+          });
+        }
       }
     }
 
