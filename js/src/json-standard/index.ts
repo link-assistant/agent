@@ -154,7 +154,7 @@ export function createEventHandler(standard: JsonStandard, sessionID: string) {
      * Format and output an event
      */
     output(event: OpenCodeEvent): void {
-      const outputStream = process.stdout;
+      const outputStream = event.type === 'error' ? process.stderr : process.stdout;
       if (standard === 'claude') {
         const claudeEvent = convertOpenCodeToClaude(event, startTime);
         if (claudeEvent) {

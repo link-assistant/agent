@@ -95,8 +95,8 @@ export function writeStderr(message: OutputMessage, compact?: boolean): void {
 }
 
 /**
- * Output a message to the appropriate stream based on type
- * - stdout: All output (status, events, data, logs, warnings, errors)
+ * Output a message to stdout (for normal output)
+ * - stdout: All output except errors (status, events, data, logs, warnings)
  *
  * @param message - The message object to output
  * @param compact - Override the global compact setting
@@ -122,7 +122,7 @@ export function outputStatus(
 }
 
 /**
- * Output an error message to stdout
+ * Output an error message to stderr
  */
 export function outputError(
   error: {
@@ -138,7 +138,7 @@ export function outputError(
     type: 'error',
     ...error,
   };
-  writeStdout(message, compact);
+  writeStderr(message, compact);
 }
 
 /**
@@ -156,7 +156,7 @@ export function outputWarning(
     type: 'warning',
     ...warning,
   };
-  writeStdout(message, compact);
+  writeStderr(message, compact);
 }
 
 /**
@@ -176,7 +176,7 @@ export function outputLog(
     type: 'log',
     ...log,
   };
-  writeStdout(message, compact);
+  writeStderr(message, compact);
 }
 
 /**
@@ -196,7 +196,7 @@ export function outputInput(
     timestamp: new Date().toISOString(),
     ...input,
   };
-  writeStdout(message, compact);
+  writeStderr(message, compact);
 }
 
 // Re-export for backward compatibility

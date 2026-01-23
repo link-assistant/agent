@@ -116,8 +116,10 @@ export namespace Log {
         level: levels.debug | levels.info | levels.warn | levels.error,
       });
     } else {
-      // Disable lazy logging when not verbose
-      lazyLogInstance = makeLog({ level: 0 });
+      // Enable info, warn, error by default for JSON output consistency
+      lazyLogInstance = makeLog({
+        level: levels.info | levels.warn | levels.error,
+      });
     }
 
     // Output logs to stdout by default for JSON formatting consistency

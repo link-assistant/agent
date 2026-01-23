@@ -107,7 +107,7 @@ test('Read tool rejects HTML file with .png extension', async () => {
     const input = `{"message":"read ${fakeImageFile}"}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude`
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
         .quiet()
         .nothrow();
 
@@ -164,7 +164,8 @@ test('Read tool successfully reads valid PNG file', async () => {
       .trim()
       .split('\n')
       .filter((line) => line.trim());
-    const events = lines.map((line) => JSON.parse(line));
+    const parsedLines = lines.map((line) => JSON.parse(line));
+    const events = parsedLines.filter((line) => line.type !== 'log');
 
     // Find tool_use event for read
     const toolEvent = events.find(
@@ -247,7 +248,7 @@ test('Read tool rejects file smaller than minimum image size', async () => {
     const input = `{"message":"read tiny file","tools":[{"name":"read","params":{"filePath":"${tinyFile}"}}]}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude`
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
         .quiet()
         .nothrow();
 
@@ -295,7 +296,7 @@ test('Read tool provides helpful error message with hex dump', async () => {
     const input = `{"message":"read ${fakeImageFile}"}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude`
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
         .quiet()
         .nothrow();
 
