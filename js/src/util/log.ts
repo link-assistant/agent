@@ -260,8 +260,13 @@ export namespace Log {
       if (jsonOutput) {
         // Use our custom JSON formatting for { log: { ... } } format
         const jsonMsg = formatJson(logLevel, message, tags || {}, extra) + '\n';
-        // Route all logs to stdout for JSON consistency
-        write(jsonMsg);
+        // Route error logs to stderr, others to stdout for consistency
+        if (logLevel === 'ERROR') {
+          process.stderr.write(jsonMsg);
+          fileWrite(jsonMsg);
+        } else {
+          write(jsonMsg);
+        }
       } else {
         write(logLevel.padEnd(5) + ' ' + buildLegacy(message, extra));
       }
