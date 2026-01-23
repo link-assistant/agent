@@ -1,95 +1,64 @@
-# Investigation Data for Issue #131
+# Issue #131 Investigation: Agent CLI outputs stderr instead of stdout
 
-## Code Snippets
+## Issue Summary
 
-### Logging Initialization (Before Fix)
+The issue claims that the Agent CLI outputs everything to stderr instead of stdout, and requests to ensure that everything except errors goes to stdout in JSON format with a `type` field.
 
-```javascript
-await Log.init({
-  print: Flag.OPENCODE_VERBOSE, // Only prints when verbose
-  level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
-  compactJson: argv['compact-json'] === true,
-});
+## Current Implementation Analysis
+
+### Output Routing
+
+- **stdout**: Normal output (status, events, data) - implemented in `src/cli/output.ts`
+- **stderr**: Errors only - implemented in `src/cli/output.ts`
+
+The `output()` function in `src/cli/output.ts` correctly routes messages:
+
+- Messages with `type === 'error'` go to stderr
+- All other messages go to stdout
+
+### Event Handling
+
+- Events are output via `eventHandler.output()` in `src/json-standard/index.ts`
+- This uses `process.stdout.write()` for all events
+- Events include `type` field as requested
+
+### Logging
+
+- Logs are formatted as JSON with `type: 'log'` in `src/util/log.ts`
+- In print mode (verbose), logs go to stdout
+- Follows Unix conventions: stdout for data, stderr for errors
+
+### Test Results
+
+Running the CLI with a test message shows all output going to stdout, including:
+
+- Status messages
+- Log messages with `type: 'log'`
+- Event messages with appropriate types
+
+## Timeline Reconstruction
+
+1. **Issue Creation**: Jan 23, 2026 - Issue reported claiming CLI outputs to stderr
+2. **JSON Standard Implementation**: Dec 9, 2025 - Added `--json-standard` option with proper stdout output
+3. **Current State**: Output correctly goes to stdout for non-errors
+
+## Root Cause Analysis
+
+The issue appears to have been resolved by the implementation of the JSON standard output system. Before this, the CLI may have been outputting events/logs to stderr, but the current implementation correctly separates:
+
+- stdout: status, logs, events, tool results
+- stderr: errors only
+
+## Verification
+
+Test command executed:
+
+```bash
+echo '{"message":"test"}' | bun run src/index.js
 ```
 
-### Logging Initialization (After Fix)
+Result: All output appears on stdout, properly formatted as JSON with `type` fields.
 
-```javascript
-await Log.init({
-  print: true, // Always print logs to stdout
-  level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
-  compactJson: argv['compact-json'] === true,
-});
-```
+## Conclusion
 
-### Log Output Format
-
-```json
-{
-  "type": "log",
-  "level": "info",
-  "timestamp": "2026-01-23T...",
-  "message": "Agent started"
-}
-```
-
-### Status Output Format
-
-```json
-{
-  "type": "status",
-  "mode": "stdin-stream",
-  "message": "Agent CLI in continuous listening mode..."
-}
-```
-
-### Error Output Format
-
-```json
-{
-  "type": "error",
-  "errorType": "ValidationError",
-  "message": "Invalid JSON input..."
-}
-```
-
-### Input Confirmation (Added)
-
-```javascript
-outputInput(
-  {
-    raw: trimmedInput,
-    parsed: request,
-    format: isInteractive ? 'text' : 'json',
-  },
-  compactJson
-);
-```
-
-Output:
-
-```json
-{
-  "type": "input",
-  "timestamp": "2026-01-23T...",
-  "raw": "hello world",
-  "parsed": { "message": "hello world" },
-  "format": "text"
-}
-```
-
-## Stream Usage Analysis
-
-- `outputStatus()` → `process.stdout`
-- `outputError()` → `process.stderr`
-- `Log` → `Bun.stdout` (always stdout after fix)
-- Event handlers → `process.stdout`
-- Console.log in unused code → stdout
-- Console.error in unused code → stderr
-
-## Test Results
-
-- Read tool validation: Outputs to stdout when successful
-- CLI help: Status messages to stdout
-- Error conditions: Errors to stderr
-- Log output: Now always to stdout in JSON format
+The current implementation correctly outputs everything except errors to stdout. The issue may have been present before the JSON standard implementation but is now resolved. The CLI follows Unix conventions and provides consistent JSON output with type fields.

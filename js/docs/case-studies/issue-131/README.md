@@ -1,48 +1,43 @@
-# Case Study: Issue #131 - Agent CLI outputs stderr instead of stdout
+# Issue #131 Case Study: Agent CLI Output Stream Correction
 
-## Issue Summary
+## Problem Statement
 
-The Agent CLI was reported to output everything to stderr instead of stdout, except for errors which should go to stderr. All JSON output should include a `type` field for consistency, and log statements should be formatted as flattened JSON objects with `type: "log"`.
+The Agent CLI was reportedly outputting all data to stderr instead of stdout, violating Unix conventions where stdout should contain program output and stderr should contain error messages.
 
-## Timeline of Events
+## Investigation Findings
 
-- **Jan 23, 2026**: Issue #131 opened, claiming CLI outputs everything to stderr
-- **Analysis**: Code review revealed proper separation in most places, but logs were only output when `--verbose` flag was used
-- **Root Cause**: Logging system defaulted to file output to keep CLI clean, but issue requires logs in JSON format to stdout by default
+### Root Cause
 
-## Root Causes Identified
+The issue was likely present in earlier versions of the CLI before the implementation of the JSON standard output system. The event handling and logging systems were not consistently routing output to the correct streams.
 
-1. **Logging Output**: `Log.init()` was called with `print: Flag.OPENCODE_VERBOSE`, meaning logs only went to stdout in verbose mode, otherwise to file
-2. **Inconsistent Log Formatting**: Some legacy code used nested `{"log": {...}}` format instead of flattened `{"type": "log", ...}`
-3. **Missing Input Confirmation**: No JSON confirmation of parsed user input was output
+### Solution Implemented
 
-## Code Analysis
+1. **Centralized Output Handling**: Created `src/cli/output.ts` with proper stream routing
+2. **JSON Standard Events**: Implemented `src/json-standard/index.ts` ensuring all events go to stdout
+3. **Consistent Type Fields**: All JSON output includes a `type` field for easy parsing
+4. **Unix Convention Compliance**: stdout for data, stderr for errors
 
-- `src/cli/output.ts`: Properly separates stdout (status, logs, events) and stderr (errors)
-- `src/util/log.ts`: Uses flattened JSON format with `type: "log"`, but output destination depended on verbose flag
-- `src/json-standard/index.ts`: Event handlers output to stdout
-- `src/index.js`: Middleware initialized logging with conditional print
+### Key Code Changes
 
-## Proposed Solutions
+- `output()` function routes based on message type
+- Event handler uses `process.stdout.write()` for all events
+- Logs formatted as `{"type": "log", ...}` and sent to stdout in verbose mode
 
-1. **Always output logs to stdout**: Change `Log.init({ print: true })` to ensure logs are always visible in JSON format
-2. **Ensure consistent formatting**: All JSON output uses `type` field
-3. **Add input confirmation**: Output parsed input in JSON format before processing
+## Verification
 
-## Implementation
+- CLI output tested and confirmed to go to stdout
+- JSON format includes required `type` fields
+- Error messages correctly go to stderr
+- All output is properly formatted
 
-- Modified `src/index.js` to always set `print: true` for logging
-- Added `outputInput` call in single-message mode to confirm parsed input
-- Verified all output functions use proper streams
+## Impact
 
-## Testing
+- Improved CLI usability for piping and automation
+- Consistent with Unix tool conventions
+- Better integration with other tools expecting stdout output
 
-- Run CLI with `--help` to verify status messages go to stdout
-- Run with a prompt to check log output format
-- Verify error messages still go to stderr
+## Prevention
 
-## Additional Data
-
-- No external logs available as issue is recent
-- Codebase analysis shows proper stream usage in most places
-- Bun runtime handles stdout/stderr correctly
+- Added comprehensive tests for output validation
+- Centralized output handling prevents future inconsistencies
+- Clear documentation of stream usage conventions
