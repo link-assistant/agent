@@ -109,7 +109,6 @@ export function output(message: OutputMessage, compact?: boolean): void {
     writeStdout(message, compact);
   }
 }
-}
 
 /**
  * Output a status message to stdout
