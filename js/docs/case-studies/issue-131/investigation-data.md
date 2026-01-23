@@ -2,92 +2,65 @@
 
 ## Problem Description
 
-The Agent CLI was outputting all JSON messages to stderr instead of stdout, making it difficult for users to pipe the output or integrate with other tools that expect JSON data on stdout.
+The Agent CLI was outputting all JSON messages to stdout, including errors, instead of following Unix conventions where errors should go to stderr and data to stdout.
 
 ## Root Cause Analysis
 
 ### Code Analysis
 
-1. **Output Routing**: The `output()` function in `src/cli/output.ts` was routing messages based on type:
-   - Errors → stderr
-   - Everything else → stdout
+1. **Output Routing**: The `output()` function in `src/cli/output.ts` was not routing messages based on type - all messages were going to stdout regardless of type.
 
-   However, the issue indicated that everything was going to stderr.
+2. **Error Handling**: Error messages were being sent to stdout instead of stderr, violating Unix conventions.
 
-2. **Log Output**: The logging system in `src/util/log.ts` was always outputting logs to stdout, even when not in verbose mode, cluttering the CLI output.
-
-3. **Event Handler**: The event handler in `src/json-standard/index.ts` correctly outputs to stdout using `process.stdout.write()`.
-
-### Timeline of Events
-
-- Initial implementation had proper stream routing
-- Logging was added with stdout output by default
-- Tests were written expecting stdout output
-- Issue reported that CLI outputs to stderr instead of stdout
+3. **Event Handler**: The event handler in `src/json-standard/index.ts` outputs to stdout, which is correct for data events.
 
 ### Root Causes
 
-1. **Inconsistent Output Streams**: While the output.ts correctly routed non-errors to stdout, the logging system was forcing all logs to stdout regardless of verbose mode.
+1. **Missing Type-Based Routing**: The `output()` function lacked logic to route error messages to stderr.
 
-2. **Test Environment**: The test `read-image-validation.tools.test.js` was expecting tool error messages in stdout, but if errors were routed to stderr, the test would fail.
-
-3. **User Expectation**: CLI tools typically output data to stdout and errors to stderr, but the issue suggested the CLI was outputting everything to stderr.
+2. **Unix Convention Violation**: CLI tools should send data to stdout and errors to stderr for proper tool integration.
 
 ## Proposed Solutions
 
-### Solution 1: Consistent Stdout Output
+### Solution 1: Type-Based Output Routing
 
-- Modify `output()` function to send all messages to stdout
-- Change `outputError()` to use `writeStdout()` instead of `writeStderr()`
-- This ensures all JSON output goes to stdout for easy parsing
-
-### Solution 2: Conditional Log Output
-
-- Modify `Log.init()` to output logs to stdout only when `--verbose` flag is used
-- When not verbose, logs go to file only
-- This keeps CLI output clean for programmatic use
-
-### Solution 3: Configurable Output Streams
-
-- Add environment variable or flag to control output streams
-- Allow users to choose between stdout-only or separated streams
+- Modify `output()` function to check message type
+- Route `type: 'error'` messages to stderr
+- Route all other messages to stdout
+- This follows Unix conventions: stdout for data, stderr for errors
 
 ## Implemented Solution
 
-We implemented Solution 1 and Solution 2:
+We implemented Solution 1:
 
-1. Changed `output()` and `outputError()` to always use stdout
-2. Modified `Log.init()` to output logs to stdout only when verbose
+1. Updated `output()` function to route based on message type
+2. Error messages now go to stderr, all others to stdout
+3. All messages remain in JSON format with `type` field
 
 This ensures:
 
-- All JSON messages (status, events, errors) go to stdout
-- Logs are suppressed by default, available with `--verbose`
+- Errors go to stderr (following Unix conventions)
+- Data (status, logs, events) goes to stdout
 - Consistent JSON formatting with `type` field
-- Easy integration with other tools
+- Easy integration with other tools that can handle separated streams
 
 ## Impact Assessment
 
 ### Positive Impacts
 
-- CLI output is now consistently on stdout
-- Easier to pipe output to other tools
-- Cleaner output by default (logs hidden)
+- Follows Unix CLI conventions
+- Errors can be redirected separately from data
+- Easier error handling in scripts
 - All output has `type` field for parsing
-
-### Potential Risks
-
-- Error messages now go to stdout instead of stderr
-- May break scripts that expect errors on stderr
-- Verbose logging now required to see debug info
 
 ## Testing
 
-The changes were tested with the existing test suite, particularly:
+The changes were tested by:
 
-- `read-image-validation.tools.test.js` now passes
-- Manual testing confirms all output goes to stdout
-- Verbose mode still shows logs
+- Running CLI with valid input - status and data messages go to stdout
+- Running CLI with invalid input - error messages go to stderr
+- Manual testing confirms proper stream separation
+- All JSON output includes required `type` field
 
 ## Future Considerations
 

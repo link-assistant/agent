@@ -11,7 +11,7 @@ import { SessionPrompt } from '../session/prompt.ts';
 import { createEventHandler } from '../json-standard/index.ts';
 import { createContinuousStdinReader } from './input-queue.js';
 import { Log } from '../util/log.ts';
-import { outputStatus, outputError } from './output.ts';
+import { outputStatus, outputError, outputInput } from './output.ts';
 
 // Shared error tracking
 let hasError = false;
@@ -244,6 +244,17 @@ export async function runContinuousServerMode(
       }
 
       isProcessing = true;
+
+      // Output input confirmation in JSON format
+      outputInput(
+        {
+          raw: message.raw || message.message,
+          parsed: message,
+          format: message.format || 'text',
+        },
+        compactJson
+      );
+
       const messageText = message.message || 'hi';
       const parts = [{ type: 'text', text: messageText }];
 
@@ -455,6 +466,17 @@ export async function runContinuousDirectMode(
       }
 
       isProcessing = true;
+
+      // Output input confirmation in JSON format
+      outputInput(
+        {
+          raw: message.raw || message.message,
+          parsed: message,
+          format: message.format || 'text',
+        },
+        compactJson
+      );
+
       const messageText = message.message || 'hi';
       const parts = [{ type: 'text', text: messageText }];
 

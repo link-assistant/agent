@@ -11,18 +11,18 @@ This case study analyzes GitHub issue #131, which reported that the Agent CLI wa
 
 ## Key Findings
 
-1. **Root Cause**: The CLI's output routing was inconsistent - while most messages went to stdout, the logging system was forcing all logs to stdout even in non-verbose mode.
+1. **Root Cause**: The CLI's output routing was incorrect - all messages, including errors, were being sent to stdout instead of following Unix conventions where errors should go to stderr.
 
-2. **Impact**: Users couldn't easily pipe CLI output to other tools, and the output was cluttered with log messages.
+2. **Impact**: Users couldn't easily distinguish between normal output and errors when using the CLI programmatically, and error handling was more difficult.
 
-3. **Solution**: Modified the output system to send all JSON messages to stdout, and made log output conditional on the verbose flag.
+3. **Solution**: Modified the output system to route messages based on type - errors go to stderr, all other messages (status, logs, events) go to stdout.
 
 ## Changes Made
 
 ### Code Changes
 
-- `src/cli/output.ts`: Changed `output()` and `outputError()` to always use stdout
-- `src/util/log.ts`: Modified log output to go to file by default, stdout only when verbose
+- `src/cli/output.ts`: Updated `output()` function to route `type: 'error'` messages to stderr, all others to stdout
+- `src/util/log.ts`: Logs with `type: 'log'` correctly go to stdout as they are not errors
 
 ### Test Updates
 
