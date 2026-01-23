@@ -94,19 +94,14 @@ export function writeStderr(message: OutputMessage, compact?: boolean): void {
 }
 
 /**
- * Output a message to the appropriate stream (following Unix conventions)
- * - stdout: Normal output (status, events, data, logs, warnings)
- * - stderr: Errors only
+ * Output a message to stdout (all JSON output goes to stdout for easy parsing)
+ * - stdout: All output (status, events, data, logs, warnings, errors)
  *
  * @param message - The message object to output
  * @param compact - Override the global compact setting
  */
 export function output(message: OutputMessage, compact?: boolean): void {
-  if (message.type === 'error') {
-    writeStderr(message, compact);
-  } else {
-    writeStdout(message, compact);
-  }
+  writeStdout(message, compact);
 }
 
 /**
@@ -126,7 +121,7 @@ export function outputStatus(
 }
 
 /**
- * Output an error message to stderr
+ * Output an error message to stdout
  */
 export function outputError(
   error: {
