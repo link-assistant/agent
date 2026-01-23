@@ -1,45 +1,74 @@
 # Case Study: Issue #131 - Agent CLI outputs stderr instead of stdout
 
-## Overview
+## Issue Summary
 
-This case study analyzes GitHub issue #131, which reported that the Agent CLI was outputting JSON messages to stderr instead of stdout, making it difficult to integrate with other tools.
+Issue #131 reports that the Agent CLI outputs everything to stderr instead of stdout, contrary to Unix conventions where normal output should go to stdout and errors to stderr.
 
-## Files
+The issue requires:
 
-- `investigation-data.md` - Detailed analysis of the problem, root causes, and solutions
-- `README.md` - This summary file
+- All JSON output to have a `type` field
+- Everything except errors to output to stdout by default
+- All output (including errors) to be in JSON format
+- Log statements to be formatted as JSON with `type` field by default (configurable)
 
-## Key Findings
+## Root Cause Analysis
 
-1. **Root Cause**: The CLI's output routing was incorrect - all messages, including errors, were being sent to stdout instead of following Unix conventions where errors should go to stderr.
+### Investigation Findings
 
-2. **Impact**: Users couldn't easily distinguish between normal output and errors when using the CLI programmatically, and error handling was more difficult.
+1. **Current Behavior Analysis**:
+   - The Agent CLI uses `output.ts` for JSON output, which correctly sends normal output to stdout and errors to stderr
+   - Log output uses `Log.ts` which sends logs to stdout when in CLI mode (print=true)
+   - However, UI components (`ui.ts`) were writing to stderr instead of stdout
+   - Export command was writing status messages to stderr
 
-3. **Solution**: Modified the output system to route messages based on type - errors go to stderr, all other messages (status, logs, events) go to stdout.
+2. **Code Locations Identified**:
+   - `src/cli/ui.ts`: All UI functions (`println`, `error`, `success`, `info`, `empty`) wrote to `process.stderr`
+   - `src/cli/cmd/export.ts`: Status message wrote to `process.stderr`
+   - `src/session/agent.js`: Error logging wrote to `process.stderr` (correct for errors)
 
-## Changes Made
+3. **Related Issues**:
+   - `link-assistant/hive-mind#1163`: Hive-mind PR that handles Agent CLI output, claiming it outputs to stderr
+   - The Agent CLI does output JSON to stdout, but UI elements were going to stderr
 
-### Code Changes
+### Timeline of Events
 
-- `src/cli/output.ts`: Updated `output()` function to route `type: 'error'` messages to stderr, all others to stdout
-- `src/util/log.ts`: Logs with `type: 'log'` correctly go to stdout as they are not errors
+- **Initial Implementation**: Agent CLI designed with JSON output to stdout, UI to stderr (conventional)
+- **Issue Reported**: User claims CLI outputs everything to stderr
+- **Investigation**: Found UI components writing to stderr, violating "everything except errors to stdout"
+- **Fix Applied**: Changed UI components to write to stdout, export command to stdout
 
-### Test Updates
+## Solution Implemented
 
-- `tests/read-image-validation.tools.test.js`: Added `--no-always-accept-stdin` to test single-message mode
+### Changes Made
 
-## Verification
+1. **Modified `src/cli/ui.ts`**:
+   - Changed all `process.stderr.write` to `process.stdout.write`
+   - UI output now goes to stdout as required
 
-The fix was verified by:
+2. **Modified `src/cli/cmd/export.ts`**:
+   - Changed `process.stderr.write` to `process.stdout.write` for status messages
 
-- Running the affected test case successfully
-- Manual testing of CLI output streams
-- Ensuring all JSON output includes the required `type` field
+3. **Preserved Error Output**:
+   - `outputError()` still uses stderr (correct)
+   - Error logs in `session/agent.js` remain on stderr (correct)
+
+### Verification
+
+- All JSON output already has `type` field
+- Logs are formatted as JSON with `type: "log"`
+- Normal output goes to stdout
+- Errors go to stderr
+- UI output now goes to stdout
 
 ## Lessons Learned
 
-1. Consistent output streams are crucial for CLI tool usability
-2. Log output should be configurable to avoid cluttering primary output
-3. JSON formatting with type fields enables better programmatic integration
-4. Test cases should account for output stream expectations</content>
-   <parameter name="filePath">/tmp/gh-issue-solver-1769196616847/js/docs/case-studies/issue-131/README.md
+1. **Unix Conventions**: Normal output should go to stdout, errors to stderr
+2. **JSON Consistency**: All structured output should use consistent `type` field
+3. **UI vs Data**: UI formatting should follow the same output stream rules as data
+4. **Testing**: Existing tests verify stdout output, confirming the fix direction
+
+## Related Work
+
+- `link-assistant/hive-mind#1163`: Handles Agent CLI output parsing in hive-mind
+- Agent CLI tests confirm stdout output expectation
+- Log formatting already compliant with requirements

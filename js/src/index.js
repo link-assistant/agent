@@ -676,7 +676,9 @@ async function main() {
               default: false,
             }),
         handler: async (argv) => {
-          const compactJson = argv['compact-json'] === true;
+          // Check both CLI flag and environment variable for compact JSON mode
+          const compactJson =
+            argv['compact-json'] === true || Flag.COMPACT_JSON();
 
           // Check if --prompt flag was provided
           if (argv.prompt) {
@@ -838,8 +840,9 @@ async function main() {
       // Initialize logging early for all CLI commands
       // This prevents debug output from appearing in CLI unless --verbose is used
       .middleware(async (argv) => {
-        // Set global compact JSON setting
-        if (argv['compact-json']) {
+        // Set global compact JSON setting (CLI flag or environment variable)
+        const isCompact = argv['compact-json'] === true || Flag.COMPACT_JSON();
+        if (isCompact) {
           setCompactJson(true);
         }
 
@@ -854,10 +857,10 @@ async function main() {
         }
 
         // Initialize logging system
-        // - Always print logs to stdout in JSON format by default
+        // - Print logs to stdout only when verbose for clean CLI output
         // - Use verbose flag to enable DEBUG level logging
         await Log.init({
-          print: true,
+          print: Flag.OPENCODE_VERBOSE,
           level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
           compactJson: argv['compact-json'] === true,
         });

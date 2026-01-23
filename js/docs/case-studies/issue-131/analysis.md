@@ -29,8 +29,9 @@ The Agent CLI was outputting all data including logs, status messages, and error
 ### Changes Made
 
 1. **Fixed Output Routing**:
-   - Changed `outputError` to use `writeStdout` instead of `writeStderr`
-   - Ensured all JSON output goes to stdout for consistent parsing
+   - Modified `output()` function to route `type: 'error'` messages to stderr, all others to stdout
+   - Changed `outputError` to use `output()` instead of `writeStdout` directly
+   - Updated `json-standard/index.ts` eventHandler to route errors to stderr
 
 2. **Fixed Log Output**:
    - Modified `Log.init` to output logs to stdout by default
@@ -58,4 +59,4 @@ The Agent CLI was outputting all data including logs, status messages, and error
 
 - Run CLI with `--dry-run` and verify JSON output appears on stdout
 - Check that `{"type": "log", ...}` messages go to stdout
-- Confirm error messages are JSON with `{"type": "error", ...}` on stdout
+- Confirm error messages are JSON with `{"type": "error", ...}` on stderr

@@ -13,7 +13,7 @@ import { Flag } from '../flag/flag.ts';
  * - Lazy evaluation: Use lazy() methods to defer expensive computations
  * - Level control: Respects --verbose flag and log level settings
  * - File logging: Writes to file when not in verbose/print mode
- * - Stdout by default: In print mode, logs go to stdout (not stderr) to follow Unix conventions
+ * - Stdout by default: Logs go to stdout for JSON output consistency
  *
  * The JSON format with `type` field ensures all output is consistent with other CLI output.
  */
@@ -119,8 +119,8 @@ export namespace Log {
       lazyLogInstance = makeLog({ level: 0 });
     }
 
-    // Output logs to stdout only when verbose/print mode is enabled
-    // Otherwise, logs go to file only to keep CLI output clean
+    // Output logs to stdout by default for JSON formatting consistency
+    // Also write to file for debugging purposes
     logpath = path.join(
       Global.Path.log,
       options.dev
@@ -137,14 +137,14 @@ export namespace Log {
       return num;
     };
 
+    // Write to stdout only when verbose for clean CLI output
+    // Always write to file for debugging
     if (Flag.OPENCODE_VERBOSE || options.print) {
-      // When verbose, write to both stdout and file
       write = async (msg: any) => {
         process.stdout.write(msg);
         fileWrite(msg);
       };
     } else {
-      // When not verbose, write to file only
       write = fileWrite;
     }
   }

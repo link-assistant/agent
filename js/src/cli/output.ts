@@ -96,7 +96,7 @@ export function writeStderr(message: OutputMessage, compact?: boolean): void {
 
 /**
  * Output a message to the appropriate stream based on type
- * - stdout: Normal output (status, events, data, logs, warnings)
+ * - stdout: All output except errors (status, events, data, logs, warnings)
  * - stderr: Errors only
  *
  * @param message - The message object to output
@@ -108,6 +108,7 @@ export function output(message: OutputMessage, compact?: boolean): void {
   } else {
     writeStdout(message, compact);
   }
+}
 }
 
 /**
@@ -143,7 +144,7 @@ export function outputError(
     type: 'error',
     ...error,
   };
-  output(message, compact);
+  writeStderr(message, compact);
 }
 
 /**

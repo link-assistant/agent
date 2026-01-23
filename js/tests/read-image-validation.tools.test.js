@@ -106,12 +106,13 @@ test('Read tool rejects HTML file with .png extension', async () => {
   try {
     const input = `{"message":"read fake image","tools":[{"name":"read","params":{"filePath":"${fakeImageFile}"}}]}`;
     const projectRoot = process.cwd();
-    const result = await $`echo ${input} | bun run ${projectRoot}/src/index.js`
-      .quiet()
-      .nothrow();
+    const result =
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin`
+        .quiet()
+        .nothrow();
 
-    const lines = result.stdout
-      .toString()
+    const combinedOutput = result.stdout.toString() + result.stderr.toString();
+    const lines = combinedOutput
       .trim()
       .split('\n')
       .filter((line) => line.trim());
@@ -245,12 +246,13 @@ test('Read tool rejects file smaller than minimum image size', async () => {
   try {
     const input = `{"message":"read tiny file","tools":[{"name":"read","params":{"filePath":"${tinyFile}"}}]}`;
     const projectRoot = process.cwd();
-    const result = await $`echo ${input} | bun run ${projectRoot}/src/index.js`
-      .quiet()
-      .nothrow();
+    const result =
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin`
+        .quiet()
+        .nothrow();
 
-    const lines = result.stdout
-      .toString()
+    const combinedOutput = result.stdout.toString() + result.stderr.toString();
+    const lines = combinedOutput
       .trim()
       .split('\n')
       .filter((line) => line.trim());
@@ -297,8 +299,8 @@ test('Read tool provides helpful error message with hex dump', async () => {
         .quiet()
         .nothrow();
 
-    const lines = result.stdout
-      .toString()
+    const combinedOutput = result.stdout.toString() + result.stderr.toString();
+    const lines = combinedOutput
       .trim()
       .split('\n')
       .filter((line) => line.trim());
@@ -390,8 +392,9 @@ test('Read tool validates different image formats correctly', async () => {
       const result =
         await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
 
-      const lines = result.stdout
-        .toString()
+      const combinedOutput =
+        result.stdout.toString() + result.stderr.toString();
+      const lines = combinedOutput
         .trim()
         .split('\n')
         .filter((line) => line.trim());
