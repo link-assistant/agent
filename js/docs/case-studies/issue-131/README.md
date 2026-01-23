@@ -1,43 +1,45 @@
-# Issue #131 Case Study: Agent CLI Output Stream Correction
+# Case Study: Issue #131 - Agent CLI outputs stderr instead of stdout
 
-## Problem Statement
+## Overview
 
-The Agent CLI was reportedly outputting all data to stderr instead of stdout, violating Unix conventions where stdout should contain program output and stderr should contain error messages.
+This case study analyzes GitHub issue #131, which reported that the Agent CLI was outputting JSON messages to stderr instead of stdout, making it difficult to integrate with other tools.
 
-## Investigation Findings
+## Files
 
-### Root Cause
+- `investigation-data.md` - Detailed analysis of the problem, root causes, and solutions
+- `README.md` - This summary file
 
-The issue was likely present in earlier versions of the CLI before the implementation of the JSON standard output system. The event handling and logging systems were not consistently routing output to the correct streams.
+## Key Findings
 
-### Solution Implemented
+1. **Root Cause**: The CLI's output routing was inconsistent - while most messages went to stdout, the logging system was forcing all logs to stdout even in non-verbose mode.
 
-1. **Centralized Output Handling**: Created `src/cli/output.ts` with proper stream routing
-2. **JSON Standard Events**: Implemented `src/json-standard/index.ts` ensuring all events go to stdout
-3. **Consistent Type Fields**: All JSON output includes a `type` field for easy parsing
-4. **Unix Convention Compliance**: stdout for data, stderr for errors
+2. **Impact**: Users couldn't easily pipe CLI output to other tools, and the output was cluttered with log messages.
 
-### Key Code Changes
+3. **Solution**: Modified the output system to send all JSON messages to stdout, and made log output conditional on the verbose flag.
 
-- `output()` function routes based on message type
-- Event handler uses `process.stdout.write()` for all events
-- Logs formatted as `{"type": "log", ...}` and sent to stdout in verbose mode
+## Changes Made
+
+### Code Changes
+
+- `src/cli/output.ts`: Changed `output()` and `outputError()` to always use stdout
+- `src/util/log.ts`: Modified log output to go to file by default, stdout only when verbose
+
+### Test Updates
+
+- `tests/read-image-validation.tools.test.js`: Added `--no-always-accept-stdin` to test single-message mode
 
 ## Verification
 
-- CLI output tested and confirmed to go to stdout
-- JSON format includes required `type` fields
-- Error messages correctly go to stderr
-- All output is properly formatted
+The fix was verified by:
 
-## Impact
+- Running the affected test case successfully
+- Manual testing of CLI output streams
+- Ensuring all JSON output includes the required `type` field
 
-- Improved CLI usability for piping and automation
-- Consistent with Unix tool conventions
-- Better integration with other tools expecting stdout output
+## Lessons Learned
 
-## Prevention
-
-- Added comprehensive tests for output validation
-- Centralized output handling prevents future inconsistencies
-- Clear documentation of stream usage conventions
+1. Consistent output streams are crucial for CLI tool usability
+2. Log output should be configurable to avoid cluttering primary output
+3. JSON formatting with type fields enables better programmatic integration
+4. Test cases should account for output stream expectations</content>
+   <parameter name="filePath">/tmp/gh-issue-solver-1769196616847/js/docs/case-studies/issue-131/README.md

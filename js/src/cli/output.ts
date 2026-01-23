@@ -10,6 +10,7 @@
  */
 
 import { EOL } from 'os';
+import { Flag } from '../flag/flag.ts';
 
 /**
  * Output types for JSON messages
@@ -39,21 +40,24 @@ export interface OutputMessage {
 
 /**
  * Global compact JSON setting (can be set once at startup)
+ * Initialized from Flag.COMPACT_JSON which checks AGENT_CLI_COMPACT env var
  */
-let globalCompactJson = false;
+let globalCompactJson = Flag.COMPACT_JSON;
 
 /**
  * Set the global compact JSON setting
  */
 export function setCompactJson(compact: boolean): void {
   globalCompactJson = compact;
+  // Also update the Flag so other modules stay in sync
+  Flag.setCompactJson(compact);
 }
 
 /**
  * Get the current compact JSON setting
  */
 export function isCompactJson(): boolean {
-  return globalCompactJson;
+  return globalCompactJson || Flag.COMPACT_JSON;
 }
 
 /**
@@ -61,11 +65,9 @@ export function isCompactJson(): boolean {
  * @param message - The message object to format
  * @param compact - Override the global compact setting
  */
-export function formatJson(
-  message: OutputMessage,
-  compact?: boolean
-): string {
-  const useCompact = compact ?? globalCompactJson;
+export function formatJson(message: OutputMessage, compact?: boolean): string {
+  // Check local, global, and Flag settings for compact mode
+  const useCompact = compact ?? globalCompactJson ?? Flag.COMPACT_JSON;
   return useCompact
     ? JSON.stringify(message)
     : JSON.stringify(message, null, 2);
@@ -76,10 +78,7 @@ export function formatJson(
  * @param message - The message object to output
  * @param compact - Override the global compact setting
  */
-export function writeStdout(
-  message: OutputMessage,
-  compact?: boolean
-): void {
+export function writeStdout(message: OutputMessage, compact?: boolean): void {
   const json = formatJson(message, compact);
   process.stdout.write(json + EOL);
 }
@@ -89,18 +88,15 @@ export function writeStdout(
  * @param message - The message object to output
  * @param compact - Override the global compact setting
  */
-export function writeStderr(
-  message: OutputMessage,
-  compact?: boolean
-): void {
+export function writeStderr(message: OutputMessage, compact?: boolean): void {
   const json = formatJson(message, compact);
   process.stderr.write(json + EOL);
 }
 
 /**
- * Output a message to the appropriate stream based on type
- * - Errors go to stderr
- * - Everything else goes to stdout
+ * Output a message to the appropriate stream (following Unix conventions)
+ * - stdout: Normal output (status, events, data, logs, warnings)
+ * - stderr: Errors only
  *
  * @param message - The message object to output
  * @param compact - Override the global compact setting
@@ -117,7 +113,9 @@ export function output(message: OutputMessage, compact?: boolean): void {
  * Output a status message to stdout
  */
 export function outputStatus(
-  status: Omit<OutputMessage, 'type'> & { type?: 'status' | 'error' | 'warning' },
+  status: Omit<OutputMessage, 'type'> & {
+    type?: 'status' | 'error' | 'warning';
+  },
   compact?: boolean
 ): void {
   const message: OutputMessage = {

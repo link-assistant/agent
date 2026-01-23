@@ -53,8 +53,10 @@ const LEVEL_PRESETS = {
 
 type LevelPreset = keyof typeof LEVEL_PRESETS;
 
-// Compact JSON mode (can be set at runtime)
-let compactJsonMode = false;
+import { Flag } from '../flag/flag.ts';
+
+// Compact JSON mode (can be set at runtime, initialized from Flag)
+let compactJsonMode = Flag.COMPACT_JSON;
 
 /**
  * Set compact JSON output mode
@@ -97,7 +99,9 @@ function formatLogEntry(
     logEntry.message = String(data);
   }
 
-  return compactJsonMode
+  // Check both local setting and global Flag
+  const useCompact = compactJsonMode || Flag.COMPACT_JSON;
+  return useCompact
     ? JSON.stringify(logEntry)
     : JSON.stringify(logEntry, null, 2);
 }

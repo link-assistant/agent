@@ -32,7 +32,7 @@ export namespace Log {
 
   let level: Level = 'INFO';
   let jsonOutput = false; // Whether to output JSON format (enabled in verbose mode)
-  let compactJsonOutput = false; // Whether to use compact JSON (single line)
+  let compactJsonOutput = Flag.COMPACT_JSON; // Whether to use compact JSON (single line)
 
   function shouldLog(input: Level): boolean {
     return levelPriority[input] >= levelPriority[level];
@@ -93,8 +93,8 @@ export namespace Log {
   export function file() {
     return logpath;
   }
-  // Default to stdout for log output (following Unix conventions: stdout for data, stderr for errors)
-  let write = (msg: any) => Bun.stdout.write(msg);
+  // Default to file for log output (to keep CLI output clean)
+  let write = (msg: any) => {}; // Placeholder, set in init
 
   // Initialize log-lazy for controlling lazy log execution
   let lazyLogInstance = makeLog({ level: 0 }); // Start disabled
@@ -118,28 +118,34 @@ export namespace Log {
        lazyLogInstance = makeLog({ level: 0 });
      }
 
-     // Always output logs to stdout as JSON (following the issue requirement)
-     // Logs should be formatted as JSON output by default
-     write = (msg: any) => Bun.stdout.write(msg);
+      // Output logs to stdout only when verbose/print mode is enabled
+      // Otherwise, logs go to file only to keep CLI output clean
+      logpath = path.join(
+        Global.Path.log,
+        options.dev
+          ? 'dev.log'
+          : new Date().toISOString().split('.')[0].replace(/:/g, '') + '.log'
+      );
+      const logfile = Bun.file(logpath);
+      await fs.truncate(logpath).catch(() => {});
+      const writer = logfile.writer();
+      // Write to file
+      const fileWrite = async (msg: any) => {
+        const num = writer.write(msg);
+        writer.flush();
+        return num;
+      };
 
-     // Still create log file for debugging if needed, but primary output is stdout
-     logpath = path.join(
-       Global.Path.log,
-       options.dev
-         ? 'dev.log'
-         : new Date().toISOString().split('.')[0].replace(/:/g, '') + '.log'
-     );
-     const logfile = Bun.file(logpath);
-     await fs.truncate(logpath).catch(() => {});
-     const writer = logfile.writer();
-     // Also write to file for debugging purposes
-     const originalWrite = write;
-     write = async (msg: any) => {
-       originalWrite(msg);
-       const num = writer.write(msg);
-       writer.flush();
-       return num;
-     };
+      if (Flag.OPENCODE_VERBOSE || options.print) {
+        // When verbose, write to both stdout and file
+        write = async (msg: any) => {
+          Bun.stdout.write(msg);
+          fileWrite(msg);
+        };
+      } else {
+        // When not verbose, write to file only
+        write = fileWrite;
+      }
    }
 
   async function cleanup(dir: string) {
@@ -202,7 +208,9 @@ export namespace Log {
     }
 
     // Use compact or pretty format based on configuration
-    return compactJsonOutput
+    // Check both local setting and global Flag
+    const useCompact = compactJsonOutput || Flag.COMPACT_JSON;
+    return useCompact
       ? JSON.stringify(logEntry)
       : JSON.stringify(logEntry, null, 2);
   }

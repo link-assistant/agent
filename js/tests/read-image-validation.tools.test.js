@@ -292,9 +292,10 @@ test('Read tool provides helpful error message with hex dump', async () => {
   try {
     const input = `{"message":"read fake image for hex dump","tools":[{"name":"read","params":{"filePath":"${fakeImageFile}"}}]}`;
     const projectRoot = process.cwd();
-    const result = await $`echo ${input} | bun run ${projectRoot}/src/index.js`
-      .quiet()
-      .nothrow();
+    const result =
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin`
+        .quiet()
+        .nothrow();
 
     const lines = result.stdout
       .toString()

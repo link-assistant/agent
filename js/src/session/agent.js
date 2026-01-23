@@ -97,8 +97,8 @@ export class Agent {
             const callID = `call_${Math.floor(Math.random() * 100000000)}`;
 
             // Log full error to stderr for debugging in JSON format
-            console.error(
-              JSON.stringify({
+            process.stderr.write(
+              `${JSON.stringify({
                 log: {
                   level: 'error',
                   timestamp: new Date().toISOString(),
@@ -110,7 +110,7 @@ export class Agent {
                     stack: error.stack,
                   },
                 },
-              })
+              })}\n`
             );
 
             // Emit tool_use event with error
@@ -217,8 +217,8 @@ export class Agent {
     // Pretty-print JSON for human readability, compact for programmatic use
     // Use AGENT_CLI_COMPACT=1 for compact output (tests, automation)
     const compact = process.env.AGENT_CLI_COMPACT === '1';
-    console.log(
-      compact ? JSON.stringify(event) : JSON.stringify(event, null, 2)
+    process.stdout.write(
+      `${compact ? JSON.stringify(event) : JSON.stringify(event, null, 2)}\n`
     );
   }
 }
