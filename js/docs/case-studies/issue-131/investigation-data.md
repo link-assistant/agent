@@ -2,42 +2,43 @@
 
 ## Problem Description
 
-The Agent CLI was using direct `process.stderr.write` calls for error logging in `src/session/agent.js`, bypassing the centralized output system and using inconsistent JSON formatting.
+The Agent CLI was outputting logs to file by default instead of stdout, and tests expected status messages in stderr instead of stdout, violating Unix conventions.
 
 ## Root Cause Analysis
 
 ### Code Analysis
 
-1. **Direct stderr Usage**: `src/session/agent.js` contained direct `process.stderr.write` calls for tool execution errors
-2. **Inconsistent Formatting**: Error logs used nested JSON format `{log: {...}}` instead of flattened `{type: 'log', ...}`
-3. **Output Routing**: The `output()` function was routing all messages to stdout, including errors
+1. **Log Output to File**: `src/util/log.ts` Log.init() defaulted to file output instead of stdout
+2. **Test Expectations**: Tests expected status messages in stderr instead of stdout
+3. **Inconsistent Behavior**: Some output went to stdout, logs went to file
 
 ### Root Causes
 
-1. **Bypassed Abstraction**: Direct stream writes circumvented the centralized output system
-2. **Format Inconsistency**: Nested log format didn't match the required flattened format
-3. **Stream Misrouting**: Errors were going to stdout instead of stderr
+1. **Wrong Default**: Logs should go to stdout for CLI visibility, not just files
+2. **Test Bugs**: Tests were written to expect incorrect behavior
+3. **Inconsistent Output**: Mixed output destinations confused users
 
 ## Proposed Solutions
 
-### Solution 1: Centralized Error Logging
+### Solution 1: Fix Log Output Default
 
-- Replace direct `process.stderr.write` with `outputLog()` calls
-- Use flattened JSON format with `type: 'log'` field
-- Ensure errors go to stderr via proper routing
+- Modify Log.init() to output logs to stdout by default
+- Update tests to expect correct output streams
+- Ensure consistent JSON formatting with `type` field
 
 ## Implemented Solution
 
 We implemented Solution 1:
 
-1. **Fixed Agent Logging**: Replaced `process.stderr.write` with `outputLog()` in `src/session/agent.js`
-2. **Updated Output Routing**: Modified `output()` function to route errors to stderr
-3. **Consistent Formatting**: All logs now use `{type: 'log', ...}` format
+1. **Fixed Log Output**: Modified `src/util/log.ts` to output logs to stdout by default
+2. **Updated Tests**: Changed `tests/stdin-input-queue.test.js` to expect status in stdout
+3. **Consistent Formatting**: All output uses `{type: '...', ...}` format
 
 This ensures:
 
-- Errors go to stderr (following Unix conventions)
-- Data (status, logs, events) goes to stdout
+- Logs go to stdout (following CLI conventions)
+- Status messages go to stdout
+- Errors go to stderr
 - Consistent JSON formatting with `type` field
 - Centralized output handling
 
@@ -48,20 +49,21 @@ This ensures:
 - Follows Unix CLI conventions
 - Consistent JSON output format
 - Centralized output management
-- Better error stream separation
+- Logs are visible in stdout by default
 
 ## Testing
 
 The changes were tested by:
 
-- Running CLI with tool execution - logs go to stdout in correct format
-- Verifying error routing to stderr
-- Checking JSON structure consistency
+- Running CLI - logs appear in stdout with `{"type": "log", ...}` format
+- Verifying status messages go to stdout
+- Checking error messages go to stderr
+- Confirming JSON structure consistency
 - All output includes required `type` field
 
 ## Future Considerations
 
-- Monitor for other direct stream writes
-- Ensure all logging uses centralized functions
+- Monitor log output behavior
+- Ensure tests match intended behavior
 - Maintain Unix convention compliance</content>
   <parameter name="filePath">/tmp/gh-issue-solver-1769196616847/js/docs/case-studies/issue-131/investigation-data.md

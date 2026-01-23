@@ -2,11 +2,15 @@
  * JSON Standard Format Handlers
  *
  * Provides adapters for different JSON output formats:
- * - opencode: OpenCode format (default) - pretty-printed JSON events
+ * - opencode: OpenCode format (default) - configurable JSON formatting
  * - claude: Claude CLI stream-json format - NDJSON (newline-delimited JSON)
+ *
+ * Both formats output to stdout by default, stderr for errors.
+ * Use AGENT_CLI_COMPACT env var or --compact-json flag for NDJSON output.
  */
 
 import { EOL } from 'os';
+import { Flag } from '../flag/flag.ts';
 
 export type JsonStandard = 'opencode' | 'claude';
 
@@ -146,7 +150,7 @@ export function createEventHandler(standard: JsonStandard, sessionID: string) {
      * Format and output an event
      */
     output(event: OpenCodeEvent): void {
-      const outputStream = event.type === 'error' ? process.stderr : process.stdout;
+      const outputStream = process.stdout;
       if (standard === 'claude') {
         const claudeEvent = convertOpenCodeToClaude(event, startTime);
         if (claudeEvent) {

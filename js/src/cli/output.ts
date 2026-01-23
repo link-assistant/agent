@@ -10,7 +10,7 @@
  */
 
 import { EOL } from 'os';
-import { Flag } from '../flag/flag.ts';
+import { Flag } from '../flag/flag';
 
 /**
  * Output types for JSON messages
@@ -96,18 +96,13 @@ export function writeStderr(message: OutputMessage, compact?: boolean): void {
 
 /**
  * Output a message to the appropriate stream based on type
- * - stdout: All output except errors (status, events, data, logs, warnings)
- * - stderr: Errors only
+ * - stdout: All output (status, events, data, logs, warnings, errors)
  *
  * @param message - The message object to output
  * @param compact - Override the global compact setting
  */
 export function output(message: OutputMessage, compact?: boolean): void {
-  if (message.type === 'error') {
-    writeStderr(message, compact);
-  } else {
-    writeStdout(message, compact);
-  }
+  writeStdout(message, compact);
 }
 
 /**
