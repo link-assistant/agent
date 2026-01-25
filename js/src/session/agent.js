@@ -3,6 +3,7 @@
 // Permalink: https://github.com/sst/opencode/blob/main/packages/opencode/src/provider/provider.ts
 
 import { ToolRegistry } from '../tool/registry.ts';
+import { outputError } from '../cli/output.ts';
 
 export class Agent {
   constructor() {
@@ -96,22 +97,17 @@ export class Agent {
             const errorTime = Date.now();
             const callID = `call_${Math.floor(Math.random() * 100000000)}`;
 
-            // Log full error to stderr for debugging in JSON format
-            console.error(
-              JSON.stringify({
-                log: {
-                  level: 'error',
-                  timestamp: new Date().toISOString(),
-                  message: 'Tool execution error',
-                  tool: tool.name,
-                  error: {
-                    name: error.name,
-                    message: error.message,
-                    stack: error.stack,
-                  },
-                },
-              })
-            );
+            // Log full error to stderr in flattened JSON format
+            outputError({
+              errorType: 'ToolExecutionError',
+              message: 'Tool execution error',
+              tool: tool.name,
+              error: {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+              },
+            });
 
             // Emit tool_use event with error
             this.emitEvent('tool_use', {
@@ -217,8 +213,8 @@ export class Agent {
     // Pretty-print JSON for human readability, compact for programmatic use
     // Use AGENT_CLI_COMPACT=1 for compact output (tests, automation)
     const compact = process.env.AGENT_CLI_COMPACT === '1';
-    console.log(
-      compact ? JSON.stringify(event) : JSON.stringify(event, null, 2)
+    process.stdout.write(
+      `${compact ? JSON.stringify(event) : JSON.stringify(event, null, 2)}\n`
     );
   }
 }

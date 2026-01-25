@@ -1,16 +1,17 @@
 import makeLog, { levels, LogLevel } from 'log-lazy';
-import { Flag } from '../flag/flag.ts';
+import { Flag } from '../flag/flag';
 
 /**
  * JSON Lazy Logger
  *
  * Implements lazy logging pattern using log-lazy library.
- * All log output is JSON formatted and wrapped in { log: { ... } } structure
- * for easy parsing alongside regular JSON output.
+ * All log output is JSON formatted with { "type": "log", "level": "...", ... } structure
+ * for consistent parsing with other CLI JSON output.
  *
  * Key features:
  * - Lazy evaluation: log arguments are only computed if logging is enabled
- * - JSON output: all logs are parsable JSON in { log: { ... } } format
+ * - JSON output: all logs are parsable JSON with `type: "log"` field
+ * - Stdout output: logs go to stdout (not stderr) following Unix conventions
  * - Level control: logs respect --verbose flag and LINK_ASSISTANT_AGENT_VERBOSE env
  * - Type-safe: full TypeScript support
  *
@@ -52,8 +53,21 @@ const LEVEL_PRESETS = {
 
 type LevelPreset = keyof typeof LEVEL_PRESETS;
 
+import { Flag } from '../flag/flag';
+
+// Compact JSON mode (can be set at runtime, initialized from Flag)
+let compactJsonMode = Flag.COMPACT_JSON();
+
 /**
- * Format a log entry as JSON object wrapped in { log: { ... } }
+ * Set compact JSON output mode
+ */
+export function setCompactJson(compact: boolean): void {
+  compactJsonMode = compact;
+}
+
+/**
+ * Format a log entry as JSON object with { "type": "log", "level": "...", ... } structure
+ * This flattened format is consistent with other CLI JSON output.
  */
 function formatLogEntry(
   level: string,
@@ -62,6 +76,7 @@ function formatLogEntry(
 ): string {
   const timestamp = new Date().toISOString();
   const logEntry: Record<string, unknown> = {
+    type: 'log',
     level,
     timestamp,
     ...tags,
@@ -84,11 +99,16 @@ function formatLogEntry(
     logEntry.message = String(data);
   }
 
-  return JSON.stringify({ log: logEntry });
+  // Check both local setting and global Flag
+  const useCompact = compactJsonMode || Flag.COMPACT_JSON();
+  return useCompact
+    ? JSON.stringify(logEntry)
+    : JSON.stringify(logEntry, null, 2);
 }
 
 /**
- * Create the output function that writes to stderr
+ * Create the output function that writes to stdout
+ * Using stdout follows Unix conventions (stdout for data, stderr for errors)
  */
 function createOutput(
   level: string,
@@ -96,8 +116,8 @@ function createOutput(
 ): (data: unknown) => void {
   return (data: unknown) => {
     const json = formatLogEntry(level, data, tags);
-    // Use stderr to avoid interfering with stdout JSON output
-    process.stderr.write(json + '\n');
+    // Use stdout following Unix conventions
+    process.stdout.write(json + '\n');
   };
 }
 

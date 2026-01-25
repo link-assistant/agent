@@ -5,7 +5,7 @@
  * - opencode: OpenCode format (default) - configurable JSON formatting
  * - claude: Claude CLI stream-json format - NDJSON (newline-delimited JSON)
  *
- * Output goes to stdout for normal messages, stderr for errors.
+ * Both formats output to stdout by default, stderr for errors.
  * Use AGENT_CLI_COMPACT env var or --compact-json flag for NDJSON output.
  */
 
@@ -154,8 +154,7 @@ export function createEventHandler(standard: JsonStandard, sessionID: string) {
      * Format and output an event
      */
     output(event: OpenCodeEvent): void {
-      const outputStream =
-        event.type === 'error' ? process.stderr : process.stdout;
+      const outputStream = process.stdout;
       if (standard === 'claude') {
         const claudeEvent = convertOpenCodeToClaude(event, startTime);
         if (claudeEvent) {

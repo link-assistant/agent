@@ -29,7 +29,7 @@ export const ReadTool = Tool.define('read', {
   async execute(params, ctx) {
     let filepath = params.filePath;
     if (!path.isAbsolute(filepath)) {
-      filepath = path.join(process.cwd(), filepath);
+      filepath = path.join(Instance.worktree, filepath);
     }
     const title = path.relative(Instance.worktree, filepath);
 
@@ -70,14 +70,13 @@ export const ReadTool = Tool.define('read', {
       return model.info.modalities?.input?.includes('image') ?? false;
     })();
     if (isImage) {
-      if (!supportsImages) {
+      // Image format validation (can be disabled via environment variable)
+      const verifyImages = process.env.VERIFY_IMAGES_AT_READ_TOOL !== 'false';
+      if (verifyImages && !supportsImages) {
         throw new Error(
           `Failed to read image: ${filepath}, model may not be able to read images`
         );
       }
-
-      // Image format validation (can be disabled via environment variable)
-      const verifyImages = process.env.VERIFY_IMAGES_AT_READ_TOOL !== 'false';
       if (verifyImages) {
         const bytes = new Uint8Array(await file.arrayBuffer());
 

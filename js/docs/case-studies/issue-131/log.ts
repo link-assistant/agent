@@ -116,10 +116,8 @@ export namespace Log {
         level: levels.debug | levels.info | levels.warn | levels.error,
       });
     } else {
-      // Enable info, warn, error by default for JSON output consistency
-      lazyLogInstance = makeLog({
-        level: levels.info | levels.warn | levels.error,
-      });
+      // Disable lazy logging when not verbose
+      lazyLogInstance = makeLog({ level: 0 });
     }
 
     // Output logs to stdout by default for JSON formatting consistency
@@ -260,7 +258,7 @@ export namespace Log {
       if (jsonOutput) {
         // Use our custom JSON formatting for { log: { ... } } format
         const jsonMsg = formatJson(logLevel, message, tags || {}, extra) + '\n';
-        // All logs go to stdout for consistency with other JSON output
+        // Route all logs to stdout for JSON consistency
         write(jsonMsg);
       } else {
         write(logLevel.padEnd(5) + ' ' + buildLegacy(message, extra));

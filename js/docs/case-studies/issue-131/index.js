@@ -150,8 +150,9 @@ async function parseModelConfig(argv) {
 
     if (!creds?.accessToken) {
       const compactJson = argv['compact-json'] === true;
-      outputError(
+      outputStatus(
         {
+          type: 'error',
           errorType: 'AuthenticationError',
           message:
             'No Claude OAuth credentials found in ~/.claude/.credentials.json. Either authenticate with Claude Code CLI first, or use: agent auth login (select Anthropic > Claude Pro/Max)',
@@ -690,9 +691,9 @@ async function main() {
           // Check if --disable-stdin was set without --prompt
           if (argv['disable-stdin']) {
             // Output a helpful message suggesting to use --prompt
-            outputError(
+            outputStatus(
               {
-                errorType: 'ValidationError',
+                type: 'error',
                 message:
                   'No prompt provided. Use -p/--prompt to specify a message, or remove --disable-stdin to read from stdin.',
                 hint: 'Example: agent -p "Hello, how are you?"',
@@ -711,9 +712,9 @@ async function main() {
 
             // Exit if --no-always-accept-stdin is set (single message mode not supported in TTY)
             if (!alwaysAcceptStdin) {
-              outputError(
+              outputStatus(
                 {
-                  errorType: 'ValidationError',
+                  type: 'error',
                   message:
                     'Single message mode (--no-always-accept-stdin) is not supported in interactive terminal mode.',
                   hint: 'Use piped input or --prompt for single messages.',
@@ -805,9 +806,9 @@ async function main() {
             // Not JSON
             if (!isInteractive) {
               // In non-interactive mode, only accept JSON
-              outputError(
+              outputStatus(
                 {
-                  errorType: 'ValidationError',
+                  type: 'error',
                   message:
                     'Invalid JSON input. In non-interactive mode (--no-interactive), only JSON input is accepted.',
                   hint: 'Use --interactive to accept plain text, or provide valid JSON: {"message": "your text"}',
@@ -859,7 +860,7 @@ async function main() {
         // - Print logs to stdout only when verbose for clean CLI output
         // - Use verbose flag to enable DEBUG level logging
         await Log.init({
-          print: Flag.OPENCODE_VERBOSE, // Output logs only when verbose for clean CLI output
+          print: true, // Output logs to stdout by default for JSON consistency
           level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
           compactJson: isCompact,
         });
