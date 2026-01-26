@@ -1,5 +1,15 @@
 # @link-assistant/agent
 
+## 0.8.11
+
+### Patch Changes
+
+- f5513da: Add OpenRouter documentation guide with detailed configuration instructions
+- 7dc074b: Add uninstallation instructions to README
+  - Add instructions for removing the agent package (global and local)
+  - Add instructions for completely removing Bun from the system
+  - Include information about cleaning up shell configuration files
+
 ## 0.8.10
 
 ### Patch Changes

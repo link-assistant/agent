@@ -10,7 +10,7 @@ This agent supports multiple model providers. By default, it uses models from th
 | Anthropic    | `anthropic/<model-id>`          | `ANTHROPIC_API_KEY`          | [Anthropic Docs](https://docs.anthropic.com/)      |
 | Claude OAuth | `claude-oauth/<model-id>`       | `CLAUDE_CODE_OAUTH_TOKEN`    | [Claude OAuth Documentation](docs/claude-oauth.md) |
 | Groq         | `groq/<model-id>`               | `GROQ_API_KEY`               | [Groq Documentation](docs/groq.md)                 |
-| OpenRouter   | `openrouter/<vendor>/<model>`   | `OPENROUTER_API_KEY`         | [OpenRouter Docs](https://openrouter.ai/docs)      |
+| OpenRouter   | `openrouter/<provider>/<model>` | `OPENROUTER_API_KEY`         | [OpenRouter Documentation](docs/openrouter.md)     |
 
 > **Claude OAuth:** The `claude-oauth` provider allows using your Claude Pro/Max subscription. Authenticate with `agent auth claude` or use existing Claude Code CLI credentials with `--use-existing-claude-oauth`.
 
@@ -147,52 +147,38 @@ For more details, see the [Groq Documentation](docs/groq.md).
 
 ## OpenRouter Provider
 
-[OpenRouter](https://openrouter.ai/) is a unified API that provides access to a wide variety of AI models from different providers. To use OpenRouter models, set your API key:
+[OpenRouter](https://openrouter.ai/) provides unified access to hundreds of AI models from multiple providers including OpenAI, Anthropic, Google, Meta, and more. To use OpenRouter models, set your API key:
 
 ```bash
 export OPENROUTER_API_KEY=your_api_key_here
 ```
 
-Or authenticate via the CLI:
+### OpenRouter Models
 
-```bash
-agent auth openrouter
-```
-
-### Model Format
-
-OpenRouter models use a nested path format because they aggregate models from multiple vendors:
-
-- **Format**: `openrouter/<vendor>/<model-name>`
-- **Example**: `openrouter/z-ai/glm-4.7`
-
-> **Important**: Always include `openrouter/` as the provider prefix. Using just `z-ai/glm-4.7` will result in a `ProviderModelNotFoundError`.
-
-### OpenRouter GLM Models (Examples)
-
-| Model          | Model ID                           | Context Window | Tool Use |
-| -------------- | ---------------------------------- | -------------- | -------- |
-| GLM-4.7        | `openrouter/z-ai/glm-4.7`          | 204,800 tokens | Yes      |
-| GLM-4.6        | `openrouter/z-ai/glm-4.6`          | 204,800 tokens | Yes      |
-| GLM-4.5        | `openrouter/z-ai/glm-4.5`          | 204,800 tokens | Yes      |
-| GLM-4.5 Air    | `openrouter/z-ai/glm-4.5-air`      | 204,800 tokens | Yes      |
-| GLM-4.5V       | `openrouter/z-ai/glm-4.5v`         | 204,800 tokens | Yes      |
-| GLM-4.5 (Free) | `openrouter/z-ai/glm-4.5-air:free` | 204,800 tokens | Yes      |
+| Model             | Model ID                                 | Context Window   | Tool Use |
+| ----------------- | ---------------------------------------- | ---------------- | -------- |
+| Claude Sonnet 4   | `openrouter/anthropic/claude-sonnet-4`   | 200,000 tokens   | Yes      |
+| Claude Sonnet 4.5 | `openrouter/anthropic/claude-sonnet-4-5` | 200,000 tokens   | Yes      |
+| GPT-4o            | `openrouter/openai/gpt-4o`               | 128,000 tokens   | Yes      |
+| GPT-4o Mini       | `openrouter/openai/gpt-4o-mini`          | 128,000 tokens   | Yes      |
+| Llama 3.3 70B     | `openrouter/meta-llama/llama-3.3-70b`    | 131,072 tokens   | Yes      |
+| Gemini 2.0 Flash  | `openrouter/google/gemini-2.0-flash`     | 1,000,000 tokens | Yes      |
+| DeepSeek V3       | `openrouter/deepseek/deepseek-chat`      | 64,000 tokens    | Yes      |
 
 ### OpenRouter Usage Examples
 
 ```bash
-# Using GLM-4.7 from Z.AI
-echo "hello" | agent --model openrouter/z-ai/glm-4.7
+# Using Claude Sonnet 4 via OpenRouter
+echo "hello" | agent --model openrouter/anthropic/claude-sonnet-4
 
-# Using GLM-4.6 for coding
-echo "hello" | agent --model openrouter/z-ai/glm-4.6
+# Using GPT-4o via OpenRouter
+echo "hello" | agent --model openrouter/openai/gpt-4o
 
-# Using the free GLM-4.5 Air model
-echo "hello" | agent --model openrouter/z-ai/glm-4.5-air:free
+# Using Llama 3.3 70B via OpenRouter
+echo "hello" | agent --model openrouter/meta-llama/llama-3.3-70b
 
-# Using Claude models via OpenRouter
-echo "hello" | agent --model openrouter/anthropic/claude-3.5-sonnet
+# Using free models (with rate limits)
+echo "hello" | agent --model openrouter/meta-llama/llama-3.1-8b:free
 ```
 
-For the complete list of available models, visit [OpenRouter Models](https://openrouter.ai/models).
+For more details, see the [OpenRouter Documentation](docs/openrouter.md).

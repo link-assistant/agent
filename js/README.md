@@ -24,7 +24,7 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 
 - ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/grok-code`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
-- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Grok Code Fast 1, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), and [Groq](../docs/groq.md) providers
+- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Grok Code Fast 1, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
 - ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
 - ✅ **Full Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
@@ -58,6 +58,38 @@ bun add @link-assistant/agent
 ```
 
 After installation, the `agent` command will be available globally.
+
+## Uninstallation
+
+### Uninstalling the Agent
+
+```bash
+# Remove the globally installed package
+bun remove -g @link-assistant/agent
+
+# Or if installed locally in your project
+bun remove @link-assistant/agent
+```
+
+### Uninstalling Bun
+
+If you need to completely remove Bun from your system:
+
+```bash
+# Remove the Bun binary and installation directory
+rm -rf ~/.bun
+
+# Remove the Bun cache (optional)
+rm -rf ~/.bun/install/cache
+```
+
+After removing the `~/.bun` directory, you may also need to remove Bun from your shell configuration. Check and remove lines referencing `~/.bun/bin` from:
+
+- `~/.bashrc`
+- `~/.zshrc`
+- `~/.config/fish/config.fish`
+
+Or the corresponding configuration file for your shell.
 
 ## Usage
 
@@ -116,6 +148,11 @@ echo "hi" | agent --model opencode/gemini-3-pro  # Gemini 3 Pro
 echo "hi" | agent --model groq/llama-3.3-70b-versatile  # Llama 3.3 70B
 echo "hi" | agent --model groq/llama-3.1-8b-instant     # Llama 3.1 8B (fast)
 
+# OpenRouter models (requires OPENROUTER_API_KEY)
+echo "hi" | agent --model openrouter/anthropic/claude-sonnet-4  # Claude via OpenRouter
+echo "hi" | agent --model openrouter/openai/gpt-4o              # GPT-4o via OpenRouter
+echo "hi" | agent --model openrouter/meta-llama/llama-3.3-70b   # Llama via OpenRouter
+
 # Anthropic direct (requires ANTHROPIC_API_KEY)
 echo "hi" | agent --model anthropic/claude-sonnet-4-5  # Claude Sonnet 4.5
 echo "hi" | agent --model anthropic/claude-opus-4-1    # Claude Opus 4.1
@@ -138,6 +175,7 @@ echo "hi" | agent --model github-copilot/gpt-4o        # Uses Copilot
 
 See [MODELS.md](../MODELS.md) for complete list of available models and pricing.
 See [docs/groq.md](../docs/groq.md) for Groq provider documentation.
+See [docs/openrouter.md](../docs/openrouter.md) for OpenRouter provider documentation.
 See [docs/claude-oauth.md](../docs/claude-oauth.md) for Claude OAuth provider documentation.
 
 ### Direct Prompt Mode

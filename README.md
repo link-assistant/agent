@@ -19,10 +19,10 @@
 
 This repository contains two implementations of the agent:
 
-| Implementation | Status | Package Manager | Install Command |
-|---------------|--------|-----------------|-----------------|
-| [JavaScript/Bun](js/README.md) | **Production Ready** | npm | `bun install -g @link-assistant/agent` |
-| [Rust](rust/README.md) | Work in Progress | cargo | `cargo install agent` (when published) |
+| Implementation                 | Status               | Package Manager | Install Command                        |
+| ------------------------------ | -------------------- | --------------- | -------------------------------------- |
+| [JavaScript/Bun](js/README.md) | **Production Ready** | npm             | `bun install -g @link-assistant/agent` |
+| [Rust](rust/README.md)         | Work in Progress     | cargo           | `cargo install agent` (when published) |
 
 Both implementations aim to be fully compatible with [OpenCode](https://github.com/sst/opencode)'s `run --format json` mode.
 
@@ -41,6 +41,7 @@ echo "hi" | agent
 ```
 
 See [js/README.md](js/README.md) for full documentation including:
+
 - Complete CLI options reference
 - Model selection examples
 - Session resume functionality
@@ -72,7 +73,7 @@ We're creating a slimmed-down, public domain version of OpenCode CLI focused on 
 - **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
 - **Unrestricted Access**: Full file system and command execution access (no sandbox, no restrictions)
 - **Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
-- **Flexible Model Selection**: Supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](docs/claude-oauth.md), [Groq](docs/groq.md), and more - see [MODELS.md](MODELS.md)
+- **Flexible Model Selection**: Supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](docs/claude-oauth.md), [Groq](docs/groq.md), [OpenRouter](docs/openrouter.md), and more - see [MODELS.md](MODELS.md)
 - **Public Domain**: Unlicense - use it however you want
 
 ## Quick Start
@@ -155,20 +156,21 @@ agent mcp add playwright npx @playwright/mcp@latest
 ```
 
 See [js/README.md](js/README.md#mcp-model-context-protocol-support) for full MCP documentation including:
+
 - Available Playwright tools (22+ browser automation capabilities)
 - MCP server configuration
 - Usage examples
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [MODELS.md](MODELS.md) | Available models, providers, and pricing |
-| [TOOLS.md](TOOLS.md) | Complete tool documentation |
-| [EXAMPLES.md](EXAMPLES.md) | Usage examples for each tool |
-| [TESTING.md](TESTING.md) | Testing guide |
-| [js/README.md](js/README.md) | JavaScript/Bun implementation (full docs) |
-| [rust/README.md](rust/README.md) | Rust implementation |
+| Document                         | Description                               |
+| -------------------------------- | ----------------------------------------- |
+| [MODELS.md](MODELS.md)           | Available models, providers, and pricing  |
+| [TOOLS.md](TOOLS.md)             | Complete tool documentation               |
+| [EXAMPLES.md](EXAMPLES.md)       | Usage examples for each tool              |
+| [TESTING.md](TESTING.md)         | Testing guide                             |
+| [js/README.md](js/README.md)     | JavaScript/Bun implementation (full docs) |
+| [rust/README.md](rust/README.md) | Rust implementation                       |
 
 ## Files
 
