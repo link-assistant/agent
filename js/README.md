@@ -59,6 +59,38 @@ bun add @link-assistant/agent
 
 After installation, the `agent` command will be available globally.
 
+## Uninstallation
+
+### Uninstalling the Agent
+
+```bash
+# Remove the globally installed package
+bun remove -g @link-assistant/agent
+
+# Or if installed locally in your project
+bun remove @link-assistant/agent
+```
+
+### Uninstalling Bun
+
+If you need to completely remove Bun from your system:
+
+```bash
+# Remove the Bun binary and installation directory
+rm -rf ~/.bun
+
+# Remove the Bun cache (optional)
+rm -rf ~/.bun/install/cache
+```
+
+After removing the `~/.bun` directory, you may also need to remove Bun from your shell configuration. Check and remove lines referencing `~/.bun/bin` from:
+
+- `~/.bashrc`
+- `~/.zshrc`
+- `~/.config/fish/config.fish`
+
+Or the corresponding configuration file for your shell.
+
 ## Usage
 
 ### Simplest Examples
