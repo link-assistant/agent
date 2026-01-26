@@ -11,6 +11,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { createEventHandler, isValidJsonStandard } from './json-standard/index.ts'
 import { McpCommand } from './cli/cmd/mcp.ts'
+import { AuthCommand } from './cli/cmd/auth.ts'
 
 // Track if any errors occurred during execution
 let hasError = false
@@ -386,6 +387,8 @@ async function main() {
       .usage('$0 [command] [options]')
       // MCP subcommand
       .command(McpCommand)
+      // Auth subcommand
+      .command(AuthCommand)
       // Default run mode (when piping stdin)
       .option('model', {
         type: 'string',

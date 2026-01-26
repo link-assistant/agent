@@ -12,6 +12,7 @@ import { Instance } from "../project/instance"
 import { Global } from "../global"
 import { Flag } from "../flag/flag"
 import { iife } from "../util/iife"
+import { QWEN_PROVIDER_ID, QWEN_OAUTH_CONSTANTS, refreshAccessToken } from "../qwen/oauth"
 
 export namespace Provider {
   const log = Log.create({ service: "provider" })
@@ -235,6 +236,62 @@ export namespace Provider {
         },
       }
     },
+    /**
+     * Qwen Coder OAuth provider
+     * Uses portal.qwen.ai for OAuth-authenticated requests (free tier - 2,000 requests/day)
+     */
+    [QWEN_PROVIDER_ID]: async () => {
+      const auth = await Auth.get(QWEN_PROVIDER_ID)
+      if (!auth) return { autoload: false }
+
+      // Only OAuth auth is supported for this provider
+      if (auth.type !== "oauth") return { autoload: false }
+
+      // Create a fetch wrapper that handles OAuth token refresh
+      const createOAuthFetch = () => {
+        return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+          let currentAuth = await Auth.get(QWEN_PROVIDER_ID)
+          if (!currentAuth || currentAuth.type !== "oauth") {
+            throw new Error("Qwen OAuth authentication required. Run: agent auth login qwen")
+          }
+
+          // Check if token needs refresh (5 min buffer)
+          const needsRefresh = currentAuth.expires < Date.now() + 5 * 60 * 1000
+
+          if (needsRefresh && currentAuth.refresh) {
+            try {
+              const tokens = await refreshAccessToken(currentAuth.refresh)
+              const newAuth: Auth.Info = {
+                type: "oauth",
+                refresh: tokens.refresh_token || currentAuth.refresh,
+                access: tokens.access_token,
+                expires: Date.now() + tokens.expires_in * 1000,
+              }
+              await Auth.set(QWEN_PROVIDER_ID, newAuth)
+              currentAuth = newAuth
+            } catch (error) {
+              log.error("Failed to refresh Qwen OAuth token", { error })
+              throw new Error("Qwen OAuth token refresh failed. Please re-authenticate with: agent auth login qwen")
+            }
+          }
+
+          // Add authorization header
+          const headers = new Headers(init?.headers)
+          headers.set("Authorization", `Bearer ${currentAuth.access}`)
+
+          return fetch(input, { ...init, headers })
+        }
+      }
+
+      return {
+        autoload: true,
+        options: {
+          baseURL: QWEN_OAUTH_CONSTANTS.API_URL,
+          fetch: createOAuthFetch(),
+          apiKey: "oauth-placeholder", // Required by SDK but not used
+        },
+      }
+    },
   }
 
   const state = Instance.state(async () => {
@@ -302,6 +359,65 @@ export namespace Provider {
         // Enterprise uses a different API endpoint - will be set dynamically based on auth
         api: undefined,
       }
+    }
+
+    // Add Qwen Coder OAuth provider (free tier via portal.qwen.ai)
+    database[QWEN_PROVIDER_ID] = {
+      id: QWEN_PROVIDER_ID,
+      name: "Qwen Coder (OAuth)",
+      npm: "@ai-sdk/openai-compatible",
+      api: QWEN_OAUTH_CONSTANTS.API_URL,
+      env: [],
+      models: {
+        "coder-model": {
+          id: "coder-model",
+          name: "Qwen Coder (OAuth)",
+          release_date: "2024-12-01",
+          attachment: false,
+          reasoning: false,
+          temperature: true,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 1048576,
+            output: 65536,
+          },
+          modalities: {
+            input: ["text"],
+            output: ["text"],
+          },
+          options: {},
+        },
+        "vision-model": {
+          id: "vision-model",
+          name: "Qwen Vision (OAuth)",
+          release_date: "2024-12-01",
+          attachment: true,
+          reasoning: false,
+          temperature: true,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 131072,
+            output: 8192,
+          },
+          modalities: {
+            input: ["text", "image"],
+            output: ["text"],
+          },
+          options: {},
+        },
+      },
     }
 
     for (const [providerID, provider] of configProviders) {
