@@ -1,0 +1,76 @@
+# Solve.mjs Log - 2026-01-25T18:18:25.072Z
+
+This log file captures the failed session when attempting to use the grok-code model.
+
+## Error Summary
+
+Model: opencode/grok-code
+Error: Model grok-code not supported
+Status Code: 401 Unauthorized
+Provider: OpenCode Zen
+
+## Complete Log
+
+[2026-01-25T18:18:25.072Z] [INFO] Log file: /home/hive/solve-2026-01-25T18-18-25-071Z.log
+[2026-01-25T18:18:25.073Z] [INFO]    (All output will be logged here)
+[2026-01-25T18:18:25.798Z] [INFO]
+[2026-01-25T18:18:25.798Z] [INFO] solve v1.9.0
+[2026-01-25T18:18:25.799Z] [INFO] Raw command executed:
+[2026-01-25T18:18:25.799Z] [INFO]    /home/hive/.nvm/versions/node/v20.20.0/bin/node /home/hive/.bun/bin/solve https://github.com/kg-ar288/egida-test/pull/38 --tool agent --attach-logs --verbose --no-tool-check --auto-resume-on-limit-reset --tokens-budget-stats
+
+[2026-01-25T18:18:31.252Z] [INFO] Disk space check: 24339MB available (2048MB required)
+[2026-01-25T18:18:31.254Z] [INFO] Memory check: 10931MB available, swap: 4095MB (0MB used), total: 15026MB (256MB required)
+[2026-01-25T18:18:31.271Z] [INFO] Skipping tool connection validation (dry-run mode or skip-tool-connection-check enabled)
+[2026-01-25T18:18:31.272Z] [INFO] Skipping GitHub authentication check (dry-run mode or skip-tool-connection-check enabled)
+[2026-01-25T18:18:31.273Z] [INFO] URL validation:
+[2026-01-25T18:18:31.273Z] [INFO]    Input URL: https://github.com/kg-ar288/egida-test/pull/38
+[2026-01-25T18:18:31.273Z] [INFO]    Is Issue URL: false
+[2026-01-25T18:18:31.273Z] [INFO]    Is PR URL: true
+
+[2026-01-25T18:18:33.211Z] [INFO] PR branch: issue-37-eb7bb03ec86d
+[2026-01-25T18:18:33.212Z] [INFO] Found linked issue #37
+[2026-01-25T18:18:33.213Z] [INFO] Creating temporary directory: /tmp/gh-issue-solver-1769365113213
+
+[2026-01-25T18:18:34.590Z] [INFO] Cloned to: /tmp/gh-issue-solver-1769365113213
+[2026-01-25T18:18:35.577Z] [INFO] Branch checked out: issue-37-eb7bb03ec86d
+
+[2026-01-25T18:18:43.620Z] [INFO] Executing Agent: GROK-CODE
+[2026-01-25T18:18:43.621Z] [INFO]    Model: grok-code
+[2026-01-25T18:18:43.621Z] [INFO]    Working directory: /tmp/gh-issue-solver-1769365113213
+[2026-01-25T18:18:43.621Z] [INFO]    Branch: issue-37-eb7bb03ec86d
+[2026-01-25T18:18:43.621Z] [INFO]    Prompt length: 354 chars
+[2026-01-25T18:18:43.621Z] [INFO]    System prompt length: 7783 chars
+
+[2026-01-25T18:18:43.686Z] [INFO] Raw command:
+(cd "/tmp/gh-issue-solver-1769365113213" && cat "/tmp/agent_prompt_1769365123685_667855.txt" | agent --model opencode/grok-code --verbose)
+
+## Error Response
+
+[2026-01-25T18:18:44.917Z] [INFO] {
+  "type": "error",
+  "timestamp": 1769365124916,
+  "sessionID": "ses_4099ecb1dffe37aGrscCzH2N4j",
+  "error": {
+    "name": "APIError",
+    "data": {
+      "message": "Model grok-code not supported",
+      "statusCode": 401,
+      "isRetryable": false,
+      "responseHeaders": {
+        "cf-placement": "local-EWR",
+        "cf-ray": "9c39c65dea16dcf2-EWR",
+        "connection": "keep-alive",
+        "content-length": "88",
+        "content-type": "text/plain;charset=UTF-8",
+        "date": "Sun, 25 Jan 2026 18:18:44 GMT",
+        "server": "cloudflare",
+        "vary": "accept-encoding"
+      },
+      "responseBody": "{\"type\":\"error\",\"error\":{\"type\":\"ModelError\",\"message\":\"Model grok-code not supported\"}}"
+    }
+  }
+}
+
+[2026-01-25T18:18:45.033Z] [INFO] Agent command completed
+[2026-01-25T18:18:45.138Z] [INFO] Checking for uncommitted changes...
+[2026-01-25T18:18:45.187Z] [INFO] No uncommitted changes found
