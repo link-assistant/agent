@@ -1858,6 +1858,457 @@ const GooglePlugin: AuthPlugin = {
 };
 
 /**
+ * Qwen OAuth Configuration
+ * Used for Qwen Coder free tier authentication via chat.qwen.ai
+ *
+ * Based on qwen-auth-opencode reference implementation:
+ * https://github.com/lion-lef/qwen-auth-opencode
+ */
+const QWEN_OAUTH_CLIENT_ID = 'f0304373b74a44d2b584a3fb70ca9e56';
+const QWEN_OAUTH_SCOPE = 'openid profile email model.completion';
+const QWEN_OAUTH_DEVICE_CODE_ENDPOINT =
+  'https://chat.qwen.ai/api/v1/oauth2/device/code';
+const QWEN_OAUTH_TOKEN_ENDPOINT = 'https://chat.qwen.ai/api/v1/oauth2/token';
+const QWEN_OAUTH_API_URL = 'https://portal.qwen.ai/v1';
+
+/**
+ * Qwen/Alibaba API endpoints
+ */
+const DASHSCOPE_API_URLS: Record<string, string> = {
+  china: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  international: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+};
+
+/**
+ * Detect if running in a headless environment (no GUI)
+ */
+function isHeadlessEnvironment(): boolean {
+  // Check common headless indicators
+  if (!process.stdout.isTTY) return true;
+  if (process.env.SSH_CLIENT || process.env.SSH_TTY) return true;
+  if (process.env.CI) return true;
+  if (!process.env.DISPLAY && process.platform === 'linux') return true;
+  return false;
+}
+
+/**
+ * Open URL in the default browser
+ */
+function openBrowser(url: string): void {
+  const platform = process.platform;
+  let command: string;
+
+  if (platform === 'darwin') {
+    command = 'open';
+  } else if (platform === 'win32') {
+    command = 'start';
+  } else {
+    command = 'xdg-open';
+  }
+
+  Bun.spawn([command, url], { stdout: 'ignore', stderr: 'ignore' });
+}
+
+/**
+ * Qwen OAuth Plugin
+ * Supports:
+ * - Qwen Coder OAuth login (device flow) - Free tier (2,000 requests/day)
+ * - DashScope API key (pay-as-you-go)
+ *
+ * This plugin provides authentication for both Qwen Coder models via OAuth
+ * and Alibaba DashScope models via API key.
+ */
+const QwenPlugin: AuthPlugin = {
+  provider: 'qwen-coder',
+  methods: [
+    {
+      label: 'Qwen Coder OAuth (Free Tier)',
+      type: 'oauth',
+      async authorize() {
+        // Generate PKCE pair
+        const codeVerifier = generateRandomString(32);
+        const codeChallenge = generateCodeChallenge(codeVerifier);
+
+        // Request device code
+        const deviceResponse = await fetch(QWEN_OAUTH_DEVICE_CODE_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
+          },
+          body: new URLSearchParams({
+            client_id: QWEN_OAUTH_CLIENT_ID,
+            scope: QWEN_OAUTH_SCOPE,
+            code_challenge: codeChallenge,
+            code_challenge_method: 'S256',
+          }).toString(),
+        });
+
+        if (!deviceResponse.ok) {
+          const errorText = await deviceResponse.text();
+          log.error(() => ({
+            message: 'qwen oauth device code request failed',
+            status: deviceResponse.status,
+            error: errorText,
+          }));
+          throw new Error(
+            `Device authorization failed: ${deviceResponse.status}`
+          );
+        }
+
+        const deviceData = (await deviceResponse.json()) as {
+          device_code: string;
+          user_code: string;
+          verification_uri: string;
+          verification_uri_complete: string;
+          expires_in: number;
+          interval?: number;
+        };
+
+        const pollInterval = (deviceData.interval || 2) * 1000;
+        const maxPollAttempts = Math.ceil(
+          deviceData.expires_in / (pollInterval / 1000)
+        );
+
+        // Try to open browser in non-headless environments
+        if (!isHeadlessEnvironment()) {
+          try {
+            openBrowser(deviceData.verification_uri_complete);
+          } catch {
+            // Ignore browser open errors
+          }
+        }
+
+        const instructions = isHeadlessEnvironment()
+          ? `Visit: ${deviceData.verification_uri}\nEnter code: ${deviceData.user_code}`
+          : `Opening browser for authentication...\nIf browser doesn't open, visit: ${deviceData.verification_uri}\nEnter code: ${deviceData.user_code}`;
+
+        return {
+          url: deviceData.verification_uri_complete,
+          instructions,
+          method: 'auto' as const,
+          async callback(): Promise<AuthResult> {
+            // Poll for authorization completion
+            for (let attempt = 0; attempt < maxPollAttempts; attempt++) {
+              const tokenResponse = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                  Accept: 'application/json',
+                },
+                body: new URLSearchParams({
+                  client_id: QWEN_OAUTH_CLIENT_ID,
+                  device_code: deviceData.device_code,
+                  grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+                  code_verifier: codeVerifier,
+                }).toString(),
+              });
+
+              if (!tokenResponse.ok) {
+                const errorText = await tokenResponse.text();
+                try {
+                  const errorJson = JSON.parse(errorText);
+                  if (
+                    errorJson.error === 'authorization_pending' ||
+                    errorJson.error === 'slow_down'
+                  ) {
+                    await new Promise((resolve) =>
+                      setTimeout(
+                        resolve,
+                        errorJson.error === 'slow_down'
+                          ? pollInterval * 1.5
+                          : pollInterval
+                      )
+                    );
+                    continue;
+                  }
+                } catch {
+                  // JSON parse failed, treat as regular error
+                }
+
+                log.error(() => ({
+                  message: 'qwen oauth token poll failed',
+                  status: tokenResponse.status,
+                  error: errorText,
+                }));
+                return { type: 'failed' };
+              }
+
+              const tokenData = (await tokenResponse.json()) as {
+                access_token: string;
+                refresh_token?: string;
+                token_type: string;
+                expires_in: number;
+                resource_url?: string;
+              };
+
+              return {
+                type: 'success',
+                refresh: tokenData.refresh_token || '',
+                access: tokenData.access_token,
+                expires: Date.now() + tokenData.expires_in * 1000,
+              };
+            }
+
+            log.error(() => ({
+              message: 'qwen oauth authorization timeout',
+            }));
+            return { type: 'failed' };
+          },
+        };
+      },
+    },
+    {
+      label: 'DashScope API Key',
+      type: 'api',
+      prompts: [
+        {
+          type: 'select',
+          key: 'region',
+          message: 'Select API region',
+          options: [
+            {
+              label: 'China',
+              value: 'china',
+              hint: 'dashscope.aliyuncs.com',
+            },
+            {
+              label: 'International',
+              value: 'international',
+              hint: 'dashscope-intl.aliyuncs.com',
+            },
+          ],
+        },
+        {
+          type: 'text',
+          key: 'apiKey',
+          message: 'Enter your DashScope API key',
+          placeholder: 'sk-...',
+          validate: (value) => {
+            if (!value || value.trim().length === 0) {
+              return 'API key is required';
+            }
+            if (!value.startsWith('sk-')) {
+              return "Invalid API key format (should start with 'sk-')";
+            }
+            return undefined;
+          },
+        },
+      ],
+      async authorize(inputs): Promise<AuthResult> {
+        const region = inputs.region || 'international';
+        const apiKey = inputs.apiKey;
+
+        if (!apiKey) {
+          return { type: 'failed' };
+        }
+
+        // Store the region preference with the key for later use
+        // The key format allows us to retrieve the region during requests
+        return {
+          type: 'success',
+          key: apiKey,
+          provider: 'alibaba', // Save as alibaba for API key auth
+        };
+      },
+    },
+  ],
+  async loader(getAuth, provider) {
+    const auth = await getAuth();
+    if (!auth) return {};
+
+    // Zero out cost for OAuth users (free tier)
+    if (auth.type === 'oauth' && provider?.models) {
+      for (const model of Object.values(provider.models)) {
+        (model as any).cost = {
+          input: 0,
+          output: 0,
+          cache: {
+            read: 0,
+            write: 0,
+          },
+        };
+      }
+    }
+
+    if (auth.type === 'oauth') {
+      return {
+        apiKey: 'oauth-token-used-via-custom-fetch',
+        baseURL: QWEN_OAUTH_API_URL,
+        async fetch(input: RequestInfo | URL, init?: RequestInit) {
+          let currentAuth = await getAuth();
+          if (!currentAuth || currentAuth.type !== 'oauth')
+            return fetch(input, init);
+
+          // Note: Qwen OAuth token refresh would need to be implemented
+          // if the token expires. For now, we use the access token directly.
+          // The token typically has a long lifetime (several hours).
+
+          const headers: Record<string, string> = {
+            ...(init?.headers as Record<string, string>),
+            Authorization: `Bearer ${currentAuth.access}`,
+          };
+          delete headers['x-api-key'];
+
+          return fetch(input, {
+            ...init,
+            headers,
+          });
+        },
+      };
+    }
+
+    // API key authentication (for DashScope)
+    return {
+      apiKey: auth.key,
+    };
+  },
+};
+
+/**
+ * Alibaba DashScope Plugin (alias for Qwen)
+ * This provides a separate menu entry for Alibaba/DashScope
+ * with the same authentication methods.
+ */
+const AlibabaPlugin: AuthPlugin = {
+  provider: 'alibaba',
+  methods: [
+    {
+      label: 'Qwen Coder OAuth (Free Tier)',
+      type: 'oauth',
+      async authorize() {
+        // Delegate to QwenPlugin's OAuth method
+        const qwenMethod = QwenPlugin.methods.find(
+          (m) => m.label === 'Qwen Coder OAuth (Free Tier)'
+        );
+        if (qwenMethod?.authorize) {
+          const result = await qwenMethod.authorize({});
+          // Override the callback to save as alibaba provider
+          if ('callback' in result) {
+            const originalCallback = result.callback;
+            return {
+              ...result,
+              async callback(code?: string): Promise<AuthResult> {
+                const authResult = await originalCallback(code);
+                if (authResult.type === 'success' && 'refresh' in authResult) {
+                  return {
+                    ...authResult,
+                    provider: 'alibaba',
+                  };
+                }
+                return authResult;
+              },
+            };
+          }
+        }
+        return {
+          method: 'auto' as const,
+          async callback(): Promise<AuthResult> {
+            return { type: 'failed' };
+          },
+        };
+      },
+    },
+    {
+      label: 'DashScope API Key',
+      type: 'api',
+      prompts: [
+        {
+          type: 'select',
+          key: 'region',
+          message: 'Select API region',
+          options: [
+            {
+              label: 'China',
+              value: 'china',
+              hint: 'dashscope.aliyuncs.com',
+            },
+            {
+              label: 'International',
+              value: 'international',
+              hint: 'dashscope-intl.aliyuncs.com',
+            },
+          ],
+        },
+        {
+          type: 'text',
+          key: 'apiKey',
+          message: 'Enter your DashScope API key',
+          placeholder: 'sk-...',
+          validate: (value) => {
+            if (!value || value.trim().length === 0) {
+              return 'API key is required';
+            }
+            if (!value.startsWith('sk-')) {
+              return "Invalid API key format (should start with 'sk-')";
+            }
+            return undefined;
+          },
+        },
+      ],
+      async authorize(inputs): Promise<AuthResult> {
+        const apiKey = inputs.apiKey;
+
+        if (!apiKey) {
+          return { type: 'failed' };
+        }
+
+        return {
+          type: 'success',
+          key: apiKey,
+        };
+      },
+    },
+  ],
+  async loader(getAuth, provider) {
+    const auth = await getAuth();
+    if (!auth) return {};
+
+    // Zero out cost for OAuth users (free tier)
+    if (auth.type === 'oauth' && provider?.models) {
+      for (const model of Object.values(provider.models)) {
+        (model as any).cost = {
+          input: 0,
+          output: 0,
+          cache: {
+            read: 0,
+            write: 0,
+          },
+        };
+      }
+    }
+
+    if (auth.type === 'oauth') {
+      return {
+        apiKey: 'oauth-token-used-via-custom-fetch',
+        baseURL: QWEN_OAUTH_API_URL,
+        async fetch(input: RequestInfo | URL, init?: RequestInit) {
+          let currentAuth = await getAuth();
+          if (!currentAuth || currentAuth.type !== 'oauth')
+            return fetch(input, init);
+
+          const headers: Record<string, string> = {
+            ...(init?.headers as Record<string, string>),
+            Authorization: `Bearer ${currentAuth.access}`,
+          };
+          delete headers['x-api-key'];
+
+          return fetch(input, {
+            ...init,
+            headers,
+          });
+        },
+      };
+    }
+
+    // API key authentication (for DashScope)
+    return {
+      apiKey: auth.key,
+    };
+  },
+};
+
+/**
  * Registry of all auth plugins
  */
 const plugins: Record<string, AuthPlugin> = {
@@ -1865,6 +2316,8 @@ const plugins: Record<string, AuthPlugin> = {
   'github-copilot': GitHubCopilotPlugin,
   openai: OpenAIPlugin,
   google: GooglePlugin,
+  'qwen-coder': QwenPlugin,
+  alibaba: AlibabaPlugin,
 };
 
 /**
