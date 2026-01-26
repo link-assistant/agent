@@ -6,10 +6,11 @@
 **URL:** https://github.com/link-assistant/agent/issues/5  
 **Status:** Open  
 **Author:** unidel2035  
-**Created:** (from issue data)  
+**Created:** (from issue data)
 
 **Description:**  
-User reports an installation error when attempting to use the @link-assistant/agent package after global installation with Bun. The error message is:  
+User reports an installation error when attempting to use the @link-assistant/agent package after global installation with Bun. The error message is:
+
 ```
 error: For security reasons, macros cannot be run from node_modules.
     at /home/unidel/node_modules/@link-assistant/agent/src/provider/models.ts:75:24
@@ -37,6 +38,7 @@ The full installation log shows successful installation of Bun and the package, 
 The root cause is Bun's security restriction on macro execution from node_modules combined with the package's publishing strategy.
 
 **Technical Details:**
+
 - The package uses a Bun macro in `src/provider/models-macro.ts` to fetch API data at build time
 - The macro is imported in `src/provider/models.ts` with `import { data } from "./models-macro" with { type: "macro" }`
 - The package is published as source code (TypeScript files) rather than bundled JavaScript
@@ -50,6 +52,7 @@ Bun macros are designed to run at bundle-time, inlining their results. Publishin
 ## Proposed Solutions
 
 ### 1. Build Package Before Publishing (Recommended)
+
 - Add a build script using `bun build` to compile TypeScript to JavaScript with macros inlined
 - Update `package.json`:
   - Change `bin` to point to built file (e.g., `dist/index.js`)
@@ -58,11 +61,13 @@ Bun macros are designed to run at bundle-time, inlining their results. Publishin
 - This ensures macros are executed at build time, not runtime
 
 ### 2. Runtime Data Fetching Alternative
+
 - Modify `models-macro.ts` to perform the fetch at runtime instead of build time
 - Remove macro import and implement caching mechanism
 - Trade-off: Potential performance impact and increased runtime dependencies
 
 ### 3. User Workaround
+
 - Install package locally instead of globally: `bun add @link-assistant/agent` then run with `bunx agent`
 - Less convenient for CLI tool usage
 

@@ -1,0 +1,198 @@
+{
+  "comments": [],
+  "commits": [
+    {
+      "authoredDate": "2025-12-22T19:15:52Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:15:52Z",
+      "messageBody": "Adding CLAUDE.md with task information for AI processing.\nThis file will be removed when the task is complete.\n\nIssue: https://github.com/link-assistant/agent/issues/96",
+      "messageHeadline": "Initial commit with task details",
+      "oid": "b7572c5ffb1e6913642e6de4344376b339da67ba"
+    },
+    {
+      "authoredDate": "2025-12-22T19:23:58Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:23:58Z",
+      "messageBody": "- Remove .lazy from Log.Default.lazy.info in runAgentMode and runContinuousAgentMode\n- Add synthetic providers to the provider state so link-assistant/echo works\n- Add test for echo model to prevent regression\n\nFixes issue #96",
+      "messageHeadline": "Fix Log.Default.lazy.info error by removing .lazy from logging calls",
+      "oid": "83cc87e41f0888822fac7e522a9aabcc8eaa4d73"
+    },
+    {
+      "authoredDate": "2025-12-22T19:26:28Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:26:28Z",
+      "messageBody": "…vider\n\n- Remove .lazy from Log.Default.lazy.info() calls in src/index.js\n- Make link-assistant provider always available for CI/CD testing\n- Update echo model tests to verify agent starts without logging errors\n- Add comprehensive case study documentation\n- Fix model info handling for synthetic providers\n\nThe root cause was that Log.Default does not have a .lazy property.\nLazy logging is built directly into Log.Default.info() method.",
+      "messageHeadline": "Fix issue #96: Remove Log.Default.lazy.info calls and enable echo pro…",
+      "oid": "cc3cad9836c141659285a5c08734bbb5314208cf"
+    },
+    {
+      "authoredDate": "2025-12-22T19:30:23Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:30:23Z",
+      "messageBody": "…vider\n\n- Remove .lazy from Log.Default.lazy.info() calls in src/index.js\n- Make link-assistant provider always available for CI/CD testing\n- Update echo model tests to verify agent starts without logging errors\n- Add comprehensive case study documentation\n- Fix model info handling for synthetic providers\n\nThe root cause was that Log.Default does not have a .lazy property.\nLazy logging is built directly into Log.Default.info() method.",
+      "messageHeadline": "Fix issue #96: Remove Log.Default.lazy.info calls and enable echo pro…",
+      "oid": "1fd3fbd52c23f878c28216705c48183cd94dd306"
+    },
+    {
+      "authoredDate": "2025-12-22T19:32:26Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude"
+        }
+      ],
+      "committedDate": "2025-12-22T19:32:26Z",
+      "messageBody": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+      "messageHeadline": "chore: add changeset for Log.Default.lazy.info fix",
+      "oid": "0713e6f3cdf026a05e41b4320dfda68766a9cb22"
+    },
+    {
+      "authoredDate": "2025-12-22T19:35:42Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:35:42Z",
+      "messageBody": "- Fix 'undefined is not an object (evaluating Log.Default.lazy.info)' error\n- Log.Default.info() already supports lazy evaluation with callback functions\n- Remove .lazy intermediate property that doesn't exist\n- Add dry-run test to verify fix and prevent regression\n- Update case study documentation with fix verification",
+      "messageHeadline": "Fix issue #96: Remove .lazy from Log.Default.info() calls",
+      "oid": "bffbe036b904642b384face5d8d829fe6e416bfc"
+    },
+    {
+      "authoredDate": "2025-12-22T19:36:10Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude"
+        }
+      ],
+      "committedDate": "2025-12-22T19:36:10Z",
+      "messageBody": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+      "messageHeadline": "chore: format CLAUDE.md",
+      "oid": "fb312345193897f2e7ab0d332f069ba5e4f59ac8"
+    },
+    {
+      "authoredDate": "2025-12-22T19:36:17Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:36:17Z",
+      "messageBody": "…t calls\n\n- Remove .lazy from Log.Default.lazy.info() calls in src/index.js\n- Add unit tests for lazy logging functionality\n- Add CI/CD tests using link-assistant/echo model to prevent regression\n- Create comprehensive case study analysis in docs/case-studies/issue-96/\n\nFixes issue #96: undefined is not an object (evaluating 'Log.Default.lazy.info')",
+      "messageHeadline": "Fix logging error: remove non-existent .lazy property from Log.Defaul…",
+      "oid": "7385621752bc058f03cc7009644f8bc5ad9caee7"
+    },
+    {
+      "authoredDate": "2025-12-22T19:39:12Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:39:12Z",
+      "messageBody": "- Update test expectation to check that Log.Default.lazy.info error doesn't occur\n- Add dry-run.test.js to CI/CD test suite in release workflow\n- The main logging fix was already implemented in previous commits",
+      "messageHeadline": "fix(test): Update dry-run test to verify logging error is resolved",
+      "oid": "3370664a80f9329fa302bf1236348dd5e0e319ea"
+    },
+    {
+      "authoredDate": "2025-12-22T19:39:31Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:39:31Z",
+      "messageBody": "…nfo error\n\n- Add detailed README.md with root cause analysis, timeline, and prevention strategies\n- Include issue data and PR data for reference\n- Add web research findings on similar logging issues\n- Document the fix: removed non-existent .lazy property access\n- Verify fix with unit tests and CI/CD integration tests",
+      "messageHeadline": "docs: Add comprehensive case study for issue #96 - Log.Default.lazy.i…",
+      "oid": "c9f048ecb2042ff95dfd2d12234ca0c556e852bf"
+    },
+    {
+      "authoredDate": "2025-12-22T19:39:57Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:39:57Z",
+      "messageBody": "- Add test-verification.log with successful test output\n- Remove unnecessary test_file.txt\n- Complete the case study documentation for the logging fix",
+      "messageHeadline": "docs(case-study): Add test verification log for issue #96",
+      "oid": "5076797e9e358a27b23b83e87dfa6cd1609644ca"
+    },
+    {
+      "authoredDate": "2025-12-22T19:40:41Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T19:40:41Z",
+      "messageBody": "- Use Object.defineProperty for lazy property to ensure robustness across JS engines\n- Update case study documentation with additional improvements\n- Update changeset with implementation details\n\nFixes #96 - Resolves 'undefined is not an object (evaluating Log.Default.lazy.info)' error",
+      "messageHeadline": "fix(log): Improve backward compatibility for Log.Default.lazy property",
+      "oid": "3dd9ea578c8fc1b8c09525e92dbd34c3524ffb40"
+    }
+  ],
+  "reviews": []
+}

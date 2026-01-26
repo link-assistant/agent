@@ -1,1 +1,13 @@
-{"author":{"id":"U_kgDOB5sa1w","is_bot":false,"login":"unidel2035","name":""},"body":"unidel@DG:~$ # Install Bun first if you haven't already\ncurl -fsSL https://bun.sh/install | bash\n######################################################################## 100.0%\nbun was installed successfully to ~/.bun/bin/bun\nRun 'bun --help' to get started\nunidel@DG:~$ # Install the package globally\nbun install -g @link-assistant/agent\nbun add v1.3.2 (b131639c)\nInvalidNPMLockfile: failed to migrate lockfile: 'package-lock.json'\n\nwarn: Ignoring lockfile\nwarn: incorrect peer dependency \"solid-js@1.9.10\"\n\ninstalled @link-assistant/agent@0.0.2 with binaries:\n - agent\n\n444 packages installed [8.77s]\n\nBlocked 2 postinstalls. Run bun pm -g untrusted for details.\nunidel@DG:~$ echo \"hi\" | agent\n75 |     const json = await data()\n                            ^\nerror: For security reasons, macros cannot be run from node_modules.\n    at /home/unidel/node_modules/@link-assistant/agent/src/provider/models.ts:75:24\n\nBun v1.3.2 (Linux x64)","comments":[],"createdAt":"2025-11-20T07:35:04Z","title":"Ошибка установки","updatedAt":"2025-11-20T07:35:04Z"}
+{
+  "author": {
+    "id": "U_kgDOB5sa1w",
+    "is_bot": false,
+    "login": "unidel2035",
+    "name": ""
+  },
+  "body": "unidel@DG:~$ # Install Bun first if you haven't already\ncurl -fsSL https://bun.sh/install | bash\n######################################################################## 100.0%\nbun was installed successfully to ~/.bun/bin/bun\nRun 'bun --help' to get started\nunidel@DG:~$ # Install the package globally\nbun install -g @link-assistant/agent\nbun add v1.3.2 (b131639c)\nInvalidNPMLockfile: failed to migrate lockfile: 'package-lock.json'\n\nwarn: Ignoring lockfile\nwarn: incorrect peer dependency \"solid-js@1.9.10\"\n\ninstalled @link-assistant/agent@0.0.2 with binaries:\n - agent\n\n444 packages installed [8.77s]\n\nBlocked 2 postinstalls. Run bun pm -g untrusted for details.\nunidel@DG:~$ echo \"hi\" | agent\n75 |     const json = await data()\n                            ^\nerror: For security reasons, macros cannot be run from node_modules.\n    at /home/unidel/node_modules/@link-assistant/agent/src/provider/models.ts:75:24\n\nBun v1.3.2 (Linux x64)",
+  "comments": [],
+  "createdAt": "2025-11-20T07:35:04Z",
+  "title": "Ошибка установки",
+  "updatedAt": "2025-11-20T07:35:04Z"
+}

@@ -1,0 +1,1062 @@
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.807Z","service":"default","version":"0.8.9","command":"/home/hive/.bun/bin/bun /tmp/gh-issue-solver-1769196616847/js/src/index.js --prompt test --model opencode/gpt-5-nano --dry-run --compact-json --disable-stdin","workingDirectory":"/tmp/gh-issue-solver-1769196616847/js","scriptPath":"/tmp/gh-issue-solver-1769196616847/js/src/index.js","message":"Agent started"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.808Z","service":"default","mode":"dry-run","message":"Dry run mode enabled"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.808Z","service":"default","directory":"/tmp/gh-issue-solver-1769196616847/js","message":"creating instance"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.809Z","service":"project","directory":"/tmp/gh-issue-solver-1769196616847/js","message":"fromDirectory"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.827Z","service":"project","status":"started","message":"git.rev-parse"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.827Z","service":"project","status":"completed","duration":0,"message":"git.rev-parse"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.847Z","service":"server","method":"POST","path":"/session","message":"request"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.847Z","service":"server","status":"started","method":"POST","path":"/session","message":"request"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.850Z","service":"session","id":"ses_41391f345ffebNCbCHJpBkbpji","version":"agent-cli-1.0.0","projectID":"f09fd5b486a83cf7a8f0d4fb432b753a7274b398","directory":"/tmp/gh-issue-solver-1769196616847/js","title":"New session - 2026-01-23T19:56:33.850Z","time":{"created":1769198193850,"updated":1769198193850},"message":"created"}
+
+{"type":"session.created","level":"info","timestamp":"2026-01-23T19:56:33.851Z","service":"bus","message":"publishing"}
+
+{"type":"session.updated","level":"info","timestamp":"2026-01-23T19:56:33.851Z","service":"bus","message":"publishing"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.852Z","service":"server","status":"completed","duration":5,"method":"POST","path":"/session","message":"request"}
+{"type":"*","level":"info","timestamp":"2026-01-23T19:56:33.855Z","service":"bus","message":"subscribing"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.856Z","service":"server","method":"POST","path":"/session/ses_41391f345ffebNCbCHJpBkbpji/message","message":"request"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.856Z","service":"server","status":"started","method":"POST","path":"/session/ses_41391f345ffebNCbCHJpBkbpji/message","message":"request"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.862Z","service":"server","status":"completed","duration":6,"method":"POST","path":"/session/ses_41391f345ffebNCbCHJpBkbpji/message","message":"request"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.865Z","service":"config","path":"/home/hive/.config/link-assistant-agent/config.json","message":"loading"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.866Z","service":"config","path":"/home/hive/.config/link-assistant-agent/opencode.json","message":"loading"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.866Z","service":"config","path":"/home/hive/.config/link-assistant-agent/opencode.jsonc","message":"loading"}
+
+{"type":"message.updated","level":"info","timestamp":"2026-01-23T19:56:33.878Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:33.881Z","service":"bus","message":"publishing"}
+
+{"type":"session.updated","level":"info","timestamp":"2026-01-23T19:56:33.882Z","service":"bus","message":"publishing"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.884Z","service":"session.prompt","step":0,"sessionID":"ses_41391f345ffebNCbCHJpBkbpji","message":"loop"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.890Z","service":"provider","status":"started","message":"state"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.891Z","service":"models.dev","file":{},"message":"refreshing"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.897Z","service":"provider","message":"init"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.901Z","service":"claude-oauth","subscriptionType":"max","scopes":["user:inference","user:mcp_servers","user:profile","user:sessions:claude_code"],"message":"loaded oauth credentials"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.901Z","service":"provider","source":"credentials file (max)","message":"using claude oauth credentials"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.901Z","service":"provider","providerID":"opencode","message":"found"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.901Z","service":"provider","providerID":"claude-oauth","message":"found"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.901Z","service":"provider","providerID":"link-assistant","message":"found"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.901Z","service":"provider","status":"completed","duration":11,"message":"state"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.901Z","service":"provider","providerID":"opencode","modelID":"gpt-5-nano","message":"getModel"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.902Z","service":"provider","status":"started","providerID":"opencode","message":"getSDK"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.902Z","service":"provider","providerID":"opencode","pkg":"@ai-sdk/openai","version":"latest","message":"installing provider package"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.903Z","service":"provider","providerID":"opencode","modelID":"gpt-5-nano","message":"getModel"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.903Z","service":"provider","status":"started","providerID":"opencode","message":"getSDK"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.903Z","service":"provider","providerID":"opencode","pkg":"@ai-sdk/openai","version":"latest","message":"installing provider package"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.906Z","service":"provider","providerID":"opencode","pkg":"@ai-sdk/openai","installedPath":"/home/hive/.cache/link-assistant-agent/node_modules/@ai-sdk/openai","message":"provider package installed successfully"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.973Z","service":"provider","status":"completed","duration":71,"providerID":"opencode","message":"getSDK"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.973Z","service":"provider","providerID":"opencode","modelID":"gpt-5-nano","message":"found"}
+
+{"type":"message.updated","level":"info","timestamp":"2026-01-23T19:56:33.976Z","service":"bus","message":"publishing"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.977Z","service":"ripgrep","cwd":"/tmp/gh-issue-solver-1769196616847/js","limit":200,"message":"tree"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.978Z","service":"provider","providerID":"opencode","pkg":"@ai-sdk/openai","installedPath":"/home/hive/.cache/link-assistant-agent/node_modules/@ai-sdk/openai","message":"provider package installed successfully"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.978Z","service":"provider","status":"completed","duration":75,"providerID":"opencode","message":"getSDK"}
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:33.978Z","service":"provider","providerID":"opencode","modelID":"gpt-5-nano","message":"found"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:34.013Z","service":"session.processor","message":"process"}
+
+{"type":"session.status","level":"info","timestamp":"2026-01-23T19:56:34.018Z","service":"bus","message":"publishing"}
+
+{"type":"message.updated","level":"info","timestamp":"2026-01-23T19:56:34.026Z","service":"bus","message":"publishing"}
+
+{"type":"session.updated","level":"info","timestamp":"2026-01-23T19:56:34.028Z","service":"bus","message":"publishing"}
+
+{"type":"session.diff","level":"info","timestamp":"2026-01-23T19:56:34.028Z","service":"bus","message":"publishing"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:34.680Z","service":"snapshot","hash":"e1f913270aae97f94100ab909d099015030aa9b4\n","cwd":"/tmp/gh-issue-solver-1769196616847/js","git":"/home/hive/.local/share/link-assistant-agent/snapshot/f09fd5b486a83cf7a8f0d4fb432b753a7274b398","message":"tracking"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:34.681Z","service":"bus","message":"publishing"}
+
+{
+  "type": "step_start",
+  "timestamp": 1769198194681,
+  "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+  "part": {
+    "id": "prt_bec6e0ff8001gmkIDG7vRKu4tQ",
+    "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+    "messageID": "msg_bec6e0d36001BE1DGXCq7qmvIR",
+    "type": "step-start",
+    "snapshot": "e1f913270aae97f94100ab909d099015030aa9b4"
+  }
+}
+{"type":"session.updated","level":"info","timestamp":"2026-01-23T19:56:35.495Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.029Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.034Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.054Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.060Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.084Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.085Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.094Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.102Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.112Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.117Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.124Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.130Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.149Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.150Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.157Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.157Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.167Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.190Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.203Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.210Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.219Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.225Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.247Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.247Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.263Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.264Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.294Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.295Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.295Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.295Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.296Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.299Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.303Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.316Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.319Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.327Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.333Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.345Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.385Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.392Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.395Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.406Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.429Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.437Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.448Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.453Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.473Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.479Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.516Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.516Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.536Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.548Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.560Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.561Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.565Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.587Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.597Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.610Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.620Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.629Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.638Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.650Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.662Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.679Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.687Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.714Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.714Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.723Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.726Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.732Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.738Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.750Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.760Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.762Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.784Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.795Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.804Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.811Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.816Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.822Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.827Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.848Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.854Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.863Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.870Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.876Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.876Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.898Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.912Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.923Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.937Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.943Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.946Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.954Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.965Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.973Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.983Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.992Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:38.996Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.003Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.670Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.676Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.686Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.695Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.698Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.704Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.744Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.745Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.751Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.757Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.758Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.761Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.810Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.810Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.870Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.872Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.872Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.872Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.872Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.873Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.873Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.877Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.878Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.879Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.921Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.921Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.921Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.921Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.922Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.922Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.929Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.929Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.937Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.940Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.963Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.963Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.963Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.963Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.973Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.979Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.979Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.983Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.990Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:39.995Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.003Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.009Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.013Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.015Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.016Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.019Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.026Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.028Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.041Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.044Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.045Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.048Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.052Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.053Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.053Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.057Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.060Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.061Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.061Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.079Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.080Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.105Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.121Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.122Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.136Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.136Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.139Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.183Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.195Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.203Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.212Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.221Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.222Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.228Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.234Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.240Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.250Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.255Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.255Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.260Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.260Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.267Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.272Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.311Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.318Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.326Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.335Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.336Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.348Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.354Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.359Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.362Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.370Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.371Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.374Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.378Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.396Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.402Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.404Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.405Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.429Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.432Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.571Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.836Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.837Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.849Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.849Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.858Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.862Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.879Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.880Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.894Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.894Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.920Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.920Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.927Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.928Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.943Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.943Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.943Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.945Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.958Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.959Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.959Z","service":"bus","message":"publishing"}
+
+{"type":"log","level":"info","timestamp":"2026-01-23T19:56:40.983Z","service":"session.summary","title":"Summarizing test","message":"title"}
+
+{"type":"message.updated","level":"info","timestamp":"2026-01-23T19:56:40.984Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:40.985Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.013Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.039Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.048Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.052Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.069Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.070Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.070Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.070Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.091Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.091Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.092Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.098Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.099Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.099Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.099Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.117Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.118Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.118Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.168Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.178Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.182Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.184Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.184Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.194Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.195Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.197Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.228Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.228Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.260Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.269Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.269Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.270Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.279Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.279Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.288Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.297Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.302Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.332Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.345Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.346Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.352Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.355Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.356Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.365Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.365Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.365Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.371Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.377Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.384Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.402Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.403Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.409Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.409Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.433Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.454Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.454Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.454Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.479Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.482Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.483Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.487Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.488Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.489Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.491Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.496Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.506Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.507Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.526Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.527Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.538Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.548Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.558Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.558Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.564Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.564Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.564Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.564Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.565Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.571Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.596Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.597Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.597Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.609Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.613Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.632Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.632Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.649Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.664Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.669Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.672Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.673Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.677Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.893Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.895Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.916Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.916Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.928Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.930Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.938Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.938Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.946Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.981Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.981Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.981Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.981Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.981Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.983Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.988Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.989Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:41.993Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.009Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.009Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.017Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.018Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.028Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.031Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.036Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.060Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.082Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.083Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.091Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.092Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.092Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.094Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.101Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.113Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.113Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.122Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.129Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.133Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.133Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.147Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.159Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.159Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.160Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.166Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.170Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.173Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.173Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.192Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.192Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.195Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.207Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.215Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.218Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.218Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.238Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.238Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.238Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.239Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.260Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.261Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.262Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.277Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.277Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.278Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.282Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.283Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.285Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.299Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.299Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.302Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.306Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.382Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.396Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.401Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.403Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.413Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.413Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.420Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.434Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.434Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.435Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.450Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.472Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.478Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.478Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.479Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.495Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.496Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.497Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.497Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.497Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.502Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.502Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.505Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.506Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.506Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.507Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.516Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.516Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.516Z","service":"bus","message":"publishing"}
+
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.691Z","service":"bus","message":"publishing"}
+
+{
+  "type": "text",
+  "timestamp": 1769198202691,
+  "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+  "part": {
+    "id": "prt_bec6e2e7f001GOUySaT4r7BysQ",
+    "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+    "messageID": "msg_bec6e0d36001BE1DGXCq7qmvIR",
+    "type": "text",
+    "text": "I'll run the project's test suite to report current status and results.",
+    "time": {
+      "start": 1769198202690,
+      "end": 1769198202690
+    },
+    "metadata": {
+      "openai": {
+        "itemId": "msg_090745dec05567aa006973d27a6b348194942856eb1e9038d3"
+      }
+    }
+  }
+}
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.694Z","service":"bus","message":"publishing"}
+
+{
+  "type": "tool_use",
+  "timestamp": 1769198202694,
+  "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+  "part": {
+    "id": "prt_bec6e2f44001TngK09HIbVq1zX",
+    "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+    "messageID": "msg_bec6e0d36001BE1DGXCq7qmvIR",
+    "type": "tool",
+    "callID": "call_EowGQO52FXqy7YXUvKPpdjnn",
+    "tool": "bash",
+    "state": {
+      "status": "pending",
+      "input": {},
+      "raw": ""
+    }
+  }
+}
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.722Z","service":"bus","message":"publishing"}
+
+{
+  "type": "tool_use",
+  "timestamp": 1769198202722,
+  "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+  "part": {
+    "id": "prt_bec6e2f44001TngK09HIbVq1zX",
+    "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+    "messageID": "msg_bec6e0d36001BE1DGXCq7qmvIR",
+    "type": "tool",
+    "callID": "call_EowGQO52FXqy7YXUvKPpdjnn",
+    "tool": "bash",
+    "state": {
+      "status": "running",
+      "input": {
+        "command": "npm test --silent",
+        "timeout": 120000,
+        "description": "Run test suite defined in package.json"
+      },
+      "time": {
+        "start": 1769198202719
+      }
+    },
+    "metadata": {
+      "openai": {
+        "itemId": "fc_090745dec05567aa006973d27a75cc819492afaee0765207bc"
+      }
+    }
+  }
+}
+{"type":"message.part.updated","level":"info","timestamp":"2026-01-23T19:56:42.841Z","service":"bus","message":"publishing"}
+
+{
+  "type": "tool_use",
+  "timestamp": 1769198202841,
+  "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+  "part": {
+    "id": "prt_bec6e2f44001TngK09HIbVq1zX",
+    "sessionID": "ses_41391f345ffebNCbCHJpBkbpji",
+    "messageID": "msg_bec6e0d36001BE1DGXCq7qmvIR",
+    "type": "tool",
+    "callID": "call_EowGQO52FXqy7YXUvKPpdjnn",
+    "tool": "bash",
+    "state": {
+      "status": "running",
+      "input": {
+        "command": "npm test --silent",
+        "timeout": 120000,
+        "description": "Run test suite defined in package.json"
+      },
+      "metadata": {
+        "output": "bun test v1.3.6 (d530ed99)\n",
+        "description": "Run test suite defined in package.json"
+      },
+      "time": {
+        "start": 1769198202841
+      }
+    },
+    "metadata": {
+      "openai": {
+        "itemId": "fc_090745dec05567aa006973d27a75cc819492afaee0765207bc"
+      }
+    }
+  }
+}

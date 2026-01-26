@@ -1,0 +1,395 @@
+# Changelog
+
+## 0.7.0
+
+### Minor Changes
+
+- 60c8ba8: feat(google): Route OAuth requests through Cloud Code API for proper subscription support
+
+  When Google OAuth is active, the agent now routes requests through Google's Cloud Code API
+  (`cloudcode-pa.googleapis.com/v1internal`) instead of the standard Generative Language API
+  (`generativelanguage.googleapis.com`).
+
+  This is the same approach used by the official Gemini CLI and properly supports:
+  - Google AI Pro/Ultra subscription users
+  - The `cloud-platform` OAuth scope (which is all the OAuth client has registered)
+  - Automatic subscription tier handling (FREE, STANDARD, etc.)
+
+  The key insight is that the Gemini CLI doesn't call `generativelanguage.googleapis.com` directly.
+  Instead, it uses Google's Cloud Code API which:
+  1. Accepts `cloud-platform` OAuth tokens
+  2. Handles subscription tier validation
+  3. Proxies requests to the Generative Language API internally
+
+  This fix includes:
+  - URL transformation from Generative Language API to Cloud Code API
+  - Request body transformation to Cloud Code API format (wrapping with model/project fields)
+  - Response body transformation to unwrap Cloud Code API responses
+  - Streaming response support with proper SSE chunk transformation
+  - Fallback to API key authentication if Cloud Code API fails
+
+  Fixes #100
+
+  References:
+  - [Gemini CLI server.ts](https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/code_assist/server.ts)
+  - [Gemini CLI oauth2.ts](https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/code_assist/oauth2.ts)
+
+## 0.6.3
+
+### Patch Changes
+
+- 2732471: fix: Resolve 'undefined is not an object (evaluating Log.Default.lazy.info)' error
+
+  The error occurred because `Log.Default.lazy` was undefined - the Logger interface doesn't have a `.lazy` property.
+  The logging methods (info, debug, warn, error) already support lazy evaluation through callback functions.
+
+  Changes:
+  - Fixed `Log.Default.lazy.info()` calls in src/index.js to use `Log.Default.info()` directly
+  - Added backward-compatible `lazy` property to Logger (self-reference) for any external code using this pattern
+  - Added unit tests for lazy logging callback support
+
+## 0.6.2
+
+### Patch Changes
+
+- c2b3343: fix: Google OAuth 403 restricted_client error from unregistered scopes
+
+  When using `agent auth login` with Google OAuth, users encountered a `403: restricted_client`
+  error with the message "Unregistered scope(s) in the request".
+
+  Root cause: The `generative-language.tuning` and `generative-language.retriever` OAuth scopes
+  were not registered for the Gemini CLI OAuth client (681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j).
+
+  This fix removes the unregistered scopes and aligns with the official Gemini CLI implementation,
+  which only uses:
+  - `https://www.googleapis.com/auth/cloud-platform`
+  - `https://www.googleapis.com/auth/userinfo.email`
+  - `https://www.googleapis.com/auth/userinfo.profile`
+
+  This fix resolves issue #93 ("agent auth login через Google не работает").
+
+## 0.6.1
+
+### Patch Changes
+
+- 52692ba: fix: Google OAuth authentication race condition
+
+  Previously, when running `agent auth login` with Google OAuth, the authentication
+  would fail with a redirect to `localhost:0` because of a race condition in port
+  assignment. The redirect URI was built before the server port was actually assigned.
+
+  Root cause: `server.listen(0, callback)` assigns the port asynchronously in the
+  callback, but the redirect URI was built before the callback fired.
+
+  Now, when authenticating with Google:
+  - Port is discovered and assigned before building the redirect URI
+  - Supports `GOOGLE_OAUTH_CALLBACK_PORT` environment variable for containers
+  - Follows Google's recommended localhost redirect flow for installed applications
+
+  This fix resolves issue #78 ("Не работает авторизация в Google").
+
+## 0.6.0
+
+### Minor Changes
+
+- fe1fff2: feat: Implement JSON lazy logging with log-lazy library
+  - Added `log-lazy` dependency from link-foundation for lazy evaluation pattern
+  - Created `src/util/log-lazy.ts` module for standalone lazy logging with JSON output
+  - Updated `src/util/log.ts` to support lazy logging with `lazy.{debug,info,warn,error}` methods
+  - JSON output wraps all logs in `{ log: { ... } }` structure for easy parsing
+  - Logs are written to stderr to avoid mixing with stdout JSON data
+  - Lazy evaluation prevents expensive string formatting and object serialization when logging is disabled
+  - Converted existing log calls across the codebase to use lazy pattern for improved performance:
+    - Session management files (agent.js, compaction.ts, processor.ts, prompt.ts, revert.ts, summary.ts)
+    - Authentication (claude-oauth.ts, plugins.ts)
+    - Provider and model handling (provider.ts, models.ts)
+    - Configuration loading (config.ts)
+    - File operations (watcher.ts, ripgrep.ts, time.ts)
+    - MCP client handling (mcp/index.ts)
+    - Server routing (server.ts)
+    - Formatting, patching, and project state management
+  - Added comprehensive tests in tests/log-lazy.test.js
+
+  Closes #81
+
+## 0.5.3
+
+### Patch Changes
+
+- 7386896: feat: Add echo and cache synthetic providers for robust dry-run mode
+
+  Implements `link-assistant/echo` provider that echoes back user input, and
+  `link-assistant/cache` provider with Links Notation format for caching API
+  responses. Echo provider is automatically enabled in --dry-run mode for
+  zero-cost testing of round-trips and multi-turn conversations.
+
+  Closes #89
+
+## 0.5.2
+
+### Patch Changes
+
+- c51e70b: docs: Add interactive mode multi-turn conversation example
+
+  Add comprehensive example in `docs/stdin-mode.md` showing how interactive terminal mode works with multiple sequential inputs.
+
+  The example demonstrates:
+  - Initial status message when entering interactive mode
+  - Complete JSON event stream for two user inputs ("hi" and "who are you?")
+  - Session persistence across multiple messages
+  - Plain text input auto-conversion to JSON
+  - Streaming events (step_start, text, step_finish)
+  - Token usage tracking in responses
+
+  Fixes #86
+
+## 0.5.1
+
+### Patch Changes
+
+- 1b83cef: fix: Enable interactive terminal mode when stdin is TTY
+
+  Previously, when running `agent` in an interactive terminal (TTY), the CLI
+  would immediately show help and exit, not accepting any input. This was a
+  regression from issue #76 fix that treated all TTY connections as "no input
+  expected".
+
+  Now, when running `agent` in a terminal:
+  - Outputs status message indicating interactive terminal mode
+  - Accepts typed input from the user
+  - Processes messages in continuous mode with session persistence
+  - Respects `--verbose` and other flags
+
+  To get the old behavior (show help and exit), use `--no-always-accept-stdin`.
+
+  Fixes #84
+
+## 0.5.0
+
+### Minor Changes
+
+- 5a09d94: feat: Enable continuous listening mode by default
+  - Add `--always-accept-stdin` flag (default: true) for continuous input mode
+  - Add `--compact-json` flag for machine-to-machine communication
+  - Pretty-print status messages to stderr by default
+  - Keep session alive between messages for multi-turn conversations
+  - Handle SIGINT gracefully for clean shutdown
+
+## 0.4.0
+
+### Minor Changes
+
+- f6f0756: feat: Improve CLI stdin handling with new options and user feedback
+  - Add `-p`/`--prompt` flag to send prompts directly without stdin
+  - Add `--disable-stdin` flag to explicitly disable stdin mode
+  - Add `--stdin-stream-timeout` for optional timeout on stdin reading
+  - Add `--dry-run` flag for simulating operations
+  - Output JSON status message when entering stdin listening mode
+  - Include CTRL+C exit hint and --help guidance
+  - Show help immediately when running in interactive terminal (TTY)
+  - Remove default timeout on stdin reading (wait indefinitely by default)
+
+  This improves user experience by:
+  1. Never hanging silently - always provide feedback
+  2. Supporting multiple input modes (stdin, direct prompt, help)
+  3. Following CLI best practices from clig.dev guidelines
+
+## 0.3.1
+
+### Patch Changes
+
+- 5680f2e: fix: Add retry logic and serialized installation for reliable provider initialization
+
+  Fixes issue #72 where version 0.3.0 appeared "completely broken" due to race conditions in parallel package installations causing Bun cache corruption.
+
+  Root Cause:
+  - When multiple provider packages (e.g., @ai-sdk/openai-compatible, @ai-sdk/openai) are installed concurrently, they can cause race conditions in Bun's package cache
+  - This leads to "FileNotFound: failed copying files from cache" errors on first run after update
+
+  Changes:
+  - Add write lock to serialize package installations (prevents concurrent bun add commands)
+  - Add retry logic with up to 3 attempts for cache-related errors
+  - Improve error detection to catch ENOENT, EACCES, EBUSY errors
+  - Add delay between retries to allow filesystem operations to complete
+
+  Impact:
+  - opencode/grok-code remains the default provider and works reliably
+  - Agent handles transient cache issues gracefully with automatic retries
+  - Better stability during first run after installation/update
+
+## 0.3.0
+
+### Minor Changes
+
+- eb44ccf: Add support for link-assistant-agent branding and improve default model selection
+
+  **New Features:**
+  - Default model is now `opencode/grok-code` (Open Code Zen / Grok Code Fast 1)
+  - Support for `LINK_ASSISTANT_AGENT_*` environment variable prefix (backwards compatible with `OPENCODE_*`)
+  - Support for `.link-assistant-agent` config directory (backwards compatible with `.opencode`)
+  - Global config paths now use `link-assistant-agent` name
+
+  **Breaking Changes:**
+  - Global config directory changed from `~/.config/opencode/` to `~/.config/link-assistant-agent/`
+    - Users should manually migrate global configs if needed
+
+  **Migration:**
+  - Environment variables: New `LINK_ASSISTANT_AGENT_*` prefix available; old `OPENCODE_*` still works
+  - Project config: Both `.opencode/` and `.link-assistant-agent/` directories supported
+  - Model override: Use `"model": "provider/model-id"` in config to override default
+
+## 0.2.1
+
+### Patch Changes
+
+- d71920e: feat: Add --dry-run mode and enhanced debugging logging
+  - Added `--dry-run` CLI flag to simulate operations without making actual API calls or package installations
+  - Added `OPENCODE_DRY_RUN` flag and `Flag.setDryRun()` function for programmatic control
+  - Enhanced error logging in `BunProc.install()` with detailed error messages including stderr/stdout
+  - Enhanced provider initialization logging with detailed context
+  - Added logging for package installation success/failure
+  - Added unit tests for dry-run mode functionality
+  - Improved debugging capabilities to help diagnose package installation failures
+
+  Fixes #68
+
+## 0.2.0
+
+### Minor Changes
+
+- 4f5f2a6: Add Google OAuth support for Gemini Pro/Ultra subscriptions
+  - Implements OAuth 2.0 with PKCE for Google AI subscription authentication
+  - Uses same public OAuth credentials as official Gemini CLI (installed app flow)
+  - Adds local HTTP server to automatically capture OAuth redirect
+  - Supports token refresh with 5-minute expiry buffer
+  - Zeros out cost tracking for subscription users
+  - Creates case study documentation in docs/case-studies/issue-66/
+  - Fixes #66
+
+## 0.1.4
+
+### Patch Changes
+
+- dd0dfdc: Fix empty system message handling for Anthropic OAuth credentials
+
+  When using Claude Code OAuth credentials with an empty `--system-message ""`, the agent now preserves the required "You are Claude Code" header message. This prevents:
+  - `cache_control cannot be set for empty text blocks` errors
+  - `This credential is only authorized for use with Claude Code` errors
+
+  The fix ensures OAuth token authorization works correctly even when users explicitly set an empty system message.
+
+  Fixes #62
+
+## 0.1.3
+
+### Patch Changes
+
+- 50728b3: fix: Fixed `agent --version` command and added logging in `--verbose` mode
+  - Fixed `--version` command that was showing "unknown" instead of the current package version
+  - Added explicit import of `package.json` using `createRequire` with fallback via `fs`
+  - Added logging of version, command, working directory and script path in `--verbose` mode
+
+## 0.1.2
+
+### Patch Changes
+
+- de95398: fix: Pass API key to providers with multiple env var options
+
+  Fixes #61 - Error when using google/gemini-3-pro model. When providers have multiple possible environment variables (like Google with GOOGLE_GENERATIVE_AI_API_KEY and GEMINI_API_KEY), the code was finding the API key correctly but then not passing it to mergeProvider.
+
+## 0.1.1
+
+### Patch Changes
+
+- 09b6709: Fix GitHub release formatting to remove incorrect title for major/minor/patch versions and properly link related pull requests
+
+## 0.1.0
+
+### Minor Changes
+
+- 2bcef5f: Add support for google/gemini-3-pro model alias
+  - Added `google/gemini-3-pro` as an alias to `gemini-3-pro-preview`
+  - Updated README.md with Google Gemini usage examples
+  - Created comprehensive case study in docs/case-studies/issue-53/
+  - Fixes ProviderModelNotFoundError when using google/gemini-3-pro
+
+  This change allows users to use the commonly expected model name `gemini-3-pro` while maintaining compatibility with Google's official `gemini-3-pro-preview` identifier.
+
+### Patch Changes
+
+- 86f24ac: Add comprehensive image validation to prevent API errors
+  - Added magic byte validation for PNG, JPEG/JPG, GIF, BMP, WebP, TIFF, SVG, ICO, and AVIF formats
+  - Prevents "Could not process image" API errors from invalid files
+  - Added `VERIFY_IMAGES_AT_READ_TOOL` environment variable for opt-out (enabled by default)
+  - Enhanced error messages with hex dump debugging information
+  - Comprehensive test suite with 6+ test cases
+  - Fixes #38 and prevents session crashes from corrupted image files
+
+## 0.0.17
+
+### Patch Changes
+
+- 8d3c137: Fix empty string system message override. When --system-message "" is provided, the system now correctly overrides with an empty string instead of falling back to the default system prompt. This was caused by a falsy check (if (input.system)) that evaluated to false for empty strings. Changed to explicit undefined check (if (input.system !== undefined)) to properly distinguish between undefined (use default) and empty string (override with empty).
+
+## 0.0.16
+
+### Patch Changes
+
+- 1ace1a9: Add comprehensive Playwright MCP installation instructions to README.md. This includes step-by-step setup guide, complete list of available browser automation tools, usage examples, and links to official documentation. Fixes issue #54.
+
+## 0.0.15
+
+### Patch Changes
+
+- 3a5fad7: Fix debug output appearing in CLI commands - logs are now suppressed by default and only shown with --verbose flag. This fixes the issue where commands like `agent auth list` displayed debug messages that broke the clean CLI UI.
+
+## 0.0.14
+
+### Patch Changes
+
+- 07aef38: fix: Use valid placeholder API keys for OAuth providers (Anthropic, GitHub Copilot, OpenAI)
+
+  When using `--model anthropic/claude-sonnet-4-5` after authenticating with `agent auth login` (Anthropic > Claude Pro/Max), the command failed with `ProviderInitError` at line 732 in `src/provider/provider.ts`.
+
+  The OAuth authentication plugin loaders in `src/auth/plugins.ts` were returning empty strings (`''`) for the `apiKey` parameter. The AI SDK providers (e.g., `@ai-sdk/anthropic`, `@ai-sdk/openai`) require a non-empty `apiKey` parameter even when using custom fetch functions for authentication. The empty string failed validation, causing provider initialization to fail.
+
+  This fix changes the `apiKey` value from an empty string to a descriptive placeholder string (`'oauth-token-used-via-custom-fetch'`) for all OAuth loaders (AnthropicPlugin, GitHubCopilotPlugin, and OpenAIPlugin). The placeholder satisfies AI SDK validation requirements while the actual OAuth authentication happens via Bearer tokens in the custom fetch's Authorization header.
+
+  Fixes #47
+
+## 0.0.13
+
+### Patch Changes
+
+- 4b4c0ea: Fix ESC key handling in CLI commands - pressing ESC now exits gracefully without showing error messages or help text
+
+## 0.0.12
+
+### Patch Changes
+
+- c022218: fix: Replace prompts.autocomplete with prompts.select in auth login command
+
+  The `agent auth login` command was failing with `TypeError: prompts.autocomplete is not a function` because `@clack/prompts@0.11.0` does not have the `autocomplete` function (it was added in v1.0.0-alpha.0).
+
+  This fix replaces `prompts.autocomplete()` with `prompts.select()` which is available in the stable version.
+
+  Fixes #43
+
+## 0.0.11
+
+### Patch Changes
+
+- e8e2d03: Fix system message override to use exclusively without additional context for low-limit models. When --system-message flag is provided, the system now returns only that message without adding environment info, custom instructions, or headers. This reduces token usage from ~9,059 to ~30 tokens, enabling support for models with low TPM limits like groq/qwen/qwen3-32b (6K TPM).
+
+  Also adds --verbose mode to debug API requests with system prompt content and token estimates.
+
+## 0.0.10
+
+### Patch Changes
+
+- 547d73f: Add CI/CD pipeline matching js-ai-driven-development-pipeline-template with changeset support, automated npm publishing, and code quality tools (ESLint, Prettier, Husky)
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

@@ -14,7 +14,7 @@ Make sure to keep references to sources in your markdown documents.
 
 ## Execution log
 
-```json
+````json
 konard@MacBook-Pro-Konstantin agent % echo "Use gh tool to get title and description of https://github.com/link-assistant/agent/issues/5
 
 Please download all logs and data related about the issue to this repository, make sure we compile that data to separate folder for that issue in kebab-case style ./docs/case-studies folder, and use it to do deep case study analysis, in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.
@@ -1010,4 +1010,4 @@ Make sure to keep references to sources in your markdown documents." | agent
   }
 }
 konard@MacBook-Pro-Konstantin agent %
-```
+````

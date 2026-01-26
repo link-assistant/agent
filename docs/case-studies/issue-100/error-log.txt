@@ -1,0 +1,82 @@
+====================================
+Issue #100 - Error Log
+Captured from: https://github.com/link-assistant/agent/issues/100
+Date: December 23, 2025
+====================================
+
+COMMAND:
+echo "hi" | agent --model google/gemini-3-pro
+
+STATUS OUTPUT:
+{
+  "type": "status",
+  "mode": "stdin-stream",
+  "message": "Agent CLI in continuous listening mode. Accepts JSON and plain text input.",
+  "hint": "Press CTRL+C to exit. Use --help for options.",
+  "acceptedFormats": [
+    "JSON object with \"message\" field",
+    "Plain text"
+  ],
+  "options": {
+    "interactive": true,
+    "autoMergeQueuedMessages": true,
+    "alwaysAcceptStdin": true,
+    "compactJson": false
+  }
+}
+
+ERROR OUTPUT:
+{
+  "type": "error",
+  "timestamp": 1766501693639,
+  "sessionID": "ses_4b44b495affe8qlYkHaJDMI7s3",
+  "error": {
+    "name": "APIError",
+    "data": {
+      "message": "Request had insufficient authentication scopes.",
+      "statusCode": 403,
+      "isRetryable": false,
+      "responseHeaders": {
+        "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+        "content-length": "516",
+        "content-type": "text/event-stream",
+        "date": "Tue, 23 Dec 2025 14:54:53 GMT",
+        "server": "scaffolding on HTTPServer2",
+        "server-timing": "gfet4t7; dur=23",
+        "vary": "Origin, X-Origin, Referer",
+        "www-authenticate": "Bearer realm=\"https://accounts.google.com/\", error=\"insufficient_scope\", scope=\"https://www.googleapis.com/auth/generative-language https://www.googleapis.com/auth/generative-language.tuning https://www.googleapis.com/auth/generative-language.tuning.readonly https://www.googleapis.com/auth/generative-language.retriever https://www.googleapis.com/auth/generative-language.retriever.readonly\"",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "SAMEORIGIN",
+        "x-xss-protection": "0"
+      },
+      "responseBody": "{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Request had insufficient authentication scopes.\",\n    \"status\": \"PERMISSION_DENIED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"ACCESS_TOKEN_SCOPE_INSUFFICIENT\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"method\": \"google.ai.generativelanguage.v1beta.GenerativeService.StreamGenerateContent\",\n          \"service\": \"generativelanguage.googleapis.com\"\n        }\n      }\n    ]\n  }\n}\n"
+    }
+  }
+}
+
+FINAL ERROR:
+{
+  "type": "error",
+  "errorType": "UnhandledRejection",
+  "message": "Request had insufficient authentication scopes.",
+  "stack": "AI_APICallError: Request had insufficient authentication scopes.\n    at <anonymous> (/root/.cache/link-assistant-agent/node_modules/@ai-sdk/provider-utils/dist/index.js:2424:36)\n    at processTicksAndRejections (native:7:39)"
+}
+
+====================================
+Authentication Context
+====================================
+
+Login Method Used: Google AI Pro/Ultra (OAuth - Manual Code Entry)
+Login Result: "Login successful"
+
+OAuth Scopes Configured in Agent:
+- https://www.googleapis.com/auth/cloud-platform
+- https://www.googleapis.com/auth/userinfo.email
+- https://www.googleapis.com/auth/userinfo.profile
+
+OAuth Scopes Required by API (from www-authenticate header):
+- https://www.googleapis.com/auth/generative-language
+- https://www.googleapis.com/auth/generative-language.tuning
+- https://www.googleapis.com/auth/generative-language.tuning.readonly
+- https://www.googleapis.com/auth/generative-language.retriever
+- https://www.googleapis.com/auth/generative-language.retriever.readonly

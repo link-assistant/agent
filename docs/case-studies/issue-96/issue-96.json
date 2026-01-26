@@ -1,0 +1,13 @@
+{
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "body": "```\nroot@vmixxxx0:~# echo \"hi\" | agent --model opencode/gemini-3-pro\n{\n  \"type\": \"status\",\n  \"mode\": \"stdin-stream\",\n  \"message\": \"Agent CLI in continuous listening mode. Accepts JSON and plain text input.\",\n  \"hint\": \"Press CTRL+C to exit. Use --help for options.\",\n  \"acceptedFormats\": [\n    \"JSON object with \\\"message\\\" field\",\n    \"Plain text\"\n  ],\n  \"options\": {\n    \"interactive\": true,\n    \"autoMergeQueuedMessages\": true,\n    \"alwaysAcceptStdin\": true,\n    \"compactJson\": false\n  }\n}\nundefined is not an object (evaluating 'Log.Default.lazy.info')\nroot@vmixxxx0:~#\n```\n\nWe need double check all similar places, and make sure our logging work anywhere. Also we need to use our `--model link-assistant/echo` in CI/CD tests, to make sure it will be never regressed.\n\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
+  "comments": [],
+  "createdAt": "2025-12-22T19:14:26Z",
+  "title": "undefined is not an object (evaluating 'Log.Default.lazy.info')",
+  "updatedAt": "2025-12-22T19:41:45Z"
+}

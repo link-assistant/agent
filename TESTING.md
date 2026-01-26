@@ -7,6 +7,7 @@ All tests can be executed manually using Bun's built-in test runner.
 ### Prerequisites
 
 Make sure dependencies are installed:
+
 ```bash
 bun install
 ```
@@ -14,6 +15,7 @@ bun install
 ### Run All Tests
 
 To run the complete test suite:
+
 ```bash
 bun test
 ```
@@ -78,6 +80,7 @@ Tests are configured to run manually via GitHub Actions workflow dispatch.
 5. Click "Run workflow" to start the test run
 
 The CI workflow will:
+
 1. Install dependencies
 2. Run the full test suite with `bun test`
 3. Execute MCP CLI command tests
@@ -87,6 +90,7 @@ The CI workflow will:
 ### MCP Tests (`tests/mcp.test.js`)
 
 The MCP test suite validates:
+
 - CLI command help output
 - Configuration file generation
 - Playwright MCP support
@@ -99,6 +103,7 @@ The MCP test suite validates:
 ### Tool Tests
 
 Each tool has a dedicated test file validating:
+
 - Tool execution
 - Output format compatibility with OpenCode
 - JSON structure validation
@@ -116,6 +121,7 @@ Each tool has a dedicated test file validating:
 ### Missing Dependencies
 
 If you see errors about missing modules:
+
 ```bash
 bun install
 ```
@@ -123,11 +129,13 @@ bun install
 ### Test Failures
 
 1. Check that you're using Bun >= 1.0.0:
+
    ```bash
    bun --version
    ```
 
 2. Ensure all dependencies are installed:
+
    ```bash
    rm -rf node_modules
    bun install

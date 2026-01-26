@@ -1,0 +1,117 @@
+konard@MacBook-Pro-Konstantin ~ % agent
+{
+  "type": "status",
+  "mode": "interactive-terminal",
+  "message": "Agent CLI in interactive terminal mode. Type your message and press Enter.",
+  "hint": "Press CTRL+C to exit. Use --help for options.",
+  "acceptedFormats": [
+    "JSON object with \"message\" field",
+    "Plain text"
+  ],
+  "options": {
+    "interactive": true,
+    "autoMergeQueuedMessages": true,
+    "alwaysAcceptStdin": true,
+    "compactJson": false
+  }
+}
+hi
+{
+  "type": "step_start",
+  "timestamp": 1766311438146,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405da7400010UjcSOuZnSfLAf",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405da0c5001OUH0I06yBDjpqo",
+    "type": "step-start"
+  }
+}
+{
+  "type": "text",
+  "timestamp": 1766311439905,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405dadab001HzaE19EvBKuiRR",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405da0c5001OUH0I06yBDjpqo",
+    "type": "text",
+    "text": "Hello! How can I help you today?",
+    "time": {
+      "start": 1766311439904,
+      "end": 1766311439904
+    }
+  }
+}
+{
+  "type": "step_finish",
+  "timestamp": 1766311439909,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405dae24001VUScXByqNzrfcl",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405da0c5001OUH0I06yBDjpqo",
+    "type": "step-finish",
+    "reason": "stop",
+    "cost": 0,
+    "tokens": {
+      "input": 8515,
+      "output": 9,
+      "reasoning": 125,
+      "cache": {
+        "read": 192,
+        "write": 0
+      }
+    }
+  }
+}
+who are you?
+{
+  "type": "step_start",
+  "timestamp": 1766311457818,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405df418001uPavQoB76hY1KL",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405defcf001Gil2F3fWY5XIb7",
+    "type": "step-start"
+  }
+}
+{
+  "type": "text",
+  "timestamp": 1766311458745,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405df5f4001oVeAYaU2Rko3ia",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405defcf001Gil2F3fWY5XIb7",
+    "type": "text",
+    "text": "I'm Grok, an AI agent built by xAI, powered by the Grok Code Fast 1 model. I'm designed to help with a wide range of tasks, from answering questions and providing information to assisting with coding, research, and more. I have access to various tools to fetch data, run commands, edit files, and perform other functions when needed. What can I do for you?",
+    "time": {
+      "start": 1766311458744,
+      "end": 1766311458744
+    }
+  }
+}
+{
+  "type": "step_finish",
+  "timestamp": 1766311458746,
+  "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+  "part": {
+    "id": "prt_b405df7ba001WU2YgPNQ1aRqDB",
+    "sessionID": "ses_4bfa26db0ffeRkIzLa0XHXrOFX",
+    "messageID": "msg_b405defcf001Gil2F3fWY5XIb7",
+    "type": "step-finish",
+    "reason": "stop",
+    "cost": 0,
+    "tokens": {
+      "input": 23,
+      "output": 80,
+      "reasoning": 70,
+      "cache": {
+        "read": 8832,
+        "write": 0
+      }
+    }
+  }
+}

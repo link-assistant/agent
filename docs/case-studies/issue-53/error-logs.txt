@@ -1,0 +1,52 @@
+# Error Logs from Issue #53
+
+## User's Error Report
+
+### Command 1: google/gemini-3-pro
+```
+# echo "who are you?" | agent --model google/gemini-3-pro
+748 |     });
+749 | 
+750 |     const provider = s.providers[providerID];
+751 |     if (!provider) throw new ModelNotFoundError({ providerID, modelID });
+752 |     const info = provider.info.models[modelID];
+753 |     if (!info) throw new ModelNotFoundError({ providerID, modelID });
+                          ^
+ProviderModelNotFoundError: ProviderModelNotFoundError
+ data: {
+  providerID: "google",
+  modelID: "gemini-3-pro",
+},
+
+      at getModel (/root/.bun/install/global/node_modules/@link-assistant/agent/src/provider/provider.ts:753:22)
+```
+
+### Command 2: opencode/gemini-3-pro
+```
+# echo "who are you?" | agent --model opencode/gemini-3-pro
+748 |     });
+749 | 
+750 |     const provider = s.providers[providerID];
+751 |     if (!provider) throw new ModelNotFoundError({ providerID, modelID });
+752 |     const info = provider.info.models[modelID];
+753 |     if (!info) throw new ModelNotFoundError({ providerID, modelID });
+                          ^
+ProviderModelNotFoundError: ProviderModelNotFoundError
+ data: {
+  providerID: "opencode",
+  modelID: "gemini-3-pro",
+},
+
+      at getModel (/root/.bun/install/global/node_modules/@link-assistant/agent/src/provider/provider.ts:753:22)
+```
+
+## Error Location
+- File: src/provider/provider.ts
+- Line: 753
+- Function: getModel()
+- Error Type: ProviderModelNotFoundError
+
+## Error Context
+The error is thrown when:
+1. Provider is found in state (line 750)
+2. But the specific model is NOT found in provider.info.models (line 752-753)

@@ -1,0 +1,269 @@
+title:	Why agent does not continue working on the task?
+state:	OPEN
+author:	konard
+labels:	bug
+comments:	0
+assignees:
+projects:
+milestone:
+number:	129
+--
+```
+hive@vmi2955137:~$ bun install -g @link-assistant/agent
+bun add v1.3.6 (d530ed99)
+
+installed @link-assistant/agent@0.8.7 with binaries:
+ - agent
+
+14 packages installed [1.64s]
+hive@vmi2955137:~$ (cd "/tmp/gh-issue-solver-1769096023225" && cat "/tmp/agent_prompt_1769096041284_977585.txt" | agent --model opencode/grok-code --verbose)
+{
+  "type": "status",
+  "mode": "stdin-stream",
+  "message": "Agent CLI in continuous listening mode. Accepts JSON and plain text input.",
+  "hint": "Press CTRL+C to exit. Use --help for options.",
+  "acceptedFormats": [
+    "JSON object with \"message\" field",
+    "Plain text"
+  ],
+  "options": {
+    "interactive": true,
+    "autoMergeQueuedMessages": true,
+    "alwaysAcceptStdin": true,
+    "compactJson": false
+  }
+}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.299Z","service":"default","version":"0.8.7","command":"/home/hive/.bun/bin/bun /home/hive/.bun/install/global/node_modules/@link-assistant/agent/src/index.js --model opencode/grok-code --verbose","workingDirectory":"/tmp/gh-issue-solver-1769096023225","scriptPath":"/home/hive/.bun/install/global/node_modules/@link-assistant/agent/src/index.js","message":"Agent started (continuous mode)"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.300Z","service":"default","directory":"/tmp/gh-issue-solver-1769096023225","message":"creating instance"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.300Z","service":"project","directory":"/tmp/gh-issue-solver-1769096023225","message":"fromDirectory"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.301Z","service":"project","status":"started","message":"git.rev-parse"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.313Z","service":"project","status":"completed","duration":12,"message":"git.rev-parse"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.330Z","service":"server","method":"POST","path":"/session","message":"request"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.330Z","service":"server","status":"started","method":"POST","path":"/session","message":"request"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.332Z","service":"session","id":"ses_419a7934bffe0h1neosj3qTqh7","version":"agent-cli-1.0.0","projectID":"99069199f5cfc92d94d098b85a12f240a4410ff2","directory":"/tmp/gh-issue-solver-1769096023225","title":"New session - 2026-01-22T15:35:13.332Z","time":{"created":1769096113332,"updated":1769096113332},"message":"created"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.332Z","service":"bus","type":"session.created","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.333Z","service":"bus","type":"session.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.333Z","service":"server","status":"completed","duration":3,"method":"POST","path":"/session","message":"request"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.334Z","service":"bus","type":"*","message":"subscribing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.338Z","service":"bus","type":"*","message":"subscribing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.338Z","service":"server","method":"POST","path":"/session/ses_419a7934bffe0h1neosj3qTqh7/message","message":"request"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.338Z","service":"server","status":"started","method":"POST","path":"/session/ses_419a7934bffe0h1neosj3qTqh7/message","message":"request"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.343Z","service":"server","status":"completed","duration":5,"method":"POST","path":"/session/ses_419a7934bffe0h1neosj3qTqh7/message","message":"request"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.346Z","service":"config","path":"/home/hive/.config/link-assistant-agent/config.json","message":"loading"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.346Z","service":"config","path":"/home/hive/.config/link-assistant-agent/opencode.json","message":"loading"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.346Z","service":"config","path":"/home/hive/.config/link-assistant-agent/opencode.jsonc","message":"loading"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.353Z","service":"bus","type":"message.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.355Z","service":"bus","type":"message.part.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.356Z","service":"bus","type":"session.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.357Z","service":"session.prompt","step":0,"sessionID":"ses_419a7934bffe0h1neosj3qTqh7","message":"loop"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.361Z","service":"provider","status":"started","message":"state"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.361Z","service":"models.dev","file":{},"message":"refreshing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.366Z","service":"provider","message":"init"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.372Z","service":"claude-oauth","subscriptionType":"max","scopes":["user:inference","user:profile","user:sessions:claude_code"],"message":"loaded oauth credentials"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.372Z","service":"provider","source":"credentials file (max)","message":"using claude oauth credentials"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.373Z","service":"provider","providerID":"opencode","message":"found"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.373Z","service":"provider","providerID":"claude-oauth","message":"found"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.373Z","service":"provider","status":"completed","duration":12,"message":"state"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.373Z","service":"provider","providerID":"opencode","modelID":"grok-code","message":"getModel"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.373Z","service":"provider","status":"started","providerID":"opencode","message":"getSDK"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.374Z","service":"provider","providerID":"opencode","pkg":"@ai-sdk/openai-compatible","version":"latest","message":"installing provider package"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.374Z","service":"provider","providerID":"opencode","modelID":"gpt-5-nano","message":"getModel"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.374Z","service":"provider","status":"started","providerID":"opencode","message":"getSDK"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.374Z","service":"provider","providerID":"opencode","pkg":"@ai-sdk/openai","version":"latest","message":"installing provider package"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.374Z","service":"provider","providerID":"opencode","pkg":"@ai-sdk/openai-compatible","installedPath":"/home/hive/.cache/link-assistant-agent/node_modules/@ai-sdk/openai-compatible","message":"provider package installed successfully"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.375Z","service":"provider","providerID":"opencode","pkg":"@ai-sdk/openai","installedPath":"/home/hive/.cache/link-assistant-agent/node_modules/@ai-sdk/openai","message":"provider package installed successfully"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.442Z","service":"provider","status":"completed","duration":69,"providerID":"opencode","message":"getSDK"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.443Z","service":"provider","providerID":"opencode","modelID":"grok-code","message":"found"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.445Z","service":"bus","type":"message.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.446Z","service":"ripgrep","cwd":"/tmp/gh-issue-solver-1769096023225","limit":200,"message":"tree"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.452Z","service":"provider","status":"completed","duration":78,"providerID":"opencode","message":"getSDK"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.452Z","service":"provider","providerID":"opencode","modelID":"gpt-5-nano","message":"found"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","message":"=== VERBOSE: API Request Details ==="}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","model":"opencode/grok-code","message":"Model"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","sessionID":"ses_419a7934bffe0h1neosj3qTqh7","message":"Session ID"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","agent":"build","message":"Agent"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","temperature":0,"message":"Temperature"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","topP":"default","message":"Top P"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","tools":["bash","read","glob","grep","list","edit","write","task","webfetch","websearch","codesearch","batch","todowrite","todoread"],"message":"Active Tools"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","message":"--- System Prompt ---"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","index":1,"tokens":13,"message":"System Message"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.504Z","service":"session.prompt","content":"You are AI agent powered by Grok Code Fast 1 model.","message":"System Message Content"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.506Z","service":"session.processor","message":"process"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.512Z","service":"bus","type":"session.status","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.520Z","service":"bus","type":"message.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.522Z","service":"bus","type":"session.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:13.522Z","service":"bus","type":"session.diff","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:15.120Z","service":"bus","type":"session.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:15.301Z","service":"snapshot","hash":"fb2c2307055334dc86395a7464836f4a3eacd4f4\n","cwd":"/tmp/gh-issue-solver-1769096023225","git":"/home/hive/.local/share/link-assistant-agent/snapshot/99069199f5cfc92d94d098b85a12f240a4410ff2","message":"tracking"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:15.303Z","service":"bus","type":"message.part.updated","message":"publishing"}}
+
+{
+  "type": "step_start",
+  "timestamp": 1769096115303,
+  "sessionID": "ses_419a7934bffe0h1neosj3qTqh7",
+  "part": {
+    "id": "prt_be6587466001zm0h6BA6p52dq5",
+    "sessionID": "ses_419a7934bffe0h1neosj3qTqh7",
+    "messageID": "msg_be6586d23001kiOHY0HGVDDUIT",
+    "type": "step-start",
+    "snapshot": "fb2c2307055334dc86395a7464836f4a3eacd4f4"
+  }
+}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:15.304Z","service":"bus","type":"message.part.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.609Z","service":"bus","type":"message.part.updated","message":"publishing"}}
+
+{
+  "type": "tool_use",
+  "timestamp": 1769096118609,
+  "sessionID": "ses_419a7934bffe0h1neosj3qTqh7",
+  "part": {
+    "id": "prt_be6587e62001xT65JZAacQSeCv",
+    "sessionID": "ses_419a7934bffe0h1neosj3qTqh7",
+    "messageID": "msg_be6586d23001kiOHY0HGVDDUIT",
+    "type": "tool",
+    "callID": "call_88989838",
+    "tool": "bash",
+    "state": {
+      "status": "completed",
+      "input": {
+        "command": "gh issue view --repo veb86/GristWidgets 8",
+        "description": "Fetch details of issue #8 from the repository"
+      },
+      "output": "title:\tСоздай новый виджет в папке edittable\nstate:\tOPEN\nauthor:\tveb86\nlabels:\t\ncomments:\t0\nassignees:\t\nprojects:\t\nmilestone:\t\nnumber:\t8\n--\nНеобходимо создать новый виджет. Суть которого заключается в выборе таблицы из котрой будут загружены данные из этой таблице но в табличной форме. Надо сделать возможность что бы таблица позволяла редактировать данные. Поищи возможно существуют готовые решения на jquery. Измененные данные должны изменять данные внутри таблиц sqlite\nВнимательно посмотри Claude.md\nИзучи примеры виджетов.\nМетод получение таблиц возьми из виджета getTables\n",
+      "title": "gh issue view --repo veb86/GristWidgets 8",
+      "metadata": {
+        "output": "...",
+        "exit": 0,
+        "description": "Fetch details of issue #8 from the repository"
+      },
+      "time": {
+        "start": 1769096117860,
+        "end": 1769096118607
+      }
+    }
+  }
+}
+{"log":{"level":"debug","timestamp":"2026-01-22T15:35:18.610Z","service":"session","rawUsage":"{\"inputTokens\":{\"total\":12721,\"noCache\":4081,\"cacheRead\":8640},\"outputTokens\":{\"total\":54,\"text\":-276,\"reasoning\":330},\"raw\":{\"prompt_tokens\":12721,\"completion_tokens\":54,\"total_tokens\":13105,\"prompt_tokens_details\":{\"cached_tokens\":8640},\"completion_tokens_details\":{\"reasoning_tokens\":330,\"accepted_prediction_tokens\":0,\"rejected_prediction_tokens\":0}}}","rawMetadata":"{\"opencode\":{\"acceptedPredictionTokens\":0,\"rejectedPredictionTokens\":0}}","message":"getUsage called with raw data"}}
+
+{"log":{"level":"debug","timestamp":"2026-01-22T15:35:18.612Z","service":"session","valueType":"object","value":"{\"unified\":\"tool-calls\",\"raw\":\"tool_calls\"}","message":"toFinishReason input"}}
+
+{"log":{"level":"debug","timestamp":"2026-01-22T15:35:18.612Z","service":"session","result":"{\"unified\":\"tool-calls\",\"raw\":\"tool_calls\"}","message":"toFinishReason could not extract string, using JSON"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.629Z","service":"snapshot","hash":"fb2c2307055334dc86395a7464836f4a3eacd4f4\n","cwd":"/tmp/gh-issue-solver-1769096023225","git":"/home/hive/.local/share/link-assistant-agent/snapshot/99069199f5cfc92d94d098b85a12f240a4410ff2","message":"tracking"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.631Z","service":"bus","type":"message.part.updated","message":"publishing"}}
+
+{
+  "type": "step_finish",
+  "timestamp": 1769096118631,
+  "sessionID": "ses_419a7934bffe0h1neosj3qTqh7",
+  "part": {
+    "id": "prt_be6588154001K5o7ngHTglitnm",
+    "sessionID": "ses_419a7934bffe0h1neosj3qTqh7",
+    "messageID": "msg_be6586d23001kiOHY0HGVDDUIT",
+    "type": "step-finish",
+    "reason": "{\"unified\":\"tool-calls\",\"raw\":\"tool_calls\"}",
+    "snapshot": "fb2c2307055334dc86395a7464836f4a3eacd4f4",
+    "cost": 0,
+    "tokens": {
+      "input": 4081,
+      "output": 54,
+      "reasoning": 330,
+      "cache": {
+        "read": 8640,
+        "write": 0
+      }
+    }
+  }
+}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.631Z","service":"bus","type":"message.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.650Z","service":"bus","type":"message.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.654Z","service":"bus","type":"message.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.654Z","service":"session.prompt","step":1,"sessionID":"ses_419a7934bffe0h1neosj3qTqh7","message":"loop"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.657Z","service":"session.prompt","sessionID":"ses_419a7934bffe0h1neosj3qTqh7","message":"exiting loop"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.658Z","service":"session.compaction","message":"pruning"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.658Z","service":"bus","type":"message.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.660Z","service":"bus","type":"session.updated","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.660Z","service":"bus","type":"session.diff","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.660Z","service":"session.prompt","sessionID":"ses_419a7934bffe0h1neosj3qTqh7","message":"cancel"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.660Z","service":"bus","type":"session.status","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.660Z","service":"bus","type":"session.idle","message":"publishing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.660Z","service":"bus","type":"*","message":"unsubscribing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.662Z","service":"session.compaction","pruned":0,"total":0,"message":"found"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.734Z","service":"bus","type":"*","message":"unsubscribing"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.735Z","service":"default","directory":"/tmp/gh-issue-solver-1769096023225","message":"disposing instance"}}
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.735Z","service":"state","key":"/tmp/gh-issue-solver-1769096023225","message":"waiting for state disposal to complete"}}
+
+{"log":{"level":"info","timestamp":"2026-01-22T15:35:18.735Z","service":"state","key":"/tmp/gh-issue-solver-1769096023225","message":"state disposal completed"}}
+
+hive@vmi2955137:~$
+```
+
+Do we have enough verbose output to understand the situation?
+
+Please download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.

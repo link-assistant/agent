@@ -19,6 +19,7 @@ Implement support for Microsoft's Playwright MCP server in the link-assistant/ag
 Playwright MCP is a Model Context Protocol (MCP) server developed by Microsoft that provides browser automation capabilities using Playwright. This server enables Large Language Models (LLMs) to interact with web pages through structured accessibility snapshots, bypassing the need for screenshots or visually-tuned models.
 
 **Key Features:**
+
 - **Fast and lightweight** - Uses Playwright's accessibility tree instead of pixel-based input
 - **LLM-friendly** - No vision models needed; operates on structured data
 - **Deterministic tool application** - Avoids ambiguity common with screenshot-based approaches
@@ -64,11 +65,13 @@ The current implementation lacks:
 ### Command Format
 
 Following Claude Code's pattern:
+
 ```bash
 agent mcp add <name> <command> [args...]
 ```
 
 Example:
+
 ```bash
 agent mcp add playwright npx @playwright/mcp@latest
 ```
@@ -76,16 +79,14 @@ agent mcp add playwright npx @playwright/mcp@latest
 ### Expected Output Configuration
 
 The command should produce configuration in the user's config directory:
+
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
     "playwright": {
       "type": "local",
-      "command": [
-        "npx",
-        "@playwright/mcp@latest"
-      ],
+      "command": ["npx", "@playwright/mcp@latest"],
       "enabled": true
     }
   }
@@ -116,30 +117,30 @@ The command should produce configuration in the user's config directory:
 
 The Playwright MCP server exposes 22+ tools for browser automation:
 
-| Tool | Description |
-|------|-------------|
-| `browser_navigate` | Navigate to a URL |
-| `browser_click` | Click on an element |
-| `browser_type` | Type text into an element |
-| `browser_snapshot` | Capture accessibility snapshot |
-| `browser_take_screenshot` | Take a screenshot |
-| `browser_fill_form` | Fill multiple form fields |
-| `browser_select_option` | Select dropdown option |
-| `browser_hover` | Hover over element |
-| `browser_drag` | Drag and drop |
-| `browser_evaluate` | Execute JavaScript |
-| `browser_tabs` | Manage browser tabs |
-| `browser_close` | Close the browser |
-| `browser_wait_for` | Wait for text/element |
-| `browser_press_key` | Press keyboard key |
-| `browser_handle_dialog` | Handle browser dialogs |
-| `browser_network_requests` | Get network requests |
-| `browser_console_messages` | Get console messages |
-| `browser_file_upload` | Upload files |
-| `browser_resize` | Resize browser window |
-| `browser_navigate_back` | Navigate back |
-| `browser_install` | Install browser |
-| `browser_run_code` | Run Playwright code |
+| Tool                       | Description                    |
+| -------------------------- | ------------------------------ |
+| `browser_navigate`         | Navigate to a URL              |
+| `browser_click`            | Click on an element            |
+| `browser_type`             | Type text into an element      |
+| `browser_snapshot`         | Capture accessibility snapshot |
+| `browser_take_screenshot`  | Take a screenshot              |
+| `browser_fill_form`        | Fill multiple form fields      |
+| `browser_select_option`    | Select dropdown option         |
+| `browser_hover`            | Hover over element             |
+| `browser_drag`             | Drag and drop                  |
+| `browser_evaluate`         | Execute JavaScript             |
+| `browser_tabs`             | Manage browser tabs            |
+| `browser_close`            | Close the browser              |
+| `browser_wait_for`         | Wait for text/element          |
+| `browser_press_key`        | Press keyboard key             |
+| `browser_handle_dialog`    | Handle browser dialogs         |
+| `browser_network_requests` | Get network requests           |
+| `browser_console_messages` | Get console messages           |
+| `browser_file_upload`      | Upload files                   |
+| `browser_resize`           | Resize browser window          |
+| `browser_navigate_back`    | Navigate back                  |
+| `browser_install`          | Install browser                |
+| `browser_run_code`         | Run Playwright code            |
 
 ## References
 

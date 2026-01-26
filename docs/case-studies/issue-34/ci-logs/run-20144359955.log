@@ -1,0 +1,290 @@
+test-model	Set up job	﻿2025-12-11T19:07:19.8403897Z Current runner version: '2.329.0'
+test-model	Set up job	2025-12-11T19:07:19.8440023Z ##[group]Runner Image Provisioner
+test-model	Set up job	2025-12-11T19:07:19.8441315Z Hosted Compute Agent
+test-model	Set up job	2025-12-11T19:07:19.8442213Z Version: 20251202.455
+test-model	Set up job	2025-12-11T19:07:19.8443408Z Commit: 6c10caca4910e198df60de23adf20ad317c474e3
+test-model	Set up job	2025-12-11T19:07:19.8444596Z Build Date: 2025-12-02T15:56:59Z
+test-model	Set up job	2025-12-11T19:07:19.8445673Z Worker ID: {fd412e87-9d11-4659-8996-c481311f3f26}
+test-model	Set up job	2025-12-11T19:07:19.8446940Z ##[endgroup]
+test-model	Set up job	2025-12-11T19:07:19.8447783Z ##[group]Operating System
+test-model	Set up job	2025-12-11T19:07:19.8449050Z Ubuntu
+test-model	Set up job	2025-12-11T19:07:19.8450022Z 24.04.3
+test-model	Set up job	2025-12-11T19:07:19.8450772Z LTS
+test-model	Set up job	2025-12-11T19:07:19.8451567Z ##[endgroup]
+test-model	Set up job	2025-12-11T19:07:19.8452520Z ##[group]Runner Image
+test-model	Set up job	2025-12-11T19:07:19.8453466Z Image: ubuntu-24.04
+test-model	Set up job	2025-12-11T19:07:19.8454274Z Version: 20251208.163.1
+test-model	Set up job	2025-12-11T19:07:19.8456075Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251208.163/images/ubuntu/Ubuntu2404-Readme.md
+test-model	Set up job	2025-12-11T19:07:19.8458762Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251208.163
+test-model	Set up job	2025-12-11T19:07:19.8460854Z ##[endgroup]
+test-model	Set up job	2025-12-11T19:07:19.8462736Z ##[group]GITHUB_TOKEN Permissions
+test-model	Set up job	2025-12-11T19:07:19.8465418Z Contents: read
+test-model	Set up job	2025-12-11T19:07:19.8466383Z Metadata: read
+test-model	Set up job	2025-12-11T19:07:19.8467215Z Packages: read
+test-model	Set up job	2025-12-11T19:07:19.8468210Z ##[endgroup]
+test-model	Set up job	2025-12-11T19:07:19.8471353Z Secret source: Actions
+test-model	Set up job	2025-12-11T19:07:19.8472478Z Prepare workflow directory
+test-model	Set up job	2025-12-11T19:07:19.9256550Z Prepare all required actions
+test-model	Set up job	2025-12-11T19:07:19.9317455Z Getting action download info
+test-model	Set up job	2025-12-11T19:07:20.2289339Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+test-model	Set up job	2025-12-11T19:07:20.3419580Z Download action repository 'oven-sh/setup-bun@v2' (SHA:735343b667d3e6f658f44d0eca948eb6282f2b76)
+test-model	Set up job	2025-12-11T19:07:20.7990116Z Complete job name: test-model
+test-model	Checkout repository	﻿2025-12-11T19:07:20.8636196Z ##[group]Run actions/checkout@v4
+test-model	Checkout repository	2025-12-11T19:07:20.8637051Z with:
+test-model	Checkout repository	2025-12-11T19:07:20.8637440Z   submodules: false
+test-model	Checkout repository	2025-12-11T19:07:20.8637881Z   repository: link-assistant/agent
+test-model	Checkout repository	2025-12-11T19:07:20.8638698Z   token: ***
+test-model	Checkout repository	2025-12-11T19:07:20.8639093Z   ssh-strict: true
+test-model	Checkout repository	2025-12-11T19:07:20.8639476Z   ssh-user: git
+test-model	Checkout repository	2025-12-11T19:07:20.8639870Z   persist-credentials: true
+test-model	Checkout repository	2025-12-11T19:07:20.8640313Z   clean: true
+test-model	Checkout repository	2025-12-11T19:07:20.8640715Z   sparse-checkout-cone-mode: true
+test-model	Checkout repository	2025-12-11T19:07:20.8641189Z   fetch-depth: 1
+test-model	Checkout repository	2025-12-11T19:07:20.8641571Z   fetch-tags: false
+test-model	Checkout repository	2025-12-11T19:07:20.8641974Z   show-progress: true
+test-model	Checkout repository	2025-12-11T19:07:20.8642375Z   lfs: false
+test-model	Checkout repository	2025-12-11T19:07:20.8642748Z   set-safe-directory: true
+test-model	Checkout repository	2025-12-11T19:07:20.8643399Z env:
+test-model	Checkout repository	2025-12-11T19:07:20.8643986Z   GROQ_API_KEY: ***
+test-model	Checkout repository	2025-12-11T19:07:20.8644378Z ##[endgroup]
+test-model	Checkout repository	2025-12-11T19:07:20.9725779Z Syncing repository: link-assistant/agent
+test-model	Checkout repository	2025-12-11T19:07:20.9727574Z ##[group]Getting Git version info
+test-model	Checkout repository	2025-12-11T19:07:20.9728230Z Working directory is '/home/runner/work/agent/agent'
+test-model	Checkout repository	2025-12-11T19:07:20.9729444Z [command]/usr/bin/git version
+test-model	Checkout repository	2025-12-11T19:07:20.9800754Z git version 2.52.0
+test-model	Checkout repository	2025-12-11T19:07:20.9827124Z ##[endgroup]
+test-model	Checkout repository	2025-12-11T19:07:20.9841920Z Temporarily overriding HOME='/home/runner/work/_temp/0e7299f7-59e4-4164-93d8-37429f38b0a9' before making global git config changes
+test-model	Checkout repository	2025-12-11T19:07:20.9843406Z Adding repository directory to the temporary git global config as a safe directory
+test-model	Checkout repository	2025-12-11T19:07:20.9855123Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+test-model	Checkout repository	2025-12-11T19:07:20.9892811Z Deleting the contents of '/home/runner/work/agent/agent'
+test-model	Checkout repository	2025-12-11T19:07:20.9896553Z ##[group]Initializing the repository
+test-model	Checkout repository	2025-12-11T19:07:20.9900585Z [command]/usr/bin/git init /home/runner/work/agent/agent
+test-model	Checkout repository	2025-12-11T19:07:20.9992468Z hint: Using 'master' as the name for the initial branch. This default branch name
+test-model	Checkout repository	2025-12-11T19:07:20.9994025Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test-model	Checkout repository	2025-12-11T19:07:20.9995610Z hint: to use in all of your new repositories, which will suppress this warning,
+test-model	Checkout repository	2025-12-11T19:07:20.9997397Z hint: call:
+test-model	Checkout repository	2025-12-11T19:07:20.9998038Z hint:
+test-model	Checkout repository	2025-12-11T19:07:20.9998939Z hint: 	git config --global init.defaultBranch <name>
+test-model	Checkout repository	2025-12-11T19:07:20.9999568Z hint:
+test-model	Checkout repository	2025-12-11T19:07:21.0000139Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test-model	Checkout repository	2025-12-11T19:07:21.0001074Z hint: 'development'. The just-created branch can be renamed via this command:
+test-model	Checkout repository	2025-12-11T19:07:21.0001801Z hint:
+test-model	Checkout repository	2025-12-11T19:07:21.0002188Z hint: 	git branch -m <name>
+test-model	Checkout repository	2025-12-11T19:07:21.0002713Z hint:
+test-model	Checkout repository	2025-12-11T19:07:21.0003666Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test-model	Checkout repository	2025-12-11T19:07:21.0004648Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+test-model	Checkout repository	2025-12-11T19:07:21.0008823Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+test-model	Checkout repository	2025-12-11T19:07:21.0041096Z ##[endgroup]
+test-model	Checkout repository	2025-12-11T19:07:21.0041829Z ##[group]Disabling automatic garbage collection
+test-model	Checkout repository	2025-12-11T19:07:21.0045064Z [command]/usr/bin/git config --local gc.auto 0
+test-model	Checkout repository	2025-12-11T19:07:21.0073680Z ##[endgroup]
+test-model	Checkout repository	2025-12-11T19:07:21.0074372Z ##[group]Setting up auth
+test-model	Checkout repository	2025-12-11T19:07:21.0080458Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test-model	Checkout repository	2025-12-11T19:07:21.0109280Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test-model	Checkout repository	2025-12-11T19:07:21.0444949Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test-model	Checkout repository	2025-12-11T19:07:21.0474103Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test-model	Checkout repository	2025-12-11T19:07:21.0690249Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test-model	Checkout repository	2025-12-11T19:07:21.0720667Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test-model	Checkout repository	2025-12-11T19:07:21.0961886Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test-model	Checkout repository	2025-12-11T19:07:21.0996932Z ##[endgroup]
+test-model	Checkout repository	2025-12-11T19:07:21.0998199Z ##[group]Fetching the repository
+test-model	Checkout repository	2025-12-11T19:07:21.1007283Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5739189c97c2d582351ecf0a7f7cd6719c28f3da:refs/remotes/origin/main
+test-model	Checkout repository	2025-12-11T19:07:21.4140240Z From https://github.com/link-assistant/agent
+test-model	Checkout repository	2025-12-11T19:07:21.4141603Z  * [new ref]         5739189c97c2d582351ecf0a7f7cd6719c28f3da -> origin/main
+test-model	Checkout repository	2025-12-11T19:07:21.4173674Z ##[endgroup]
+test-model	Checkout repository	2025-12-11T19:07:21.4177064Z ##[group]Determining the checkout info
+test-model	Checkout repository	2025-12-11T19:07:21.4179084Z ##[endgroup]
+test-model	Checkout repository	2025-12-11T19:07:21.4180798Z [command]/usr/bin/git sparse-checkout disable
+test-model	Checkout repository	2025-12-11T19:07:21.4221664Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test-model	Checkout repository	2025-12-11T19:07:21.4247323Z ##[group]Checking out the ref
+test-model	Checkout repository	2025-12-11T19:07:21.4250742Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+test-model	Checkout repository	2025-12-11T19:07:21.4413509Z Switched to a new branch 'main'
+test-model	Checkout repository	2025-12-11T19:07:21.4415220Z branch 'main' set up to track 'origin/main'.
+test-model	Checkout repository	2025-12-11T19:07:21.4423823Z ##[endgroup]
+test-model	Checkout repository	2025-12-11T19:07:21.4460569Z [command]/usr/bin/git log -1 --format=%H
+test-model	Checkout repository	2025-12-11T19:07:21.4484532Z 5739189c97c2d582351ecf0a7f7cd6719c28f3da
+test-model	Setup Bun	﻿2025-12-11T19:07:21.4733342Z ##[group]Run oven-sh/setup-bun@v2
+test-model	Setup Bun	2025-12-11T19:07:21.4734485Z with:
+test-model	Setup Bun	2025-12-11T19:07:21.4735210Z   bun-version: latest
+test-model	Setup Bun	2025-12-11T19:07:21.4736049Z   no-cache: false
+test-model	Setup Bun	2025-12-11T19:07:21.4736804Z env:
+test-model	Setup Bun	2025-12-11T19:07:21.4738220Z   GROQ_API_KEY: ***
+test-model	Setup Bun	2025-12-11T19:07:21.4739182Z ##[endgroup]
+test-model	Setup Bun	2025-12-11T19:07:21.6005288Z Downloading a new version of Bun: https://bun.sh/download/latest/linux/x64?avx2=true&profile=false
+test-model	Setup Bun	2025-12-11T19:07:22.2923913Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/a98f4732-ab1c-43aa-bc54-f2feac518720.zip
+test-model	Setup Bun	2025-12-11T19:07:23.0780163Z [command]/home/runner/.bun/bin/bun --revision
+test-model	Setup Bun	2025-12-11T19:07:23.0818060Z 1.3.4+5eb2145b3
+test-model	Install dependencies	﻿2025-12-11T19:07:23.0945117Z ##[group]Run bun install
+test-model	Install dependencies	2025-12-11T19:07:23.0945477Z [36;1mbun install[0m
+test-model	Install dependencies	2025-12-11T19:07:23.0984112Z shell: /usr/bin/bash -e {0}
+test-model	Install dependencies	2025-12-11T19:07:23.0984397Z env:
+test-model	Install dependencies	2025-12-11T19:07:23.0984842Z   GROQ_API_KEY: ***
+test-model	Install dependencies	2025-12-11T19:07:23.0985070Z ##[endgroup]
+test-model	Install dependencies	2025-12-11T19:07:23.1086339Z bun install v1.3.4 (5eb2145b)
+test-model	Install dependencies	2025-12-11T19:07:24.2066307Z 
+test-model	Install dependencies	2025-12-11T19:07:24.2066857Z + @actions/core@1.11.1
+test-model	Install dependencies	2025-12-11T19:07:24.2067351Z + @actions/github@6.0.1
+test-model	Install dependencies	2025-12-11T19:07:24.2067774Z + @agentclientprotocol/sdk@0.5.1
+test-model	Install dependencies	2025-12-11T19:07:24.2068230Z + @ai-sdk/mcp@0.0.8
+test-model	Install dependencies	2025-12-11T19:07:24.2068833Z + @ai-sdk/xai@2.0.33
+test-model	Install dependencies	2025-12-11T19:07:24.2069249Z + @clack/prompts@0.11.0
+test-model	Install dependencies	2025-12-11T19:07:24.2069668Z + @hono/standard-validator@0.2.0
+test-model	Install dependencies	2025-12-11T19:07:24.2070088Z + @hono/zod-validator@0.7.5
+test-model	Install dependencies	2025-12-11T19:07:24.2070557Z + @modelcontextprotocol/sdk@1.22.0
+test-model	Install dependencies	2025-12-11T19:07:24.2071082Z + @octokit/graphql@9.0.3
+test-model	Install dependencies	2025-12-11T19:07:24.2071482Z + @octokit/rest@22.0.1
+test-model	Install dependencies	2025-12-11T19:07:24.2072086Z + @openauthjs/openauth@0.4.3
+test-model	Install dependencies	2025-12-11T19:07:24.2072554Z + @opencode-ai/sdk@1.0.78
+test-model	Install dependencies	2025-12-11T19:07:24.2072964Z + @opentui/core@0.1.46
+test-model	Install dependencies	2025-12-11T19:07:24.2073354Z + @opentui/solid@0.1.46
+test-model	Install dependencies	2025-12-11T19:07:24.2073738Z + @parcel/watcher@2.5.1
+test-model	Install dependencies	2025-12-11T19:07:24.2074137Z + @solid-primitives/event-bus@1.1.2
+test-model	Install dependencies	2025-12-11T19:07:24.2074461Z + @zip.js/zip.js@2.8.10
+test-model	Install dependencies	2025-12-11T19:07:24.2074752Z + ai@6.0.0-beta.99
+test-model	Install dependencies	2025-12-11T19:07:24.2075029Z + chokidar@4.0.3
+test-model	Install dependencies	2025-12-11T19:07:24.2075297Z + clipboardy@5.0.0
+test-model	Install dependencies	2025-12-11T19:07:24.2075565Z + command-stream@0.7.1
+test-model	Install dependencies	2025-12-11T19:07:24.2075841Z + decimal.js@10.6.0
+test-model	Install dependencies	2025-12-11T19:07:24.2076127Z + diff@8.0.2
+test-model	Install dependencies	2025-12-11T19:07:24.2076388Z + fuzzysort@3.1.0
+test-model	Install dependencies	2025-12-11T19:07:24.2076651Z + glob@10.5.0
+test-model	Install dependencies	2025-12-11T19:07:24.2076916Z + gray-matter@4.0.3
+test-model	Install dependencies	2025-12-11T19:07:24.2077178Z + hono@4.10.6
+test-model	Install dependencies	2025-12-11T19:07:24.2077468Z + hono-openapi@1.1.1
+test-model	Install dependencies	2025-12-11T19:07:24.2077760Z + ignore@7.0.5
+test-model	Install dependencies	2025-12-11T19:07:24.2078036Z + jsonc-parser@3.3.1
+test-model	Install dependencies	2025-12-11T19:07:24.2078314Z + minimatch@10.1.1
+test-model	Install dependencies	2025-12-11T19:07:24.2078806Z + open@11.0.0
+test-model	Install dependencies	2025-12-11T19:07:24.2079088Z + partial-json@0.1.7
+test-model	Install dependencies	2025-12-11T19:07:24.2079361Z + remeda@2.32.0
+test-model	Install dependencies	2025-12-11T19:07:24.2079614Z + solid-js@1.9.10
+test-model	Install dependencies	2025-12-11T19:07:24.2079889Z + strip-ansi@7.1.2
+test-model	Install dependencies	2025-12-11T19:07:24.2080164Z + test-anywhere@0.7.0
+test-model	Install dependencies	2025-12-11T19:07:24.2080450Z + tree-sitter-bash@0.25.0
+test-model	Install dependencies	2025-12-11T19:07:24.2080745Z + turndown@7.2.2
+test-model	Install dependencies	2025-12-11T19:07:24.2081002Z + ulid@3.0.1
+test-model	Install dependencies	2025-12-11T19:07:24.2081267Z + vscode-jsonrpc@8.2.1
+test-model	Install dependencies	2025-12-11T19:07:24.2081571Z + vscode-languageserver-types@3.17.5
+test-model	Install dependencies	2025-12-11T19:07:24.2081926Z + web-tree-sitter@0.25.10
+test-model	Install dependencies	2025-12-11T19:07:24.2082294Z + xdg-basedir@5.1.0
+test-model	Install dependencies	2025-12-11T19:07:24.2082553Z + yargs@18.0.0
+test-model	Install dependencies	2025-12-11T19:07:24.2082812Z + zod@4.1.12
+test-model	Install dependencies	2025-12-11T19:07:24.2082980Z 
+test-model	Install dependencies	2025-12-11T19:07:24.2083087Z 446 packages installed [1099.00ms]
+test-model	Determine model to test	﻿2025-12-11T19:07:24.2301316Z ##[group]Run CUSTOM_MODEL=""
+test-model	Determine model to test	2025-12-11T19:07:24.2301658Z [36;1mCUSTOM_MODEL=""[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2301947Z [36;1mMODEL_FROM_DROPDOWN="groq/qwen/qwen3-32b"[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2302225Z [36;1m[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2302415Z [36;1mif [ -n "$CUSTOM_MODEL" ]; then[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2302679Z [36;1m  MODEL_ID="$CUSTOM_MODEL"[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2302903Z [36;1melse[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2303106Z [36;1m  MODEL_ID="$MODEL_FROM_DROPDOWN"[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2303346Z [36;1mfi[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2303509Z [36;1m[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2303792Z [36;1m# Extract provider and model name from provider/model format[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2304164Z [36;1mPROVIDER=$(echo "$MODEL_ID" | cut -d'/' -f1)[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2304489Z [36;1mMODEL_NAME=$(echo "$MODEL_ID" | cut -d'/' -f2-)[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2304763Z [36;1m[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2304959Z [36;1mecho "model_id=$MODEL_ID" >> $GITHUB_OUTPUT[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2305270Z [36;1mecho "model_name=$MODEL_NAME" >> $GITHUB_OUTPUT[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2305788Z [36;1mecho "provider=$PROVIDER" >> $GITHUB_OUTPUT[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2306183Z [36;1mecho "Testing model: $MODEL_ID (provider: $PROVIDER, model: $MODEL_NAME)"[0m
+test-model	Determine model to test	2025-12-11T19:07:24.2340157Z shell: /usr/bin/bash -e {0}
+test-model	Determine model to test	2025-12-11T19:07:24.2340396Z env:
+test-model	Determine model to test	2025-12-11T19:07:24.2340785Z   GROQ_API_KEY: ***
+test-model	Determine model to test	2025-12-11T19:07:24.2340973Z ##[endgroup]
+test-model	Determine model to test	2025-12-11T19:07:24.2427314Z Testing model: groq/qwen/qwen3-32b (provider: groq, model: qwen/qwen3-32b)
+test-model	Fetch model capabilities	﻿2025-12-11T19:07:24.2468949Z ##[group]Run OUTPUT=$(node scripts/get-model-info.mjs "groq" "qwen/qwen3-32b")
+test-model	Fetch model capabilities	2025-12-11T19:07:24.2469509Z [36;1mOUTPUT=$(node scripts/get-model-info.mjs "groq" "qwen/qwen3-32b")[0m
+test-model	Fetch model capabilities	2025-12-11T19:07:24.2469854Z [36;1mecho "$OUTPUT"[0m
+test-model	Fetch model capabilities	2025-12-11T19:07:24.2470082Z [36;1mecho "$OUTPUT" >> $GITHUB_OUTPUT[0m
+test-model	Fetch model capabilities	2025-12-11T19:07:24.2500774Z shell: /usr/bin/bash -e {0}
+test-model	Fetch model capabilities	2025-12-11T19:07:24.2501010Z env:
+test-model	Fetch model capabilities	2025-12-11T19:07:24.2501371Z   GROQ_API_KEY: ***
+test-model	Fetch model capabilities	2025-12-11T19:07:24.2501568Z ##[endgroup]
+test-model	Fetch model capabilities	2025-12-11T19:07:24.8356975Z model_id=groq/qwen/qwen3-32b
+test-model	Fetch model capabilities	2025-12-11T19:07:24.8357513Z tool_call=true
+test-model	Check API key availability	﻿2025-12-11T19:07:24.8387992Z ##[group]Run if [ "groq" = "groq" ]; then
+test-model	Check API key availability	2025-12-11T19:07:24.8388325Z [36;1mif [ "groq" = "groq" ]; then[0m
+test-model	Check API key availability	2025-12-11T19:07:24.8388795Z [36;1m  if [ -z "$GROQ_API_KEY" ]; then[0m
+test-model	Check API key availability	2025-12-11T19:07:24.8389156Z [36;1m    echo "::warning::GROQ_API_KEY is not set. Groq tests may fail."[0m
+test-model	Check API key availability	2025-12-11T19:07:24.8389469Z [36;1m  else[0m
+test-model	Check API key availability	2025-12-11T19:07:24.8389673Z [36;1m    echo "GROQ_API_KEY is configured"[0m
+test-model	Check API key availability	2025-12-11T19:07:24.8389917Z [36;1m  fi[0m
+test-model	Check API key availability	2025-12-11T19:07:24.8390077Z [36;1mfi[0m
+test-model	Check API key availability	2025-12-11T19:07:24.8422495Z shell: /usr/bin/bash -e {0}
+test-model	Check API key availability	2025-12-11T19:07:24.8422724Z env:
+test-model	Check API key availability	2025-12-11T19:07:24.8423111Z   GROQ_API_KEY: ***
+test-model	Check API key availability	2025-12-11T19:07:24.8423299Z ##[endgroup]
+test-model	Check API key availability	2025-12-11T19:07:24.8475484Z GROQ_API_KEY is configured
+test-model	Test without tools (simple response)	﻿2025-12-11T19:07:24.8523368Z ##[group]Run node scripts/test-model-simple.mjs "groq/qwen/qwen3-32b"
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8523897Z [36;1mnode scripts/test-model-simple.mjs "groq/qwen/qwen3-32b"[0m
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8553696Z shell: /usr/bin/bash -e {0}
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8553927Z env:
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8554279Z   GROQ_API_KEY: ***
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8554461Z ##[endgroup]
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8877191Z Testing model: groq/qwen/qwen3-32b
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8881605Z Test type: Simple message (no tool calls expected)
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8882056Z 
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8883097Z Input: {"message":"What is 2 + 2? Answer with just the number."}
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8883526Z 
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8883677Z Running test...
+test-model	Test without tools (simple response)	2025-12-11T19:07:24.8883907Z 
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3152210Z {
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3152617Z   "type": "error",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3153021Z   "timestamp": 1765480046313,
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3153529Z   "sessionID": "ses_4f1306513ffei1ALM5byg64CF8",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3153882Z   "error": {
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3154105Z     "name": "APIError",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3154426Z     "data": {
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3155997Z       "message": "Request too large for model `qwen/qwen3-32b` in organization `org_01kc2tjgvwfz9vpegygts4e5cv` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 12089, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3157464Z       "statusCode": 413,
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3157735Z       "isRetryable": false,
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3158011Z       "responseHeaders": {
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3158282Z         "alt-svc": "h3=\":443\"; ma=86400",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3159021Z         "cache-control": "private, max-age=0, no-store, no-cache, must-revalidate",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3159500Z         "cf-cache-status": "DYNAMIC",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3159807Z         "cf-ray": "9ac743d06cd322f3-ORD",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3160130Z         "connection": "keep-alive",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3160436Z         "content-length": "381",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3160767Z         "content-type": "application/json",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3161168Z         "date": "Thu, 11 Dec 2025 19:07:26 GMT",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3161922Z         "retry-after": "64",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3162202Z         "server": "cloudflare",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3162527Z         "strict-transport-security": "max-age=2592000",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3162989Z         "vary": "Origin",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3163324Z         "x-groq-region": "msp",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3163694Z         "x-ratelimit-limit-requests": "1000",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3164139Z         "x-ratelimit-limit-tokens": "6000",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3164547Z         "x-ratelimit-remaining-requests": "999",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3165030Z         "x-ratelimit-remaining-tokens": "5774",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3165436Z         "x-ratelimit-reset-requests": "1m26.4s",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3165919Z         "x-ratelimit-reset-tokens": "2.26s",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3166391Z         "x-request-id": "req_01kc7cz7jyfj3bw1j0x2fmw01k",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3166904Z         "x-should-retry": "false",
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3168215Z         "set-cookie": "__cf_bm=Ek1HbOXWlI60hcKQmBIxXOgpTuI7ezXlbWKqziE.MuU-1765480046.1459007-1.0.1.1-AHPopmb1ryIkuIH18YFnhBRwioPDDTeUuL.ADp2V1G6LxZev0Wc6YnRpE9qx72jQCTGFdn6SSFh3RAu.EZVEKHBcShF_Zx9zG8kLxknCKrzv4vcI7xjnWB9zJ693w8to; HttpOnly; Secure; Path=/; Domain=groq.com; Expires=Thu, 11 Dec 2025 19:37:26 GMT"
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3169739Z       },
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3171006Z       "responseBody": "{\"error\":{\"message\":\"Request too large for model `qwen/qwen3-32b` in organization `org_01kc2tjgvwfz9vpegygts4e5cv` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 12089, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3172281Z     }
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3172426Z   }
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3172577Z }
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3336478Z 
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3337267Z Exit code: 1
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3338897Z 
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3339624Z ❌ Test FAILED: Agent exited with code 1
+test-model	Test without tools (simple response)	2025-12-11T19:07:26.3385276Z ##[error]Process completed with exit code 1.
+test-model	Post Checkout repository	﻿2025-12-11T19:07:26.3489258Z Post job cleanup.
+test-model	Post Checkout repository	2025-12-11T19:07:26.4443615Z [command]/usr/bin/git version
+test-model	Post Checkout repository	2025-12-11T19:07:26.4480588Z git version 2.52.0
+test-model	Post Checkout repository	2025-12-11T19:07:26.4524342Z Temporarily overriding HOME='/home/runner/work/_temp/db3d2a8f-1ad9-4f55-bac5-c27da8f43d07' before making global git config changes
+test-model	Post Checkout repository	2025-12-11T19:07:26.4525347Z Adding repository directory to the temporary git global config as a safe directory
+test-model	Post Checkout repository	2025-12-11T19:07:26.4537960Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+test-model	Post Checkout repository	2025-12-11T19:07:26.4572986Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test-model	Post Checkout repository	2025-12-11T19:07:26.4607218Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test-model	Post Checkout repository	2025-12-11T19:07:26.4836098Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test-model	Post Checkout repository	2025-12-11T19:07:26.4857663Z http.https://github.com/.extraheader
+test-model	Post Checkout repository	2025-12-11T19:07:26.4869900Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test-model	Post Checkout repository	2025-12-11T19:07:26.4901652Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test-model	Post Checkout repository	2025-12-11T19:07:26.5127081Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test-model	Post Checkout repository	2025-12-11T19:07:26.5158103Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test-model	Complete job	﻿2025-12-11T19:07:26.5488490Z Cleaning up orphan processes

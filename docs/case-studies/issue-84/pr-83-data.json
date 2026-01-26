@@ -1,0 +1,125 @@
+{
+  "additions": 969,
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "body": "## Summary\n\nThis PR fixes Issue #82 by implementing continuous stdin listening mode with several improvements:\n\n### New Features\n\n1. **`--always-accept-stdin` flag** (default: true)\n   - Enables continuous listening mode - keeps accepting input after processing each message\n   - Session stays alive between messages for multi-turn conversations\n   - Use `--no-always-accept-stdin` for legacy single-message mode\n\n2. **`--compact-json` flag** (default: false)\n   - Output compact JSON (single line) for program-to-program communication\n   - When disabled, JSON is pretty-printed for human readability\n\n3. **Pretty-printed status messages**\n   - Status messages to stderr are now pretty-printed by default\n   - Respects `--compact-json` flag\n\n### Behavior Changes\n\n| Scenario | Before | After |\n|----------|--------|-------|\n| `echo \"hi\" \\| agent` | Process once, exit | Continuous mode - wait for more input |\n| Status messages | Compact JSON | Pretty-printed JSON |\n| After agent finishes | Exit immediately | Keep listening |\n\n### CLI Options Added\n\n```\n--always-accept-stdin          Keep accepting input after agent finishes (default: true)\n--no-always-accept-stdin       Single-message mode - exit after first response\n--compact-json                 Output compact JSON for program-to-program use\n```\n\n### Documentation Updates\n\n- Updated README.md with new CLI options\n- Updated docs/stdin-mode.md with comprehensive documentation\n- Added docs/case-studies/issue-82/ with root cause analysis\n\n### Files Changed\n\n- `src/index.js` - Added new CLI options and continuous mode integration\n- `src/cli/continuous-mode.js` - New module for continuous stdin handling\n- `README.md` - Updated CLI options documentation\n- `docs/stdin-mode.md` - Updated with new features and behavior matrix\n- `docs/case-studies/issue-82/` - Case study and root cause analysis\n\n## Test Plan\n\n- [x] `agent` in terminal shows help, exits\n- [x] `echo \"hi\" | agent` enters continuous listening mode\n- [x] `echo \"hi\" | agent --no-always-accept-stdin` exits after first response\n- [x] `agent -p \"test\"` processes prompt directly and exits\n- [x] `--compact-json` produces compact JSON output\n- [x] Status messages are pretty-printed by default\n- [x] Local lint checks pass (`bun run check`)\n\nFixes #82\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+  "comments": [
+    {
+      "id": "IC_kwDOQYTy3M7bPWBQ",
+      "author": { "login": "konard" },
+      "authorAssociation": "MEMBER",
+      "body": "## 🤖 Solution Draft Log\nThis log file contains the complete execution trace of the AI solution draft process.\n\n💰 **Cost estimation:**\n- Public pricing estimate: $7.869643 USD\n- Calculated by Anthropic: $5.324299 USD\n- Difference: $-2.545345 (-32.34%)\n📎 **Log file uploaded as GitHub Gist** (1322KB)\n🔗 [View complete solution draft log](https://gist.githubusercontent.com/konard/e6d80448e0206442b6dea1de77aba7ec/raw/449e2d25693175fbcccb1ef067847408401f6f60/solution-draft-log-pr-1766276145092.txt)\n---\n*Now working session is ended, feel free to review and add any feedback on the solution draft.*",
+      "createdAt": "2025-12-21T00:15:49Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/link-assistant/agent/pull/83#issuecomment-3678232656",
+      "viewerDidAuthor": true
+    }
+  ],
+  "commits": [
+    {
+      "authoredDate": "2025-12-20T23:58:42Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-20T23:58:42Z",
+      "messageBody": "Adding CLAUDE.md with task information for AI processing.\nThis file will be removed when the task is complete.\n\nIssue: https://github.com/link-assistant/agent/issues/82",
+      "messageHeadline": "Initial commit with task details",
+      "oid": "95faf2fb4e048a452bb91df866c5ed187168f46c"
+    },
+    {
+      "authoredDate": "2025-12-21T00:14:22Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude"
+        }
+      ],
+      "committedDate": "2025-12-21T00:14:22Z",
+      "messageBody": "- Add --always-accept-stdin flag (default: true) for continuous input mode\n- Add --compact-json flag for machine-to-machine communication\n- Pretty-print status messages to stderr by default\n- Implement continuous stdin reader that processes multiple messages\n- Keep session alive between messages for multi-turn conversations\n- Handle SIGINT gracefully for clean shutdown\n- Extract continuous mode logic to src/cli/continuous-mode.js\n\nFixes #82\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+      "messageHeadline": "feat: Enable continuous listening mode by default",
+      "oid": "40bc013267f650310a85458048ed3ba291ec6dd8"
+    },
+    {
+      "authoredDate": "2025-12-21T00:15:08Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude"
+        }
+      ],
+      "committedDate": "2025-12-21T00:15:08Z",
+      "messageBody": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+      "messageHeadline": "chore: Add changeset for continuous listening mode",
+      "oid": "5a09d94396be901acb450794fcac4fc1d59a8cad"
+    },
+    {
+      "authoredDate": "2025-12-21T00:15:39Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-21T00:15:39Z",
+      "messageBody": "",
+      "messageHeadline": "Revert: Remove CLAUDE.md changes from initial commit",
+      "oid": "7bf75ac64fc24071e37d7c2e788c0e598ac2c437"
+    }
+  ],
+  "createdAt": "2025-12-20T23:58:49Z",
+  "deletions": 78,
+  "files": [
+    {
+      "path": ".changeset/continuous-listening-mode.md",
+      "additions": 11,
+      "deletions": 0
+    },
+    { "path": "README.md", "additions": 3, "deletions": 0 },
+    {
+      "path": "docs/case-studies/issue-82/case-study.md",
+      "additions": 208,
+      "deletions": 0
+    },
+    {
+      "path": "docs/case-studies/issue-82/issue-data.json",
+      "additions": 23,
+      "deletions": 0
+    },
+    { "path": "docs/stdin-mode.md", "additions": 64, "deletions": 13 },
+    { "path": "src/cli/continuous-mode.js", "additions": 450, "deletions": 0 },
+    { "path": "src/index.js", "additions": 210, "deletions": 65 }
+  ],
+  "number": 83,
+  "state": "MERGED",
+  "title": "feat: Enable continuous listening mode by default"
+}

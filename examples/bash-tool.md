@@ -115,5 +115,5 @@ konard@MacBook-Pro-Konstantin ~ % echo "Use shell to understand which OS is runn
     }
   }
 }
-konard@MacBook-Pro-Konstantin ~ % 
+konard@MacBook-Pro-Konstantin ~ %
 ```

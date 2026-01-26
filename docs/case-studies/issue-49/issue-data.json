@@ -1,0 +1,23 @@
+{
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "body": "```\nkonard@MacBook-Pro-Konstantin ~ % agent auth list                                      \n\n┌  Credentials ~/.local/share/opencode/auth.json\nINFO  2025-12-16T12:43:13 +38ms service=models.dev file={} refreshing\n│\n●  Anthropic oauth\n│\n└  1 credentials\n\nkonard@MacBook-Pro-Konstantin ~ %    \n```\n\nDebug output detected:\n\n```\nINFO  2025-12-16T12:43:13 +38ms service=models.dev file={} refreshing\n```\n\nThe debug output should only be shown when --verbose option is provided.\n\nPlease make sure we double check all similar places for all types of CLI input for `agent` command.\n\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
+  "comments": [],
+  "createdAt": "2025-12-16T12:46:08Z",
+  "labels": [
+    {
+      "id": "LA_kwDOQYTy3M8AAAACQHoi-w",
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    }
+  ],
+  "number": 49,
+  "state": "OPEN",
+  "title": "By default no there in the CLI we should have not have any debug output that breaks CLI UI",
+  "updatedAt": "2025-12-16T12:46:08Z"
+}

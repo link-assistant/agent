@@ -1,0 +1,12 @@
+{
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "body": "```\nkonard@MacBook-Pro-Konstantin ~ % agent auth login\n\n┌  Add credential\nINFO  2025-12-16T12:27:10 +28ms service=models.dev file={} refreshing\nINFO  2025-12-16T12:27:10 +89ms service=models.dev file={} refreshing\n│\n◇  Select provider\n│  Anthropic\n│\n◇  Login method\n│  Claude Pro/Max\n│\n●  Go to: https://claude.ai/oauth/authorize?code=true\u0026client_id=9d1c250a-e61b-44d9-88ed-5944d1962f5e\u0026response_type=code\u0026redirect_uri=https%3A%2F%2Fconsole.anthropic.com%2Foauth%2Fcode%2Fcallback\u0026scope=org%3Acreate_api_key+user%3Aprofile+user%3Ainference\u0026code_challenge=n22_8IrhqQB8ITBUwYhIlbEmYdaCstHEtnB4VuXKKWc\u0026code_challenge_method=S256\u0026state=OWTDFhkyHExGnxdETLr-8Q7aYYFoJC0wZqCdGwqdfIA\n│\n◇  Paste the authorization code here:\n│  huFheNQdoecmK5HpicUVjsCNmBYDbaUmqgeWWjgZ6IdYpp8d#OWTDFhkyHExGnxdETLr-8Q7aYYFoJC0wZqCdGwqdfIA\n│\n◆  Login successful\n│\n└  Done\n\nkonard@MacBook-Pro-Konstantin ~ % echo \"hi\" | agent --model anthropic/claude-sonnet-4-5\n{\n  \"type\": \"error\",\n  \"errorType\": \"UnhandledRejection\",\n  \"message\": \"ProviderInitError\",\n  \"stack\": \"ProviderInitError: ProviderInitError\\n    at new NamedError (unknown:1:28)\\n    at new ProviderInitError (/Users/konard/.bun/install/global/node_modules/@link-assistant/agent/src/util/error.ts:28:9)\\n    at \u003canonymous\u003e (/Users/konard/.bun/install/global/node_modules/@link-assistant/agent/src/provider/provider.ts:732:17)\\n    at processTicksAndRejections (native:7:39)\"\n}\nkonard@MacBook-Pro-Konstantin ~ % \n```\n\nPlease use `./original-opencode` (source code of OpenCode CLI), we need to make sure agent auth login is working exactly the same way as in OpenCode CLI.\n\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
+  "comments": [],
+  "createdAt": "2025-12-16T12:30:34Z",
+  "title": "`--model anthropic/claude-sonnet-4-5` didn't work"
+}

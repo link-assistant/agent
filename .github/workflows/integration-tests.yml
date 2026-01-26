@@ -1,0 +1,118 @@
+name: Integration Tests
+
+# Manual workflow only - these tests require external services and cost money
+on:
+  workflow_dispatch:
+    inputs:
+      test_pattern:
+        description: 'Test pattern to run (leave empty for all integration tests)'
+        required: false
+        type: string
+        default: ''
+      os:
+        description: 'OS to run tests on'
+        required: true
+        type: choice
+        default: 'ubuntu-latest'
+        options:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+          - all
+
+jobs:
+  test-single:
+    name: Integration Tests (${{ matrix.os }})
+    if: inputs.os != 'all'
+    runs-on: ${{ inputs.os }}
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: js
+
+      - name: Run integration tests
+        run: |
+          if [ -n "${{ inputs.test_pattern }}" ]; then
+            bun test "${{ inputs.test_pattern }}"
+          else
+            bun test
+          fi
+        working-directory: js
+
+      - name: Test MCP CLI commands
+        run: |
+          # Test help command
+          bun run src/index.js mcp --help
+
+          # Test mcp add command for Playwright
+          bun run src/index.js mcp add playwright npx @playwright/mcp@latest
+
+          # Verify configuration was created
+          cat ~/.config/opencode/opencode.json || echo "Config not found"
+
+          # Test mcp list command
+          bun run src/index.js mcp list
+        working-directory: js
+
+  test-all:
+    name: Integration Tests (${{ matrix.os }})
+    if: inputs.os == 'all'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: js
+
+      - name: Run integration tests
+        run: |
+          if [ -n "${{ inputs.test_pattern }}" ]; then
+            bun test "${{ inputs.test_pattern }}"
+          else
+            bun test
+          fi
+        working-directory: js
+
+      - name: Test MCP CLI commands
+        run: |
+          # Test help command
+          bun run src/index.js mcp --help
+
+          # Test mcp add command for Playwright
+          bun run src/index.js mcp add playwright npx @playwright/mcp@latest
+
+          # Verify configuration was created
+          cat ~/.config/opencode/opencode.json || echo "Config not found"
+
+          # Test mcp list command
+          bun run src/index.js mcp list
+        working-directory: js

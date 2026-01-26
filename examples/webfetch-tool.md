@@ -1,6 +1,6 @@
 # Example of Web Fetch tool usage
 
-```bash
+````bash
 konard@MacBook-Pro-Konstantin ~ % echo "Quote me content from habr.com/en/articles/895896" | agent
 {
   "type": "step_start",
@@ -111,5 +111,5 @@ konard@MacBook-Pro-Konstantin ~ % echo "Quote me content from habr.com/en/articl
     }
   }
 }
-konard@MacBook-Pro-Konstantin ~ % 
-```
+konard@MacBook-Pro-Konstantin ~ %
+````

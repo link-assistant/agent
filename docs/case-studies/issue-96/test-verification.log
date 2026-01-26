@@ -1,0 +1,279 @@
+🧪 Running Issue #96 Integration Test...
+
+📋 Testing: Original failing command with echo model
+🔧 Command: echo "hi" | bun src/index.js --model link-assistant/echo --no-always-accept-stdin
+{
+  "type": "status",
+  "mode": "stdin-stream",
+  "message": "Agent CLI in single-message mode. Accepts JSON and plain text input.",
+  "hint": "Press CTRL+C to exit. Use --help for options.",
+  "acceptedFormats": [
+    "JSON object with \"message\" field",
+    "Plain text"
+  ],
+  "options": {
+    "interactive": true,
+    "autoMergeQueuedMessages": true,
+    "alwaysAcceptStdin": false,
+    "compactJson": false
+  }
+}
+{
+  "type": "step_start",
+  "timestamp": 1766433466653,
+  "sessionID": "ses_4b85c5b83ffelAR4IHxTjUzHrQ",
+  "part": {
+    "id": "prt_b47a3a90e0015LBZhEjUd21NlQ",
+    "sessionID": "ses_4b85c5b83ffelAR4IHxTjUzHrQ",
+    "messageID": "msg_b47a3a74a001i5NlTRgE50afwl",
+    "type": "step-start",
+    "snapshot": "73f1f854d59b330edcf6ce7f798711916feb250c"
+  }
+}
+{
+  "type": "text",
+  "timestamp": 1766433466677,
+  "sessionID": "ses_4b85c5b83ffelAR4IHxTjUzHrQ",
+  "part": {
+    "id": "prt_b47a3a91e001t9MQZCUrq4ySo2",
+    "sessionID": "ses_4b85c5b83ffelAR4IHxTjUzHrQ",
+    "messageID": "msg_b47a3a74a001i5NlTRgE50afwl",
+    "type": "text",
+    "text": "hi",
+    "time": {
+      "start": 1766433466676,
+      "end": 1766433466676
+    }
+  }
+}
+{
+  "type": "step_finish",
+  "timestamp": 1766433466793,
+  "sessionID": "ses_4b85c5b83ffelAR4IHxTjUzHrQ",
+  "part": {
+    "id": "prt_b47a3a9370011EZd0lTES6p4bu",
+    "sessionID": "ses_4b85c5b83ffelAR4IHxTjUzHrQ",
+    "messageID": "msg_b47a3a74a001i5NlTRgE50afwl",
+    "type": "step-finish",
+    "reason": "stop",
+    "snapshot": "73f1f854d59b330edcf6ce7f798711916feb250c",
+    "cost": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "reasoning": 0,
+      "cache": {
+        "read": 0,
+        "write": 0
+      }
+    }
+  }
+}
+✅ PASSED
+
+📋 Testing: Dry-run mode (originally failing)
+🔧 Command: echo "test" | bun src/index.js --model link-assistant/echo --dry-run --no-always-accept-stdin
+{
+  "type": "status",
+  "mode": "stdin-stream",
+  "message": "Agent CLI in single-message mode. Accepts JSON and plain text input.",
+  "hint": "Press CTRL+C to exit. Use --help for options.",
+  "acceptedFormats": [
+    "JSON object with \"message\" field",
+    "Plain text"
+  ],
+  "options": {
+    "interactive": true,
+    "autoMergeQueuedMessages": true,
+    "alwaysAcceptStdin": false,
+    "compactJson": false
+  }
+}
+{
+  "type": "step_start",
+  "timestamp": 1766433470295,
+  "sessionID": "ses_4b85c4b75ffeRwVaj2NZSrrGQF",
+  "part": {
+    "id": "prt_b47a3b741001Zqanj3txBBwBgx",
+    "sessionID": "ses_4b85c4b75ffeRwVaj2NZSrrGQF",
+    "messageID": "msg_b47a3b5b9001qgSsU33A6JO545",
+    "type": "step-start",
+    "snapshot": "73f1f854d59b330edcf6ce7f798711916feb250c"
+  }
+}
+{
+  "type": "text",
+  "timestamp": 1766433470297,
+  "sessionID": "ses_4b85c4b75ffeRwVaj2NZSrrGQF",
+  "part": {
+    "id": "prt_b47a3b757001tB3VUAa5UXu20w",
+    "sessionID": "ses_4b85c4b75ffeRwVaj2NZSrrGQF",
+    "messageID": "msg_b47a3b5b9001qgSsU33A6JO545",
+    "type": "text",
+    "text": "test",
+    "time": {
+      "start": 1766433470296,
+      "end": 1766433470296
+    }
+  }
+}
+{
+  "type": "step_finish",
+  "timestamp": 1766433470411,
+  "sessionID": "ses_4b85c4b75ffeRwVaj2NZSrrGQF",
+  "part": {
+    "id": "prt_b47a3b76e001Vq6QZrhy98cbSH",
+    "sessionID": "ses_4b85c4b75ffeRwVaj2NZSrrGQF",
+    "messageID": "msg_b47a3b5b9001qgSsU33A6JO545",
+    "type": "step-finish",
+    "reason": "stop",
+    "snapshot": "73f1f854d59b330edcf6ce7f798711916feb250c",
+    "cost": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "reasoning": 0,
+      "cache": {
+        "read": 0,
+        "write": 0
+      }
+    }
+  }
+}
+✅ PASSED
+
+📋 Testing: Verbose mode (triggers logging paths)
+🔧 Command: echo "verbose test" | bun src/index.js --model link-assistant/echo --verbose --no-always-accept-stdin 2>/dev/null
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+  "type": "step_start",
+  "timestamp": 1766433475760,
+  "sessionID": "ses_4b85c3879ffebhQc0wvkXGZp6B",
+  "part": {
+    "id": "prt_b47a3cc8d001bw4IjPQnLH68l2",
+    "sessionID": "ses_4b85c3879ffebhQc0wvkXGZp6B",
+    "messageID": "msg_b47a3c9da001jDSHwL43369eKE",
+    "type": "step-start",
+    "snapshot": ""
+  }
+}
+
+
+
+{
+  "type": "text",
+  "timestamp": 1766433475802,
+  "sessionID": "ses_4b85c3879ffebhQc0wvkXGZp6B",
+  "part": {
+    "id": "prt_b47a3ccb0001TqRhp0N76CzeAU",
+    "sessionID": "ses_4b85c3879ffebhQc0wvkXGZp6B",
+    "messageID": "msg_b47a3c9da001jDSHwL43369eKE",
+    "type": "text",
+    "text": "verbose test",
+    "time": {
+      "start": 1766433475802,
+      "end": 1766433475802
+    }
+  }
+}
+
+
+
+
+
+{
+  "type": "step_finish",
+  "timestamp": 1766433475969,
+  "sessionID": "ses_4b85c3879ffebhQc0wvkXGZp6B",
+  "part": {
+    "id": "prt_b47a3ccfa001PUpXviLOPNDs5S",
+    "sessionID": "ses_4b85c3879ffebhQc0wvkXGZp6B",
+    "messageID": "msg_b47a3c9da001jDSHwL43369eKE",
+    "type": "step-finish",
+    "reason": "stop",
+    "snapshot": "09c248de3469c27c7387bc2601438d1b5b001907",
+    "cost": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "reasoning": 0,
+      "cache": {
+        "read": 0,
+        "write": 0
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+✅ PASSED
+
+
+📊 Test Results:
+✅ Passed: 3
+❌ Failed: 0
+
+🎉 Issue #96 is completely resolved!
+✨ The Log.Default.lazy.info error has been fixed
