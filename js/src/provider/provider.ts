@@ -909,7 +909,23 @@ export namespace Provider {
     log.info(() => ({ message: 'getModel', providerID, modelID }));
 
     const provider = s.providers[providerID];
-    if (!provider) throw new ModelNotFoundError({ providerID, modelID });
+    if (!provider) {
+      // Check if this model ID might exist in another provider (e.g., OpenRouter)
+      // This helps users who use formats like "z-ai/glm-4.7" instead of "openrouter/z-ai/glm-4.7"
+      const fullModelKey = `${providerID}/${modelID}`;
+      let suggestion: string | undefined;
+
+      for (const [knownProviderID, knownProvider] of Object.entries(
+        s.providers
+      )) {
+        if (knownProvider.info.models[fullModelKey]) {
+          suggestion = `Did you mean: ${knownProviderID}/${fullModelKey}?`;
+          break;
+        }
+      }
+
+      throw new ModelNotFoundError({ providerID, modelID, suggestion });
+    }
 
     // For synthetic providers (like link-assistant/echo and link-assistant/cache), skip SDK loading
     // These providers have a custom getModel function that creates the model directly
@@ -1077,6 +1093,7 @@ export namespace Provider {
     z.object({
       providerID: z.string(),
       modelID: z.string(),
+      suggestion: z.string().optional(),
     })
   );
 
