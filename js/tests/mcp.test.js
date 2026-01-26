@@ -221,7 +221,7 @@ describe('MCP CLI Commands', () => {
       JSON.stringify(
         {
           $schema: 'https://opencode.ai/config.json',
-          model: 'opencode/grok-code',
+          model: 'opencode/gpt-5-nano',
           mcp: {
             'existing-server': {
               type: 'local',
@@ -248,7 +248,7 @@ describe('MCP CLI Commands', () => {
     const config = JSON.parse(configContent);
 
     // Check existing config is preserved
-    expect(config.model).toBe('opencode/grok-code');
+    expect(config.model).toBe('opencode/gpt-5-nano');
     expect(config.mcp['existing-server']).toBeDefined();
     expect(config.mcp['existing-server'].command).toEqual([
       'npx',

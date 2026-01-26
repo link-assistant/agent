@@ -33,7 +33,7 @@ echo '{"message":"hi"}' | agent
 opencode:
 
 ```bash
-echo '{"message":"hi"}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"hi"}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### Plain Text Input (@link-assistant/agent only)
@@ -60,7 +60,7 @@ echo '{"message":"hello world"}' | agent
 **opencode:**
 
 ```bash
-echo '{"message":"hello world"}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"hello world"}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ## File Operations
@@ -78,7 +78,7 @@ echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"echo
 **opencode:**
 
 ```bash
-echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"echo hello world"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"echo hello world"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 **Example with description:**
@@ -100,7 +100,7 @@ echo '{"message":"read file","tools":[{"name":"read","params":{"file_path":"/pat
 **opencode:**
 
 ```bash
-echo '{"message":"read file","tools":[{"name":"read","params":{"file_path":"/path/to/file.txt"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"read file","tools":[{"name":"read","params":{"file_path":"/path/to/file.txt"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### write Tool
@@ -116,7 +116,7 @@ echo '{"message":"write file","tools":[{"name":"write","params":{"file_path":"/t
 **opencode:**
 
 ```bash
-echo '{"message":"write file","tools":[{"name":"write","params":{"file_path":"/tmp/test.txt","content":"Hello World"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"write file","tools":[{"name":"write","params":{"file_path":"/tmp/test.txt","content":"Hello World"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### edit Tool
@@ -132,7 +132,7 @@ echo '{"message":"edit file","tools":[{"name":"edit","params":{"file_path":"/tmp
 **opencode:**
 
 ```bash
-echo '{"message":"edit file","tools":[{"name":"edit","params":{"file_path":"/tmp/test.txt","old_string":"Hello","new_string":"Hi"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"edit file","tools":[{"name":"edit","params":{"file_path":"/tmp/test.txt","old_string":"Hello","new_string":"Hi"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### list Tool
@@ -148,7 +148,7 @@ echo '{"message":"list directory","tools":[{"name":"list","params":{"path":"."}}
 **opencode:**
 
 ```bash
-echo '{"message":"list directory","tools":[{"name":"list","params":{"path":"."}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"list directory","tools":[{"name":"list","params":{"path":"."}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ## Search Tools
@@ -170,7 +170,7 @@ echo '{"message":"find ts files","tools":[{"name":"glob","params":{"pattern":"sr
 **opencode:**
 
 ```bash
-echo '{"message":"find js files","tools":[{"name":"glob","params":{"pattern":"**/*.js"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"find js files","tools":[{"name":"glob","params":{"pattern":"**/*.js"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### grep Tool
@@ -193,7 +193,7 @@ echo '{"message":"search error","tools":[{"name":"grep","params":{"pattern":"err
 **opencode:**
 
 ```bash
-echo '{"message":"search pattern","tools":[{"name":"grep","params":{"pattern":"TODO","output_mode":"content"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"search pattern","tools":[{"name":"grep","params":{"pattern":"TODO","output_mode":"content"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### websearch Tool
@@ -211,7 +211,7 @@ echo '{"message":"search web","tools":[{"name":"websearch","params":{"query":"Re
 **opencode (requires OPENCODE_EXPERIMENTAL_EXA=true):**
 
 ```bash
-echo '{"message":"search web","tools":[{"name":"websearch","params":{"query":"TypeScript latest features"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"search web","tools":[{"name":"websearch","params":{"query":"TypeScript latest features"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### codesearch Tool
@@ -229,7 +229,7 @@ echo '{"message":"search code","tools":[{"name":"codesearch","params":{"query":"
 **opencode (requires OPENCODE_EXPERIMENTAL_EXA=true):**
 
 ```bash
-echo '{"message":"search code","tools":[{"name":"codesearch","params":{"query":"React hooks implementation"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"search code","tools":[{"name":"codesearch","params":{"query":"React hooks implementation"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ## Execution Tools
@@ -252,7 +252,7 @@ mkdir -p .link-assistant-agent
 echo '{"experimental":{"batch_tool":true}}' > .link-assistant-agent/opencode.json
 
 # Then run
-echo '{"message":"run batch","tools":[{"name":"batch","params":{"tool_calls":[{"tool":"bash","parameters":{"command":"echo hello"}},{"tool":"bash","parameters":{"command":"echo world"}}]}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"run batch","tools":[{"name":"batch","params":{"tool_calls":[{"tool":"bash","parameters":{"command":"echo hello"}},{"tool":"bash","parameters":{"command":"echo world"}}]}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### task Tool
@@ -268,7 +268,7 @@ echo '{"message":"launch task","tools":[{"name":"task","params":{"description":"
 **opencode:**
 
 ```bash
-echo '{"message":"launch task","tools":[{"name":"task","params":{"description":"Analyze codebase","prompt":"Find all TODO comments in JavaScript files","subagent_type":"general-purpose"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"launch task","tools":[{"name":"task","params":{"description":"Analyze codebase","prompt":"Find all TODO comments in JavaScript files","subagent_type":"general-purpose"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ## Utility Tools
@@ -290,7 +290,7 @@ echo '{"message":"read todos","tools":[{"name":"todoread","params":{}}]}' | agen
 **opencode:**
 
 ```bash
-echo '{"message":"add todos","tools":[{"name":"todowrite","params":{"todos":[{"content":"Implement feature X","status":"pending","activeForm":"Implementing feature X"}]}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"add todos","tools":[{"name":"todowrite","params":{"todos":[{"content":"Implement feature X","status":"pending","activeForm":"Implementing feature X"}]}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ### webfetch Tool
@@ -306,7 +306,7 @@ echo '{"message":"fetch url","tools":[{"name":"webfetch","params":{"url":"https:
 **opencode:**
 
 ```bash
-echo '{"message":"fetch url","tools":[{"name":"webfetch","params":{"url":"https://example.com","prompt":"Summarize the content"}}]}' | opencode run --format json --model opencode/grok-code
+echo '{"message":"fetch url","tools":[{"name":"webfetch","params":{"url":"https://example.com","prompt":"Summarize the content"}}]}' | opencode run --format json --model opencode/gpt-5-nano
 ```
 
 ## Output Format

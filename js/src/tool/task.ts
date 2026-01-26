@@ -99,7 +99,7 @@ export const TaskTool = Tool.define('task', async () => {
 
       const model = agent.model ??
         parentModel ?? {
-          modelID: 'grok-code',
+          modelID: 'gpt-5-nano',
           providerID: 'opencode',
         };
 

@@ -295,12 +295,12 @@ test('Both modes work with custom model parameter', async () => {
   const serverResult = await runAgentCli(input, [
     '--server=true',
     '--model',
-    'opencode/grok-code',
+    'opencode/gpt-5-nano',
   ]);
   const noServerResult = await runAgentCli(input, [
     '--no-server',
     '--model',
-    'opencode/grok-code',
+    'opencode/gpt-5-nano',
   ]);
 
   // Both should succeed

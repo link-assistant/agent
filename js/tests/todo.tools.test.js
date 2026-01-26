@@ -65,7 +65,7 @@ test('Reference test: OpenCode todowrite and todoread tools produce expected JSO
   // Write and read todos in the same request
   const input = `{"message":"manage todos","tools":[{"name":"todowrite","params":{"todos":[{"content":"Test task 1","status":"pending","priority":"medium","id":"test1"},{"content":"Test task 2","status":"completed","priority":"medium","id":"test2"}]}},{"name":"todoread","params":{}}]}`;
   const originalResult =
-    await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+    await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
       .quiet()
       .nothrow();
   const originalLines = originalResult.stdout
@@ -102,7 +102,7 @@ test('Agent-cli todowrite and todoread tools produce 100% compatible JSON output
 
   // Get OpenCode output
   const originalResult =
-    await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+    await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
       .quiet()
       .nothrow();
   const originalLines = originalResult.stdout

@@ -999,10 +999,10 @@ export namespace Provider {
   }
 
   const priority = [
-    'grok-code',
+    'gpt-5-nano',
+    'big-pickle',
     'gpt-5',
     'claude-sonnet-4',
-    'big-pickle',
     'gemini-3-pro',
   ];
   export function sort(models: ModelsDev.Model[]) {

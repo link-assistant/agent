@@ -94,7 +94,7 @@ agent [OPTIONS]
 
 Options:
       --model <MODEL>                    Model to use in format providerID/modelID
-                                         [default: opencode/grok-code]
+                                         [default: opencode/gpt-5-nano]
       --json-standard <JSON_STANDARD>    JSON output format standard
                                          [possible values: opencode, claude]
                                          [default: opencode]

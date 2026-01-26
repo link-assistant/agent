@@ -124,7 +124,7 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
     // Test original OpenCode glob tool
     const input = `{"message":"find txt files","tools":[{"name":"glob","params":{"pattern":"tmp/test*-${timestamp}-${randomId}.txt"}}]}`;
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+      await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout
@@ -183,7 +183,7 @@ test('Agent-cli glob tool produces 100% compatible JSON output with OpenCode', a
 
     // Get OpenCode output
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+      await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout

@@ -18,7 +18,7 @@ This agent supports multiple model providers. By default, it uses models from th
 All models are accessed using the format `<provider>/<model-id>`. Use the `--model` option to specify which model to use:
 
 ```bash
-echo "hi" | agent --model opencode/grok-code
+echo "hi" | agent --model opencode/gpt-5-nano
 ```
 
 ## OpenCode Zen Pricing
@@ -28,9 +28,10 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 | Model                                    | Model ID                    | Input  | Output | Cached Read | Cached Write |
 | ---------------------------------------- | --------------------------- | ------ | ------ | ----------- | ------------ |
 | **Free Models (Output: $0.00)**          |
-| Grok Code Fast 1                         | `opencode/grok-code`        | Free   | Free   | Free        | -            |
 | GPT 5 Nano                               | `opencode/gpt-5-nano`       | Free   | Free   | Free        | -            |
 | Big Pickle                               | `opencode/big-pickle`       | Free   | Free   | Free        | -            |
+| **Discontinued Free Models**             |
+| ~~Grok Code Fast 1~~                     | `opencode/grok-code`        | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | **Paid Models (sorted by output price)** |
 | Qwen3 Coder 480B                         | `opencode/qwen3-coder-480b` | $0.45  | $1.50  | -           | -            |
 | GLM 4.6                                  | `opencode/glm-4-6`          | $0.60  | $2.20  | $0.10       | -            |
@@ -51,14 +52,16 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 
 ## Default Model
 
-The default model is **Grok Code Fast 1** (`opencode/grok-code`), which is completely free. This model provides excellent performance for coding tasks with no cost.
+The default model is **GPT 5 Nano** (`opencode/gpt-5-nano`), which is completely free. This model provides good performance for coding tasks with no cost.
+
+> **Note:** Grok Code Fast 1 (`opencode/grok-code`) was previously the default free model, but xAI ended the free tier for this model on OpenCode Zen in January 2026. See [Case Study #133](docs/case-studies/issue-133/README.md) for details.
 
 ## Usage Examples
 
 ### Using the Default Model (Free)
 
 ```bash
-# Uses opencode/grok-code by default
+# Uses opencode/gpt-5-nano by default
 echo "hello" | agent
 ```
 
@@ -67,9 +70,6 @@ echo "hello" | agent
 ```bash
 # Big Pickle (free)
 echo "hello" | agent --model opencode/big-pickle
-
-# GPT 5 Nano (free)
-echo "hello" | agent --model opencode/gpt-5-nano
 ```
 
 ### Using Paid Models
