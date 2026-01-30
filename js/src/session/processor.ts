@@ -326,21 +326,31 @@ export namespace SessionProcessor {
               providerID: input.providerID,
             });
 
-            // Check if error is retryable (APIError or SocketConnectionError)
+            // Check if error is retryable (APIError, SocketConnectionError, or TimeoutError)
             const isRetryableAPIError =
               error?.name === 'APIError' && error.data.isRetryable;
             const isRetryableSocketError =
               error?.name === 'SocketConnectionError' &&
               error.data.isRetryable &&
               attempt < SessionRetry.SOCKET_ERROR_MAX_RETRIES;
+            const isRetryableTimeoutError =
+              error?.name === 'TimeoutError' &&
+              error.data.isRetryable &&
+              attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
 
-            if (isRetryableAPIError || isRetryableSocketError) {
+            if (
+              isRetryableAPIError ||
+              isRetryableSocketError ||
+              isRetryableTimeoutError
+            ) {
               attempt++;
-              // Use socket-specific delay for socket errors
+              // Use error-specific delay calculation
               const delay =
                 error?.name === 'SocketConnectionError'
                   ? SessionRetry.socketErrorDelay(attempt)
-                  : SessionRetry.delay(error, attempt);
+                  : error?.name === 'TimeoutError'
+                    ? SessionRetry.timeoutDelay(attempt)
+                    : SessionRetry.delay(error, attempt);
               log.info(() => ({
                 message: 'retrying',
                 errorType: error?.name,
