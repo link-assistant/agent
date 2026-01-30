@@ -841,7 +841,7 @@ export namespace MessageV2 {
         const isTimeoutError =
           message.includes('The operation timed out') ||
           message.includes('timed out') ||
-          (e.name === 'TimeoutError');
+          e.name === 'TimeoutError';
         if (isTimeoutError) {
           return new MessageV2.TimeoutError(
             { message, isRetryable: true },

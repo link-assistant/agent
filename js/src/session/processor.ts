@@ -338,7 +338,11 @@ export namespace SessionProcessor {
               error.data.isRetryable &&
               attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
 
-            if (isRetryableAPIError || isRetryableSocketError || isRetryableTimeoutError) {
+            if (
+              isRetryableAPIError ||
+              isRetryableSocketError ||
+              isRetryableTimeoutError
+            ) {
               attempt++;
               // Use error-specific delay calculation
               const delay =
