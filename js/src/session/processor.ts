@@ -188,7 +188,7 @@ export namespace SessionProcessor {
                     await Session.updatePart({
                       ...match,
                       state: {
-                        status: 'failed',
+                        status: 'error',
                         input: value.input,
                         error: (value.error as any).toString(),
                         metadata: undefined,
@@ -377,13 +377,13 @@ export namespace SessionProcessor {
             if (
               part.type === 'tool' &&
               part.state.status !== 'completed' &&
-              part.state.status !== 'failed'
+              part.state.status !== 'error'
             ) {
               await Session.updatePart({
                 ...part,
                 state: {
                   ...part.state,
-                  status: 'failed',
+                  status: 'error',
                   error: 'Tool execution aborted',
                   time: {
                     start: Date.now(),

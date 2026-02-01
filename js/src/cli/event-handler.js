@@ -70,7 +70,7 @@ export function createBusEventSubscription({
         });
 
         // If tool failed, also output an error event
-        if (part.state?.status === 'failed') {
+        if (part.state?.status === 'error') {
           eventHandler.output({
             type: 'error',
             timestamp: Date.now(),
