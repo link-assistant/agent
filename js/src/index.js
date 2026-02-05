@@ -68,11 +68,16 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (reason, _promise) => {
   hasError = true;
-  outputError({
+  const errorOutput = {
     errorType: 'UnhandledRejection',
     message: reason?.message || String(reason),
     stack: reason?.stack,
-  });
+  };
+  // If the error has a data property with a suggestion (e.g., ProviderModelNotFoundError), add it as a hint
+  if (reason?.data?.suggestion) {
+    errorOutput.hint = reason.data.suggestion;
+  }
+  outputError(errorOutput);
   process.exit(1);
 });
 
