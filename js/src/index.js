@@ -1,9 +1,8 @@
 #!/usr/bin/env bun
 
-// Set process title to 'agent' so it appears correctly in process monitoring tools like top/ps
-// Both process.title and process.argv0 need to be set for maximum compatibility
-process.title = 'agent';
-process.argv0 = 'agent';
+import { setProcessName } from './cli/process-name.ts';
+
+setProcessName('agent');
 
 import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
