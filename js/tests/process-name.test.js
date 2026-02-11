@@ -8,30 +8,26 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const srcDir = join(__dirname, '..', 'src');
 
 describe('Process name identification', () => {
-  test('setProcessName sets comm to "agent" on Linux/macOS', async () => {
+  // On Linux, prctl(PR_SET_NAME) changes /proc/<pid>/comm which is what top/ps show.
+  // On macOS, there is no userspace API to change the process comm; when installed
+  // via `bun install -g`, the symlink is named 'agent' so macOS shows it correctly.
+  // On Windows, Task Manager shows the executable name.
+  test('setProcessName sets comm to "agent" via prctl on Linux', async () => {
     const os = platform();
-    if (os === 'win32') {
-      console.log('Skipping process name test on Windows');
+    if (os !== 'linux') {
+      console.log(`Skipping: prctl is Linux-only (current: ${os})`);
       return;
     }
 
     // Run a script that imports setProcessName and reports the comm name
     const script = `
       import { setProcessName } from '${join(srcDir, 'cli', 'process-name.ts').replace(/\\/g, '/')}';
-      import { platform } from 'os';
       import { readFileSync } from 'fs';
-      import { execSync } from 'child_process';
 
       setProcessName('agent');
 
-      const os = platform();
-      if (os === 'linux') {
-        const comm = readFileSync('/proc/' + process.pid + '/comm', 'utf8').trim();
-        process.stdout.write(comm);
-      } else if (os === 'darwin') {
-        const ps = execSync('ps -p ' + process.pid + ' -o comm=').toString().trim();
-        process.stdout.write(ps.split('/').pop());
-      }
+      const comm = readFileSync('/proc/' + process.pid + '/comm', 'utf8').trim();
+      process.stdout.write(comm);
     `;
 
     const result = await $`bun -e ${script}`.quiet().nothrow();
@@ -43,38 +39,25 @@ describe('Process name identification', () => {
     expect(processName).toBe('agent');
   });
 
-  test('agent CLI process appears as "agent" in ps output', async () => {
+  test('agent CLI process appears as "agent" in ps on Linux', async () => {
     const os = platform();
-    if (os === 'win32') {
-      console.log('Skipping process name test on Windows');
+    if (os !== 'linux') {
+      console.log(`Skipping: prctl is Linux-only (current: ${os})`);
       return;
     }
 
-    // Run the actual agent CLI entry point in background mode and check ps
+    // Run a script that imports setProcessName, verifies both /proc/comm and ps output
     const script = `
       import { readFileSync } from 'fs';
       import { execSync } from 'child_process';
-      import { platform } from 'os';
-
-      // Import the entry point's process name setup (same as index.js does)
       import { setProcessName } from '${join(srcDir, 'cli', 'process-name.ts').replace(/\\/g, '/')}';
+
       setProcessName('agent');
 
-      // Verify via ps
-      const os = platform();
-      let comm;
-      if (os === 'linux') {
-        comm = readFileSync('/proc/' + process.pid + '/comm', 'utf8').trim();
-      } else if (os === 'darwin') {
-        const ps = execSync('ps -p ' + process.pid + ' -o comm=').toString().trim();
-        comm = ps.split('/').pop();
-      }
-
-      // Also verify ps COMMAND column
+      const comm = readFileSync('/proc/' + process.pid + '/comm', 'utf8').trim();
       const psOutput = execSync('ps -p ' + process.pid + ' -o comm=').toString().trim();
-      const psComm = psOutput.split('/').pop();
 
-      process.stdout.write(JSON.stringify({ comm, psComm }));
+      process.stdout.write(JSON.stringify({ comm, psComm: psOutput }));
     `;
 
     const result = await $`bun -e ${script}`.quiet().nothrow();

@@ -7,7 +7,7 @@ import { dlopen, FFIType, ptr } from 'bun:ffi';
  * Bun does not implement the process.title setter (unlike Node.js), so we use
  * platform-specific system calls via Bun's FFI:
  * - Linux: prctl(PR_SET_NAME, name) sets /proc/<pid>/comm
- * - macOS: pthread_setname_np(name) sets the thread name shown in Activity Monitor / ps
+ * - macOS: relies on the binary/symlink name (set by `bun install -g`)
  * - Windows: no-op (Task Manager shows the executable name)
  */
 export function setProcessName(name: string): void {
@@ -33,20 +33,9 @@ export function setProcessName(name: string): void {
     } catch (_e) {
       // Silently ignore - process name is cosmetic
     }
-  } else if (os === 'darwin') {
-    try {
-      const libc = dlopen('libSystem.B.dylib', {
-        pthread_setname_np: {
-          args: [FFIType.ptr],
-          returns: FFIType.i32,
-        },
-      });
-      // macOS pthread_setname_np accepts up to 64 bytes including the null terminator
-      const buf = Buffer.from(name.slice(0, 63) + '\0');
-      libc.symbols.pthread_setname_np(ptr(buf));
-      libc.close();
-    } catch (_e) {
-      // Silently ignore - process name is cosmetic
-    }
   }
+  // macOS: no userspace API changes the process comm shown in ps/top.
+  // When installed via `bun install -g`, the symlink is named 'agent',
+  // so macOS will already show 'agent' in ps/top.
+  // Windows: Task Manager always shows the executable name.
 }
