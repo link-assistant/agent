@@ -601,12 +601,12 @@ export namespace MessageV2 {
     throw new Error('unknown message type');
   }
 
-  export function toModelMessage(
+  export async function toModelMessage(
     input: {
       info: Info;
       parts: Part[];
     }[]
-  ): ModelMessage[] {
+  ): Promise<ModelMessage[]> {
     const result: UIMessage[] = [];
 
     for (const msg of input) {
@@ -723,7 +723,7 @@ export namespace MessageV2 {
       }
     }
 
-    return convertToModelMessages(result);
+    return await convertToModelMessages(result);
   }
 
   export const stream = fn(
