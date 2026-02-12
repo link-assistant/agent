@@ -1005,7 +1005,13 @@ export namespace Provider {
       priority = priority.filter((m) => m !== 'claude-haiku-4.5');
     }
     if (providerID === 'opencode' || providerID === 'local') {
-      priority = ['kimi-k2.5-free', 'minimax-m2.1-free', 'gpt-5-nano', 'glm-4.7-free', 'big-pickle'];
+      priority = [
+        'kimi-k2.5-free',
+        'minimax-m2.1-free',
+        'gpt-5-nano',
+        'glm-4.7-free',
+        'big-pickle',
+      ];
     }
     for (const item of priority) {
       for (const model of Object.keys(provider.info.models)) {
