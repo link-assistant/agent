@@ -83,7 +83,7 @@ See [rust/README.md](rust/README.md) for full documentation.
 
 We're creating a slimmed-down, public domain version of OpenCode CLI focused on the "agentic run mode" for use in virtual machines, Docker containers, and other environments where unrestricted AI agent access is acceptable. This is **not** for general desktop use - it's for isolated environments where you want maximum AI agent freedom.
 
-**OpenCode Compatibility**: We maintain 100% compatibility with OpenCode's JSON event streaming format, so tools expecting `opencode run --format json --model opencode/gpt-5-nano` output will work with our agent-cli.
+**OpenCode Compatibility**: We maintain 100% compatibility with OpenCode's JSON event streaming format, so tools expecting `opencode run --format json --model opencode/kimi-k2.5-free` output will work with our agent-cli.
 
 ## Features
 
@@ -111,7 +111,7 @@ echo '{"message":"hi"}' | agent
 **With custom model:**
 
 ```bash
-echo "hi" | agent --model opencode/gpt-5-nano
+echo "hi" | agent --model opencode/kimi-k2.5-free
 ```
 
 **Direct prompt mode:**

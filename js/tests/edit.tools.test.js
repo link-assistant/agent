@@ -131,7 +131,7 @@ test('Reference test: OpenCode edit tool produces expected JSON format', async (
     // Test original OpenCode edit tool
     const input = `{"message":"edit file","tools":[{"name":"edit","params":{"filePath":"${testFileName}","oldString":"Hello","newString":"Hi"}}]}`;
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
+      await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout
@@ -184,7 +184,7 @@ test('Agent-cli edit tool produces 100% compatible JSON output with OpenCode', a
     // Get OpenCode output
     const openCodeInput = `{"message":"edit file","tools":[{"name":"edit","params":{"filePath":"${openCodeFileName}","oldString":"Hello","newString":"Hi"}}]}`;
     const originalResult =
-      await $`echo ${openCodeInput} | opencode run --format json --model opencode/gpt-5-nano`
+      await $`echo ${openCodeInput} | opencode run --format json --model opencode/kimi-k2.5-free`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout

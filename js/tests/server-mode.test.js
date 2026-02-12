@@ -295,12 +295,12 @@ test('Both modes work with custom model parameter', async () => {
   const serverResult = await runAgentCli(input, [
     '--server=true',
     '--model',
-    'opencode/gpt-5-nano',
+    'opencode/kimi-k2.5-free',
   ]);
   const noServerResult = await runAgentCli(input, [
     '--no-server',
     '--model',
-    'opencode/gpt-5-nano',
+    'opencode/kimi-k2.5-free',
   ]);
 
   // Both should succeed

@@ -150,7 +150,7 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
     // Test original OpenCode grep tool - use basename pattern since files are in tmp
     const input = `{"message":"search for text","tools":[{"name":"grep","params":{"pattern":"search","include":"grep*-${timestamp}-${randomId}.txt","path":"${TMP_DIR}"}}]}`;
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
+      await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout
@@ -209,7 +209,7 @@ test('Agent-cli grep tool produces 100% compatible JSON output with OpenCode', a
 
     // Get OpenCode output
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
+      await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout

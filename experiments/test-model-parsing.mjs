@@ -7,7 +7,7 @@
 function parseModelOld(model) {
   const modelParts = model.split('/');
   const providerID = modelParts[0] || 'opencode';
-  const modelID = modelParts[1] || 'gpt-5-nano';
+  const modelID = modelParts[1] || 'kimi-k2.5-free';
   return { providerID, modelID };
 }
 
@@ -15,7 +15,7 @@ function parseModelOld(model) {
 function parseModelNew(model) {
   const modelParts = model.split('/');
   const providerID = modelParts[0] || 'opencode';
-  const modelID = modelParts.slice(1).join('/') || 'gpt-5-nano';
+  const modelID = modelParts.slice(1).join('/') || 'kimi-k2.5-free';
   return { providerID, modelID };
 }
 

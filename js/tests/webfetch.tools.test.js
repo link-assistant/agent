@@ -61,7 +61,7 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
 
   // Test original OpenCode webfetch tool
   const originalResult =
-    await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
+    await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
       .quiet()
       .nothrow();
   const originalLines = originalResult.stdout
@@ -98,7 +98,7 @@ test('Agent-cli webfetch tool produces 100% compatible JSON output with OpenCode
 
   // Get OpenCode output
   const originalResult =
-    await $`echo ${input} | opencode run --format json --model opencode/gpt-5-nano`
+    await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
       .quiet()
       .nothrow();
   const originalLines = originalResult.stdout

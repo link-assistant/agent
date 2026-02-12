@@ -20,9 +20,9 @@
 
 > This is the JavaScript/Bun implementation. See also the [Rust implementation](../rust/README.md).
 
-This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/gpt-5-nano` mode with:
+This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/kimi-k2.5-free` mode with:
 
-- ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/gpt-5-nano`
+- ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/kimi-k2.5-free`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
 - ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Kimi K2.5, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
@@ -169,7 +169,7 @@ echo '{"message":"hi"}' | agent
 **With custom model:**
 
 ```bash
-echo "hi" | agent --model opencode/gpt-5-nano
+echo "hi" | agent --model opencode/kimi-k2.5-free
 ```
 
 ### More Examples
@@ -190,10 +190,13 @@ echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"ls -
 **Using different models:**
 
 ```bash
-# Default model (free GPT 5 Nano)
+# Default model (free Kimi K2.5)
 echo "hi" | agent
 
-# Other free models
+# Other free models (in order of recommendation)
+echo "hi" | agent --model opencode/minimax-m2.1-free
+echo "hi" | agent --model opencode/gpt-5-nano
+echo "hi" | agent --model opencode/glm-4.7-free
 echo "hi" | agent --model opencode/big-pickle
 
 # Premium models (OpenCode Zen subscription)
@@ -278,7 +281,7 @@ agent [options]
 
 Options:
   --model                        Model to use in format providerID/modelID
-                                 Default: opencode/gpt-5-nano
+                                 Default: opencode/kimi-k2.5-free
   --json-standard                JSON output format standard
                                  Choices: "opencode" (default), "claude" (experimental)
   --use-existing-claude-oauth    Use existing Claude OAuth credentials

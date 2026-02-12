@@ -11,7 +11,7 @@ async function runOpenCode(input, tmpDir) {
   return new Promise((resolve, reject) => {
     const proc = spawn(
       'opencode',
-      ['run', '--format', 'json', '--model', 'opencode/gpt-5-nano'],
+      ['run', '--format', 'json', '--model', 'opencode/kimi-k2.5-free'],
       {
         stdio: ['pipe', 'pipe', 'pipe'],
         cwd: tmpDir,

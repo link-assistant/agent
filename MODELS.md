@@ -26,13 +26,16 @@ echo "hi" | agent --model opencode/gpt-5-nano
 
 Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by output price (lowest first) for best pricing visibility.
 
-| Model                                    | Model ID                    | Input  | Output | Cached Read | Cached Write |
-| ---------------------------------------- | --------------------------- | ------ | ------ | ----------- | ------------ |
+| Model                                    | Model ID                      | Input  | Output | Cached Read | Cached Write |
+| ---------------------------------------- | ----------------------------- | ------ | ------ | ----------- | ------------ |
 | **Free Models (Output: $0.00)**          |
-| GPT 5 Nano                               | `opencode/gpt-5-nano`       | Free   | Free   | Free        | -            |
-| Big Pickle                               | `opencode/big-pickle`       | Free   | Free   | Free        | -            |
+| Kimi K2.5 Free (recommended)             | `opencode/kimi-k2.5-free`     | Free   | Free   | Free        | -            |
+| MiniMax M2.1 Free                        | `opencode/minimax-m2.1-free`  | Free   | Free   | Free        | -            |
+| GPT 5 Nano                               | `opencode/gpt-5-nano`         | Free   | Free   | Free        | -            |
+| GLM 4.7 Free                             | `opencode/glm-4.7-free`       | Free   | Free   | Free        | -            |
+| Big Pickle                               | `opencode/big-pickle`         | Free   | Free   | Free        | -            |
 | **Discontinued Free Models**             |
-| ~~Grok Code Fast 1~~                     | `opencode/grok-code`        | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
+| ~~Grok Code Fast 1~~                     | `opencode/grok-code`          | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | **Paid Models (sorted by output price)** |
 | Qwen3 Coder 480B                         | `opencode/qwen3-coder-480b` | $0.45  | $1.50  | -           | -            |
 | GLM 4.6                                  | `opencode/glm-4-6`          | $0.60  | $2.20  | $0.10       | -            |
@@ -53,23 +56,40 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 
 ## Default Model
 
-The default model is **GPT 5 Nano** (`opencode/gpt-5-nano`), which is completely free. This model provides good performance for coding tasks with no cost.
+The default model is **Kimi K2.5 Free** (`opencode/kimi-k2.5-free`), which is completely free and recommended for coding tasks.
 
-> **Note:** Grok Code Fast 1 (`opencode/grok-code`) was previously the default free model, but xAI ended the free tier for this model on OpenCode Zen in January 2026. See [Case Study #133](docs/case-studies/issue-133/README.md) for details.
+> **Note:** Grok Code Fast 1 (`opencode/grok-code`) was previously the default free model, but xAI ended the free tier for this model on OpenCode Zen in January 2026. **The grok-code model is no longer included as a free model in OpenCode Zen subscription.** See [Case Study #133](docs/case-studies/issue-133/README.md) for details.
+
+### Free Models (in order of recommendation)
+
+1. **Kimi K2.5 Free** (`opencode/kimi-k2.5-free`) - Best recommended free model
+2. **MiniMax M2.1 Free** (`opencode/minimax-m2.1-free`) - Good alternative
+3. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable free option
+4. **GLM 4.7 Free** (`opencode/glm-4.7-free`) - Another free option
+5. **Big Pickle** (`opencode/big-pickle`) - Basic free model
 
 ## Usage Examples
 
 ### Using the Default Model (Free)
 
 ```bash
-# Uses opencode/gpt-5-nano by default
+# Uses opencode/kimi-k2.5-free by default
 echo "hello" | agent
 ```
 
 ### Using Other Free Models
 
 ```bash
-# Big Pickle (free)
+# MiniMax M2.1 Free
+echo "hello" | agent --model opencode/minimax-m2.1-free
+
+# GPT 5 Nano
+echo "hello" | agent --model opencode/gpt-5-nano
+
+# GLM 4.7 Free
+echo "hello" | agent --model opencode/glm-4.7-free
+
+# Big Pickle (basic free)
 echo "hello" | agent --model opencode/big-pickle
 ```
 
