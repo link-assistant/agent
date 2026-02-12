@@ -552,7 +552,9 @@ export namespace SessionPrompt {
         })
       );
       // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
-      const safeModelMessages = Array.isArray(modelMessages) ? modelMessages : [];
+      const safeModelMessages = Array.isArray(modelMessages)
+        ? modelMessages
+        : [];
 
       // Verbose logging: output request details for debugging
       if (Flag.OPENCODE_VERBOSE) {
@@ -1592,10 +1594,14 @@ export namespace SessionPrompt {
       },
     ]);
     // Defensive check: ensure titleModelMessages is iterable (AI SDK 6.0.1 compatibility fix)
-    const safeTitleMessages = Array.isArray(titleModelMessages) ? titleModelMessages : [];
+    const safeTitleMessages = Array.isArray(titleModelMessages)
+      ? titleModelMessages
+      : [];
     // Defensive check: ensure SystemPrompt.title returns iterable (fix for issue #155)
     const titleSystemMessages = SystemPrompt.title(small.providerID);
-    const safeTitleSystemMessages = Array.isArray(titleSystemMessages) ? titleSystemMessages : [];
+    const safeTitleSystemMessages = Array.isArray(titleSystemMessages)
+      ? titleSystemMessages
+      : [];
     await generateText({
       maxOutputTokens: small.info?.reasoning ? 1500 : 20,
       providerOptions: ProviderTransform.providerOptions(
