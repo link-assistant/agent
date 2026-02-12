@@ -1548,10 +1548,7 @@ const GooglePlugin: AuthPlugin = {
     /**
      * Extract retry delay from response headers or error body.
      */
-    const getRetryDelay = (
-      response: Response,
-      attempt: number
-    ): number => {
+    const getRetryDelay = (response: Response, attempt: number): number => {
       // Check Retry-After header
       const retryAfter = response.headers.get('retry-after');
       if (retryAfter) {
@@ -1627,9 +1624,7 @@ const GooglePlugin: AuthPlugin = {
      * The AI SDK appends alt=sse for streaming or uses streamGenerateContent method.
      */
     const isStreamingRequest = (url: string): boolean => {
-      return (
-        url.includes('streamGenerateContent') || url.includes('alt=sse')
-      );
+      return url.includes('streamGenerateContent') || url.includes('alt=sse');
     };
 
     /**
@@ -2115,8 +2110,7 @@ const GooglePlugin: AuthPlugin = {
             }
 
             log.error(() => ({
-              message:
-                'cloud code api error and no api key fallback available',
+              message: 'cloud code api error and no api key fallback available',
               status: cloudCodeResponse.status,
               hint: 'Set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY environment variable for fallback',
             }));
