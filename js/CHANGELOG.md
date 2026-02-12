@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.8.19
+
+### Patch Changes
+
+- 5ce1b0a: Fix crash when providers return undefined usage data. Handle AI SDK TypeError for input_tokens gracefully and upgrade AI SDK to v6.0.1 which includes upstream fix. Also ensure unhandled rejections exit with code 1 instead of code 0.
+
 ## 0.8.18
 
 ### Patch Changes
