@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.8.18
+
+### Patch Changes
+
+- 27834ef: Improve ProviderModelNotFoundError with helpful suggestions for OpenRouter models when provider is not found
+
 ## 0.8.17
 
 ### Patch Changes
