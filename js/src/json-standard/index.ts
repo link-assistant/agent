@@ -2,11 +2,15 @@
  * JSON Standard Format Handlers
  *
  * Provides adapters for different JSON output formats:
- * - opencode: OpenCode format (default) - pretty-printed JSON events
+ * - opencode: OpenCode format (default) - configurable JSON formatting
  * - claude: Claude CLI stream-json format - NDJSON (newline-delimited JSON)
+ *
+ * Output goes to stdout for normal messages, stderr for errors.
+ * Use AGENT_CLI_COMPACT env var or --compact-json flag for NDJSON output.
  */
 
 import { EOL } from 'os';
+import { Flag } from '../flag/flag';
 
 export type JsonStandard = 'opencode' | 'claude';
 
@@ -46,16 +50,20 @@ export interface ClaudeEvent {
 
 /**
  * Serialize JSON output based on the selected standard
+ * Respects AGENT_CLI_COMPACT env var for OpenCode format
  */
 export function serializeOutput(
   event: OpenCodeEvent | ClaudeEvent,
   standard: JsonStandard
 ): string {
   if (standard === 'claude') {
-    // NDJSON format - compact, one line
+    // NDJSON format - always compact, one line
     return JSON.stringify(event) + EOL;
   }
-  // OpenCode format - pretty-printed
+  // OpenCode format - compact if AGENT_CLI_COMPACT is set
+  if (Flag.COMPACT_JSON()) {
+    return JSON.stringify(event) + EOL;
+  }
   return JSON.stringify(event, null, 2) + EOL;
 }
 
@@ -146,13 +154,15 @@ export function createEventHandler(standard: JsonStandard, sessionID: string) {
      * Format and output an event
      */
     output(event: OpenCodeEvent): void {
+      const outputStream =
+        event.type === 'error' ? process.stderr : process.stdout;
       if (standard === 'claude') {
         const claudeEvent = convertOpenCodeToClaude(event, startTime);
         if (claudeEvent) {
-          process.stdout.write(serializeOutput(claudeEvent, standard));
+          outputStream.write(serializeOutput(claudeEvent, standard));
         }
       } else {
-        process.stdout.write(serializeOutput(event, standard));
+        outputStream.write(serializeOutput(event, standard));
       }
     },
 

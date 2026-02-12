@@ -23,31 +23,31 @@ export namespace UI {
 
   // Print an empty line
   export function empty() {
-    process.stderr.write('\n');
+    process.stdout.write('\n');
   }
 
   // Print a line with optional formatting
   export function println(...args: string[]) {
-    process.stderr.write(args.join('') + Style.TEXT_NORMAL + '\n');
+    process.stdout.write(args.join('') + Style.TEXT_NORMAL + '\n');
   }
 
   // Print an error message
   export function error(message: string) {
-    process.stderr.write(
+    process.stdout.write(
       Style.TEXT_DANGER_BOLD + 'Error: ' + Style.TEXT_NORMAL + message + '\n'
     );
   }
 
   // Print a success message
   export function success(message: string) {
-    process.stderr.write(
+    process.stdout.write(
       Style.TEXT_SUCCESS_BOLD + 'Success: ' + Style.TEXT_NORMAL + message + '\n'
     );
   }
 
   // Print an info message
   export function info(message: string) {
-    process.stderr.write(
+    process.stdout.write(
       Style.TEXT_INFO_BOLD + 'Info: ' + Style.TEXT_NORMAL + message + '\n'
     );
   }

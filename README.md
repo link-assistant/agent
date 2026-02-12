@@ -19,10 +19,10 @@
 
 This repository contains two implementations of the agent:
 
-| Implementation | Status | Package Manager | Install Command |
-|---------------|--------|-----------------|-----------------|
-| [JavaScript/Bun](js/README.md) | **Production Ready** | npm | `bun install -g @link-assistant/agent` |
-| [Rust](rust/README.md) | Work in Progress | cargo | `cargo install agent` (when published) |
+| Implementation                 | Status               | Package Manager | Install Command                        |
+| ------------------------------ | -------------------- | --------------- | -------------------------------------- |
+| [JavaScript/Bun](js/README.md) | **Production Ready** | npm             | `bun install -g @link-assistant/agent` |
+| [Rust](rust/README.md)         | Work in Progress     | cargo           | `cargo install agent` (when published) |
 
 Both implementations aim to be fully compatible with [OpenCode](https://github.com/sst/opencode)'s `run --format json` mode.
 
@@ -33,14 +33,27 @@ Both implementations aim to be fully compatible with [OpenCode](https://github.c
 The primary implementation, feature-complete and production-ready. Requires [Bun](https://bun.sh) >= 1.0.0.
 
 ```bash
-# Install
+# Step 1: Install Bun (skip if already installed)
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc  # Or restart your terminal (use ~/.zshrc for Zsh)
+
+# Step 2: Verify Bun is working
+bun --version
+
+# Step 3: Install the agent globally
 bun install -g @link-assistant/agent
 
-# Usage
+# Step 4: Verify the agent is working
+agent --version
+
+# Step 5: Run it
 echo "hi" | agent
 ```
 
+> **Troubleshooting:** If `bun` or `agent` is not found after installation, run `source ~/.bashrc` (or `source ~/.zshrc` for Zsh) to reload your PATH, or restart your terminal. See [js/README.md](js/README.md#troubleshooting) for more details.
+
 See [js/README.md](js/README.md) for full documentation including:
+
 - Complete CLI options reference
 - Model selection examples
 - Session resume functionality
@@ -52,9 +65,15 @@ See [js/README.md](js/README.md) for full documentation including:
 The Rust implementation provides core functionality but is still under active development.
 
 ```bash
-# Build from source
+# Step 1: Install Rust (skip if already installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.bashrc  # Or restart your terminal
+
+# Step 2: Build from source
 cd rust
 cargo build --release
+
+# Step 3: Run it
 ./target/release/agent -p "hello"
 ```
 
@@ -72,7 +91,7 @@ We're creating a slimmed-down, public domain version of OpenCode CLI focused on 
 - **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
 - **Unrestricted Access**: Full file system and command execution access (no sandbox, no restrictions)
 - **Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
-- **Flexible Model Selection**: Supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](docs/claude-oauth.md), [Groq](docs/groq.md), and more - see [MODELS.md](MODELS.md)
+- **Flexible Model Selection**: Supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](docs/claude-oauth.md), [Groq](docs/groq.md), [OpenRouter](docs/openrouter.md), and more - see [MODELS.md](MODELS.md)
 - **Public Domain**: Unlicense - use it however you want
 
 ## Quick Start
@@ -155,20 +174,21 @@ agent mcp add playwright npx @playwright/mcp@latest
 ```
 
 See [js/README.md](js/README.md#mcp-model-context-protocol-support) for full MCP documentation including:
+
 - Available Playwright tools (22+ browser automation capabilities)
 - MCP server configuration
 - Usage examples
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [MODELS.md](MODELS.md) | Available models, providers, and pricing |
-| [TOOLS.md](TOOLS.md) | Complete tool documentation |
-| [EXAMPLES.md](EXAMPLES.md) | Usage examples for each tool |
-| [TESTING.md](TESTING.md) | Testing guide |
-| [js/README.md](js/README.md) | JavaScript/Bun implementation (full docs) |
-| [rust/README.md](rust/README.md) | Rust implementation |
+| Document                         | Description                               |
+| -------------------------------- | ----------------------------------------- |
+| [MODELS.md](MODELS.md)           | Available models, providers, and pricing  |
+| [TOOLS.md](TOOLS.md)             | Complete tool documentation               |
+| [EXAMPLES.md](EXAMPLES.md)       | Usage examples for each tool              |
+| [TESTING.md](TESTING.md)         | Testing guide                             |
+| [js/README.md](js/README.md)     | JavaScript/Bun implementation (full docs) |
+| [rust/README.md](rust/README.md) | Rust implementation                       |
 
 ## Files
 

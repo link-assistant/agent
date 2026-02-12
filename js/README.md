@@ -24,7 +24,7 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 
 - ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/gpt-5-nano`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
-- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen GPT 5 Nano, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), and [Groq](../docs/groq.md) providers
+- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Kimi K2.5, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
 - ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
 - ✅ **Full Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
@@ -46,18 +46,109 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 
 ## Installation
 
+### Step-by-step (recommended for first-time users)
+
 ```bash
-# Install Bun first if you haven't already
+# Step 1: Install Bun (skip if already installed)
 curl -fsSL https://bun.sh/install | bash
 
-# Install the package globally
+# Step 2: Apply PATH changes (IMPORTANT — required before using bun)
+source ~/.bashrc  # For Bash (default on most Linux systems)
+# source ~/.zshrc  # For Zsh (default on macOS)
+
+# Step 3: Verify Bun is installed
+bun --version
+
+# Step 4: Install the agent globally
 bun install -g @link-assistant/agent
 
-# Or install locally in your project
+# Step 5: Verify the agent is installed
+agent --version
+
+# Step 6: Run for a test
+echo "hi" | agent
+```
+
+### Quick install (if you already have Bun)
+
+```bash
+bun install -g @link-assistant/agent
+```
+
+### Local install (in your project)
+
+```bash
 bun add @link-assistant/agent
 ```
 
-After installation, the `agent` command will be available globally.
+After global installation, the `agent` command will be available in any terminal session.
+
+### Troubleshooting
+
+**`bun: command not found` after installation:**
+
+The Bun installer adds `~/.bun/bin` to your shell configuration file, but the change only takes effect after reloading it. Run:
+
+```bash
+source ~/.bashrc  # or source ~/.zshrc for Zsh
+```
+
+Or restart your terminal.
+
+**`agent: command not found` after `bun install -g`:**
+
+Global packages installed by Bun are placed in `~/.bun/bin`. If this directory is not in your PATH, the `agent` command won't be found. Ensure your shell configuration includes:
+
+```bash
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+```
+
+Then reload with `source ~/.bashrc` (or `~/.zshrc`), or restart your terminal.
+
+**Still not working?**
+
+Try reinstalling Bun from scratch:
+
+```bash
+rm -rf ~/.bun
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc
+bun install -g @link-assistant/agent
+agent --version
+```
+
+## Uninstallation
+
+### Uninstalling the Agent
+
+```bash
+# Remove the globally installed package
+bun remove -g @link-assistant/agent
+
+# Or if installed locally in your project
+bun remove @link-assistant/agent
+```
+
+### Uninstalling Bun
+
+If you need to completely remove Bun from your system:
+
+```bash
+# Remove the Bun binary and installation directory
+rm -rf ~/.bun
+
+# Remove the Bun cache (optional)
+rm -rf ~/.bun/install/cache
+```
+
+After removing the `~/.bun` directory, you may also need to remove Bun from your shell configuration. Check and remove lines referencing `~/.bun/bin` from:
+
+- `~/.bashrc`
+- `~/.zshrc`
+- `~/.config/fish/config.fish`
+
+Or the corresponding configuration file for your shell.
 
 ## Usage
 
@@ -115,6 +206,11 @@ echo "hi" | agent --model opencode/gemini-3-pro  # Gemini 3 Pro
 echo "hi" | agent --model groq/llama-3.3-70b-versatile  # Llama 3.3 70B
 echo "hi" | agent --model groq/llama-3.1-8b-instant     # Llama 3.1 8B (fast)
 
+# OpenRouter models (requires OPENROUTER_API_KEY)
+echo "hi" | agent --model openrouter/anthropic/claude-sonnet-4  # Claude via OpenRouter
+echo "hi" | agent --model openrouter/openai/gpt-4o              # GPT-4o via OpenRouter
+echo "hi" | agent --model openrouter/meta-llama/llama-3.3-70b   # Llama via OpenRouter
+
 # Anthropic direct (requires ANTHROPIC_API_KEY)
 echo "hi" | agent --model anthropic/claude-sonnet-4-5  # Claude Sonnet 4.5
 echo "hi" | agent --model anthropic/claude-opus-4-1    # Claude Opus 4.1
@@ -137,6 +233,7 @@ echo "hi" | agent --model github-copilot/gpt-4o        # Uses Copilot
 
 See [MODELS.md](../MODELS.md) for complete list of available models and pricing.
 See [docs/groq.md](../docs/groq.md) for Groq provider documentation.
+See [docs/openrouter.md](../docs/openrouter.md) for OpenRouter provider documentation.
 See [docs/claude-oauth.md](../docs/claude-oauth.md) for Claude OAuth provider documentation.
 
 ### Direct Prompt Mode

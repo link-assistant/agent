@@ -580,6 +580,27 @@ export namespace Session {
       metadata: z.custom<ProviderMetadata>().optional(),
     }),
     (input) => {
+      // Handle undefined or null usage gracefully
+      // Some providers (e.g., OpenCode with Kimi K2.5) may return incomplete usage data
+      // See: https://github.com/link-assistant/agent/issues/152
+      if (!input.usage) {
+        log.warn(() => ({
+          message: 'getUsage received undefined usage, returning zero values',
+          providerMetadata: input.metadata
+            ? JSON.stringify(input.metadata)
+            : 'none',
+        }));
+        return {
+          cost: 0,
+          tokens: {
+            input: 0,
+            output: 0,
+            reasoning: 0,
+            cache: { read: 0, write: 0 },
+          },
+        };
+      }
+
       // Log raw usage data in verbose mode for debugging
       if (Flag.OPENCODE_VERBOSE) {
         log.debug(() => ({

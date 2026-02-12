@@ -61,13 +61,23 @@ export function createBusEventSubscription({
         });
       }
 
-      if (part.type === 'tool' && part.state.status === 'completed') {
+      if (part.type === 'tool') {
         eventHandler.output({
           type: 'tool_use',
           timestamp: Date.now(),
           sessionID,
           part,
         });
+
+        // If tool failed, also output an error event
+        if (part.state?.status === 'error') {
+          eventHandler.output({
+            type: 'error',
+            timestamp: Date.now(),
+            sessionID,
+            error: part.state.error || 'Tool execution failed',
+          });
+        }
       }
     }
 

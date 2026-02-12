@@ -104,11 +104,12 @@ test('Read tool rejects HTML file with .png extension', async () => {
   createFakeImage(fakeImageFile);
 
   try {
-    const input = `{"message":"read fake image","tools":[{"name":"read","params":{"filePath":"${fakeImageFile}"}}]}`;
+    const input = `{"message":"read ${fakeImageFile}"}`;
     const projectRoot = process.cwd();
-    const result = await $`echo ${input} | bun run ${projectRoot}/src/index.js`
-      .quiet()
-      .nothrow();
+    const result =
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
+        .quiet()
+        .nothrow();
 
     const lines = result.stdout
       .toString()
@@ -163,7 +164,8 @@ test('Read tool successfully reads valid PNG file', async () => {
       .trim()
       .split('\n')
       .filter((line) => line.trim());
-    const events = lines.map((line) => JSON.parse(line));
+    const parsedLines = lines.map((line) => JSON.parse(line));
+    const events = parsedLines.filter((line) => line.type !== 'log');
 
     // Find tool_use event for read
     const toolEvent = events.find(
@@ -245,9 +247,10 @@ test('Read tool rejects file smaller than minimum image size', async () => {
   try {
     const input = `{"message":"read tiny file","tools":[{"name":"read","params":{"filePath":"${tinyFile}"}}]}`;
     const projectRoot = process.cwd();
-    const result = await $`echo ${input} | bun run ${projectRoot}/src/index.js`
-      .quiet()
-      .nothrow();
+    const result =
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
+        .quiet()
+        .nothrow();
 
     const lines = result.stdout
       .toString()
@@ -290,11 +293,12 @@ test('Read tool provides helpful error message with hex dump', async () => {
   createFakeImage(fakeImageFile, 'Not Found');
 
   try {
-    const input = `{"message":"read fake image for hex dump","tools":[{"name":"read","params":{"filePath":"${fakeImageFile}"}}]}`;
+    const input = `{"message":"read ${fakeImageFile}"}`;
     const projectRoot = process.cwd();
-    const result = await $`echo ${input} | bun run ${projectRoot}/src/index.js`
-      .quiet()
-      .nothrow();
+    const result =
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
+        .quiet()
+        .nothrow();
 
     const lines = result.stdout
       .toString()
@@ -394,7 +398,8 @@ test('Read tool validates different image formats correctly', async () => {
         .trim()
         .split('\n')
         .filter((line) => line.trim());
-      const events = lines.map((line) => JSON.parse(line));
+      const parsedLines = lines.map((line) => JSON.parse(line));
+      const events = parsedLines.filter((line) => line.type !== 'log');
 
       const toolEvent = events.find(
         (e) => e.type === 'tool_use' && e.part?.tool === 'read'

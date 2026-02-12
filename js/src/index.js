@@ -1,5 +1,9 @@
 #!/usr/bin/env bun
 
+import { setProcessName } from './cli/process-name.ts';
+
+setProcessName('agent');
+
 import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
 import { Log } from './util/log.ts';
@@ -24,6 +28,12 @@ import {
   resolveResumeSession,
 } from './cli/continuous-mode.js';
 import { createBusEventSubscription } from './cli/event-handler.js';
+import {
+  outputStatus,
+  outputError,
+  setCompactJson,
+  outputInput,
+} from './cli/output.ts';
 import { createRequire } from 'module';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
@@ -47,35 +57,26 @@ let hasError = false;
 // Install global error handlers to ensure non-zero exit codes
 process.on('uncaughtException', (error) => {
   hasError = true;
-  console.error(
-    JSON.stringify(
-      {
-        type: 'error',
-        errorType: error.name || 'UncaughtException',
-        message: error.message,
-        stack: error.stack,
-      },
-      null,
-      2
-    )
-  );
+  outputError({
+    errorType: error.name || 'UncaughtException',
+    message: error.message,
+    stack: error.stack,
+  });
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, _promise) => {
   hasError = true;
-  console.error(
-    JSON.stringify(
-      {
-        type: 'error',
-        errorType: 'UnhandledRejection',
-        message: reason?.message || String(reason),
-        stack: reason?.stack,
-      },
-      null,
-      2
-    )
-  );
+  const errorOutput = {
+    errorType: 'UnhandledRejection',
+    message: reason?.message || String(reason),
+    stack: reason?.stack,
+  };
+  // If the error has a data property with a suggestion (e.g., ProviderModelNotFoundError), add it as a hint
+  if (reason?.data?.suggestion) {
+    errorOutput.hint = reason.data.suggestion;
+  }
+  outputError(errorOutput);
   process.exit(1);
 });
 
@@ -134,18 +135,8 @@ function readStdinWithTimeout(timeout = null) {
   });
 }
 
-/**
- * Output JSON status message to stderr
- * This prevents the status message from interfering with JSON output parsing
- * @param {object} status - Status object to output
- * @param {boolean} compact - If true, output compact JSON (single line)
- */
-function outputStatus(status, compact = false) {
-  const json = compact
-    ? JSON.stringify(status)
-    : JSON.stringify(status, null, 2);
-  console.error(json);
-}
+// outputStatus is now imported from './cli/output.ts'
+// It outputs to stdout for non-error messages, stderr for errors
 
 /**
  * Parse model configuration from argv
@@ -168,9 +159,8 @@ async function parseModelConfig(argv) {
 
     if (!creds?.accessToken) {
       const compactJson = argv['compact-json'] === true;
-      outputStatus(
+      outputError(
         {
-          type: 'error',
           errorType: 'AuthenticationError',
           message:
             'No Claude OAuth credentials found in ~/.claude/.credentials.json. Either authenticate with Claude Code CLI first, or use: agent auth login (select Anthropic > Claude Pro/Max)',
@@ -221,9 +211,10 @@ async function readSystemMessages(argv) {
     );
     const file = Bun.file(resolvedPath);
     if (!(await file.exists())) {
-      console.error(
-        `System message file not found: ${argv['system-message-file']}`
-      );
+      outputError({
+        errorType: 'FileNotFound',
+        message: `System message file not found: ${argv['system-message-file']}`,
+      });
       process.exit(1);
     }
     systemMessage = await file.text();
@@ -236,9 +227,10 @@ async function readSystemMessages(argv) {
     );
     const file = Bun.file(resolvedPath);
     if (!(await file.exists())) {
-      console.error(
-        `Append system message file not found: ${argv['append-system-message-file']}`
-      );
+      outputError({
+        errorType: 'FileNotFound',
+        message: `Append system message file not found: ${argv['append-system-message-file']}`,
+      });
       process.exit(1);
     }
     appendSystemMessage = await file.text();
@@ -692,7 +684,9 @@ async function main() {
               default: false,
             }),
         handler: async (argv) => {
-          const compactJson = argv['compact-json'] === true;
+          // Check both CLI flag and environment variable for compact JSON mode
+          const compactJson =
+            argv['compact-json'] === true || Flag.COMPACT_JSON();
 
           // Check if --prompt flag was provided
           if (argv.prompt) {
@@ -705,9 +699,9 @@ async function main() {
           // Check if --disable-stdin was set without --prompt
           if (argv['disable-stdin']) {
             // Output a helpful message suggesting to use --prompt
-            outputStatus(
+            outputError(
               {
-                type: 'error',
+                errorType: 'ValidationError',
                 message:
                   'No prompt provided. Use -p/--prompt to specify a message, or remove --disable-stdin to read from stdin.',
                 hint: 'Example: agent -p "Hello, how are you?"',
@@ -726,9 +720,9 @@ async function main() {
 
             // Exit if --no-always-accept-stdin is set (single message mode not supported in TTY)
             if (!alwaysAcceptStdin) {
-              outputStatus(
+              outputError(
                 {
-                  type: 'error',
+                  errorType: 'ValidationError',
                   message:
                     'Single message mode (--no-always-accept-stdin) is not supported in interactive terminal mode.',
                   hint: 'Use piped input or --prompt for single messages.',
@@ -820,9 +814,9 @@ async function main() {
             // Not JSON
             if (!isInteractive) {
               // In non-interactive mode, only accept JSON
-              outputStatus(
+              outputError(
                 {
-                  type: 'error',
+                  errorType: 'ValidationError',
                   message:
                     'Invalid JSON input. In non-interactive mode (--no-interactive), only JSON input is accepted.',
                   hint: 'Use --interactive to accept plain text, or provide valid JSON: {"message": "your text"}',
@@ -837,6 +831,16 @@ async function main() {
             };
           }
 
+          // Output input confirmation in JSON format
+          outputInput(
+            {
+              raw: trimmedInput,
+              parsed: request,
+              format: isInteractive ? 'text' : 'json',
+            },
+            compactJson
+          );
+
           // Run agent mode
           await runAgentMode(argv, request);
         },
@@ -844,6 +848,12 @@ async function main() {
       // Initialize logging early for all CLI commands
       // This prevents debug output from appearing in CLI unless --verbose is used
       .middleware(async (argv) => {
+        // Set global compact JSON setting (CLI flag or environment variable)
+        const isCompact = argv['compact-json'] === true || Flag.COMPACT_JSON();
+        if (isCompact) {
+          setCompactJson(true);
+        }
+
         // Set verbose flag if requested
         if (argv.verbose) {
           Flag.setVerbose(true);
@@ -855,11 +865,12 @@ async function main() {
         }
 
         // Initialize logging system
-        // - If verbose: print logs to stderr for debugging in JSON format
-        // - Otherwise: write logs to file to keep CLI output clean
+        // - Print logs to stdout only when verbose for clean CLI output
+        // - Use verbose flag to enable DEBUG level logging
         await Log.init({
-          print: Flag.OPENCODE_VERBOSE,
+          print: Flag.OPENCODE_VERBOSE, // Output logs only when verbose for clean CLI output
           level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
+          compactJson: isCompact,
         });
       })
       .fail((msg, err, yargs) => {
@@ -874,18 +885,27 @@ async function main() {
           // Format other errors using FormatError
           const formatted = FormatError(err);
           if (formatted) {
-            console.error(formatted);
+            outputError({
+              errorType: err.name || 'Error',
+              message: formatted,
+            });
           } else {
             // Fallback to default error formatting
-            console.error(err.message || err);
+            outputError({
+              errorType: err.name || 'Error',
+              message: err.message || String(err),
+            });
           }
           process.exit(1);
         }
 
         // Handle validation errors (msg without err)
         if (msg) {
-          console.error(msg);
-          console.error(`\n${yargs.help()}`);
+          outputError({
+            errorType: 'ValidationError',
+            message: msg,
+            hint: yargs.help(),
+          });
           process.exit(1);
         }
       })
@@ -895,19 +915,12 @@ async function main() {
     await yargsInstance.argv;
   } catch (error) {
     hasError = true;
-    console.error(
-      JSON.stringify(
-        {
-          type: 'error',
-          timestamp: Date.now(),
-          errorType: error instanceof Error ? error.name : 'Error',
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        },
-        null,
-        2
-      )
-    );
+    outputError({
+      timestamp: Date.now(),
+      errorType: error instanceof Error ? error.name : 'Error',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     process.exit(1);
   }
 }

@@ -91,9 +91,8 @@ describe('Input Queue Functionality', () => {
     const events = parseEvents(result.stdout);
     expect(events.length).toBeGreaterThan(0);
 
-    // Status messages go to stderr
-    const stderrEvents = parseEvents(result.stderr);
-    const statusEvent = stderrEvents.find((e) => e.type === 'status');
+    // Status messages go to stdout
+    const statusEvent = events.find((e) => e.type === 'status');
     expect(statusEvent).toBeTruthy();
 
     // Should have step_start event in stdout
@@ -125,9 +124,9 @@ describe('Input Queue Functionality', () => {
 
     expect(result.exitCode).toBe(0);
 
-    // Status messages go to stderr
-    const stderrEvents = parseEvents(result.stderr);
-    const statusEvent = stderrEvents.find(
+    // Status messages go to stdout
+    const stdoutEvents = parseEvents(result.stdout);
+    const statusEvent = stdoutEvents.find(
       (e) => e.type === 'status' && e.mode === 'stdin-stream'
     );
 
@@ -177,9 +176,9 @@ describe('Non-Interactive Mode', () => {
 
     expect(result.exitCode).toBe(0);
 
-    // Status messages go to stderr
-    const stderrEvents = parseEvents(result.stderr);
-    const statusEvent = stderrEvents.find(
+    const events = parseEvents(result.stdout);
+    // Status messages go to stdout
+    const statusEvent = events.find(
       (e) => e.type === 'status' && e.mode === 'stdin-stream'
     );
 
@@ -201,15 +200,12 @@ describe('Prompt Flag', () => {
 
     expect(result.exitCode).toBe(0);
 
-    // Status messages go to stderr - should NOT have stdin-stream status
-    const stderrEvents = parseEvents(result.stderr);
-    const stdinStatus = stderrEvents.find(
+    // Status messages go to stdout - should NOT have stdin-stream status
+    const events = parseEvents(result.stdout);
+    const stdinStatus = events.find(
       (e) => e.type === 'status' && e.mode === 'stdin-stream'
     );
     expect(stdinStatus).toBeFalsy();
-
-    // Should have step_start event in stdout
-    const events = parseEvents(result.stdout);
     const stepStart = events.find((e) => e.type === 'step_start');
     expect(stepStart).toBeTruthy();
 
@@ -271,10 +267,10 @@ describe('Empty Input Handling', () => {
 
     expect(result.exitCode).toBe(0);
 
-    // Status messages go to stderr
-    const stderrEvents = parseEvents(result.stderr);
-    const statusEvent = stderrEvents.find(
-      (e) => e.type === 'status' && e.message?.includes('No input received')
+    // Status messages go to stdout
+    const events = parseEvents(result.stdout);
+    const statusEvent = events.find(
+      (e) => e.type === 'status' && e.message === 'No input received. Exiting.'
     );
     expect(statusEvent).toBeTruthy();
 

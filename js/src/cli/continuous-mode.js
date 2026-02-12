@@ -11,6 +11,8 @@ import { SessionPrompt } from '../session/prompt.ts';
 import { createEventHandler } from '../json-standard/index.ts';
 import { createContinuousStdinReader } from './input-queue.js';
 import { Log } from '../util/log.ts';
+import { Flag } from '../flag/flag.ts';
+import { outputStatus, outputError, outputInput } from './output.ts';
 
 // Shared error tracking
 let hasError = false;
@@ -31,17 +33,8 @@ export function getHasError() {
   return hasError;
 }
 
-/**
- * Output JSON status message to stderr
- * @param {object} status - Status object to output
- * @param {boolean} compact - If true, output compact JSON (single line)
- */
-function outputStatus(status, compact = false) {
-  const json = compact
-    ? JSON.stringify(status)
-    : JSON.stringify(status, null, 2);
-  console.error(json);
-}
+// outputStatus is now imported from './output.ts'
+// It outputs to stdout for non-error messages, stderr for errors
 
 // Logger for resume operations
 const log = Log.create({ service: 'resume' });
@@ -84,9 +77,8 @@ export async function resolveResumeSession(argv, compactJson) {
     }
 
     if (!mostRecentSession) {
-      outputStatus(
+      outputError(
         {
-          type: 'error',
           errorType: 'SessionNotFound',
           message:
             'No existing sessions found to continue. Start a new session first.',
@@ -110,9 +102,8 @@ export async function resolveResumeSession(argv, compactJson) {
     existingSession = await Session.get(targetSessionID);
   } catch (_error) {
     // Session.get throws an error when the session doesn't exist
-    outputStatus(
+    outputError(
       {
-        type: 'error',
         errorType: 'SessionNotFound',
         message: `Session not found: ${targetSessionID}`,
       },
@@ -122,9 +113,8 @@ export async function resolveResumeSession(argv, compactJson) {
   }
 
   if (!existingSession) {
-    outputStatus(
+    outputError(
       {
-        type: 'error',
         errorType: 'SessionNotFound',
         message: `Session not found: ${targetSessionID}`,
       },
@@ -204,7 +194,8 @@ export async function runContinuousServerMode(
   appendSystemMessage,
   jsonStandard
 ) {
-  const compactJson = argv['compact-json'] === true;
+  // Check both CLI flag and environment variable for compact JSON mode
+  const compactJson = argv['compact-json'] === true || Flag.COMPACT_JSON();
   const isInteractive = argv.interactive !== false;
   const autoMerge = argv['auto-merge-queued-messages'] !== false;
 
@@ -255,6 +246,17 @@ export async function runContinuousServerMode(
       }
 
       isProcessing = true;
+
+      // Output input confirmation in JSON format
+      outputInput(
+        {
+          raw: message.raw || message.message,
+          parsed: message,
+          format: message.format || 'text',
+        },
+        compactJson
+      );
+
       const messageText = message.message || 'hi';
       const parts = [{ type: 'text', text: messageText }];
 
@@ -339,7 +341,7 @@ export async function runContinuousServerMode(
           });
         }
 
-        if (part.type === 'tool' && part.state.status === 'completed') {
+        if (part.type === 'tool') {
           eventHandler.output({
             type: 'tool_use',
             timestamp: Date.now(),
@@ -389,6 +391,8 @@ export async function runContinuousServerMode(
           waitForPending();
         }
       }, 100);
+      // Allow process to exit naturally when no other work remains
+      checkRunning.unref();
 
       // Also handle SIGINT
       process.on('SIGINT', () => {
@@ -427,7 +431,8 @@ export async function runContinuousDirectMode(
   appendSystemMessage,
   jsonStandard
 ) {
-  const compactJson = argv['compact-json'] === true;
+  // Check both CLI flag and environment variable for compact JSON mode
+  const compactJson = argv['compact-json'] === true || Flag.COMPACT_JSON();
   const isInteractive = argv.interactive !== false;
   const autoMerge = argv['auto-merge-queued-messages'] !== false;
 
@@ -466,6 +471,17 @@ export async function runContinuousDirectMode(
       }
 
       isProcessing = true;
+
+      // Output input confirmation in JSON format
+      outputInput(
+        {
+          raw: message.raw || message.message,
+          parsed: message,
+          format: message.format || 'text',
+        },
+        compactJson
+      );
+
       const messageText = message.message || 'hi';
       const parts = [{ type: 'text', text: messageText }];
 
@@ -544,7 +560,7 @@ export async function runContinuousDirectMode(
           });
         }
 
-        if (part.type === 'tool' && part.state.status === 'completed') {
+        if (part.type === 'tool') {
           eventHandler.output({
             type: 'tool_use',
             timestamp: Date.now(),
@@ -594,6 +610,8 @@ export async function runContinuousDirectMode(
           waitForPending();
         }
       }, 100);
+      // Allow process to exit naturally when no other work remains
+      checkRunning.unref();
 
       // Also handle SIGINT
       process.on('SIGINT', () => {

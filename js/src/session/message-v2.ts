@@ -58,6 +58,21 @@ export namespace MessageV2 {
     typeof SocketConnectionError.Schema
   >;
 
+  /**
+   * Timeout error - caused by AbortSignal.timeout() firing when an API request
+   * takes too long. These are DOMException with name === 'TimeoutError'.
+   * These errors are transient and should be retried with increasing intervals.
+   * See: https://github.com/link-assistant/agent/issues/142
+   */
+  export const TimeoutError = NamedError.create(
+    'TimeoutError',
+    z.object({
+      message: z.string(),
+      isRetryable: z.literal(true),
+    })
+  );
+  export type TimeoutError = z.infer<typeof TimeoutError.Schema>;
+
   const PartBase = z.object({
     id: z.string(),
     sessionID: z.string(),
@@ -782,6 +797,11 @@ export namespace MessageV2 {
             cause: e,
           }
         ).toObject();
+      case e instanceof DOMException && e.name === 'TimeoutError':
+        return new MessageV2.TimeoutError(
+          { message: e.message, isRetryable: true },
+          { cause: e }
+        ).toObject();
       case MessageV2.OutputLengthError.isInstance(e):
         return e;
       case LoadAPIKeyError.isInstance(e):
@@ -812,6 +832,18 @@ export namespace MessageV2 {
           message.includes('closed unexpectedly');
         if (isSocketError) {
           return new MessageV2.SocketConnectionError(
+            { message, isRetryable: true },
+            { cause: e }
+          ).toObject();
+        }
+        // Detect timeout errors from various sources
+        // See: https://github.com/link-assistant/agent/issues/142
+        const isTimeoutError =
+          message.includes('The operation timed out') ||
+          message.includes('timed out') ||
+          e.name === 'TimeoutError';
+        if (isTimeoutError) {
+          return new MessageV2.TimeoutError(
             { message, isRetryable: true },
             { cause: e }
           ).toObject();
