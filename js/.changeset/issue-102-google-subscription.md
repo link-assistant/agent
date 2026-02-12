@@ -13,6 +13,7 @@ Implements proper Google AI subscription authentication with the following impro
 - Add project context caching to avoid repeated onboarding API calls
 - Support configurable Cloud Code API endpoint via CODE_ASSIST_ENDPOINT env var
 - Use dynamic package version in x-goog-api-client header
+- Add comprehensive case study analysis for issue #102
 
 These changes align the implementation with the official Gemini CLI and opencode-gemini-auth plugin,
 enabling reliable subscription-based access without requiring API keys.
