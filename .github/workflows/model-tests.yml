@@ -84,6 +84,7 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+        working-directory: js
 
       - name: Determine model to test
         id: model

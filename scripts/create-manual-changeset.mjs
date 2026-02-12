@@ -59,7 +59,7 @@ try {
 
   // Generate a random changeset ID
   const changesetId = randomBytes(4).toString('hex');
-  const changesetFile = `.changeset/manual-release-${changesetId}.md`;
+  const changesetFile = `js/.changeset/manual-release-${changesetId}.md`;
 
   // Create the changeset file with single quotes to match Prettier config
   const content = `---

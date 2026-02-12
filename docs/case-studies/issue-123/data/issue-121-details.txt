@@ -1,0 +1,15 @@
+title:	Release was done not in expected style
+state:	CLOSED
+author:	konard
+labels:	bug, documentation
+comments:	0
+assignees:	
+projects:	
+milestone:	
+number:	121
+--
+We should use [js] prefix in name, version is fine.
+
+But the description of the release must be like in https://github.com/link-foundation/js-ai-driven-development-pipeline-template
+
+Please use all latest best practices of https://github.com/link-foundation/js-ai-driven-development-pipeline-template for our JavaScript CI/CD. If we have something even better - please file issue to https://github.com/link-foundation/js-ai-driven-development-pipeline-template with proposal.

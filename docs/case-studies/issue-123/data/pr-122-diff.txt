@@ -1,0 +1,56 @@
+diff --git a/js/.changeset/fix-release-style.md b/js/.changeset/fix-release-style.md
+new file mode 100644
+index 0000000..d09eb9d
+--- /dev/null
++++ b/js/.changeset/fix-release-style.md
+@@ -0,0 +1,11 @@
++---
++'@link-assistant/agent': patch
++---
++
++Fix GitHub release style to match template repository standards
++
++- Fix release name format to use `[js]` prefix instead of `js ` (e.g., `[js] 0.8.4` instead of `js 0.8.4`)
++- Fix changelog path for js releases to use `js/CHANGELOG.md` instead of root `CHANGELOG.md`
++- This ensures release descriptions contain actual changelog content with PR links and npm badges
++
++Fixes #121
+diff --git a/scripts/create-github-release.mjs b/scripts/create-github-release.mjs
+index 749a73a..69fcc4f 100644
+--- a/scripts/create-github-release.mjs
++++ b/scripts/create-github-release.mjs
+@@ -61,12 +61,20 @@ console.log(`Creating GitHub release for ${tag}...`);
+ 
+ try {
+   // Read CHANGELOG.md - check prefix for appropriate changelog location
+-  const changelogPath = prefix === 'rust-' ? './rust/CHANGELOG.md' : './CHANGELOG.md';
++  // js- prefix uses js/CHANGELOG.md, rust- prefix uses rust/CHANGELOG.md, others use root
++  const changelogPath =
++    prefix === 'rust-'
++      ? './rust/CHANGELOG.md'
++      : prefix === 'js-'
++        ? './js/CHANGELOG.md'
++        : './CHANGELOG.md';
+   let changelog = '';
+   try {
+     changelog = readFileSync(changelogPath, 'utf8');
+   } catch {
+-    console.log(`No changelog found at ${changelogPath}, using default release notes`);
++    console.log(
++      `No changelog found at ${changelogPath}, using default release notes`
++    );
+   }
+ 
+   // Extract changelog entry for this version
+@@ -87,7 +95,10 @@ try {
+   // Create release using GitHub API with JSON input
+   // This avoids shell escaping issues that occur when passing text via command-line arguments
+   // (Previously caused apostrophes like "didn't" to appear as "didn'''" in releases)
+-  const releaseName = prefix ? `${prefix.replace(/-$/, '')} ${version}` : version;
++  // Release name format: "[prefix] version" for prefixed releases (e.g., "[js] 0.8.3"), just version otherwise
++  const releaseName = prefix
++    ? `[${prefix.replace(/-$/, '')}] ${version}`
++    : version;
+   const payload = JSON.stringify({
+     tag_name: tag,
+     name: releaseName,

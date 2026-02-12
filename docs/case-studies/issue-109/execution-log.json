@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "issue_id": 109,
+    "repository": "link-assistant/agent",
+    "created_at": "2026-01-10T21:19:50.024Z",
+    "solver_version": "0.54.4",
+    "model": "opencode/grok-code",
+    "tool": "agent"
+  },
+  "timeline": [
+    {
+      "timestamp": "2026-01-10T21:19:50.024Z",
+      "event": "session_start",
+      "details": "solve v0.54.4 initiated"
+    },
+    {
+      "timestamp": "2026-01-10T21:20:07.000Z",
+      "event": "commit_created",
+      "details": "Initial commit with task details"
+    },
+    {
+      "timestamp": "2026-01-10T21:20:14.000Z",
+      "event": "pr_created",
+      "details": "Pull request #2 created"
+    },
+    {
+      "timestamp": "2026-01-10T21:20:22.787Z",
+      "event": "agent_start",
+      "details": "Agent CLI execution begins with model opencode/grok-code"
+    },
+    {
+      "timestamp": "2026-01-10T21:20:23.285Z",
+      "event": "agent_ready",
+      "details": "Agent outputs status message, stdin-stream mode active"
+    },
+    {
+      "timestamp": "2026-01-10T21:20:34.712Z",
+      "event": "socket_error",
+      "details": "Socket connection closed unexpectedly after ~12 seconds",
+      "error": {
+        "type": "error",
+        "timestamp": 1768080034712,
+        "sessionID": "ses_45637e0dcffeqxaDRRDyQRd69N",
+        "error": {
+          "name": "UnknownError",
+          "data": {
+            "message": "Error: The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()"
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-10T21:20:34.713Z",
+      "event": "unhandled_rejection",
+      "details": "Error propagates as UnhandledRejection",
+      "error": {
+        "type": "error",
+        "errorType": "UnhandledRejection",
+        "message": "The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()"
+      }
+    },
+    {
+      "timestamp": "2026-01-10T21:20:34.731Z",
+      "event": "session_end",
+      "details": "Agent command completed with error"
+    }
+  ],
+  "environment": {
+    "platform": "linux",
+    "command": "echo '{\"message\": \"Hello, please analyze this code...\"}' | agent --model opencode/grok-code",
+    "working_directory": "/tmp/gh-issue-solver-1768079997927"
+  },
+  "analysis": {
+    "duration_before_error_ms": 11427,
+    "error_pattern": "socket connection was closed unexpectedly",
+    "root_cause": "Bun fetch() 10-second idle timeout in Bun.serve() context",
+    "is_transient": true,
+    "retry_successful": "typically yes on subsequent attempts"
+  }
+}
