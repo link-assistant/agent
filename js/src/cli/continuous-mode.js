@@ -391,6 +391,8 @@ export async function runContinuousServerMode(
           waitForPending();
         }
       }, 100);
+      // Allow process to exit naturally when no other work remains
+      checkRunning.unref();
 
       // Also handle SIGINT
       process.on('SIGINT', () => {
@@ -608,6 +610,8 @@ export async function runContinuousDirectMode(
           waitForPending();
         }
       }, 100);
+      // Allow process to exit naturally when no other work remains
+      checkRunning.unref();
 
       // Also handle SIGINT
       process.on('SIGINT', () => {

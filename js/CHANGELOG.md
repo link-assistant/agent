@@ -1,5 +1,55 @@
 # @link-assistant/agent
 
+## 0.8.17
+
+### Patch Changes
+
+- c0b2032: Fix ZodError in session processor when tool execution fails
+  - Change tool error status from 'failed' to 'error' in processor.ts to match ToolStateError Zod schema
+  - Fix cleanup loop to use 'error' status consistently with the discriminated union definition
+  - Update event-handler.js to check for 'error' status instead of 'failed'
+  - Add case study analysis for issue #149 documenting root cause and fix
+
+## 0.8.16
+
+### Patch Changes
+
+- dc1d090: Improve installation instructions with step-by-step guide and troubleshooting
+  - Add numbered step-by-step installation instructions for JavaScript/Bun version
+  - Add explicit `source ~/.bashrc` step to reload shell configuration after Bun installation
+  - Add verification commands (`bun --version`, `agent --version`) to confirm successful installation
+  - Add comprehensive troubleshooting section covering common installation issues
+  - Add Rust installation prerequisites and verification steps
+  - Add case study documentation analyzing installation UX improvements (issue #136)
+
+## 0.8.15
+
+### Patch Changes
+
+- 10b2888: Add stream timeout to prevent agent CLI from hanging indefinitely when LLM API connections stall. Configurable via AGENT_STREAM_CHUNK_TIMEOUT_MS (default: 2min) and AGENT_STREAM_STEP_TIMEOUT_MS (default: 10min) environment variables.
+
+## 0.8.14
+
+### Patch Changes
+
+- 5a9f0de: Fix process name to show as 'agent' instead of 'bun' in process monitoring tools
+
+  This change sets both process.title and process.argv0 to 'agent' at CLI startup,
+  ensuring the process appears as 'agent' instead of 'bun' in monitoring tools like top and ps.
+
+## 0.8.13
+
+### Patch Changes
+
+- 7cff63f: Add automatic retry for timeout errors with 30s, 60s, 120s intervals
+
+  Previously, when an API request timed out (DOMException TimeoutError from AbortSignal.timeout()),
+  the agent would fail immediately. Now, timeout errors are automatically retried up to 3 times
+  with increasing delays of 30, 60, and 120 seconds.
+
+  This handles all retryable HTTP statuses (408, 409, 429, 500+) via existing APIError retry logic,
+  plus the new TimeoutError for connection-level timeouts.
+
 ## 0.8.11
 
 ### Patch Changes

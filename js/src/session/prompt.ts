@@ -613,6 +613,10 @@ export namespace SessionPrompt {
 
       const result = await processor.process(() =>
         streamText({
+          timeout: {
+            chunkMs: Flag.STREAM_CHUNK_TIMEOUT_MS(),
+            stepMs: Flag.STREAM_STEP_TIMEOUT_MS(),
+          },
           onError(error) {
             log.error(() => ({ message: 'stream error', error }));
           },

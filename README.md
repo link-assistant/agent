@@ -33,12 +33,24 @@ Both implementations aim to be fully compatible with [OpenCode](https://github.c
 The primary implementation, feature-complete and production-ready. Requires [Bun](https://bun.sh) >= 1.0.0.
 
 ```bash
-# Install
+# Step 1: Install Bun (skip if already installed)
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc  # Or restart your terminal (use ~/.zshrc for Zsh)
+
+# Step 2: Verify Bun is working
+bun --version
+
+# Step 3: Install the agent globally
 bun install -g @link-assistant/agent
 
-# Usage
+# Step 4: Verify the agent is working
+agent --version
+
+# Step 5: Run it
 echo "hi" | agent
 ```
+
+> **Troubleshooting:** If `bun` or `agent` is not found after installation, run `source ~/.bashrc` (or `source ~/.zshrc` for Zsh) to reload your PATH, or restart your terminal. See [js/README.md](js/README.md#troubleshooting) for more details.
 
 See [js/README.md](js/README.md) for full documentation including:
 
@@ -53,9 +65,15 @@ See [js/README.md](js/README.md) for full documentation including:
 The Rust implementation provides core functionality but is still under active development.
 
 ```bash
-# Build from source
+# Step 1: Install Rust (skip if already installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.bashrc  # Or restart your terminal
+
+# Step 2: Build from source
 cd rust
 cargo build --release
+
+# Step 3: Run it
 ./target/release/agent -p "hello"
 ```
 

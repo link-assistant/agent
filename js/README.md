@@ -46,18 +46,77 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 
 ## Installation
 
+### Step-by-step (recommended for first-time users)
+
 ```bash
-# Install Bun first if you haven't already
+# Step 1: Install Bun (skip if already installed)
 curl -fsSL https://bun.sh/install | bash
 
-# Install the package globally
+# Step 2: Apply PATH changes (IMPORTANT — required before using bun)
+source ~/.bashrc  # For Bash (default on most Linux systems)
+# source ~/.zshrc  # For Zsh (default on macOS)
+
+# Step 3: Verify Bun is installed
+bun --version
+
+# Step 4: Install the agent globally
 bun install -g @link-assistant/agent
 
-# Or install locally in your project
+# Step 5: Verify the agent is installed
+agent --version
+
+# Step 6: Run for a test
+echo "hi" | agent
+```
+
+### Quick install (if you already have Bun)
+
+```bash
+bun install -g @link-assistant/agent
+```
+
+### Local install (in your project)
+
+```bash
 bun add @link-assistant/agent
 ```
 
-After installation, the `agent` command will be available globally.
+After global installation, the `agent` command will be available in any terminal session.
+
+### Troubleshooting
+
+**`bun: command not found` after installation:**
+
+The Bun installer adds `~/.bun/bin` to your shell configuration file, but the change only takes effect after reloading it. Run:
+
+```bash
+source ~/.bashrc  # or source ~/.zshrc for Zsh
+```
+
+Or restart your terminal.
+
+**`agent: command not found` after `bun install -g`:**
+
+Global packages installed by Bun are placed in `~/.bun/bin`. If this directory is not in your PATH, the `agent` command won't be found. Ensure your shell configuration includes:
+
+```bash
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+```
+
+Then reload with `source ~/.bashrc` (or `~/.zshrc`), or restart your terminal.
+
+**Still not working?**
+
+Try reinstalling Bun from scratch:
+
+```bash
+rm -rf ~/.bun
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc
+bun install -g @link-assistant/agent
+agent --version
+```
 
 ## Uninstallation
 
