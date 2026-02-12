@@ -1277,9 +1277,40 @@ const GooglePlugin: AuthPlugin = {
      *
      * @see https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/code_assist/server.ts
      * @see https://github.com/link-assistant/agent/issues/100
+     * @see https://github.com/link-assistant/agent/issues/102
      */
-    const CLOUD_CODE_ENDPOINT = 'https://cloudcode-pa.googleapis.com';
-    const CLOUD_CODE_API_VERSION = 'v1internal';
+    const CLOUD_CODE_ENDPOINT =
+      process.env['CODE_ASSIST_ENDPOINT'] ||
+      'https://cloudcode-pa.googleapis.com';
+    const CLOUD_CODE_API_VERSION =
+      process.env['CODE_ASSIST_API_VERSION'] || 'v1internal';
+
+    /**
+     * Synthetic thought signature used for Gemini 3+ function calls.
+     * The Cloud Code API requires function call parts in the active loop
+     * to have a thoughtSignature. This bypass value is accepted by the API.
+     *
+     * @see https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/core/geminiChat.ts
+     */
+    const SYNTHETIC_THOUGHT_SIGNATURE = 'skip_thought_signature_validator';
+
+    /**
+     * Retry configuration for transient Cloud Code API errors.
+     * Matches patterns from Gemini CLI and opencode-gemini-auth plugin.
+     */
+    const MAX_RETRIES = 2;
+    const RETRY_BASE_DELAY_MS = 800;
+    const RETRY_MAX_DELAY_MS = 8000;
+
+    /**
+     * Cached project context from Cloud Code API onboarding.
+     * Persists across requests to avoid repeated loadCodeAssist calls.
+     * Keyed by refresh token to invalidate when auth changes.
+     */
+    let cachedProjectContext: {
+      projectId?: string;
+      refreshToken: string;
+    } | null = null;
 
     log.debug(() => ({
       message: 'google oauth loader initialized',
@@ -1288,12 +1319,186 @@ const GooglePlugin: AuthPlugin = {
     }));
 
     /**
+     * Ensure project context is available for Cloud Code API requests.
+     * Calls loadCodeAssist to check user tier and onboards if necessary.
+     * Results are cached to avoid repeated API calls.
+     *
+     * @see https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/code_assist/setup.ts
+     */
+    const ensureProjectContext = async (
+      accessToken: string,
+      refreshToken: string
+    ): Promise<string | undefined> => {
+      // Check for explicit project ID from environment
+      const envProjectId =
+        process.env['GOOGLE_CLOUD_PROJECT'] ||
+        process.env['GOOGLE_CLOUD_PROJECT_ID'];
+      if (envProjectId) {
+        return envProjectId;
+      }
+
+      // Return cached context if still valid (same refresh token)
+      if (
+        cachedProjectContext &&
+        cachedProjectContext.refreshToken === refreshToken
+      ) {
+        return cachedProjectContext.projectId;
+      }
+
+      // Call loadCodeAssist to discover project and tier
+      try {
+        const loadUrl = `${CLOUD_CODE_ENDPOINT}/${CLOUD_CODE_API_VERSION}:loadCodeAssist`;
+        const loadRes = await fetch(loadUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            metadata: {
+              ideType: 'IDE_UNSPECIFIED',
+              platform: 'PLATFORM_UNSPECIFIED',
+              pluginType: 'GEMINI',
+            },
+          }),
+        });
+
+        if (!loadRes.ok) {
+          const errorText = await loadRes.text().catch(() => 'unknown');
+          log.warn(() => ({
+            message: 'loadCodeAssist failed, proceeding without project',
+            status: loadRes.status,
+            error: errorText.substring(0, 200),
+          }));
+          // Cache empty result to avoid retrying on every request
+          cachedProjectContext = { refreshToken };
+          return undefined;
+        }
+
+        const loadData = await loadRes.json();
+        log.debug(() => ({
+          message: 'loadCodeAssist response',
+          hasCurrentTier: !!loadData.currentTier,
+          tierId: loadData.currentTier?.id,
+          hasProject: !!loadData.cloudaicompanionProject,
+        }));
+
+        // If user already has a tier and project, use it
+        if (loadData.currentTier && loadData.cloudaicompanionProject) {
+          cachedProjectContext = {
+            projectId: loadData.cloudaicompanionProject,
+            refreshToken,
+          };
+          log.info(() => ({
+            message: 'user already onboarded',
+            tier: loadData.currentTier.id,
+            projectId: loadData.cloudaicompanionProject,
+          }));
+          return loadData.cloudaicompanionProject;
+        }
+
+        // If user has a tier but no project, and paidTier exists
+        if (loadData.currentTier) {
+          cachedProjectContext = { refreshToken };
+          return undefined;
+        }
+
+        // User needs onboarding - find default tier
+        let targetTierId = 'free-tier';
+        for (const tier of loadData.allowedTiers || []) {
+          if (tier.isDefault) {
+            targetTierId = tier.id;
+            break;
+          }
+        }
+
+        log.info(() => ({
+          message: 'onboarding user to tier',
+          tier: targetTierId,
+        }));
+
+        // Call onboardUser
+        const onboardUrl = `${CLOUD_CODE_ENDPOINT}/${CLOUD_CODE_API_VERSION}:onboardUser`;
+        const onboardReq =
+          targetTierId === 'free-tier'
+            ? {
+                tierId: targetTierId,
+                metadata: {
+                  ideType: 'IDE_UNSPECIFIED',
+                  platform: 'PLATFORM_UNSPECIFIED',
+                  pluginType: 'GEMINI',
+                },
+              }
+            : {
+                tierId: targetTierId,
+                cloudaicompanionProject: envProjectId,
+                metadata: {
+                  ideType: 'IDE_UNSPECIFIED',
+                  platform: 'PLATFORM_UNSPECIFIED',
+                  pluginType: 'GEMINI',
+                  duetProject: envProjectId,
+                },
+              };
+
+        let lroRes = await fetch(onboardUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(onboardReq),
+        }).then((r) => r.json());
+
+        // Poll until onboarding completes (max 10 attempts)
+        let attempts = 0;
+        while (!lroRes.done && attempts < 10) {
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+          if (lroRes.name) {
+            // Poll operation status
+            const opUrl = `${CLOUD_CODE_ENDPOINT}/${CLOUD_CODE_API_VERSION}/${lroRes.name}`;
+            lroRes = await fetch(opUrl, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }).then((r) => r.json());
+          } else {
+            lroRes = await fetch(onboardUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify(onboardReq),
+            }).then((r) => r.json());
+          }
+          attempts++;
+        }
+
+        const projectId =
+          lroRes.response?.cloudaicompanionProject?.id || undefined;
+        cachedProjectContext = { projectId, refreshToken };
+
+        log.info(() => ({
+          message: 'user onboarding complete',
+          projectId,
+          attempts,
+        }));
+
+        return projectId;
+      } catch (error) {
+        log.warn(() => ({
+          message: 'project context setup failed, proceeding without project',
+          error: String(error),
+        }));
+        cachedProjectContext = { refreshToken };
+        return undefined;
+      }
+    };
+
+    /**
      * Check if we have a fallback API key available.
      * This allows trying API key authentication if Cloud Code API fails.
      * See: https://github.com/link-assistant/agent/issues/100
      */
     const getFallbackApiKey = (): string | undefined => {
-      // Check for API key in environment variables
       const envKey =
         process.env['GOOGLE_GENERATIVE_AI_API_KEY'] ||
         process.env['GEMINI_API_KEY'];
@@ -1309,19 +1514,11 @@ const GooglePlugin: AuthPlugin = {
         return envKey;
       }
 
-      log.debug(() => ({
-        message: 'no fallback api key available',
-        hint: 'Set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY for fallback',
-      }));
-
-      // Check for API key in auth storage (async, so we need to handle this differently)
-      // For now, we only support env var fallback synchronously
       return undefined;
     };
 
     /**
      * Detect if an error is a scope-related authentication error.
-     * This is triggered when OAuth token doesn't have the required scopes.
      */
     const isScopeError = (response: Response): boolean => {
       if (response.status !== 403) return false;
@@ -1342,14 +1539,46 @@ const GooglePlugin: AuthPlugin = {
     };
 
     /**
+     * Check if a response status is retryable (transient error).
+     */
+    const isRetryableStatus = (status: number): boolean => {
+      return status === 429 || status === 503;
+    };
+
+    /**
+     * Extract retry delay from response headers or error body.
+     */
+    const getRetryDelay = (
+      response: Response,
+      attempt: number
+    ): number => {
+      // Check Retry-After header
+      const retryAfter = response.headers.get('retry-after');
+      if (retryAfter) {
+        const seconds = parseInt(retryAfter, 10);
+        if (!isNaN(seconds)) return seconds * 1000;
+      }
+
+      // Check retry-after-ms header
+      const retryAfterMs = response.headers.get('retry-after-ms');
+      if (retryAfterMs) {
+        const ms = parseInt(retryAfterMs, 10);
+        if (!isNaN(ms)) return ms;
+      }
+
+      // Exponential backoff
+      const delay = Math.min(
+        RETRY_BASE_DELAY_MS * Math.pow(2, attempt),
+        RETRY_MAX_DELAY_MS
+      );
+      return delay;
+    };
+
+    /**
      * Transform a Generative Language API URL to Cloud Code API URL
      *
      * Input:  https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
      * Output: https://cloudcode-pa.googleapis.com/v1internal:generateContent
-     *
-     * The Cloud Code API uses a different URL structure:
-     * - Model is passed in request body, not URL path
-     * - Method is directly after version: /v1internal:methodName
      */
     const transformToCloudCodeUrl = (url: string): string | null => {
       try {
@@ -1360,18 +1589,16 @@ const GooglePlugin: AuthPlugin = {
               'url is not generativelanguage api, skipping cloud code transform',
             hostname: parsed.hostname,
           }));
-          return null; // Not a Generative Language API URL
+          return null;
         }
 
-        // Extract the method from the path
-        // Path format: /v1beta/models/gemini-2.0-flash:generateContent
         const pathMatch = parsed.pathname.match(/:(\w+)$/);
         if (!pathMatch) {
           log.debug(() => ({
             message: 'could not extract method from url path',
             pathname: parsed.pathname,
           }));
-          return null; // Can't determine method
+          return null;
         }
 
         const method = pathMatch[1];
@@ -1396,6 +1623,16 @@ const GooglePlugin: AuthPlugin = {
     };
 
     /**
+     * Check if a URL is for a streaming request.
+     * The AI SDK appends alt=sse for streaming or uses streamGenerateContent method.
+     */
+    const isStreamingRequest = (url: string): boolean => {
+      return (
+        url.includes('streamGenerateContent') || url.includes('alt=sse')
+      );
+    };
+
+    /**
      * Extract model name from Generative Language API URL
      *
      * Input:  https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
@@ -1404,7 +1641,6 @@ const GooglePlugin: AuthPlugin = {
     const extractModelFromUrl = (url: string): string | null => {
       try {
         const parsed = new URL(url);
-        // Path format: /v1beta/models/gemini-2.0-flash:generateContent
         const pathMatch = parsed.pathname.match(/\/models\/([^:]+):/);
         const model = pathMatch ? pathMatch[1] : null;
 
@@ -1426,34 +1662,98 @@ const GooglePlugin: AuthPlugin = {
     };
 
     /**
+     * Inject thoughtSignature into function call parts for Gemini 3+ models.
+     *
+     * The Cloud Code API requires function call parts in model turns within
+     * the active loop to have a `thoughtSignature` property. Without this,
+     * requests with function calls will fail with 400 errors.
+     *
+     * @see https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/core/geminiChat.ts
+     * @see https://github.com/sst/opencode/issues/4832
+     */
+    const injectThoughtSignatures = (request: any): any => {
+      if (!request?.contents || !Array.isArray(request.contents)) {
+        return request;
+      }
+
+      // Find the start of the active loop (last user turn with text)
+      let activeLoopStartIndex = -1;
+      for (let i = request.contents.length - 1; i >= 0; i--) {
+        const content = request.contents[i];
+        if (
+          content.role === 'user' &&
+          content.parts?.some((p: any) => p.text)
+        ) {
+          activeLoopStartIndex = i;
+          break;
+        }
+      }
+
+      if (activeLoopStartIndex === -1) {
+        return request;
+      }
+
+      // Inject thoughtSignature into the first functionCall in each model turn
+      const newContents = [...request.contents];
+      let modified = false;
+      for (let i = activeLoopStartIndex; i < newContents.length; i++) {
+        const content = newContents[i];
+        if (content.role === 'model' && content.parts) {
+          const newParts = [...content.parts];
+          for (let j = 0; j < newParts.length; j++) {
+            const part = newParts[j];
+            if (part.functionCall && !part.thoughtSignature) {
+              newParts[j] = {
+                ...part,
+                thoughtSignature: SYNTHETIC_THOUGHT_SIGNATURE,
+              };
+              newContents[i] = { ...content, parts: newParts };
+              modified = true;
+              break; // Only the first functionCall in each turn
+            }
+          }
+        }
+      }
+
+      if (modified) {
+        log.debug(() => ({
+          message: 'injected thoughtSignature into function call parts',
+        }));
+      }
+
+      return { ...request, contents: newContents };
+    };
+
+    /**
      * Transform request body for Cloud Code API
      *
      * The Cloud Code API expects requests in this format:
      * {
      *   model: "gemini-2.0-flash",
      *   project: "optional-project-id",
-     *   user_prompt_id: "optional-prompt-id",
      *   request: { contents: [...], generationConfig: {...}, ... }
      * }
-     *
-     * The standard AI SDK sends:
-     * { contents: [...], generationConfig: {...}, ... }
      */
-    const transformRequestBody = (body: string, model: string): string => {
+    const transformRequestBody = (
+      body: string,
+      model: string,
+      projectId?: string
+    ): string => {
       try {
-        const parsed = JSON.parse(body);
+        let parsed = JSON.parse(body);
 
-        // Get project ID from environment if available
-        const projectId =
-          process.env['GOOGLE_CLOUD_PROJECT'] ||
-          process.env['GOOGLE_CLOUD_PROJECT_ID'];
+        // Inject thoughtSignature for function calls
+        parsed = injectThoughtSignatures(parsed);
 
         // Wrap in Cloud Code API format
-        const cloudCodeRequest = {
+        const cloudCodeRequest: Record<string, unknown> = {
           model,
-          ...(projectId && { project: projectId }),
           request: parsed,
         };
+
+        if (projectId) {
+          cloudCodeRequest.project = projectId;
+        }
 
         log.debug(() => ({
           message: 'transformed request body for cloud code api',
@@ -1469,7 +1769,7 @@ const GooglePlugin: AuthPlugin = {
           message: 'failed to transform request body, using original',
           error: String(error),
         }));
-        return body; // Return original if parsing fails
+        return body;
       }
     };
 
@@ -1495,10 +1795,7 @@ const GooglePlugin: AuthPlugin = {
         isStreaming,
       }));
 
-      // For streaming responses, we need to transform each chunk
       if (isStreaming) {
-        // The Cloud Code API returns SSE with data: { response: {...} } format
-        // We need to transform each chunk to unwrap the response
         const reader = response.body?.getReader();
         if (!reader) {
           log.debug(() => ({
@@ -1528,12 +1825,10 @@ const GooglePlugin: AuthPlugin = {
                 const text = decoder.decode(value, { stream: true });
                 chunkCount++;
 
-                // Split by SSE event boundaries
                 const events = text.split('\n\n');
                 for (const event of events) {
                   if (!event.trim()) continue;
 
-                  // Check if this is a data line
                   if (event.startsWith('data: ')) {
                     try {
                       const jsonStr = event.slice(6).trim();
@@ -1543,8 +1838,6 @@ const GooglePlugin: AuthPlugin = {
                       }
 
                       const parsed = JSON.parse(jsonStr);
-
-                      // Unwrap Cloud Code response format if present
                       const unwrapped = parsed.response || parsed;
                       controller.enqueue(
                         encoder.encode(
@@ -1552,11 +1845,9 @@ const GooglePlugin: AuthPlugin = {
                         )
                       );
                     } catch {
-                      // If parsing fails, pass through as-is
                       controller.enqueue(encoder.encode(event + '\n\n'));
                     }
                   } else {
-                    // Non-data lines (like event type), pass through
                     controller.enqueue(encoder.encode(event + '\n\n'));
                   }
                 }
@@ -1634,6 +1925,10 @@ const GooglePlugin: AuthPlugin = {
               ? 'no access token'
               : 'token expiring soon',
           }));
+
+          // Invalidate project cache when token changes
+          cachedProjectContext = null;
+
           const response = await fetch(GOOGLE_TOKEN_URL, {
             method: 'POST',
             headers: {
@@ -1698,50 +1993,94 @@ const GooglePlugin: AuthPlugin = {
 
         // If this is a Generative Language API request, route through Cloud Code API
         if (cloudCodeUrl && model) {
+          // Ensure project context is available (onboard if needed)
+          const projectId = await ensureProjectContext(
+            currentAuth.access,
+            currentAuth.refresh
+          );
+
           log.info(() => ({
             message: 'routing google oauth request through cloud code api',
             originalUrl: originalUrl.substring(0, 100) + '...',
             cloudCodeUrl,
             model,
+            projectId: projectId || '(none)',
           }));
 
           // Transform request body to Cloud Code format
           let body = init?.body;
           if (typeof body === 'string') {
-            body = transformRequestBody(body, model);
+            body = transformRequestBody(body, model, projectId);
           }
 
-          // Make request to Cloud Code API with Bearer token
+          // Build Cloud Code API URL with alt=sse for streaming
+          let finalCloudCodeUrl = cloudCodeUrl;
+          if (isStreamingRequest(originalUrl)) {
+            const separator = finalCloudCodeUrl.includes('?') ? '&' : '?';
+            finalCloudCodeUrl = `${finalCloudCodeUrl}${separator}alt=sse`;
+          }
+
+          // Make request to Cloud Code API with Bearer token and retry logic
           const headers: Record<string, string> = {
             ...(init?.headers as Record<string, string>),
             Authorization: `Bearer ${currentAuth.access}`,
-            'x-goog-api-client': 'agent/0.6.3',
+            'x-goog-api-client': `agent/${process.env['npm_package_version'] || '0.7.0'}`,
           };
-          // Remove any API key header if present since we're using OAuth
           delete headers['x-goog-api-key'];
 
           log.debug(() => ({
             message: 'sending request to cloud code api',
-            url: cloudCodeUrl,
+            url: finalCloudCodeUrl,
             hasBody: !!body,
           }));
 
-          const cloudCodeResponse = await fetch(cloudCodeUrl, {
-            ...init,
-            body,
-            headers,
-          });
+          // Retry loop for transient errors
+          let lastResponse: Response | null = null;
+          for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            if (attempt > 0) {
+              const delay = getRetryDelay(lastResponse!, attempt - 1);
+              log.info(() => ({
+                message: 'retrying cloud code api request',
+                attempt,
+                delayMs: delay,
+                previousStatus: lastResponse?.status,
+              }));
+              await new Promise((resolve) => setTimeout(resolve, delay));
+            }
 
-          log.debug(() => ({
-            message: 'cloud code api response received',
-            status: cloudCodeResponse.status,
-            statusText: cloudCodeResponse.statusText,
-            contentType: cloudCodeResponse.headers.get('content-type'),
-          }));
+            const cloudCodeResponse = await fetch(finalCloudCodeUrl, {
+              ...init,
+              body,
+              headers,
+            });
 
-          // Check for errors and handle fallback
-          if (!cloudCodeResponse.ok) {
-            // Try to get error details for logging
+            log.debug(() => ({
+              message: 'cloud code api response received',
+              status: cloudCodeResponse.status,
+              statusText: cloudCodeResponse.statusText,
+              contentType: cloudCodeResponse.headers.get('content-type'),
+              attempt,
+            }));
+
+            // Success - transform and return
+            if (cloudCodeResponse.ok) {
+              log.debug(() => ({
+                message:
+                  'cloud code api request successful, transforming response',
+              }));
+              return transformResponseBody(cloudCodeResponse);
+            }
+
+            // Retryable error
+            if (
+              isRetryableStatus(cloudCodeResponse.status) &&
+              attempt < MAX_RETRIES
+            ) {
+              lastResponse = cloudCodeResponse;
+              continue;
+            }
+
+            // Non-retryable error or max retries reached
             const errorBody = await cloudCodeResponse
               .clone()
               .text()
@@ -1751,6 +2090,7 @@ const GooglePlugin: AuthPlugin = {
               status: cloudCodeResponse.status,
               statusText: cloudCodeResponse.statusText,
               errorBody: errorBody.substring(0, 500),
+              attempt,
             }));
 
             const fallbackApiKey = getFallbackApiKey();
@@ -1762,17 +2102,11 @@ const GooglePlugin: AuthPlugin = {
                 fallbackTarget: originalUrl.substring(0, 100),
               }));
 
-              // Fall back to standard API with API key
               const apiKeyHeaders: Record<string, string> = {
                 ...(init?.headers as Record<string, string>),
                 'x-goog-api-key': fallbackApiKey,
               };
               delete apiKeyHeaders['Authorization'];
-
-              log.debug(() => ({
-                message: 'sending fallback request with api key',
-                url: originalUrl.substring(0, 100),
-              }));
 
               return fetch(originalUrl, {
                 ...init,
@@ -1781,21 +2115,17 @@ const GooglePlugin: AuthPlugin = {
             }
 
             log.error(() => ({
-              message: 'cloud code api error and no api key fallback available',
+              message:
+                'cloud code api error and no api key fallback available',
               status: cloudCodeResponse.status,
               hint: 'Set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY environment variable for fallback',
             }));
 
-            // No fallback available, return the error response
             return cloudCodeResponse;
           }
 
-          log.debug(() => ({
-            message: 'cloud code api request successful, transforming response',
-          }));
-
-          // Transform response back to standard format
-          return transformResponseBody(cloudCodeResponse);
+          // Should not reach here, but return last response as safety net
+          return lastResponse!;
         }
 
         // Not a Generative Language API request, use standard OAuth flow

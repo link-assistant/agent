@@ -19,8 +19,11 @@ import { Auth } from '../auth';
 const log = Log.create({ service: 'google-cloudcode' });
 
 // Cloud Code API endpoints (from gemini-cli)
-const CODE_ASSIST_ENDPOINT = 'https://cloudcode-pa.googleapis.com';
-const CODE_ASSIST_API_VERSION = 'v1internal';
+// Configurable via environment variables for testing or alternative endpoints
+const CODE_ASSIST_ENDPOINT =
+  process.env['CODE_ASSIST_ENDPOINT'] || 'https://cloudcode-pa.googleapis.com';
+const CODE_ASSIST_API_VERSION =
+  process.env['CODE_ASSIST_API_VERSION'] || 'v1internal';
 
 // Google OAuth endpoints
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -216,14 +219,16 @@ export class CloudCodeClient {
   ): Promise<T | Response> {
     await this.ensureValidToken();
 
-    const url = `${CODE_ASSIST_ENDPOINT}/${CODE_ASSIST_API_VERSION}:${method}`;
+    // Add alt=sse query param for streaming requests (matches Gemini CLI behavior)
+    const baseUrl = `${CODE_ASSIST_ENDPOINT}/${CODE_ASSIST_API_VERSION}:${method}`;
+    const url = options.stream ? `${baseUrl}?alt=sse` : baseUrl;
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.accessToken}`,
-        'x-goog-api-client': 'agent/0.6.3',
+        'x-goog-api-client': `agent/${process.env['npm_package_version'] || '0.7.0'}`,
       },
       body: JSON.stringify(body),
     });
