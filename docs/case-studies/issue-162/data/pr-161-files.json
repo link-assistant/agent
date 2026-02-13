@@ -1,0 +1,33 @@
+{
+  "pr_number": 161,
+  "title": "Fix: Add --generate-title flag and enhanced retry logic for rate limits",
+  "merged_at": "2026-02-13T22:05:37Z",
+  "merge_commit": "75b96f60aabffce0614492e806f713cf822075fc",
+  "files_changed": [
+    {
+      "filename": "README.md",
+      "in_path_filter": false,
+      "filter_match": null
+    },
+    {
+      "filename": "docs/case-studies/issue-157/case-study-analysis.md",
+      "in_path_filter": false,
+      "filter_match": null
+    },
+    {
+      "filename": "docs/case-studies/issue-157/original-log.txt",
+      "in_path_filter": false,
+      "filter_match": null
+    }
+  ],
+  "path_filters": {
+    "defined_in": ".github/workflows/js.yml",
+    "patterns": [
+      "js/**",
+      "scripts/**",
+      ".github/workflows/js.yml"
+    ]
+  },
+  "workflow_triggered": false,
+  "reason": "No files matched the path filter patterns"
+}

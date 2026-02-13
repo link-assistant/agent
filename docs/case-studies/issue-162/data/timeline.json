@@ -1,0 +1,71 @@
+{
+  "title": "PR #161 Did Not Generate Release - Timeline",
+  "issue": "#162",
+  "related_pr": "#161",
+  "generated_at": "2026-02-13T22:30:00Z",
+  "events": [
+    {
+      "time": "2026-02-13T21:20:28Z",
+      "event": "PR #158 merged",
+      "sha": "23bcfb5e5f2e3eeae57fb59a4ad45938421cb988",
+      "details": "Feature implementation with changeset for --generate-title flag and retry logic"
+    },
+    {
+      "time": "2026-02-13T21:20:31Z",
+      "event": "Workflow run started",
+      "run_id": 22003230553,
+      "details": "JS CI/CD Pipeline triggered by PR #158 merge"
+    },
+    {
+      "time": "2026-02-13T21:22:33Z",
+      "event": "v0.11.0 released",
+      "sha": "2208d0d",
+      "details": "Release for PR #158 changes - includes --generate-title flag and retry logic"
+    },
+    {
+      "time": "2026-02-13T21:51:28Z",
+      "event": "PR #160 merged",
+      "sha": "0475cc8a0ceda5fba55ef5ab5a9611747c4d7790",
+      "details": "Kilo Gateway provider implementation"
+    },
+    {
+      "time": "2026-02-13T21:51:41Z",
+      "event": "Workflow run started",
+      "run_id": 22004080088,
+      "details": "JS CI/CD Pipeline triggered by PR #160 merge"
+    },
+    {
+      "time": "2026-02-13T21:53:42Z",
+      "event": "v0.12.0 released",
+      "sha": "07a8998",
+      "details": "Release for PR #160 changes - Kilo Gateway provider"
+    },
+    {
+      "time": "2026-02-13T22:05:37Z",
+      "event": "PR #161 merged",
+      "sha": "75b96f60aabffce0614492e806f713cf822075fc",
+      "details": "Documentation-only changes (README.md and case study files)",
+      "files_changed": [
+        "README.md",
+        "docs/case-studies/issue-157/case-study-analysis.md",
+        "docs/case-studies/issue-157/original-log.txt"
+      ]
+    },
+    {
+      "time": null,
+      "event": "NO workflow triggered",
+      "details": "Path filters excluded docs-only changes from triggering workflow"
+    },
+    {
+      "time": null,
+      "event": "NO release published",
+      "details": "Expected behavior - no code changes, no changeset, no release needed"
+    }
+  ],
+  "root_cause": {
+    "type": "path_filter_exclusion",
+    "description": "Workflow path filters only include js/**, scripts/**, and .github/workflows/js.yml. PR #161 only modified README.md and docs/** which are not in the filter list.",
+    "is_bug": false,
+    "justification": "This is expected behavior. Documentation-only PRs should not trigger releases."
+  }
+}

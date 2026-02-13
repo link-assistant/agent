@@ -1,0 +1,79 @@
+{
+  "pr_number": 158,
+  "title": "feat: Add --generate-title flag and enhanced retry logic",
+  "merged_at": "2026-02-13T21:20:28Z",
+  "merge_commit": "23bcfb5e5f2e3eeae57fb59a4ad45938421cb988",
+  "files_changed": [
+    {
+      "filename": "docs/case-studies/issue-157/README.md",
+      "in_path_filter": false,
+      "filter_match": null
+    },
+    {
+      "filename": "docs/case-studies/issue-157/solution-draft-log.txt",
+      "in_path_filter": false,
+      "filter_match": null
+    },
+    {
+      "filename": "js/.changeset/enhanced-retry-and-title-flag.md",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/CHANGELOG.md",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/package.json",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/src/flag/flag.ts",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/src/index.js",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/src/session/processor.ts",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/src/session/prompt.ts",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/src/session/retry.ts",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/tests/generate-title.test.js",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    },
+    {
+      "filename": "js/tests/retry-state.test.js",
+      "in_path_filter": true,
+      "filter_match": "js/**"
+    }
+  ],
+  "path_filters": {
+    "defined_in": ".github/workflows/js.yml",
+    "patterns": [
+      "js/**",
+      "scripts/**",
+      ".github/workflows/js.yml"
+    ]
+  },
+  "workflow_triggered": true,
+  "reason": "Multiple files matched js/** pattern",
+  "release_version": "0.11.0"
+}

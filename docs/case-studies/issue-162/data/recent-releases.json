@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-02-13T22:30:00Z",
+  "releases": [
+    {
+      "tag": "js-v0.12.0",
+      "name": "[js] 0.12.0",
+      "created_at": "2026-02-13T21:53:42Z",
+      "related_pr": 160,
+      "description": "Add Kilo Gateway provider with free models support",
+      "commit_sha": "07a8998"
+    },
+    {
+      "tag": "js-v0.11.0",
+      "name": "[js] 0.11.0",
+      "created_at": "2026-02-13T21:22:33Z",
+      "related_pr": 158,
+      "description": "Add --generate-title flag and enhanced retry logic with exponential backoff",
+      "commit_sha": "2208d0d"
+    },
+    {
+      "tag": "js-v0.10.1",
+      "name": "[js] 0.10.1",
+      "created_at": "2026-02-13T12:23:29Z",
+      "commit_sha": "97bf07d"
+    },
+    {
+      "tag": "js-v0.10.0",
+      "name": "[js] 0.10.0",
+      "created_at": "2026-02-13T12:16:09Z",
+      "commit_sha": "7d372dd"
+    },
+    {
+      "tag": "js-v0.9.0",
+      "name": "[js] 0.9.0",
+      "created_at": "2026-02-13T11:54:39Z",
+      "commit_sha": "fef7459"
+    }
+  ],
+  "note": "PR #161 was merged AFTER v0.12.0 release (22:05:37Z vs 21:53:42Z). No release was expected since it only contained documentation changes."
+}
