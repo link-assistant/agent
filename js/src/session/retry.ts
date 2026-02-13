@@ -13,6 +13,12 @@ export namespace SessionRetry {
   export const SOCKET_ERROR_INITIAL_DELAY = 1000; // 1 second
   export const SOCKET_ERROR_BACKOFF_FACTOR = 2;
 
+  // Timeout error retry configuration
+  // When API requests time out (AbortSignal.timeout), retry with increasing intervals
+  // See: https://github.com/link-assistant/agent/issues/142
+  export const TIMEOUT_MAX_RETRIES = 3;
+  export const TIMEOUT_DELAYS = [30_000, 60_000, 120_000]; // 30s, 60s, 120s
+
   export async function sleep(ms: number, signal: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(resolve, ms);
@@ -70,5 +76,15 @@ export namespace SessionRetry {
       SOCKET_ERROR_INITIAL_DELAY *
       Math.pow(SOCKET_ERROR_BACKOFF_FACTOR, attempt - 1)
     );
+  }
+
+  /**
+   * Calculate delay for timeout error retries.
+   * Uses fixed intervals: 30s, 60s, 120s.
+   * See: https://github.com/link-assistant/agent/issues/142
+   */
+  export function timeoutDelay(attempt: number): number {
+    const index = Math.min(attempt - 1, TIMEOUT_DELAYS.length - 1);
+    return TIMEOUT_DELAYS[index];
   }
 }

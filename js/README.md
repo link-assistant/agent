@@ -20,11 +20,11 @@
 
 > This is the JavaScript/Bun implementation. See also the [Rust implementation](../rust/README.md).
 
-This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/grok-code` mode with:
+This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/kimi-k2.5-free` mode with:
 
-- ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/grok-code`
+- ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/kimi-k2.5-free`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
-- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Grok Code Fast 1, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
+- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Kimi K2.5, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
 - ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
 - ✅ **Full Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
@@ -46,18 +46,77 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 
 ## Installation
 
+### Step-by-step (recommended for first-time users)
+
 ```bash
-# Install Bun first if you haven't already
+# Step 1: Install Bun (skip if already installed)
 curl -fsSL https://bun.sh/install | bash
 
-# Install the package globally
+# Step 2: Apply PATH changes (IMPORTANT — required before using bun)
+source ~/.bashrc  # For Bash (default on most Linux systems)
+# source ~/.zshrc  # For Zsh (default on macOS)
+
+# Step 3: Verify Bun is installed
+bun --version
+
+# Step 4: Install the agent globally
 bun install -g @link-assistant/agent
 
-# Or install locally in your project
+# Step 5: Verify the agent is installed
+agent --version
+
+# Step 6: Run for a test
+echo "hi" | agent
+```
+
+### Quick install (if you already have Bun)
+
+```bash
+bun install -g @link-assistant/agent
+```
+
+### Local install (in your project)
+
+```bash
 bun add @link-assistant/agent
 ```
 
-After installation, the `agent` command will be available globally.
+After global installation, the `agent` command will be available in any terminal session.
+
+### Troubleshooting
+
+**`bun: command not found` after installation:**
+
+The Bun installer adds `~/.bun/bin` to your shell configuration file, but the change only takes effect after reloading it. Run:
+
+```bash
+source ~/.bashrc  # or source ~/.zshrc for Zsh
+```
+
+Or restart your terminal.
+
+**`agent: command not found` after `bun install -g`:**
+
+Global packages installed by Bun are placed in `~/.bun/bin`. If this directory is not in your PATH, the `agent` command won't be found. Ensure your shell configuration includes:
+
+```bash
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+```
+
+Then reload with `source ~/.bashrc` (or `~/.zshrc`), or restart your terminal.
+
+**Still not working?**
+
+Try reinstalling Bun from scratch:
+
+```bash
+rm -rf ~/.bun
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc
+bun install -g @link-assistant/agent
+agent --version
+```
 
 ## Uninstallation
 
@@ -110,7 +169,7 @@ echo '{"message":"hi"}' | agent
 **With custom model:**
 
 ```bash
-echo "hi" | agent --model opencode/grok-code
+echo "hi" | agent --model opencode/kimi-k2.5-free
 ```
 
 ### More Examples
@@ -131,12 +190,14 @@ echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"ls -
 **Using different models:**
 
 ```bash
-# Default model (free Grok Code Fast 1)
+# Default model (free Kimi K2.5)
 echo "hi" | agent
 
-# Other free models
-echo "hi" | agent --model opencode/big-pickle
+# Other free models (in order of recommendation)
+echo "hi" | agent --model opencode/minimax-m2.1-free
 echo "hi" | agent --model opencode/gpt-5-nano
+echo "hi" | agent --model opencode/glm-4.7-free
+echo "hi" | agent --model opencode/big-pickle
 
 # Premium models (OpenCode Zen subscription)
 echo "hi" | agent --model opencode/sonnet        # Claude Sonnet 4.5
@@ -220,7 +281,7 @@ agent [options]
 
 Options:
   --model                        Model to use in format providerID/modelID
-                                 Default: opencode/grok-code
+                                 Default: opencode/kimi-k2.5-free
   --json-standard                JSON output format standard
                                  Choices: "opencode" (default), "claude" (experimental)
   --use-existing-claude-oauth    Use existing Claude OAuth credentials

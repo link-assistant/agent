@@ -1,5 +1,125 @@
 # @link-assistant/agent
 
+## 0.9.0
+
+### Minor Changes
+
+- feat(google): Improve Google AI subscription support via Cloud Code API
+
+  Implements proper Google AI subscription authentication with the following improvements:
+  - Add user onboarding flow (loadCodeAssist + onboardUser) for automatic tier provisioning
+  - Add alt=sse query parameter for streaming requests (matching Gemini CLI behavior)
+  - Add thoughtSignature injection for Gemini 3+ function calls to prevent 400 errors
+  - Add retry logic with exponential backoff for transient 429/503 errors
+  - Add project context caching to avoid repeated onboarding API calls
+  - Support configurable Cloud Code API endpoint via CODE_ASSIST_ENDPOINT env var
+  - Use dynamic package version in x-goog-api-client header
+  - Add comprehensive case study analysis for issue #102
+
+  These changes align the implementation with the official Gemini CLI and opencode-gemini-auth plugin,
+  enabling reliable subscription-based access without requiring API keys.
+
+## 0.8.22
+
+### Patch Changes
+
+- a40b7fa: Changed default model from opencode/gpt-5-nano to opencode/kimi-k2.5-free
+
+  Updated free models list in order of recommendation:
+  1. kimi-k2.5-free (best recommended - new default)
+  2. minimax-m2.1-free
+  3. gpt-5-nano
+  4. glm-4.7-free
+  5. big-pickle
+
+  Added deprecation warning for grok-code model which is no longer included as a free model in OpenCode Zen subscription.
+
+## 0.8.21
+
+### Patch Changes
+
+- 06a17f0: fix: make toModelMessage async for AI SDK 6.0 compatibility
+
+  The AI SDK 6.0 changed convertToModelMessages() from synchronous to asynchronous,
+  which caused "Spread syntax requires ...iterable[Symbol.iterator] to be a function"
+  errors when spreading the result.
+
+  Changes:
+  - Make MessageV2.toModelMessage async and await convertToModelMessages
+  - Update all callers in prompt.ts, compaction.ts, summary.ts to await
+
+  Fixes #155
+
+## 0.8.20
+
+### Patch Changes
+
+- d03e32f: Fix process name to show as 'agent' instead of 'bun' in top/ps using platform-specific system calls
+
+  The previous fix using process.title/process.argv0 did not work in Bun because Bun does not implement the process.title setter. This fix uses Bun's FFI to call prctl(PR_SET_NAME) on Linux and pthread_setname_np on macOS, which correctly sets the kernel-level process name visible in top, ps, and htop.
+
+## 0.8.19
+
+### Patch Changes
+
+- 5ce1b0a: Fix crash when providers return undefined usage data. Handle AI SDK TypeError for input_tokens gracefully and upgrade AI SDK to v6.0.1 which includes upstream fix. Also ensure unhandled rejections exit with code 1 instead of code 0.
+
+## 0.8.18
+
+### Patch Changes
+
+- 27834ef: Improve ProviderModelNotFoundError with helpful suggestions for OpenRouter models when provider is not found
+
+## 0.8.17
+
+### Patch Changes
+
+- c0b2032: Fix ZodError in session processor when tool execution fails
+  - Change tool error status from 'failed' to 'error' in processor.ts to match ToolStateError Zod schema
+  - Fix cleanup loop to use 'error' status consistently with the discriminated union definition
+  - Update event-handler.js to check for 'error' status instead of 'failed'
+  - Add case study analysis for issue #149 documenting root cause and fix
+
+## 0.8.16
+
+### Patch Changes
+
+- dc1d090: Improve installation instructions with step-by-step guide and troubleshooting
+  - Add numbered step-by-step installation instructions for JavaScript/Bun version
+  - Add explicit `source ~/.bashrc` step to reload shell configuration after Bun installation
+  - Add verification commands (`bun --version`, `agent --version`) to confirm successful installation
+  - Add comprehensive troubleshooting section covering common installation issues
+  - Add Rust installation prerequisites and verification steps
+  - Add case study documentation analyzing installation UX improvements (issue #136)
+
+## 0.8.15
+
+### Patch Changes
+
+- 10b2888: Add stream timeout to prevent agent CLI from hanging indefinitely when LLM API connections stall. Configurable via AGENT_STREAM_CHUNK_TIMEOUT_MS (default: 2min) and AGENT_STREAM_STEP_TIMEOUT_MS (default: 10min) environment variables.
+
+## 0.8.14
+
+### Patch Changes
+
+- 5a9f0de: Fix process name to show as 'agent' instead of 'bun' in process monitoring tools
+
+  This change sets both process.title and process.argv0 to 'agent' at CLI startup,
+  ensuring the process appears as 'agent' instead of 'bun' in monitoring tools like top and ps.
+
+## 0.8.13
+
+### Patch Changes
+
+- 7cff63f: Add automatic retry for timeout errors with 30s, 60s, 120s intervals
+
+  Previously, when an API request timed out (DOMException TimeoutError from AbortSignal.timeout()),
+  the agent would fail immediately. Now, timeout errors are automatically retried up to 3 times
+  with increasing delays of 30, 60, and 120 seconds.
+
+  This handles all retryable HTTP statuses (408, 409, 429, 500+) via existing APIError retry logic,
+  plus the new TimeoutError for connection-level timeouts.
+
 ## 0.8.11
 
 ### Patch Changes

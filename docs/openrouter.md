@@ -14,6 +14,28 @@
    echo "hi" | agent --model openrouter/anthropic/claude-sonnet-4
    ```
 
+> **Important**: Always use the full model format `openrouter/<vendor>/<model>`. See [Common Mistakes](#common-mistakes) section below for details.
+
+## Common Mistakes
+
+### Missing the `openrouter/` prefix
+
+The most common error is omitting the `openrouter/` prefix from the model ID:
+
+```bash
+# ❌ Wrong - will cause ProviderModelNotFoundError
+agent --model z-ai/glm-4.7
+agent --model anthropic/claude-sonnet-4
+
+# ✅ Correct - includes openrouter/ prefix
+agent --model openrouter/z-ai/glm-4.7
+agent --model openrouter/anthropic/claude-sonnet-4
+```
+
+**Why this happens**: The agent parses the model string by the first `/` as the provider. So `z-ai/glm-4.7` is interpreted as provider=`z-ai`, model=`glm-4.7`. Since "z-ai" isn't a registered provider, you get an error.
+
+**The fix**: Always prefix OpenRouter models with `openrouter/`.
+
 ## Why OpenRouter?
 
 OpenRouter offers several advantages:
@@ -247,9 +269,24 @@ These headers help OpenRouter track usage and may be required for some features.
 - Ensure `OPENROUTER_API_KEY` is set correctly
 - Try `agent auth logout` and `agent auth login` to re-authenticate
 
-### "Model not found"
+### "ProviderModelNotFoundError" or "Model not found"
 
-- Check the model ID format: `openrouter/<provider>/<model>`
+**Most common cause**: Missing the `openrouter/` prefix.
+
+```bash
+# Wrong - will give ProviderModelNotFoundError
+agent --model z-ai/glm-4.7
+agent --model anthropic/claude-sonnet-4
+
+# Correct - includes openrouter/ prefix
+agent --model openrouter/z-ai/glm-4.7
+agent --model openrouter/anthropic/claude-sonnet-4
+```
+
+**Note**: When you omit the `openrouter/` prefix, the agent interprets the first part of the model ID as a provider name. For example, `z-ai/glm-4.7` is parsed as provider=`z-ai` and model=`glm-4.7`, but there's no provider called "z-ai" - the provider is "openrouter".
+
+Other solutions:
+
 - Verify the model is available at [openrouter.ai/models](https://openrouter.ai/models)
 - Some models may require additional verification or payment
 

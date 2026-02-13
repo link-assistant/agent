@@ -726,7 +726,7 @@ describe('Session.getUsage() - nested token extraction (issue #127)', () => {
   };
 
   test('extracts cacheRead from inputTokens object when cachedInputTokens is undefined', () => {
-    // This is the exact scenario from issue #127 with opencode/grok-code
+    // This is the exact scenario from issue #127 with opencode/kimi-k2.5-free
     // cachedInputTokens is undefined, but cacheRead is nested inside inputTokens
     const result = Session.getUsage({
       model: mockModel as any,

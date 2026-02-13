@@ -40,12 +40,22 @@
 
 ## Requirements
 
-- Rust 1.70 or newer
-- Cargo (Rust's package manager)
+- [Rust](https://www.rust-lang.org/tools/install) 1.70 or newer (includes Cargo, Rust's package manager)
 
 ## Installation
 
-### From Source
+### Step 1: Install Rust (skip if already installed)
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.bashrc  # Or restart your terminal (use ~/.zshrc for Zsh)
+
+# Verify Rust is installed
+rustc --version
+cargo --version
+```
+
+### Step 2: Build from source
 
 ```bash
 cd rust
@@ -94,7 +104,7 @@ agent [OPTIONS]
 
 Options:
       --model <MODEL>                    Model to use in format providerID/modelID
-                                         [default: opencode/grok-code]
+                                         [default: opencode/kimi-k2.5-free]
       --json-standard <JSON_STANDARD>    JSON output format standard
                                          [possible values: opencode, claude]
                                          [default: opencode]

@@ -188,7 +188,7 @@ export namespace SessionProcessor {
                     await Session.updatePart({
                       ...match,
                       state: {
-                        status: 'failed',
+                        status: 'error',
                         input: value.input,
                         error: (value.error as any).toString(),
                         metadata: undefined,
@@ -219,9 +219,17 @@ export namespace SessionProcessor {
                   break;
 
                 case 'finish-step':
+                  // Safely handle missing or undefined usage data
+                  // Some providers (e.g., OpenCode with Kimi K2.5) may return incomplete usage
+                  // See: https://github.com/link-assistant/agent/issues/152
+                  const safeUsage = value.usage ?? {
+                    inputTokens: 0,
+                    outputTokens: 0,
+                    totalTokens: 0,
+                  };
                   const usage = Session.getUsage({
                     model: input.model,
-                    usage: value.usage,
+                    usage: safeUsage,
                     metadata: value.providerMetadata,
                   });
                   // Use toFinishReason to safely convert object/string finishReason to string
@@ -322,25 +330,63 @@ export namespace SessionProcessor {
             }
           } catch (e) {
             log.error(() => ({ message: 'process', error: e }));
+
+            // Check for AI SDK usage-related TypeError (input_tokens undefined)
+            // This happens when providers return incomplete usage data
+            // See: https://github.com/link-assistant/agent/issues/152
+            if (
+              e instanceof TypeError &&
+              (e.message.includes('input_tokens') ||
+                e.message.includes('output_tokens') ||
+                e.message.includes("reading 'input_tokens'") ||
+                e.message.includes("reading 'output_tokens'"))
+            ) {
+              log.warn(() => ({
+                message:
+                  'Provider returned invalid usage data, continuing with zero usage',
+                errorMessage: e.message,
+                providerID: input.providerID,
+              }));
+              // Set default token values to prevent crash
+              input.assistantMessage.tokens = {
+                input: 0,
+                output: 0,
+                reasoning: 0,
+                cache: { read: 0, write: 0 },
+              };
+              // Continue processing instead of failing
+              continue;
+            }
+
             const error = MessageV2.fromError(e, {
               providerID: input.providerID,
             });
 
-            // Check if error is retryable (APIError or SocketConnectionError)
+            // Check if error is retryable (APIError, SocketConnectionError, or TimeoutError)
             const isRetryableAPIError =
               error?.name === 'APIError' && error.data.isRetryable;
             const isRetryableSocketError =
               error?.name === 'SocketConnectionError' &&
               error.data.isRetryable &&
               attempt < SessionRetry.SOCKET_ERROR_MAX_RETRIES;
+            const isRetryableTimeoutError =
+              error?.name === 'TimeoutError' &&
+              error.data.isRetryable &&
+              attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
 
-            if (isRetryableAPIError || isRetryableSocketError) {
+            if (
+              isRetryableAPIError ||
+              isRetryableSocketError ||
+              isRetryableTimeoutError
+            ) {
               attempt++;
-              // Use socket-specific delay for socket errors
+              // Use error-specific delay calculation
               const delay =
                 error?.name === 'SocketConnectionError'
                   ? SessionRetry.socketErrorDelay(attempt)
-                  : SessionRetry.delay(error, attempt);
+                  : error?.name === 'TimeoutError'
+                    ? SessionRetry.timeoutDelay(attempt)
+                    : SessionRetry.delay(error, attempt);
               log.info(() => ({
                 message: 'retrying',
                 errorType: error?.name,
@@ -367,13 +413,13 @@ export namespace SessionProcessor {
             if (
               part.type === 'tool' &&
               part.state.status !== 'completed' &&
-              part.state.status !== 'failed'
+              part.state.status !== 'error'
             ) {
               await Session.updatePart({
                 ...part,
                 state: {
                   ...part.state,
-                  status: 'failed',
+                  status: 'error',
                   error: 'Tool execution aborted',
                   time: {
                     start: Date.now(),

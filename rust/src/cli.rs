@@ -18,7 +18,7 @@ use crate::tool::{ToolContext, ToolRegistry};
 #[command(author, version, about, long_about = None)]
 pub struct Args {
     /// Model to use in format providerID/modelID
-    #[arg(long, default_value = "opencode/grok-code")]
+    #[arg(long, default_value = "opencode/kimi-k2.5-free")]
     pub model: String,
 
     /// JSON output format standard
@@ -291,7 +291,7 @@ mod tests {
     #[test]
     fn test_args_defaults() {
         let args = Args::parse_from(["agent"]);
-        assert_eq!(args.model, "opencode/grok-code");
+        assert_eq!(args.model, "opencode/kimi-k2.5-free");
         assert_eq!(args.json_standard, "opencode");
         assert!(!args.verbose);
         assert!(!args.dry_run);

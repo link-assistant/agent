@@ -909,7 +909,23 @@ export namespace Provider {
     log.info(() => ({ message: 'getModel', providerID, modelID }));
 
     const provider = s.providers[providerID];
-    if (!provider) throw new ModelNotFoundError({ providerID, modelID });
+    if (!provider) {
+      // Check if this model ID might exist in another provider (e.g., OpenRouter)
+      // This helps users who use formats like "z-ai/glm-4.7" instead of "openrouter/z-ai/glm-4.7"
+      const fullModelKey = `${providerID}/${modelID}`;
+      let suggestion: string | undefined;
+
+      for (const [knownProviderID, knownProvider] of Object.entries(
+        s.providers
+      )) {
+        if (knownProvider.info.models[fullModelKey]) {
+          suggestion = `Did you mean: ${knownProviderID}/${fullModelKey}?`;
+          break;
+        }
+      }
+
+      throw new ModelNotFoundError({ providerID, modelID, suggestion });
+    }
 
     // For synthetic providers (like link-assistant/echo and link-assistant/cache), skip SDK loading
     // These providers have a custom getModel function that creates the model directly
@@ -989,7 +1005,13 @@ export namespace Provider {
       priority = priority.filter((m) => m !== 'claude-haiku-4.5');
     }
     if (providerID === 'opencode' || providerID === 'local') {
-      priority = ['gpt-5-nano'];
+      priority = [
+        'kimi-k2.5-free',
+        'minimax-m2.1-free',
+        'gpt-5-nano',
+        'glm-4.7-free',
+        'big-pickle',
+      ];
     }
     for (const item of priority) {
       for (const model of Object.keys(provider.info.models)) {
@@ -999,10 +1021,13 @@ export namespace Provider {
   }
 
   const priority = [
-    'grok-code',
+    'kimi-k2.5-free',
+    'minimax-m2.1-free',
+    'gpt-5-nano',
+    'glm-4.7-free',
+    'big-pickle',
     'gpt-5',
     'claude-sonnet-4',
-    'big-pickle',
     'gemini-3-pro',
   ];
   export function sort(models: ModelsDev.Model[]) {
@@ -1077,6 +1102,7 @@ export namespace Provider {
     z.object({
       providerID: z.string(),
       modelID: z.string(),
+      suggestion: z.string().optional(),
     })
   );
 

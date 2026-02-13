@@ -142,7 +142,7 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
     // Test original OpenCode list tool
     const input = `{"message":"list files","tools":[{"name":"list","params":{"path":"tmp"}}]}`;
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+      await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout
@@ -198,7 +198,7 @@ test('Agent-cli list tool produces 100% compatible JSON output with OpenCode', a
 
     // Get OpenCode output
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+      await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout

@@ -533,6 +533,29 @@ export namespace SessionPrompt {
         });
       }
 
+      // Pre-convert messages to ModelMessage format (async in AI SDK 6.0+)
+      const modelMessages = await MessageV2.toModelMessage(
+        msgs.filter((m) => {
+          if (m.info.role !== 'assistant' || m.info.error === undefined) {
+            return true;
+          }
+          if (
+            MessageV2.AbortedError.isInstance(m.info.error) &&
+            m.parts.some(
+              (part) => part.type !== 'step-start' && part.type !== 'reasoning'
+            )
+          ) {
+            return true;
+          }
+
+          return false;
+        })
+      );
+      // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
+      const safeModelMessages = Array.isArray(modelMessages)
+        ? modelMessages
+        : [];
+
       // Verbose logging: output request details for debugging
       if (Flag.OPENCODE_VERBOSE) {
         const systemTokens = system.reduce(
@@ -613,6 +636,10 @@ export namespace SessionPrompt {
 
       const result = await processor.process(() =>
         streamText({
+          timeout: {
+            chunkMs: Flag.STREAM_CHUNK_TIMEOUT_MS(),
+            stepMs: Flag.STREAM_STEP_TIMEOUT_MS(),
+          },
           onError(error) {
             log.error(() => ({ message: 'stream error', error }));
           },
@@ -672,24 +699,7 @@ export namespace SessionPrompt {
                 content: x,
               })
             ),
-            ...MessageV2.toModelMessage(
-              msgs.filter((m) => {
-                if (m.info.role !== 'assistant' || m.info.error === undefined) {
-                  return true;
-                }
-                if (
-                  MessageV2.AbortedError.isInstance(m.info.error) &&
-                  m.parts.some(
-                    (part) =>
-                      part.type !== 'step-start' && part.type !== 'reasoning'
-                  )
-                ) {
-                  return true;
-                }
-
-                return false;
-              })
-            ),
+            ...safeModelMessages,
           ],
           tools: model.info?.tool_call === false ? undefined : tools,
           model: wrapLanguageModel({
@@ -1561,6 +1571,37 @@ export namespace SessionPrompt {
         thinkingBudget: 0,
       };
     }
+    // Pre-convert messages to ModelMessage format (async in AI SDK 6.0+)
+    const titleModelMessages = await MessageV2.toModelMessage([
+      {
+        info: {
+          id: Identifier.ascending('message'),
+          role: 'user',
+          sessionID: input.session.id,
+          time: {
+            created: Date.now(),
+          },
+          agent:
+            input.message.info.role === 'user'
+              ? input.message.info.agent
+              : 'build',
+          model: {
+            providerID: input.providerID,
+            modelID: input.modelID,
+          },
+        },
+        parts: input.message.parts,
+      },
+    ]);
+    // Defensive check: ensure titleModelMessages is iterable (AI SDK 6.0.1 compatibility fix)
+    const safeTitleMessages = Array.isArray(titleModelMessages)
+      ? titleModelMessages
+      : [];
+    // Defensive check: ensure SystemPrompt.title returns iterable (fix for issue #155)
+    const titleSystemMessages = SystemPrompt.title(small.providerID);
+    const safeTitleSystemMessages = Array.isArray(titleSystemMessages)
+      ? titleSystemMessages
+      : [];
     await generateText({
       maxOutputTokens: small.info?.reasoning ? 1500 : 20,
       providerOptions: ProviderTransform.providerOptions(
@@ -1569,7 +1610,7 @@ export namespace SessionPrompt {
         options
       ),
       messages: [
-        ...SystemPrompt.title(small.providerID).map(
+        ...safeTitleSystemMessages.map(
           (x): ModelMessage => ({
             role: 'system',
             content: x,
@@ -1581,27 +1622,7 @@ export namespace SessionPrompt {
               The following is the text to summarize:
             `,
         },
-        ...MessageV2.toModelMessage([
-          {
-            info: {
-              id: Identifier.ascending('message'),
-              role: 'user',
-              sessionID: input.session.id,
-              time: {
-                created: Date.now(),
-              },
-              agent:
-                input.message.info.role === 'user'
-                  ? input.message.info.agent
-                  : 'build',
-              model: {
-                providerID: input.providerID,
-                modelID: input.modelID,
-              },
-            },
-            parts: input.message.parts,
-          },
-        ]),
+        ...safeTitleMessages,
       ],
       headers: small.info?.headers ?? {},
       model: small.language,

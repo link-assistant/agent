@@ -87,7 +87,7 @@ function validateBasicMessageOutput(events, label) {
 test('OpenCode reference: processes JSON input "hi" and produces JSON output', async () => {
   const input = '{"message":"hi"}';
   const opencodeResult =
-    await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+    await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
       .quiet()
       .nothrow();
   const opencodeLines = opencodeResult.stdout
@@ -116,7 +116,7 @@ test('Agent-cli produces 100% compatible JSON output with OpenCode', async () =>
 
   // Get OpenCode output
   const opencodeResult =
-    await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+    await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
       .quiet()
       .nothrow();
   const opencodeLines = opencodeResult.stdout
@@ -158,7 +158,7 @@ test('Agent-cli produces 100% compatible JSON output with OpenCode', async () =>
 test('OpenCode reference: processes plain text "2+2?" and produces JSON output', async () => {
   const input = '2+2?';
   const opencodeResult =
-    await $`echo ${input} | opencode run --format json --model opencode/grok-code`
+    await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
       .quiet()
       .nothrow();
   const opencodeLines = opencodeResult.stdout

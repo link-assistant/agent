@@ -134,7 +134,7 @@ jobs:
         working-directory: js
 
       - name: Run unit tests
-        run: bun test tests/json-standard-unit.test.js
+        run: bun test tests/json-standard-unit.test.js tests/process-name.test.js
         working-directory: js
 
       - name: Commit cached API responses
