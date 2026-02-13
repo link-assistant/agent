@@ -298,18 +298,18 @@ export namespace SessionPrompt {
           lastUser.model.modelID
         );
       } catch (error) {
-        log.warn(() => ({
+        // When an explicit provider is specified, do NOT silently fall back to default
+        // This ensures user's explicit choice is respected
+        // If the user wants a fallback, they should not specify a provider
+        log.error(() => ({
           message:
-            'Failed to initialize specified model, falling back to default model',
+            'Failed to initialize specified model - NOT falling back to default (explicit provider specified)',
           providerID: lastUser.model.providerID,
           modelID: lastUser.model.modelID,
           error: error instanceof Error ? error.message : String(error),
         }));
-        const defaultModel = await Provider.defaultModel();
-        model = await Provider.getModel(
-          defaultModel.providerID,
-          defaultModel.modelID
-        );
+        // Re-throw the error so it can be handled by the caller
+        throw error;
       }
       const task = tasks.pop();
 

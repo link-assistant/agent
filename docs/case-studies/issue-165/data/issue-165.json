@@ -1,0 +1,98 @@
+{
+  "issue": {
+    "number": 165,
+    "title": "Support for kilo models didn't work",
+    "state": "OPEN",
+    "author": "konard",
+    "labels": ["bug"],
+    "url": "https://github.com/link-assistant/agent/issues/165"
+  },
+  "incident": {
+    "timestamp": "2026-02-13T22:53:24.160Z",
+    "command": "/home/hive/.bun/bin/solve https://github.com/netkeep80/aprover/issues/10 --tool agent --model kilo/glm-5-free --attach-logs --verbose --no-tool-check --auto-resume-on-limit-reset --tokens-budget-stats",
+    "requested_model": {
+      "provider": "kilo",
+      "model": "glm-5-free",
+      "full": "kilo/glm-5-free"
+    },
+    "actual_model_used": {
+      "provider": "opencode",
+      "model": "kimi-k2.5-free",
+      "full": "opencode/kimi-k2.5-free"
+    },
+    "api_endpoint": "https://opencode.ai/zen/v1/chat/completions"
+  },
+  "root_causes": [
+    {
+      "id": "RC1",
+      "title": "Default Model Fallback Override",
+      "description": "Provider.defaultModel() function prioritizes opencode provider regardless of user's explicit model specification",
+      "location": "js/src/provider/provider.ts:1321-1366"
+    },
+    {
+      "id": "RC2",
+      "title": "Model Parsing Not Preserved",
+      "description": "Although parseModel() correctly parses 'kilo/glm-5-free', the result is overridden before API call",
+      "location": "js/src/provider/provider.ts:1368-1374"
+    },
+    {
+      "id": "RC3",
+      "title": "Provider Auto-loading Priority",
+      "description": "OpenCode provider is auto-loaded before Kilo due to having free models available",
+      "location": "js/src/provider/provider.ts:1017-1029"
+    }
+  ],
+  "proposed_solutions": [
+    {
+      "id": "S1",
+      "title": "Fix Model Override Logic",
+      "priority": "high",
+      "description": "Modify agent's model selection to respect explicitly specified models"
+    },
+    {
+      "id": "S2",
+      "title": "Add Explicit Model Validation",
+      "priority": "medium",
+      "description": "Add validation in defaultModel() to check if specific model was requested"
+    },
+    {
+      "id": "S3",
+      "title": "Provider Isolation",
+      "priority": "medium",
+      "description": "Ensure strict provider matching when specific provider is requested"
+    }
+  ],
+  "workarounds": [
+    {
+      "id": "W1",
+      "title": "Set KILO_API_KEY",
+      "command": "export KILO_API_KEY=\"your-api-key\""
+    },
+    {
+      "id": "W2",
+      "title": "Disable OpenCode Provider",
+      "config": "{\"disabled_providers\": [\"opencode\"]}"
+    },
+    {
+      "id": "W3",
+      "title": "Use OpenRouter Instead",
+      "command": "--model openrouter/z-ai/glm-5"
+    }
+  ],
+  "related_repositories": [
+    {
+      "repo": "sst/opencode",
+      "issues": [12614, 1265, 11917, 11541, 10850]
+    },
+    {
+      "repo": "Kilo-Org/kilocode",
+      "type": "related_project"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2026-02-14",
+    "analyzer": "Claude Opus 4.5",
+    "log_file": "solve-2026-02-13T22-53-24-159Z.log",
+    "log_source": "https://gist.githubusercontent.com/konard/d39b02783f0402ca929e6bf85ae89274/raw/be7999d8eb004e8aeae8155675f7582cce183f0e/solve-2026-02-13T22-53-24-159Z.log"
+  }
+}

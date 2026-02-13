@@ -142,14 +142,56 @@ function readStdinWithTimeout(timeout = null) {
 
 /**
  * Parse model configuration from argv
+ * Supports both explicit provider/model format and short model names.
+ *
+ * Format examples:
+ * - "kilo/glm-5-free" -> uses kilo provider with glm-5-free model (explicit)
+ * - "opencode/kimi-k2.5-free" -> uses opencode provider (explicit)
+ * - "glm-5-free" -> resolved to kilo provider (unique free model)
+ * - "kimi-k2.5-free" -> resolved to opencode provider (shared model, opencode preferred)
+ *
  * @param {object} argv - Command line arguments
  * @returns {object} - { providerID, modelID }
  */
 async function parseModelConfig(argv) {
-  // Parse model argument (handle model IDs with slashes like groq/qwen/qwen3-32b)
-  const modelParts = argv.model.split('/');
-  let providerID = modelParts[0] || 'opencode';
-  let modelID = modelParts.slice(1).join('/') || 'kimi-k2.5-free';
+  const modelArg = argv.model;
+
+  let providerID;
+  let modelID;
+
+  // Check if model includes explicit provider prefix
+  if (modelArg.includes('/')) {
+    // Explicit provider/model format - respect user's choice
+    const modelParts = modelArg.split('/');
+    providerID = modelParts[0];
+    modelID = modelParts.slice(1).join('/');
+
+    // Validate that providerID and modelID are not empty
+    if (!providerID || !modelID) {
+      providerID = providerID || 'opencode';
+      modelID = modelID || 'kimi-k2.5-free';
+    }
+
+    Log.Default.info(() => ({
+      message: 'using explicit provider/model',
+      providerID,
+      modelID,
+    }));
+  } else {
+    // Short model name - resolve to appropriate provider
+    // Import Provider to use parseModelWithResolution
+    const { Provider } = await import('./provider/provider.ts');
+    const resolved = await Provider.parseModelWithResolution(modelArg);
+    providerID = resolved.providerID;
+    modelID = resolved.modelID;
+
+    Log.Default.info(() => ({
+      message: 'resolved short model name',
+      input: modelArg,
+      providerID,
+      modelID,
+    }));
+  }
 
   // Handle --use-existing-claude-oauth option
   // This reads OAuth credentials from ~/.claude/.credentials.json (Claude Code CLI)
@@ -175,22 +217,22 @@ async function parseModelConfig(argv) {
     // Set environment variable for the provider to use
     process.env.CLAUDE_CODE_OAUTH_TOKEN = creds.accessToken;
 
-    // If user specified a model, use it with claude-oauth provider
-    // If not, use claude-oauth/claude-sonnet-4-5 as default
+    // If user specified the default model (opencode/kimi-k2.5-free), switch to claude-oauth
+    // If user explicitly specified kilo or another provider, warn but respect their choice
     if (providerID === 'opencode' && modelID === 'kimi-k2.5-free') {
       providerID = 'claude-oauth';
       modelID = 'claude-sonnet-4-5';
     } else if (!['claude-oauth', 'anthropic'].includes(providerID)) {
-      // If user specified a different provider, warn them
+      // If user specified a different provider explicitly, warn them
       const compactJson = argv['compact-json'] === true;
       outputStatus(
         {
           type: 'warning',
-          message: `--use-existing-claude-oauth is set but model uses provider "${providerID}". Using OAuth credentials anyway.`,
+          message: `--use-existing-claude-oauth is set but model uses provider "${providerID}". Using specified provider.`,
         },
         compactJson
       );
-      providerID = 'claude-oauth';
+      // Don't override - respect user's explicit provider choice
     }
   }
 
@@ -257,8 +299,6 @@ async function runAgentMode(argv, request) {
     }));
   }
 
-  const { providerID, modelID } = await parseModelConfig(argv);
-
   // Validate and get JSON standard
   const jsonStandard = argv['json-standard'];
   if (!isValidJsonStandard(jsonStandard)) {
@@ -275,9 +315,14 @@ async function runAgentMode(argv, request) {
   // Logging is already initialized in middleware, no need to call Log.init() again
 
   // Wrap in Instance.provide for OpenCode infrastructure
+  // parseModelConfig must be called inside Instance.provide to access provider state
   await Instance.provide({
     directory: process.cwd(),
     fn: async () => {
+      // Parse model config inside Instance.provide context
+      // This allows parseModelWithResolution to access the provider state
+      const { providerID, modelID } = await parseModelConfig(argv);
+
       if (argv.server) {
         // SERVER MODE: Start server and communicate via HTTP
         await runServerMode(
@@ -330,8 +375,6 @@ async function runContinuousAgentMode(argv) {
     }));
   }
 
-  const { providerID, modelID } = await parseModelConfig(argv);
-
   // Validate and get JSON standard
   const jsonStandard = argv['json-standard'];
   if (!isValidJsonStandard(jsonStandard)) {
@@ -348,9 +391,14 @@ async function runContinuousAgentMode(argv) {
   const { systemMessage, appendSystemMessage } = await readSystemMessages(argv);
 
   // Wrap in Instance.provide for OpenCode infrastructure
+  // parseModelConfig must be called inside Instance.provide to access provider state
   await Instance.provide({
     directory: process.cwd(),
     fn: async () => {
+      // Parse model config inside Instance.provide context
+      // This allows parseModelWithResolution to access the provider state
+      const { providerID, modelID } = await parseModelConfig(argv);
+
       if (argv.server) {
         // SERVER MODE: Start server and communicate via HTTP
         await runContinuousServerMode(
