@@ -321,6 +321,8 @@ export namespace SessionProcessor {
                 case 'finish':
                   input.assistantMessage.time.completed = Date.now();
                   await Session.updateMessage(input.assistantMessage);
+                  // Clear retry state on successful completion
+                  SessionRetry.clearRetryState(input.sessionID);
                   break;
 
                 default:
@@ -374,24 +376,67 @@ export namespace SessionProcessor {
               error.data.isRetryable &&
               attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
 
+            // For API errors (rate limits), check if we're within the retry timeout
+            // See: https://github.com/link-assistant/agent/issues/157
+            const retryCheck = isRetryableAPIError
+              ? SessionRetry.shouldRetry(
+                  input.sessionID,
+                  error.data.statusCode?.toString() ?? 'unknown'
+                )
+              : { shouldRetry: true, elapsedTime: 0, maxTime: 0 };
+
             if (
-              isRetryableAPIError ||
+              (isRetryableAPIError && retryCheck.shouldRetry) ||
               isRetryableSocketError ||
               isRetryableTimeoutError
             ) {
               attempt++;
               // Use error-specific delay calculation
-              const delay =
-                error?.name === 'SocketConnectionError'
-                  ? SessionRetry.socketErrorDelay(attempt)
-                  : error?.name === 'TimeoutError'
-                    ? SessionRetry.timeoutDelay(attempt)
-                    : SessionRetry.delay(error, attempt);
+              // SessionRetry.delay may throw RetryTimeoutExceededError if retry-after exceeds timeout
+              let delay: number;
+              try {
+                delay =
+                  error?.name === 'SocketConnectionError'
+                    ? SessionRetry.socketErrorDelay(attempt)
+                    : error?.name === 'TimeoutError'
+                      ? SessionRetry.timeoutDelay(attempt)
+                      : SessionRetry.delay(error, attempt);
+              } catch (delayError) {
+                // If retry-after exceeds AGENT_RETRY_TIMEOUT, fail immediately
+                if (
+                  delayError instanceof SessionRetry.RetryTimeoutExceededError
+                ) {
+                  log.error(() => ({
+                    message: 'retry-after exceeds timeout, failing immediately',
+                    retryAfterMs: delayError.retryAfterMs,
+                    maxTimeoutMs: delayError.maxTimeoutMs,
+                  }));
+                  SessionRetry.clearRetryState(input.sessionID);
+                  // Create a specific error for this case
+                  input.assistantMessage.error = {
+                    name: 'RetryTimeoutExceededError',
+                    data: {
+                      message: delayError.message,
+                      isRetryable: false,
+                      retryAfterMs: delayError.retryAfterMs,
+                      maxTimeoutMs: delayError.maxTimeoutMs,
+                    },
+                  } as MessageV2.Error;
+                  Bus.publish(Session.Event.Error, {
+                    sessionID: input.assistantMessage.sessionID,
+                    error: input.assistantMessage.error,
+                  });
+                  break;
+                }
+                throw delayError;
+              }
               log.info(() => ({
                 message: 'retrying',
                 errorType: error?.name,
                 attempt,
                 delay,
+                elapsedRetryTime: retryCheck.elapsedTime,
+                maxRetryTime: retryCheck.maxTime,
               }));
               SessionStatus.set(input.sessionID, {
                 type: 'retry',
@@ -399,9 +444,14 @@ export namespace SessionProcessor {
                 message: error.data.message,
                 next: Date.now() + delay,
               });
+              // Update retry state to track total time
+              SessionRetry.updateRetryState(input.sessionID, delay);
               await SessionRetry.sleep(delay, input.abort).catch(() => {});
               continue;
             }
+
+            // Clear retry state on non-retryable error
+            SessionRetry.clearRetryState(input.sessionID);
             input.assistantMessage.error = error;
             Bus.publish(Session.Event.Error, {
               sessionID: input.assistantMessage.sessionID,

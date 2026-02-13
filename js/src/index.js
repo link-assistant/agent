@@ -684,6 +684,17 @@ async function main() {
               description:
                 'When used with --resume or --continue, continue in the same session without forking to a new UUID.',
               default: false,
+            })
+            .option('generate-title', {
+              type: 'boolean',
+              description:
+                'Generate session titles using AI (default: false). Disabling saves tokens and prevents rate limit issues.',
+              default: false,
+            })
+            .option('retry-timeout', {
+              type: 'number',
+              description:
+                'Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)',
             }),
         handler: async (argv) => {
           // Check both CLI flag and environment variable for compact JSON mode
@@ -864,6 +875,13 @@ async function main() {
         // Set dry-run flag if requested
         if (argv['dry-run']) {
           Flag.setDryRun(true);
+        }
+
+        // Set generate-title flag if explicitly enabled
+        // Default is false to save tokens and prevent rate limit issues
+        // See: https://github.com/link-assistant/agent/issues/157
+        if (argv['generate-title'] === true) {
+          Flag.setGenerateTitle(true);
         }
 
         // Initialize logging system
