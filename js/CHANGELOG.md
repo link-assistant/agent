@@ -1,5 +1,25 @@
 # @link-assistant/agent
 
+## 0.10.0
+
+### Minor Changes
+
+- 77d80f7: Add Qwen Coder OAuth subscription support
+  - Add QwenPlugin and AlibabaPlugin to auth plugins with OAuth device flow
+  - Support Qwen Coder subscription via OAuth (device flow) with free tier
+  - Add token refresh support for automatic credential renewal
+  - Add custom provider loaders for qwen-coder and alibaba in provider.ts
+  - Both "Qwen Coder" and "Alibaba" menu items available in auth login
+
+### Patch Changes
+
+- 7ffcf71: fix: display CLI help text on stdout instead of stderr
+
+  When running `agent auth` without a subcommand, the help text was displayed
+  on stderr, causing it to appear in red in many terminals. Help text is
+  informational and should go to stdout, following the industry standard
+  behavior of CLI tools like git, gh, and npm.
+
 ## 0.9.0
 
 ### Minor Changes
