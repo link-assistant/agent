@@ -147,7 +147,7 @@ async function parseModelConfig(argv) {
   // Parse model argument (handle model IDs with slashes like groq/qwen/qwen3-32b)
   const modelParts = argv.model.split('/');
   let providerID = modelParts[0] || 'opencode';
-  let modelID = modelParts.slice(1).join('/') || 'grok-code';
+  let modelID = modelParts.slice(1).join('/') || 'kimi-k2.5-free';
 
   // Handle --use-existing-claude-oauth option
   // This reads OAuth credentials from ~/.claude/.credentials.json (Claude Code CLI)
@@ -175,7 +175,7 @@ async function parseModelConfig(argv) {
 
     // If user specified a model, use it with claude-oauth provider
     // If not, use claude-oauth/claude-sonnet-4-5 as default
-    if (providerID === 'opencode' && modelID === 'grok-code') {
+    if (providerID === 'opencode' && modelID === 'kimi-k2.5-free') {
       providerID = 'claude-oauth';
       modelID = 'claude-sonnet-4-5';
     } else if (!['claude-oauth', 'anthropic'].includes(providerID)) {
@@ -575,7 +575,7 @@ async function main() {
             .option('model', {
               type: 'string',
               description: 'Model to use in format providerID/modelID',
-              default: 'opencode/grok-code',
+              default: 'opencode/kimi-k2.5-free',
             })
             .option('json-standard', {
               type: 'string',

@@ -454,11 +454,11 @@ describe('Cache provider (unit tests)', () => {
   test('createCacheModel returns a valid LanguageModelV2', async () => {
     const { createCacheModel } = await import('../src/provider/cache.ts');
 
-    const model = createCacheModel('opencode', 'grok-code');
+    const model = createCacheModel('opencode', 'kimi-k2.5-free');
 
     expect(model.specificationVersion).toBe('v2');
     expect(model.provider).toBe('link-assistant');
-    expect(model.modelId).toBe('opencode/grok-code');
+    expect(model.modelId).toBe('opencode/kimi-k2.5-free');
     expect(typeof model.doGenerate).toBe('function');
     expect(typeof model.doStream).toBe('function');
 
@@ -468,7 +468,7 @@ describe('Cache provider (unit tests)', () => {
   test('cache provider generates and caches responses', async () => {
     const { createCacheModel } = await import('../src/provider/cache.ts');
 
-    const model = createCacheModel('opencode', 'grok-code');
+    const model = createCacheModel('opencode', 'kimi-k2.5-free');
     const prompt = [
       {
         role: 'user',
@@ -496,7 +496,7 @@ describe('Cache provider (unit tests)', () => {
   test('cache provider streams cached responses', async () => {
     const { createCacheModel } = await import('../src/provider/cache.ts');
 
-    const model = createCacheModel('opencode', 'grok-code');
+    const model = createCacheModel('opencode', 'kimi-k2.5-free');
     const prompt = [
       {
         role: 'user',
