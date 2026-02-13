@@ -322,6 +322,48 @@ export namespace Provider {
       };
     },
     /**
+     * Kilo provider - access to 500+ AI models through Kilo Gateway
+     * Uses OpenAI-compatible API at https://api.kilo.ai/api/gateway
+     *
+     * Free models available without API key (using 'public' key):
+     * - GLM-5 (z-ai/glm-5) - Free limited time, flagship Z.AI model
+     * - GLM 4.7 (z-ai/glm-4.7:free) - Free, agent-centric model
+     * - Kimi K2.5 (moonshot/kimi-k2.5:free) - Free, agentic capabilities
+     * - MiniMax M2.1 (minimax/m2.1:free) - Free, general-purpose
+     * - Giga Potato (giga-potato:free) - Free evaluation model
+     *
+     * For paid models, set KILO_API_KEY environment variable
+     *
+     * @see https://kilo.ai/docs/gateway
+     * @see https://kilo.ai/docs/advanced-usage/free-and-budget-models
+     */
+    kilo: async (input) => {
+      const hasKey = await (async () => {
+        if (input.env.some((item) => process.env[item])) return true;
+        if (await Auth.get(input.id)) return true;
+        return false;
+      })();
+
+      // For free models, we can use 'public' as the API key
+      // For paid models, user needs to set KILO_API_KEY
+      if (!hasKey) {
+        for (const [key, value] of Object.entries(input.models)) {
+          // Keep only free models (cost.input === 0) when no API key
+          if (value.cost.input === 0) continue;
+          delete input.models[key];
+        }
+      }
+
+      return {
+        autoload: Object.keys(input.models).length > 0,
+        options: hasKey
+          ? {}
+          : {
+              apiKey: 'public',
+            },
+      };
+    },
+    /**
      * Qwen Coder OAuth provider for Qwen subscription users
      * Uses OAuth credentials from agent auth login (Qwen Coder Subscription)
      *
@@ -719,6 +761,170 @@ export namespace Provider {
       models: {}, // Models are dynamically created based on the provider/model syntax
     };
 
+    // Add Kilo provider for access to 500+ AI models through Kilo Gateway
+    // Free models available: GLM-5, GLM 4.7, Kimi K2.5, MiniMax M2.1, Giga Potato
+    // @see https://kilo.ai/docs/gateway
+    // @see https://github.com/link-assistant/agent/issues/159
+    database['kilo'] = {
+      id: 'kilo',
+      name: 'Kilo Gateway',
+      npm: '@ai-sdk/openai-compatible',
+      api: 'https://api.kilo.ai/api/gateway',
+      env: ['KILO_API_KEY'],
+      models: {
+        // GLM-5 - Flagship Z.AI model, free for limited time
+        'glm-5-free': {
+          id: 'z-ai/glm-5',
+          name: 'GLM-5 (Free)',
+          release_date: '2026-02-11',
+          attachment: false,
+          reasoning: true,
+          temperature: true,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 202752,
+            output: 131072,
+          },
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          options: {},
+        },
+        // GLM 4.7 - Agent-centric model, free
+        'glm-4.7-free': {
+          id: 'z-ai/glm-4.7:free',
+          name: 'GLM 4.7 (Free)',
+          release_date: '2026-01-15',
+          attachment: false,
+          reasoning: true,
+          temperature: true,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 131072,
+            output: 65536,
+          },
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          options: {},
+        },
+        // Kimi K2.5 - Agentic capabilities, free
+        'kimi-k2.5-free': {
+          id: 'moonshot/kimi-k2.5:free',
+          name: 'Kimi K2.5 (Free)',
+          release_date: '2025-12-01',
+          attachment: false,
+          reasoning: false,
+          temperature: true,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 131072,
+            output: 65536,
+          },
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          options: {},
+        },
+        // MiniMax M2.1 - General-purpose, free
+        'minimax-m2.1-free': {
+          id: 'minimax/m2.1:free',
+          name: 'MiniMax M2.1 (Free)',
+          release_date: '2025-11-01',
+          attachment: false,
+          reasoning: false,
+          temperature: true,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 131072,
+            output: 65536,
+          },
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          options: {},
+        },
+        // Giga Potato - Free evaluation model
+        'giga-potato-free': {
+          id: 'giga-potato:free',
+          name: 'Giga Potato (Free)',
+          release_date: '2026-01-01',
+          attachment: false,
+          reasoning: false,
+          temperature: true,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 65536,
+            output: 32768,
+          },
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          options: {},
+        },
+        // Trinity Large Preview - Preview model from Arcee AI
+        'trinity-large-preview': {
+          id: 'arcee/trinity-large-preview',
+          name: 'Trinity Large Preview (Free)',
+          release_date: '2026-01-01',
+          attachment: false,
+          reasoning: false,
+          temperature: true,
+          tool_call: true,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 65536,
+            output: 32768,
+          },
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          options: {},
+        },
+      },
+    };
+
     for (const [providerID, provider] of configProviders) {
       const existing = database[providerID];
       const parsed: ModelsDev.Provider = {
@@ -1073,6 +1279,15 @@ export namespace Provider {
         'big-pickle',
       ];
     }
+    if (providerID === 'kilo') {
+      priority = [
+        'glm-5-free',
+        'glm-4.7-free',
+        'kimi-k2.5-free',
+        'minimax-m2.1-free',
+        'giga-potato-free',
+      ];
+    }
     for (const item of priority) {
       for (const model of Object.keys(provider.info.models)) {
         if (model.includes(item)) return getModel(providerID, model);
@@ -1081,6 +1296,7 @@ export namespace Provider {
   }
 
   const priority = [
+    'glm-5-free',
     'kimi-k2.5-free',
     'minimax-m2.1-free',
     'gpt-5-nano',
