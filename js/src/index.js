@@ -31,9 +31,11 @@ import { createBusEventSubscription } from './cli/event-handler.js';
 import {
   outputStatus,
   outputError,
+  outputHelp,
   setCompactJson,
   outputInput,
 } from './cli/output.ts';
+import stripAnsi from 'strip-ansi';
 import { createRequire } from 'module';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
@@ -899,14 +901,14 @@ async function main() {
           process.exit(1);
         }
 
-        // Handle validation errors (msg without err)
+        // Handle validation messages (msg without err) - informational, not an error
+        // Display help text on stdout (industry standard: git, gh, npm all use stdout for help)
         if (msg) {
-          outputError({
-            errorType: 'ValidationError',
+          outputHelp({
             message: msg,
-            hint: yargs.help(),
+            hint: stripAnsi(yargs.help()),
           });
-          process.exit(1);
+          process.exit(0);
         }
       })
       .help();

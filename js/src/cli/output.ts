@@ -199,5 +199,24 @@ export function outputInput(
   writeStdout(message, compact);
 }
 
+/**
+ * Output a help/informational message to stdout
+ * Used for CLI help text display (not an error condition)
+ */
+export function outputHelp(
+  help: {
+    message: string;
+    hint?: string;
+    [key: string]: unknown;
+  },
+  compact?: boolean
+): void {
+  const message: OutputMessage = {
+    type: 'status',
+    ...help,
+  };
+  writeStdout(message, compact);
+}
+
 // Re-export for backward compatibility
 export { output as write };
