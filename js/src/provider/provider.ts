@@ -16,6 +16,7 @@ import { Flag } from '../flag/flag';
 import { iife } from '../util/iife';
 import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';
+import { RetryFetch } from './retry-fetch';
 
 export namespace Provider {
   const log = Log.create({ service: 'provider' });
@@ -1143,6 +1144,16 @@ export namespace Provider {
           });
         };
       }
+
+      // Wrap fetch with retry logic for rate limit handling (HTTP 429)
+      // This ensures the agent's time-based retry (7-week timeout) is respected
+      // instead of the AI SDK's fixed retry count (3 attempts)
+      // See: https://github.com/link-assistant/agent/issues/167
+      const existingFetch = options['fetch'] ?? fetch;
+      options['fetch'] = RetryFetch.wrap(existingFetch, {
+        sessionID: provider.id,
+      });
+
       const fn = mod[Object.keys(mod).find((key) => key.startsWith('create'))!];
       const loaded = fn({
         name: provider.id,
