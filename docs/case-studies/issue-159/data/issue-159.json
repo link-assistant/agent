@@ -1,0 +1,110 @@
+{
+  "issue": {
+    "number": 159,
+    "title": "Similar to how we have free models of OpenCode Zen add automatically supported free models of https://github.com/Kilo-Org/kilo",
+    "body": "Focus on GLM-5, but if other free models are available add support for them in code, and explanation in docs.\n\nPlease collect data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), and propose possible solutions  (including known existing components/libraries, that solve similar problem or can help in solutions).",
+    "labels": ["documentation", "enhancement"],
+    "state": "OPEN"
+  },
+  "kilo_gateway": {
+    "base_url": "https://api.kilo.ai/api/gateway",
+    "api_format": "OpenAI-compatible",
+    "authentication": "API Key (Bearer token)",
+    "environment_variable": "KILO_API_KEY",
+    "features": ["SSE streaming", "tool calling", "BYOK support"]
+  },
+  "free_models": [
+    {
+      "id": "z-ai/glm-5",
+      "name": "GLM-5",
+      "provider": "Z.AI (Zhipu AI)",
+      "status": "free_limited_time",
+      "context_window": 202752,
+      "max_output_tokens": 131072,
+      "cost": {
+        "input": 0.80,
+        "output": 2.56,
+        "cache_read": 0
+      },
+      "capabilities": ["function_calling", "tool_choice", "json_schema", "reasoning_tokens"],
+      "release_date": "2026-02-11"
+    },
+    {
+      "id": "z-ai/glm-4.7",
+      "name": "GLM 4.7",
+      "provider": "Z.AI (Zhipu AI)",
+      "status": "free",
+      "description": "Latest variant of the GLM family, purpose-built for agent-centric applications"
+    },
+    {
+      "id": "moonshot/kimi-k2.5",
+      "name": "Kimi K2.5",
+      "provider": "MoonshotAI",
+      "status": "free",
+      "description": "Optimized for agentic capabilities including tool use and code synthesis"
+    },
+    {
+      "id": "minimax/m2.1",
+      "name": "MiniMax M2.1",
+      "provider": "MiniMax",
+      "status": "free",
+      "description": "A capable model from MiniMax with strong general-purpose performance"
+    },
+    {
+      "id": "giga-potato",
+      "name": "Giga Potato",
+      "provider": "Unknown",
+      "status": "free_evaluation",
+      "description": "A stealth release model currently free during evaluation"
+    },
+    {
+      "id": "arcee/trinity-large-preview",
+      "name": "Trinity Large Preview",
+      "provider": "Arcee AI",
+      "status": "free_preview",
+      "description": "A preview model with strong capabilities"
+    }
+  ],
+  "glm5_details": {
+    "model_id": "z-ai/glm-5",
+    "provider": "Z.ai (OpenRouter)",
+    "release_date": "2026-02-11",
+    "status": "active",
+    "pricing": {
+      "input_per_1m": 0.80,
+      "output_per_1m": 2.56,
+      "cache_read_per_1m": 0.00
+    },
+    "limits": {
+      "context_window": 202752,
+      "max_output_tokens": 131072
+    },
+    "capabilities": {
+      "function_calling": true,
+      "tool_choice_control": true,
+      "structured_outputs": true,
+      "reasoning_tokens": true,
+      "tokenizer": "other",
+      "input_modalities": ["text"],
+      "content_moderation": false
+    },
+    "performance_rankings": {
+      "code_generation": 44,
+      "architecture_planning": 40,
+      "orchestration": 41,
+      "query_answering": 52,
+      "debugging": 56
+    }
+  },
+  "sources": [
+    "https://github.com/Kilo-Org/kilo",
+    "https://github.com/Kilo-Org/kilocode",
+    "https://kilo.ai/docs/gateway",
+    "https://kilo.ai/gateway",
+    "https://kilo.ai/models/z-ai-glm-5",
+    "https://kilo.ai/docs/advanced-usage/free-and-budget-models",
+    "https://blog.kilo.ai/p/glm-5-free-limited-time",
+    "https://blog.kilo.ai/p/the-secret-is-out-pony-alpha-is-glm",
+    "https://docs.z.ai/devpack/overview"
+  ]
+}

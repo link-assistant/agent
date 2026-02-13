@@ -7,6 +7,7 @@ This agent supports multiple model providers. By default, it uses models from th
 | Provider     | Format                          | API Key Env Variable         | Documentation                                      |
 | ------------ | ------------------------------- | ---------------------------- | -------------------------------------------------- |
 | OpenCode Zen | `opencode/<model-id>`           | N/A (public for free models) | [OpenCode Zen](https://opencode.ai/docs/zen/)      |
+| Kilo Gateway | `kilo/<model-id>`               | N/A (public for free models) | [Kilo Gateway Documentation](docs/kilo.md)         |
 | Anthropic    | `anthropic/<model-id>`          | `ANTHROPIC_API_KEY`          | [Anthropic Docs](https://docs.anthropic.com/)      |
 | Claude OAuth | `claude-oauth/<model-id>`       | `CLAUDE_CODE_OAUTH_TOKEN`    | [Claude OAuth Documentation](docs/claude-oauth.md) |
 | Groq         | `groq/<model-id>`               | `GROQ_API_KEY`               | [Groq Documentation](docs/groq.md)                 |
@@ -202,3 +203,69 @@ echo "hello" | agent --model openrouter/meta-llama/llama-3.1-8b:free
 ```
 
 For more details, see the [OpenRouter Documentation](docs/openrouter.md).
+
+---
+
+## Kilo Gateway Provider
+
+[Kilo](https://kilo.ai) is an open-source AI coding agent platform providing access to 500+ AI models through the Kilo Gateway. The gateway uses an OpenAI-compatible API, making it easy to integrate with existing tools.
+
+### Free Models (No API Key Required)
+
+Kilo offers several free models that work without setting up an API key:
+
+| Model                    | Model ID                      | Context Window | Description                                        |
+| ------------------------ | ----------------------------- | -------------- | -------------------------------------------------- |
+| **GLM-5 (recommended)**  | `kilo/glm-5-free`             | 202,752 tokens | Z.AI flagship model, matches Opus 4.5 on many tasks |
+| GLM 4.7                  | `kilo/glm-4.7-free`           | 131,072 tokens | Agent-centric model with strong coding capabilities |
+| Kimi K2.5                | `kilo/kimi-k2.5-free`         | 131,072 tokens | Agentic capabilities, tool use, code synthesis     |
+| MiniMax M2.1             | `kilo/minimax-m2.1-free`      | 131,072 tokens | Strong general-purpose performance                 |
+| Giga Potato              | `kilo/giga-potato-free`       | 65,536 tokens  | Free evaluation model                              |
+| Trinity Large Preview    | `kilo/trinity-large-preview`  | 65,536 tokens  | Arcee AI preview model                             |
+
+> **Note:** GLM-5 is currently free for a limited time. See [GLM-5 Announcement](https://blog.kilo.ai/p/glm-5-free-limited-time) for details.
+
+### GLM-5 Specifications
+
+GLM-5 is Z.AI's (Zhipu AI) flagship model with enhanced reasoning and coding capabilities:
+
+| Property           | Value                |
+| ------------------ | -------------------- |
+| Model ID           | `kilo/glm-5-free`    |
+| Context Window     | 202,752 tokens       |
+| Max Output Tokens  | 131,072 tokens       |
+| Function Calling   | Yes                  |
+| Tool Choice        | Yes                  |
+| Structured Outputs | Yes (JSON schema)    |
+| Reasoning Tokens   | Yes                  |
+
+### Using Paid Models
+
+For paid models, set your Kilo API key:
+
+```bash
+export KILO_API_KEY=your_api_key_here
+```
+
+Get your API key at [app.kilo.ai](https://app.kilo.ai).
+
+### Kilo Usage Examples
+
+```bash
+# Using GLM-5 (recommended free model)
+echo "hello" | agent --model kilo/glm-5-free
+
+# Using GLM 4.7 (free, agent-centric)
+echo "hello" | agent --model kilo/glm-4.7-free
+
+# Using Kimi K2.5 (free)
+echo "hello" | agent --model kilo/kimi-k2.5-free
+
+# Using MiniMax M2.1 (free)
+echo "hello" | agent --model kilo/minimax-m2.1-free
+
+# Using Giga Potato (free evaluation)
+echo "hello" | agent --model kilo/giga-potato-free
+```
+
+For more details, see the [Kilo Gateway Documentation](docs/kilo.md).
