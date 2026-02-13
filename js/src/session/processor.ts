@@ -321,6 +321,8 @@ export namespace SessionProcessor {
                 case 'finish':
                   input.assistantMessage.time.completed = Date.now();
                   await Session.updateMessage(input.assistantMessage);
+                  // Clear retry state on successful completion
+                  SessionRetry.clearRetryState(input.sessionID);
                   break;
 
                 default:
@@ -374,8 +376,17 @@ export namespace SessionProcessor {
               error.data.isRetryable &&
               attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
 
+            // For API errors (rate limits), check if we're within the retry timeout
+            // See: https://github.com/link-assistant/agent/issues/157
+            const retryCheck = isRetryableAPIError
+              ? SessionRetry.shouldRetry(
+                  input.sessionID,
+                  error.data.statusCode?.toString() ?? 'unknown'
+                )
+              : { shouldRetry: true, elapsedTime: 0, maxTime: 0 };
+
             if (
-              isRetryableAPIError ||
+              (isRetryableAPIError && retryCheck.shouldRetry) ||
               isRetryableSocketError ||
               isRetryableTimeoutError
             ) {
@@ -392,6 +403,8 @@ export namespace SessionProcessor {
                 errorType: error?.name,
                 attempt,
                 delay,
+                elapsedRetryTime: retryCheck.elapsedTime,
+                maxRetryTime: retryCheck.maxTime,
               }));
               SessionStatus.set(input.sessionID, {
                 type: 'retry',
@@ -399,9 +412,14 @@ export namespace SessionProcessor {
                 message: error.data.message,
                 next: Date.now() + delay,
               });
+              // Update retry state to track total time
+              SessionRetry.updateRetryState(input.sessionID, delay);
               await SessionRetry.sleep(delay, input.abort).catch(() => {});
               continue;
             }
+
+            // Clear retry state on non-retryable error
+            SessionRetry.clearRetryState(input.sessionID);
             input.assistantMessage.error = error;
             Bus.publish(Session.Event.Error, {
               sessionID: input.assistantMessage.sessionID,

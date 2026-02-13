@@ -1530,7 +1530,9 @@ export namespace SessionPrompt {
     return result;
   }
 
-  // TODO: wire this back up
+  // Title generation is optional and disabled by default to save tokens
+  // Enable via --generate-title flag or AGENT_GENERATE_TITLE=true env var
+  // See: https://github.com/link-assistant/agent/issues/157
   async function ensureTitle(input: {
     session: Session.Info;
     message: MessageV2.WithParts;
@@ -1538,6 +1540,14 @@ export namespace SessionPrompt {
     providerID: string;
     modelID: string;
   }) {
+    // Skip title generation if disabled (default)
+    if (!Flag.GENERATE_TITLE) {
+      log.info(() => ({
+        message: 'title generation disabled',
+        hint: 'Enable with --generate-title flag or AGENT_GENERATE_TITLE=true',
+      }));
+      return;
+    }
     if (input.session.parentID) return;
     if (!Session.isDefaultTitle(input.session.title)) return;
     const isFirst =
