@@ -9,11 +9,37 @@ export namespace SessionRetry {
   export const RETRY_BACKOFF_FACTOR = 2;
   export const RETRY_MAX_DELAY_NO_HEADERS = 30_000; // 30 seconds
 
-  // Maximum delay for a single retry attempt (default: 20 minutes)
-  // This caps the retry-after header to prevent extremely long waits
+  // Maximum delay for a single retry attempt when NO retry-after header (default: 20 minutes)
+  // This caps exponential backoff when headers are not available
   // Can be configured via AGENT_MAX_RETRY_DELAY env var
   export function getMaxRetryDelay(): number {
     return Flag.MAX_RETRY_DELAY();
+  }
+
+  // Get retry timeout in milliseconds
+  export function getRetryTimeout(): number {
+    return Flag.RETRY_TIMEOUT() * 1000;
+  }
+
+  /**
+   * Error thrown when retry-after exceeds AGENT_RETRY_TIMEOUT
+   * This indicates the wait time is too long and we should fail immediately
+   */
+  export class RetryTimeoutExceededError extends Error {
+    public readonly retryAfterMs: number;
+    public readonly maxTimeoutMs: number;
+
+    constructor(retryAfterMs: number, maxTimeoutMs: number) {
+      const retryAfterHours = (retryAfterMs / 1000 / 3600).toFixed(2);
+      const maxTimeoutHours = (maxTimeoutMs / 1000 / 3600).toFixed(2);
+      super(
+        `API returned retry-after of ${retryAfterHours} hours, which exceeds the maximum retry timeout of ${maxTimeoutHours} hours. ` +
+          `Failing immediately instead of waiting. You can adjust AGENT_RETRY_TIMEOUT env var to increase the limit.`
+      );
+      this.name = 'RetryTimeoutExceededError';
+      this.retryAfterMs = retryAfterMs;
+      this.maxTimeoutMs = maxTimeoutMs;
+    }
   }
 
   // Socket connection error retry configuration
@@ -118,77 +144,121 @@ export namespace SessionRetry {
   }
 
   /**
+   * Parse retry-after value from headers and return delay in milliseconds.
+   * Returns null if no valid retry-after header is found.
+   */
+  function parseRetryAfterHeader(headers: Record<string, string>): number | null {
+    // Check for retry-after-ms header first (milliseconds)
+    const retryAfterMs = headers['retry-after-ms'];
+    if (retryAfterMs) {
+      const parsedMs = Number.parseFloat(retryAfterMs);
+      if (!Number.isNaN(parsedMs) && parsedMs > 0) {
+        log.info(() => ({
+          message: 'parsed retry-after-ms header',
+          headerValue: parsedMs,
+        }));
+        return parsedMs;
+      }
+    }
+
+    // Check for retry-after header (seconds or HTTP date)
+    const retryAfter = headers['retry-after'];
+    if (retryAfter) {
+      const parsedSeconds = Number.parseFloat(retryAfter);
+      if (!Number.isNaN(parsedSeconds) && parsedSeconds > 0) {
+        const delayMs = Math.ceil(parsedSeconds * 1000);
+        log.info(() => ({
+          message: 'parsed retry-after header (seconds)',
+          headerValue: parsedSeconds,
+          delayMs,
+        }));
+        return delayMs;
+      }
+      // Try parsing as HTTP date format
+      const parsed = Date.parse(retryAfter) - Date.now();
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        log.info(() => ({
+          message: 'parsed retry-after header (date)',
+          headerValue: retryAfter,
+          delayMs: parsed,
+        }));
+        return Math.ceil(parsed);
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Calculate retry delay based on error response headers and attempt number.
-   * Respects retry-after headers from the API while capping to max delay.
+   *
+   * RETRY LOGIC (per issue #157 requirements):
+   * 1. If retry-after header is available:
+   *    - If retry-after <= AGENT_RETRY_TIMEOUT: use it directly (exact time)
+   *    - If retry-after > AGENT_RETRY_TIMEOUT: throw RetryTimeoutExceededError (fail immediately)
+   * 2. If no retry-after header:
+   *    - Use exponential backoff up to AGENT_MAX_RETRY_DELAY
+   *
    * Adds jitter to prevent thundering herd when multiple requests retry.
    * See: https://github.com/link-assistant/agent/issues/157
+   *
+   * @throws {RetryTimeoutExceededError} When retry-after exceeds AGENT_RETRY_TIMEOUT
    */
-  export function delay(error: MessageV2.APIError, attempt: number) {
-    const maxDelay = getMaxRetryDelay();
+  export function delay(error: MessageV2.APIError, attempt: number): number {
+    const maxRetryTimeout = getRetryTimeout();
+    const maxBackoffDelay = getMaxRetryDelay();
     const headers = error.data.responseHeaders;
 
     if (headers) {
-      // Check for retry-after-ms header first (milliseconds)
-      const retryAfterMs = headers['retry-after-ms'];
-      if (retryAfterMs) {
-        const parsedMs = Number.parseFloat(retryAfterMs);
-        if (!Number.isNaN(parsedMs)) {
-          const cappedDelay = Math.min(parsedMs, maxDelay);
-          log.info(() => ({
-            message: 'using retry-after-ms header',
-            headerValue: parsedMs,
-            cappedValue: cappedDelay,
-            maxDelay,
+      const retryAfterMs = parseRetryAfterHeader(headers);
+
+      if (retryAfterMs !== null) {
+        // Check if retry-after exceeds the maximum retry timeout
+        if (retryAfterMs > maxRetryTimeout) {
+          log.error(() => ({
+            message: 'retry-after exceeds maximum retry timeout, failing immediately',
+            retryAfterMs,
+            maxRetryTimeout,
+            retryAfterHours: (retryAfterMs / 1000 / 3600).toFixed(2),
+            maxRetryTimeoutHours: (maxRetryTimeout / 1000 / 3600).toFixed(2),
           }));
-          return addJitter(cappedDelay);
+          throw new RetryTimeoutExceededError(retryAfterMs, maxRetryTimeout);
         }
+
+        // Use exact retry-after time (within timeout limit)
+        log.info(() => ({
+          message: 'using exact retry-after value',
+          retryAfterMs,
+          maxRetryTimeout,
+        }));
+        return addJitter(retryAfterMs);
       }
 
-      // Check for retry-after header (seconds or HTTP date)
-      const retryAfter = headers['retry-after'];
-      if (retryAfter) {
-        const parsedSeconds = Number.parseFloat(retryAfter);
-        if (!Number.isNaN(parsedSeconds)) {
-          // Convert seconds to milliseconds and cap
-          const delayMs = Math.ceil(parsedSeconds * 1000);
-          const cappedDelay = Math.min(delayMs, maxDelay);
-          log.info(() => ({
-            message: 'using retry-after header (seconds)',
-            headerValue: parsedSeconds,
-            delayMs,
-            cappedValue: cappedDelay,
-            maxDelay,
-          }));
-          return addJitter(cappedDelay);
-        }
-        // Try parsing as HTTP date format
-        const parsed = Date.parse(retryAfter) - Date.now();
-        if (!Number.isNaN(parsed) && parsed > 0) {
-          const cappedDelay = Math.min(Math.ceil(parsed), maxDelay);
-          log.info(() => ({
-            message: 'using retry-after header (date)',
-            headerValue: retryAfter,
-            delayMs: parsed,
-            cappedValue: cappedDelay,
-            maxDelay,
-          }));
-          return addJitter(cappedDelay);
-        }
-      }
-
-      // Fallback to exponential backoff if headers present but no retry-after
+      // Headers present but no retry-after - use exponential backoff with max delay cap
       const backoffDelay = Math.min(
         RETRY_INITIAL_DELAY * Math.pow(RETRY_BACKOFF_FACTOR, attempt - 1),
-        maxDelay
+        maxBackoffDelay
       );
+      log.info(() => ({
+        message: 'no retry-after header, using exponential backoff',
+        attempt,
+        backoffDelay,
+        maxBackoffDelay,
+      }));
       return addJitter(backoffDelay);
     }
 
-    // No headers - use exponential backoff with lower cap
+    // No headers at all - use exponential backoff with lower cap
     const backoffDelay = Math.min(
       RETRY_INITIAL_DELAY * Math.pow(RETRY_BACKOFF_FACTOR, attempt - 1),
       RETRY_MAX_DELAY_NO_HEADERS
     );
+    log.info(() => ({
+      message: 'no response headers, using exponential backoff with conservative cap',
+      attempt,
+      backoffDelay,
+      maxCap: RETRY_MAX_DELAY_NO_HEADERS,
+    }));
     return addJitter(backoffDelay);
   }
 

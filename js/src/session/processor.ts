@@ -392,12 +392,44 @@ export namespace SessionProcessor {
             ) {
               attempt++;
               // Use error-specific delay calculation
-              const delay =
-                error?.name === 'SocketConnectionError'
-                  ? SessionRetry.socketErrorDelay(attempt)
-                  : error?.name === 'TimeoutError'
-                    ? SessionRetry.timeoutDelay(attempt)
-                    : SessionRetry.delay(error, attempt);
+              // SessionRetry.delay may throw RetryTimeoutExceededError if retry-after exceeds timeout
+              let delay: number;
+              try {
+                delay =
+                  error?.name === 'SocketConnectionError'
+                    ? SessionRetry.socketErrorDelay(attempt)
+                    : error?.name === 'TimeoutError'
+                      ? SessionRetry.timeoutDelay(attempt)
+                      : SessionRetry.delay(error, attempt);
+              } catch (delayError) {
+                // If retry-after exceeds AGENT_RETRY_TIMEOUT, fail immediately
+                if (
+                  delayError instanceof SessionRetry.RetryTimeoutExceededError
+                ) {
+                  log.error(() => ({
+                    message: 'retry-after exceeds timeout, failing immediately',
+                    retryAfterMs: delayError.retryAfterMs,
+                    maxTimeoutMs: delayError.maxTimeoutMs,
+                  }));
+                  SessionRetry.clearRetryState(input.sessionID);
+                  // Create a specific error for this case
+                  input.assistantMessage.error = {
+                    name: 'RetryTimeoutExceededError',
+                    data: {
+                      message: delayError.message,
+                      isRetryable: false,
+                      retryAfterMs: delayError.retryAfterMs,
+                      maxTimeoutMs: delayError.maxTimeoutMs,
+                    },
+                  } as MessageV2.Error;
+                  Bus.publish(Session.Event.Error, {
+                    sessionID: input.assistantMessage.sessionID,
+                    error: input.assistantMessage.error,
+                  });
+                  break;
+                }
+                throw delayError;
+              }
               log.info(() => ({
                 message: 'retrying',
                 errorType: error?.name,
