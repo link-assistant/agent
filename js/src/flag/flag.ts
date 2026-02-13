@@ -63,6 +63,41 @@ export namespace Flag {
     'OPENCODE_DRY_RUN'
   );
 
+  // Title generation configuration
+  // When disabled, sessions will use default "New session - {timestamp}" titles
+  // This saves tokens and prevents rate limit issues with free tier models
+  // See: https://github.com/link-assistant/agent/issues/157
+  export let GENERATE_TITLE = truthyCompat(
+    'LINK_ASSISTANT_AGENT_GENERATE_TITLE',
+    'AGENT_GENERATE_TITLE'
+  );
+
+  // Allow setting title generation mode programmatically (e.g., from CLI --generate-title flag)
+  export function setGenerateTitle(value: boolean) {
+    GENERATE_TITLE = value;
+  }
+
+  // Retry timeout configuration
+  // Maximum total time to keep retrying for the same error type (default: 7 days in seconds)
+  // For different error types, the timer resets
+  // See: https://github.com/link-assistant/agent/issues/157
+  export function RETRY_TIMEOUT(): number {
+    const val = getEnv(
+      'LINK_ASSISTANT_AGENT_RETRY_TIMEOUT',
+      'AGENT_RETRY_TIMEOUT'
+    );
+    return val ? parseInt(val, 10) : 604800; // 7 days in seconds
+  }
+
+  // Maximum delay for a single retry attempt (default: 20 minutes in milliseconds)
+  export function MAX_RETRY_DELAY(): number {
+    const val = getEnv(
+      'LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY',
+      'AGENT_MAX_RETRY_DELAY'
+    );
+    return val ? parseInt(val, 10) * 1000 : 1200000; // 20 minutes in ms
+  }
+
   // Stream timeout configuration
   // chunkMs: timeout between stream chunks - detects stalled streams (default: 2 minutes)
   // stepMs: timeout for each individual LLM step (default: 10 minutes)

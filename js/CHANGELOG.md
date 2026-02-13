@@ -1,5 +1,40 @@
 # @link-assistant/agent
 
+## 0.11.0
+
+### Minor Changes
+
+- f47d0b2: Add --generate-title flag and enhanced retry logic with exponential backoff
+  - Add `--generate-title` CLI option (disabled by default) to save tokens on title generation
+  - Implement retry with exponential backoff up to 20 minutes per retry, 7 days total timeout
+  - Add `--retry-timeout` option to configure maximum retry duration (default: 7 days)
+  - Respect retry-after headers from API responses
+  - Add jitter to prevent thundering herd on retries
+  - Track retry state per error type (different errors reset the timer)
+
+## 0.10.2
+
+### Patch Changes
+
+- feat: Add --generate-title flag to control session title generation (disabled by default)
+
+  Session title generation is now disabled by default to save tokens and prevent rate limit
+  issues when using free tier models. Enable it with the --generate-title CLI flag or
+  AGENT_GENERATE_TITLE=true environment variable.
+
+  See: https://github.com/link-assistant/agent/issues/157
+
+- feat: Enhanced retry logic with configurable timeout and retry-after header support
+
+  Improved rate limit handling with:
+  - Respect retry-after headers from API providers (capped to 20 min max per retry)
+  - Configurable total retry timeout via --retry-timeout or AGENT_RETRY_TIMEOUT (default: 7 days)
+  - Configurable max single retry delay via AGENT_MAX_RETRY_DELAY (default: 20 minutes)
+  - Added jitter to prevent thundering herd when multiple requests retry
+  - Retry state tracking per session with automatic reset on different error types
+
+  See: https://github.com/link-assistant/agent/issues/157
+
 ## 0.10.0
 
 ### Minor Changes
