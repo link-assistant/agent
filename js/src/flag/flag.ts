@@ -98,6 +98,17 @@ export namespace Flag {
     return val ? parseInt(val, 10) * 1000 : 1200000; // 20 minutes in ms
   }
 
+  // Minimum retry interval to prevent rapid retries (default: 30 seconds)
+  // This ensures we don't hammer the API with rapid retry attempts
+  // See: https://github.com/link-assistant/agent/issues/167
+  export function MIN_RETRY_INTERVAL(): number {
+    const val = getEnv(
+      'LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL',
+      'AGENT_MIN_RETRY_INTERVAL'
+    );
+    return val ? parseInt(val, 10) * 1000 : 30000; // 30 seconds in ms
+  }
+
   // Stream timeout configuration
   // chunkMs: timeout between stream chunks - detects stalled streams (default: 2 minutes)
   // stepMs: timeout for each individual LLM step (default: 10 minutes)
