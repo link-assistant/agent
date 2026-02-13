@@ -2183,9 +2183,11 @@ const GooglePlugin: AuthPlugin = {
 
 /**
  * Qwen OAuth Configuration
- * Used for Qwen Coder free tier authentication via chat.qwen.ai
+ * Used for Qwen Coder subscription authentication via chat.qwen.ai
  *
- * Based on qwen-auth-opencode reference implementation:
+ * Based on the official Qwen Code CLI (QwenLM/qwen-code)
+ * and qwen-auth-opencode reference implementation:
+ * https://github.com/QwenLM/Qwen3-Coder
  * https://github.com/lion-lef/qwen-auth-opencode
  */
 const QWEN_OAUTH_CLIENT_ID = 'f0304373b74a44d2b584a3fb70ca9e56';
@@ -2193,15 +2195,7 @@ const QWEN_OAUTH_SCOPE = 'openid profile email model.completion';
 const QWEN_OAUTH_DEVICE_CODE_ENDPOINT =
   'https://chat.qwen.ai/api/v1/oauth2/device/code';
 const QWEN_OAUTH_TOKEN_ENDPOINT = 'https://chat.qwen.ai/api/v1/oauth2/token';
-const QWEN_OAUTH_API_URL = 'https://portal.qwen.ai/v1';
-
-/**
- * Qwen/Alibaba API endpoints
- */
-const DASHSCOPE_API_URLS: Record<string, string> = {
-  china: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-  international: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
-};
+const QWEN_OAUTH_DEFAULT_API_URL = 'https://portal.qwen.ai/v1';
 
 /**
  * Detect if running in a headless environment (no GUI)
@@ -2235,18 +2229,18 @@ function openBrowser(url: string): void {
 
 /**
  * Qwen OAuth Plugin
- * Supports:
- * - Qwen Coder OAuth login (device flow) - Free tier (2,000 requests/day)
- * - DashScope API key (pay-as-you-go)
+ * Supports Qwen Coder subscription via OAuth device flow.
  *
- * This plugin provides authentication for both Qwen Coder models via OAuth
- * and Alibaba DashScope models via API key.
+ * Uses OAuth 2.0 Device Authorization Grant (RFC 8628) with PKCE (RFC 7636),
+ * matching the official Qwen Code CLI implementation.
+ *
+ * @see https://github.com/QwenLM/Qwen3-Coder
  */
 const QwenPlugin: AuthPlugin = {
   provider: 'qwen-coder',
   methods: [
     {
-      label: 'Qwen Coder OAuth (Free Tier)',
+      label: 'Qwen Coder Subscription (OAuth)',
       type: 'oauth',
       async authorize() {
         // Generate PKCE pair
@@ -2382,67 +2376,13 @@ const QwenPlugin: AuthPlugin = {
         };
       },
     },
-    {
-      label: 'DashScope API Key',
-      type: 'api',
-      prompts: [
-        {
-          type: 'select',
-          key: 'region',
-          message: 'Select API region',
-          options: [
-            {
-              label: 'China',
-              value: 'china',
-              hint: 'dashscope.aliyuncs.com',
-            },
-            {
-              label: 'International',
-              value: 'international',
-              hint: 'dashscope-intl.aliyuncs.com',
-            },
-          ],
-        },
-        {
-          type: 'text',
-          key: 'apiKey',
-          message: 'Enter your DashScope API key',
-          placeholder: 'sk-...',
-          validate: (value) => {
-            if (!value || value.trim().length === 0) {
-              return 'API key is required';
-            }
-            if (!value.startsWith('sk-')) {
-              return "Invalid API key format (should start with 'sk-')";
-            }
-            return undefined;
-          },
-        },
-      ],
-      async authorize(inputs): Promise<AuthResult> {
-        const region = inputs.region || 'international';
-        const apiKey = inputs.apiKey;
-
-        if (!apiKey) {
-          return { type: 'failed' };
-        }
-
-        // Store the region preference with the key for later use
-        // The key format allows us to retrieve the region during requests
-        return {
-          type: 'success',
-          key: apiKey,
-          provider: 'alibaba', // Save as alibaba for API key auth
-        };
-      },
-    },
   ],
   async loader(getAuth, provider) {
     const auth = await getAuth();
-    if (!auth) return {};
+    if (!auth || auth.type !== 'oauth') return {};
 
-    // Zero out cost for OAuth users (free tier)
-    if (auth.type === 'oauth' && provider?.models) {
+    // Zero out cost for subscription users (free tier)
+    if (provider?.models) {
       for (const model of Object.values(provider.models)) {
         (model as any).cost = {
           input: 0,
@@ -2455,56 +2395,111 @@ const QwenPlugin: AuthPlugin = {
       }
     }
 
-    if (auth.type === 'oauth') {
-      return {
-        apiKey: 'oauth-token-used-via-custom-fetch',
-        baseURL: QWEN_OAUTH_API_URL,
-        async fetch(input: RequestInfo | URL, init?: RequestInit) {
-          let currentAuth = await getAuth();
-          if (!currentAuth || currentAuth.type !== 'oauth')
-            return fetch(input, init);
-
-          // Note: Qwen OAuth token refresh would need to be implemented
-          // if the token expires. For now, we use the access token directly.
-          // The token typically has a long lifetime (several hours).
-
-          const headers: Record<string, string> = {
-            ...(init?.headers as Record<string, string>),
-            Authorization: `Bearer ${currentAuth.access}`,
-          };
-          delete headers['x-api-key'];
-
-          return fetch(input, {
-            ...init,
-            headers,
-          });
-        },
-      };
-    }
-
-    // API key authentication (for DashScope)
     return {
-      apiKey: auth.key,
+      apiKey: 'oauth-token-used-via-custom-fetch',
+      baseURL: QWEN_OAUTH_DEFAULT_API_URL,
+      async fetch(input: RequestInfo | URL, init?: RequestInit) {
+        let currentAuth = await getAuth();
+        if (!currentAuth || currentAuth.type !== 'oauth')
+          return fetch(input, init);
+
+        // Refresh token if expired (with 5 minute buffer)
+        const FIVE_MIN_MS = 5 * 60 * 1000;
+        if (
+          !currentAuth.access ||
+          currentAuth.expires < Date.now() + FIVE_MIN_MS
+        ) {
+          if (!currentAuth.refresh) {
+            log.error(() => ({
+              message:
+                'qwen oauth token expired and no refresh token available',
+            }));
+            throw new Error(
+              'Qwen OAuth token expired. Please re-authenticate with: agent auth login'
+            );
+          }
+
+          log.info(() => ({
+            message: 'refreshing qwen oauth token',
+            reason: !currentAuth.access
+              ? 'no access token'
+              : 'token expiring soon',
+          }));
+
+          const response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json',
+            },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              refresh_token: currentAuth.refresh,
+              client_id: QWEN_OAUTH_CLIENT_ID,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => 'unknown');
+            log.error(() => ({
+              message: 'qwen oauth token refresh failed',
+              status: response.status,
+              error: errorText.substring(0, 200),
+            }));
+            throw new Error(
+              `Qwen token refresh failed: ${response.status}. Please re-authenticate with: agent auth login`
+            );
+          }
+
+          const json = await response.json();
+          log.info(() => ({
+            message: 'qwen oauth token refreshed successfully',
+            expiresIn: json.expires_in,
+          }));
+
+          await Auth.set('qwen-coder', {
+            type: 'oauth',
+            refresh: json.refresh_token || currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          });
+          currentAuth = {
+            type: 'oauth',
+            refresh: json.refresh_token || currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          };
+        }
+
+        const headers: Record<string, string> = {
+          ...(init?.headers as Record<string, string>),
+          Authorization: `Bearer ${currentAuth.access}`,
+        };
+        delete headers['x-api-key'];
+
+        return fetch(input, {
+          ...init,
+          headers,
+        });
+      },
     };
   },
 };
 
 /**
- * Alibaba DashScope Plugin (alias for Qwen)
- * This provides a separate menu entry for Alibaba/DashScope
- * with the same authentication methods.
+ * Alibaba Plugin (alias for Qwen Coder)
+ * This provides a separate menu entry for Alibaba
+ * with the same Qwen Coder subscription authentication.
  */
 const AlibabaPlugin: AuthPlugin = {
   provider: 'alibaba',
   methods: [
     {
-      label: 'Qwen Coder OAuth (Free Tier)',
+      label: 'Qwen Coder Subscription (OAuth)',
       type: 'oauth',
       async authorize() {
         // Delegate to QwenPlugin's OAuth method
-        const qwenMethod = QwenPlugin.methods.find(
-          (m) => m.label === 'Qwen Coder OAuth (Free Tier)'
-        );
+        const qwenMethod = QwenPlugin.methods[0];
         if (qwenMethod?.authorize) {
           const result = await qwenMethod.authorize({});
           // Override the callback to save as alibaba provider
@@ -2533,63 +2528,13 @@ const AlibabaPlugin: AuthPlugin = {
         };
       },
     },
-    {
-      label: 'DashScope API Key',
-      type: 'api',
-      prompts: [
-        {
-          type: 'select',
-          key: 'region',
-          message: 'Select API region',
-          options: [
-            {
-              label: 'China',
-              value: 'china',
-              hint: 'dashscope.aliyuncs.com',
-            },
-            {
-              label: 'International',
-              value: 'international',
-              hint: 'dashscope-intl.aliyuncs.com',
-            },
-          ],
-        },
-        {
-          type: 'text',
-          key: 'apiKey',
-          message: 'Enter your DashScope API key',
-          placeholder: 'sk-...',
-          validate: (value) => {
-            if (!value || value.trim().length === 0) {
-              return 'API key is required';
-            }
-            if (!value.startsWith('sk-')) {
-              return "Invalid API key format (should start with 'sk-')";
-            }
-            return undefined;
-          },
-        },
-      ],
-      async authorize(inputs): Promise<AuthResult> {
-        const apiKey = inputs.apiKey;
-
-        if (!apiKey) {
-          return { type: 'failed' };
-        }
-
-        return {
-          type: 'success',
-          key: apiKey,
-        };
-      },
-    },
   ],
   async loader(getAuth, provider) {
     const auth = await getAuth();
-    if (!auth) return {};
+    if (!auth || auth.type !== 'oauth') return {};
 
-    // Zero out cost for OAuth users (free tier)
-    if (auth.type === 'oauth' && provider?.models) {
+    // Zero out cost for subscription users (free tier)
+    if (provider?.models) {
       for (const model of Object.values(provider.models)) {
         (model as any).cost = {
           input: 0,
@@ -2602,32 +2547,85 @@ const AlibabaPlugin: AuthPlugin = {
       }
     }
 
-    if (auth.type === 'oauth') {
-      return {
-        apiKey: 'oauth-token-used-via-custom-fetch',
-        baseURL: QWEN_OAUTH_API_URL,
-        async fetch(input: RequestInfo | URL, init?: RequestInit) {
-          let currentAuth = await getAuth();
-          if (!currentAuth || currentAuth.type !== 'oauth')
-            return fetch(input, init);
-
-          const headers: Record<string, string> = {
-            ...(init?.headers as Record<string, string>),
-            Authorization: `Bearer ${currentAuth.access}`,
-          };
-          delete headers['x-api-key'];
-
-          return fetch(input, {
-            ...init,
-            headers,
-          });
-        },
-      };
-    }
-
-    // API key authentication (for DashScope)
     return {
-      apiKey: auth.key,
+      apiKey: 'oauth-token-used-via-custom-fetch',
+      baseURL: QWEN_OAUTH_DEFAULT_API_URL,
+      async fetch(input: RequestInfo | URL, init?: RequestInit) {
+        let currentAuth = await getAuth();
+        if (!currentAuth || currentAuth.type !== 'oauth')
+          return fetch(input, init);
+
+        // Refresh token if expired (with 5 minute buffer)
+        const FIVE_MIN_MS = 5 * 60 * 1000;
+        if (
+          !currentAuth.access ||
+          currentAuth.expires < Date.now() + FIVE_MIN_MS
+        ) {
+          if (!currentAuth.refresh) {
+            log.error(() => ({
+              message:
+                'qwen oauth token expired and no refresh token available (alibaba)',
+            }));
+            throw new Error(
+              'Qwen OAuth token expired. Please re-authenticate with: agent auth login'
+            );
+          }
+
+          log.info(() => ({
+            message: 'refreshing qwen oauth token (alibaba provider)',
+          }));
+
+          const response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json',
+            },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              refresh_token: currentAuth.refresh,
+              client_id: QWEN_OAUTH_CLIENT_ID,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => 'unknown');
+            log.error(() => ({
+              message: 'qwen oauth token refresh failed (alibaba)',
+              status: response.status,
+              error: errorText.substring(0, 200),
+            }));
+            throw new Error(
+              `Qwen token refresh failed: ${response.status}. Please re-authenticate with: agent auth login`
+            );
+          }
+
+          const json = await response.json();
+          await Auth.set('alibaba', {
+            type: 'oauth',
+            refresh: json.refresh_token || currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          });
+          currentAuth = {
+            type: 'oauth',
+            refresh: json.refresh_token || currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          };
+        }
+
+        const headers: Record<string, string> = {
+          ...(init?.headers as Record<string, string>),
+          Authorization: `Bearer ${currentAuth.access}`,
+        };
+        delete headers['x-api-key'];
+
+        return fetch(input, {
+          ...init,
+          headers,
+        });
+      },
     };
   },
 };
