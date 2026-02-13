@@ -1,5 +1,38 @@
 # @link-assistant/agent
 
+## 0.12.1
+
+### Patch Changes
+
+- 9b072ca: Fix explicit provider/model routing for Kilo provider
+
+  When users specify an explicit provider/model combination like `kilo/glm-5-free`, the system now correctly uses that provider instead of silently falling back to the default (opencode).
+  - Add resolveShortModelName() to route short model names to providers
+  - Add parseModelWithResolution() for model string parsing with resolution
+  - Modify prompt.ts to throw error instead of falling back on explicit provider
+  - Add getAlternativeProviders() for rate limit fallback on shared models
+  - Document free model distribution between OpenCode and Kilo
+
+- ed7f9fc: fix: Time-based retry for rate limits at fetch level
+
+  Implement custom fetch wrapper to handle HTTP 429 (rate limit) responses at the HTTP layer,
+  ensuring the agent's time-based retry configuration is respected instead of the AI SDK's
+  fixed retry count (3 attempts).
+
+  Changes:
+  - Add RetryFetch wrapper that intercepts 429 responses before AI SDK's internal retry
+  - Parse retry-after and retry-after-ms headers from server responses
+  - Use exponential backoff when no header is present (up to 20 minutes per retry)
+  - Respect AGENT_RETRY_TIMEOUT (default: 7 weeks) as global timeout
+  - Add AGENT_MIN_RETRY_INTERVAL (default: 30 seconds) to prevent rapid retry attempts
+  - Retry network errors (socket/connection issues) with exponential backoff
+  - Compose with existing custom fetch functions (OAuth, timeout wrappers)
+
+  This fixes the issue where the AI SDK exhausted its 3 retry attempts before the agent's
+  retry logic could wait for the server's retry-after period (e.g., 64 minutes).
+
+  Fixes #167
+
 ## 0.12.0
 
 ### Minor Changes
