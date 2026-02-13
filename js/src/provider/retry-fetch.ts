@@ -308,8 +308,7 @@ export namespace RetryFetch {
         // Check if delay would exceed remaining timeout
         if (elapsed + delay >= maxRetryTimeout) {
           log.warn(() => ({
-            message:
-              'delay would exceed retry timeout, returning 429 response',
+            message: 'delay would exceed retry timeout, returning 429 response',
             sessionID,
             elapsed,
             delay,

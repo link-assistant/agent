@@ -48,10 +48,8 @@ describe('RetryFetch', () => {
 
     test('returns 429 response when retry timeout is exceeded', async () => {
       // Save original env values
-      const originalRetryTimeout =
-        process.env['AGENT_RETRY_TIMEOUT'];
-      const originalMinInterval =
-        process.env['AGENT_MIN_RETRY_INTERVAL'];
+      const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
+      const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
 
       // Set very short timeout for testing
       process.env['AGENT_RETRY_TIMEOUT'] = '0'; // 0 seconds = immediate timeout
@@ -91,10 +89,8 @@ describe('RetryFetch', () => {
 
     test('retries on 429 and succeeds on second attempt', async () => {
       // Save original env values
-      const originalRetryTimeout =
-        process.env['AGENT_RETRY_TIMEOUT'];
-      const originalMinInterval =
-        process.env['AGENT_MIN_RETRY_INTERVAL'];
+      const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
+      const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
 
       // Set longer timeout but short min interval for fast test
       process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
@@ -114,9 +110,7 @@ describe('RetryFetch', () => {
               })
             );
           }
-          return Promise.resolve(
-            new Response('success', { status: 200 })
-          );
+          return Promise.resolve(new Response('success', { status: 200 }));
         });
 
         const retryFetch = RetryFetch.create({
