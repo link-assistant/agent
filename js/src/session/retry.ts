@@ -147,7 +147,9 @@ export namespace SessionRetry {
    * Parse retry-after value from headers and return delay in milliseconds.
    * Returns null if no valid retry-after header is found.
    */
-  function parseRetryAfterHeader(headers: Record<string, string>): number | null {
+  function parseRetryAfterHeader(
+    headers: Record<string, string>
+  ): number | null {
     // Check for retry-after-ms header first (milliseconds)
     const retryAfterMs = headers['retry-after-ms'];
     if (retryAfterMs) {
@@ -216,7 +218,8 @@ export namespace SessionRetry {
         // Check if retry-after exceeds the maximum retry timeout
         if (retryAfterMs > maxRetryTimeout) {
           log.error(() => ({
-            message: 'retry-after exceeds maximum retry timeout, failing immediately',
+            message:
+              'retry-after exceeds maximum retry timeout, failing immediately',
             retryAfterMs,
             maxRetryTimeout,
             retryAfterHours: (retryAfterMs / 1000 / 3600).toFixed(2),
@@ -254,7 +257,8 @@ export namespace SessionRetry {
       RETRY_MAX_DELAY_NO_HEADERS
     );
     log.info(() => ({
-      message: 'no response headers, using exponential backoff with conservative cap',
+      message:
+        'no response headers, using exponential backoff with conservative cap',
       attempt,
       backoffDelay,
       maxCap: RETRY_MAX_DELAY_NO_HEADERS,
