@@ -133,6 +133,8 @@ export namespace SessionSummary {
         .findLast((m) => m.info.role === 'assistant')
         ?.parts.findLast((p) => p.type === 'text')?.text;
       if (!summary || diffs.length > 0) {
+        // Pre-convert messages to ModelMessage format (async in AI SDK 6.0+)
+        const modelMessages = await MessageV2.toModelMessage(messages);
         const result = await generateText({
           model: small.language,
           maxOutputTokens: 100,
@@ -142,7 +144,7 @@ export namespace SessionSummary {
               content: `
             Summarize the following conversation into 2 sentences MAX explaining what the assistant did and why. Do not explain the user's input. Do not speak in the third person about the assistant.
             <conversation>
-            ${JSON.stringify(MessageV2.toModelMessage(messages))}
+            ${JSON.stringify(modelMessages)}
             </conversation>
             `,
             },

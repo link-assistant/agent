@@ -136,6 +136,26 @@ export namespace SessionCompaction {
       model: model.info,
       abort: input.abort,
     });
+    // Pre-convert messages to ModelMessage format (async in AI SDK 6.0+)
+    const modelMessages = await MessageV2.toModelMessage(
+      input.messages.filter((m) => {
+        if (m.info.role !== 'assistant' || m.info.error === undefined) {
+          return true;
+        }
+        if (
+          MessageV2.AbortedError.isInstance(m.info.error) &&
+          m.parts.some(
+            (part) => part.type !== 'step-start' && part.type !== 'reasoning'
+          )
+        ) {
+          return true;
+        }
+
+        return false;
+      })
+    );
+    // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
+    const safeModelMessages = Array.isArray(modelMessages) ? modelMessages : [];
     const result = await processor.process(() =>
       streamText({
         onError(error) {
@@ -166,24 +186,7 @@ export namespace SessionCompaction {
               content: x,
             })
           ),
-          ...MessageV2.toModelMessage(
-            input.messages.filter((m) => {
-              if (m.info.role !== 'assistant' || m.info.error === undefined) {
-                return true;
-              }
-              if (
-                MessageV2.AbortedError.isInstance(m.info.error) &&
-                m.parts.some(
-                  (part) =>
-                    part.type !== 'step-start' && part.type !== 'reasoning'
-                )
-              ) {
-                return true;
-              }
-
-              return false;
-            })
-          ),
+          ...safeModelMessages,
           {
             role: 'user',
             content: [
