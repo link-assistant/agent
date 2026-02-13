@@ -85,6 +85,18 @@ We're creating a slimmed-down, public domain version of OpenCode CLI focused on 
 
 **OpenCode Compatibility**: We maintain 100% compatibility with OpenCode's JSON event streaming format, so tools expecting `opencode run --format json --model opencode/kimi-k2.5-free` output will work with our agent-cli.
 
+## Why Choose Agent Over OpenCode?
+
+While maintaining 100% compatibility with OpenCode's JSON interface, Agent offers several key advantages:
+
+- **🎯 Token Efficient**: Title generation disabled by default - saves tokens and prevents rate limit issues with free-tier models
+- **🔄 Robust Retry Logic**: Advanced retry with exponential backoff (up to 20 minutes per retry, 7 days total timeout)
+- **⚙️ Configurable Timeouts**: Full control over retry behavior via `--retry-timeout` and environment variables
+- **📊 Smart Error Tracking**: Different error types reset retry timers independently for optimal recovery
+- **🎛️ Respect API Headers**: Automatically respects retry-after headers from API providers
+
+**The Result**: Agent is optimized for long-running, autonomous operations with free-tier models, while OpenCode focuses on interactive TUI use cases.
+
 ## Features
 
 - **JSON Input/Output**: Accepts JSON via stdin, outputs JSON event streams (OpenCode-compatible)
