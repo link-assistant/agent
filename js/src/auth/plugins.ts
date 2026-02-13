@@ -2182,6 +2182,455 @@ const GooglePlugin: AuthPlugin = {
 };
 
 /**
+ * Qwen OAuth Configuration
+ * Used for Qwen Coder subscription authentication via chat.qwen.ai
+ *
+ * Based on the official Qwen Code CLI (QwenLM/qwen-code)
+ * and qwen-auth-opencode reference implementation:
+ * https://github.com/QwenLM/Qwen3-Coder
+ * https://github.com/lion-lef/qwen-auth-opencode
+ */
+const QWEN_OAUTH_CLIENT_ID = 'f0304373b74a44d2b584a3fb70ca9e56';
+const QWEN_OAUTH_SCOPE = 'openid profile email model.completion';
+const QWEN_OAUTH_DEVICE_CODE_ENDPOINT =
+  'https://chat.qwen.ai/api/v1/oauth2/device/code';
+const QWEN_OAUTH_TOKEN_ENDPOINT = 'https://chat.qwen.ai/api/v1/oauth2/token';
+const QWEN_OAUTH_DEFAULT_API_URL = 'https://portal.qwen.ai/v1';
+
+/**
+ * Detect if running in a headless environment (no GUI)
+ */
+function isHeadlessEnvironment(): boolean {
+  // Check common headless indicators
+  if (!process.stdout.isTTY) return true;
+  if (process.env.SSH_CLIENT || process.env.SSH_TTY) return true;
+  if (process.env.CI) return true;
+  if (!process.env.DISPLAY && process.platform === 'linux') return true;
+  return false;
+}
+
+/**
+ * Open URL in the default browser
+ */
+function openBrowser(url: string): void {
+  const platform = process.platform;
+  let command: string;
+
+  if (platform === 'darwin') {
+    command = 'open';
+  } else if (platform === 'win32') {
+    command = 'start';
+  } else {
+    command = 'xdg-open';
+  }
+
+  Bun.spawn([command, url], { stdout: 'ignore', stderr: 'ignore' });
+}
+
+/**
+ * Qwen OAuth Plugin
+ * Supports Qwen Coder subscription via OAuth device flow.
+ *
+ * Uses OAuth 2.0 Device Authorization Grant (RFC 8628) with PKCE (RFC 7636),
+ * matching the official Qwen Code CLI implementation.
+ *
+ * @see https://github.com/QwenLM/Qwen3-Coder
+ */
+const QwenPlugin: AuthPlugin = {
+  provider: 'qwen-coder',
+  methods: [
+    {
+      label: 'Qwen Coder Subscription (OAuth)',
+      type: 'oauth',
+      async authorize() {
+        // Generate PKCE pair
+        const codeVerifier = generateRandomString(32);
+        const codeChallenge = generateCodeChallenge(codeVerifier);
+
+        // Request device code
+        const deviceResponse = await fetch(QWEN_OAUTH_DEVICE_CODE_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
+          },
+          body: new URLSearchParams({
+            client_id: QWEN_OAUTH_CLIENT_ID,
+            scope: QWEN_OAUTH_SCOPE,
+            code_challenge: codeChallenge,
+            code_challenge_method: 'S256',
+          }).toString(),
+        });
+
+        if (!deviceResponse.ok) {
+          const errorText = await deviceResponse.text();
+          log.error(() => ({
+            message: 'qwen oauth device code request failed',
+            status: deviceResponse.status,
+            error: errorText,
+          }));
+          throw new Error(
+            `Device authorization failed: ${deviceResponse.status}`
+          );
+        }
+
+        const deviceData = (await deviceResponse.json()) as {
+          device_code: string;
+          user_code: string;
+          verification_uri: string;
+          verification_uri_complete: string;
+          expires_in: number;
+          interval?: number;
+        };
+
+        const pollInterval = (deviceData.interval || 2) * 1000;
+        const maxPollAttempts = Math.ceil(
+          deviceData.expires_in / (pollInterval / 1000)
+        );
+
+        // Try to open browser in non-headless environments
+        if (!isHeadlessEnvironment()) {
+          try {
+            openBrowser(deviceData.verification_uri_complete);
+          } catch {
+            // Ignore browser open errors
+          }
+        }
+
+        const instructions = isHeadlessEnvironment()
+          ? `Visit: ${deviceData.verification_uri}\nEnter code: ${deviceData.user_code}`
+          : `Opening browser for authentication...\nIf browser doesn't open, visit: ${deviceData.verification_uri}\nEnter code: ${deviceData.user_code}`;
+
+        return {
+          url: deviceData.verification_uri_complete,
+          instructions,
+          method: 'auto' as const,
+          async callback(): Promise<AuthResult> {
+            // Poll for authorization completion
+            for (let attempt = 0; attempt < maxPollAttempts; attempt++) {
+              const tokenResponse = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                  Accept: 'application/json',
+                },
+                body: new URLSearchParams({
+                  client_id: QWEN_OAUTH_CLIENT_ID,
+                  device_code: deviceData.device_code,
+                  grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+                  code_verifier: codeVerifier,
+                }).toString(),
+              });
+
+              if (!tokenResponse.ok) {
+                const errorText = await tokenResponse.text();
+                try {
+                  const errorJson = JSON.parse(errorText);
+                  if (
+                    errorJson.error === 'authorization_pending' ||
+                    errorJson.error === 'slow_down'
+                  ) {
+                    await new Promise((resolve) =>
+                      setTimeout(
+                        resolve,
+                        errorJson.error === 'slow_down'
+                          ? pollInterval * 1.5
+                          : pollInterval
+                      )
+                    );
+                    continue;
+                  }
+                } catch {
+                  // JSON parse failed, treat as regular error
+                }
+
+                log.error(() => ({
+                  message: 'qwen oauth token poll failed',
+                  status: tokenResponse.status,
+                  error: errorText,
+                }));
+                return { type: 'failed' };
+              }
+
+              const tokenData = (await tokenResponse.json()) as {
+                access_token: string;
+                refresh_token?: string;
+                token_type: string;
+                expires_in: number;
+                resource_url?: string;
+              };
+
+              return {
+                type: 'success',
+                refresh: tokenData.refresh_token || '',
+                access: tokenData.access_token,
+                expires: Date.now() + tokenData.expires_in * 1000,
+              };
+            }
+
+            log.error(() => ({
+              message: 'qwen oauth authorization timeout',
+            }));
+            return { type: 'failed' };
+          },
+        };
+      },
+    },
+  ],
+  async loader(getAuth, provider) {
+    const auth = await getAuth();
+    if (!auth || auth.type !== 'oauth') return {};
+
+    // Zero out cost for subscription users (free tier)
+    if (provider?.models) {
+      for (const model of Object.values(provider.models)) {
+        (model as any).cost = {
+          input: 0,
+          output: 0,
+          cache: {
+            read: 0,
+            write: 0,
+          },
+        };
+      }
+    }
+
+    return {
+      apiKey: 'oauth-token-used-via-custom-fetch',
+      baseURL: QWEN_OAUTH_DEFAULT_API_URL,
+      async fetch(input: RequestInfo | URL, init?: RequestInit) {
+        let currentAuth = await getAuth();
+        if (!currentAuth || currentAuth.type !== 'oauth')
+          return fetch(input, init);
+
+        // Refresh token if expired (with 5 minute buffer)
+        const FIVE_MIN_MS = 5 * 60 * 1000;
+        if (
+          !currentAuth.access ||
+          currentAuth.expires < Date.now() + FIVE_MIN_MS
+        ) {
+          if (!currentAuth.refresh) {
+            log.error(() => ({
+              message:
+                'qwen oauth token expired and no refresh token available',
+            }));
+            throw new Error(
+              'Qwen OAuth token expired. Please re-authenticate with: agent auth login'
+            );
+          }
+
+          log.info(() => ({
+            message: 'refreshing qwen oauth token',
+            reason: !currentAuth.access
+              ? 'no access token'
+              : 'token expiring soon',
+          }));
+
+          const response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json',
+            },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              refresh_token: currentAuth.refresh,
+              client_id: QWEN_OAUTH_CLIENT_ID,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => 'unknown');
+            log.error(() => ({
+              message: 'qwen oauth token refresh failed',
+              status: response.status,
+              error: errorText.substring(0, 200),
+            }));
+            throw new Error(
+              `Qwen token refresh failed: ${response.status}. Please re-authenticate with: agent auth login`
+            );
+          }
+
+          const json = await response.json();
+          log.info(() => ({
+            message: 'qwen oauth token refreshed successfully',
+            expiresIn: json.expires_in,
+          }));
+
+          await Auth.set('qwen-coder', {
+            type: 'oauth',
+            refresh: json.refresh_token || currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          });
+          currentAuth = {
+            type: 'oauth',
+            refresh: json.refresh_token || currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          };
+        }
+
+        const headers: Record<string, string> = {
+          ...(init?.headers as Record<string, string>),
+          Authorization: `Bearer ${currentAuth.access}`,
+        };
+        delete headers['x-api-key'];
+
+        return fetch(input, {
+          ...init,
+          headers,
+        });
+      },
+    };
+  },
+};
+
+/**
+ * Alibaba Plugin (alias for Qwen Coder)
+ * This provides a separate menu entry for Alibaba
+ * with the same Qwen Coder subscription authentication.
+ */
+const AlibabaPlugin: AuthPlugin = {
+  provider: 'alibaba',
+  methods: [
+    {
+      label: 'Qwen Coder Subscription (OAuth)',
+      type: 'oauth',
+      async authorize() {
+        // Delegate to QwenPlugin's OAuth method
+        const qwenMethod = QwenPlugin.methods[0];
+        if (qwenMethod?.authorize) {
+          const result = await qwenMethod.authorize({});
+          // Override the callback to save as alibaba provider
+          if ('callback' in result) {
+            const originalCallback = result.callback;
+            return {
+              ...result,
+              async callback(code?: string): Promise<AuthResult> {
+                const authResult = await originalCallback(code);
+                if (authResult.type === 'success' && 'refresh' in authResult) {
+                  return {
+                    ...authResult,
+                    provider: 'alibaba',
+                  };
+                }
+                return authResult;
+              },
+            };
+          }
+        }
+        return {
+          method: 'auto' as const,
+          async callback(): Promise<AuthResult> {
+            return { type: 'failed' };
+          },
+        };
+      },
+    },
+  ],
+  async loader(getAuth, provider) {
+    const auth = await getAuth();
+    if (!auth || auth.type !== 'oauth') return {};
+
+    // Zero out cost for subscription users (free tier)
+    if (provider?.models) {
+      for (const model of Object.values(provider.models)) {
+        (model as any).cost = {
+          input: 0,
+          output: 0,
+          cache: {
+            read: 0,
+            write: 0,
+          },
+        };
+      }
+    }
+
+    return {
+      apiKey: 'oauth-token-used-via-custom-fetch',
+      baseURL: QWEN_OAUTH_DEFAULT_API_URL,
+      async fetch(input: RequestInfo | URL, init?: RequestInit) {
+        let currentAuth = await getAuth();
+        if (!currentAuth || currentAuth.type !== 'oauth')
+          return fetch(input, init);
+
+        // Refresh token if expired (with 5 minute buffer)
+        const FIVE_MIN_MS = 5 * 60 * 1000;
+        if (
+          !currentAuth.access ||
+          currentAuth.expires < Date.now() + FIVE_MIN_MS
+        ) {
+          if (!currentAuth.refresh) {
+            log.error(() => ({
+              message:
+                'qwen oauth token expired and no refresh token available (alibaba)',
+            }));
+            throw new Error(
+              'Qwen OAuth token expired. Please re-authenticate with: agent auth login'
+            );
+          }
+
+          log.info(() => ({
+            message: 'refreshing qwen oauth token (alibaba provider)',
+          }));
+
+          const response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json',
+            },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              refresh_token: currentAuth.refresh,
+              client_id: QWEN_OAUTH_CLIENT_ID,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => 'unknown');
+            log.error(() => ({
+              message: 'qwen oauth token refresh failed (alibaba)',
+              status: response.status,
+              error: errorText.substring(0, 200),
+            }));
+            throw new Error(
+              `Qwen token refresh failed: ${response.status}. Please re-authenticate with: agent auth login`
+            );
+          }
+
+          const json = await response.json();
+          await Auth.set('alibaba', {
+            type: 'oauth',
+            refresh: json.refresh_token || currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          });
+          currentAuth = {
+            type: 'oauth',
+            refresh: json.refresh_token || currentAuth.refresh,
+            access: json.access_token,
+            expires: Date.now() + json.expires_in * 1000,
+          };
+        }
+
+        const headers: Record<string, string> = {
+          ...(init?.headers as Record<string, string>),
+          Authorization: `Bearer ${currentAuth.access}`,
+        };
+        delete headers['x-api-key'];
+
+        return fetch(input, {
+          ...init,
+          headers,
+        });
+      },
+    };
+  },
+};
+
+/**
  * Registry of all auth plugins
  */
 const plugins: Record<string, AuthPlugin> = {
@@ -2189,6 +2638,8 @@ const plugins: Record<string, AuthPlugin> = {
   'github-copilot': GitHubCopilotPlugin,
   openai: OpenAIPlugin,
   google: GooglePlugin,
+  'qwen-coder': QwenPlugin,
+  alibaba: AlibabaPlugin,
 };
 
 /**

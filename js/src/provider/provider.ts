@@ -322,6 +322,66 @@ export namespace Provider {
       };
     },
     /**
+     * Qwen Coder OAuth provider for Qwen subscription users
+     * Uses OAuth credentials from agent auth login (Qwen Coder Subscription)
+     *
+     * To authenticate, run: agent auth login (select Qwen Coder)
+     */
+    'qwen-coder': async (input) => {
+      const auth = await Auth.get('qwen-coder');
+      if (auth?.type === 'oauth') {
+        log.info(() => ({
+          message: 'using qwen-coder oauth credentials',
+        }));
+        const loaderFn = await AuthPlugins.getLoader('qwen-coder');
+        if (loaderFn) {
+          const result = await loaderFn(() => Auth.get('qwen-coder'), input);
+          if (result.fetch) {
+            return {
+              autoload: true,
+              options: {
+                apiKey: result.apiKey || '',
+                baseURL: result.baseURL,
+                fetch: result.fetch,
+              },
+            };
+          }
+        }
+      }
+      // Default: not auto-loaded without OAuth
+      return { autoload: false };
+    },
+    /**
+     * Alibaba OAuth provider (alias for Qwen Coder)
+     * Uses OAuth credentials from agent auth login (Alibaba / Qwen Coder Subscription)
+     *
+     * To authenticate, run: agent auth login (select Alibaba)
+     */
+    alibaba: async (input) => {
+      const auth = await Auth.get('alibaba');
+      if (auth?.type === 'oauth') {
+        log.info(() => ({
+          message: 'using alibaba oauth credentials',
+        }));
+        const loaderFn = await AuthPlugins.getLoader('alibaba');
+        if (loaderFn) {
+          const result = await loaderFn(() => Auth.get('alibaba'), input);
+          if (result.fetch) {
+            return {
+              autoload: true,
+              options: {
+                apiKey: result.apiKey || '',
+                baseURL: result.baseURL,
+                fetch: result.fetch,
+              },
+            };
+          }
+        }
+      }
+      // Default: not auto-loaded without OAuth
+      return { autoload: false };
+    },
+    /**
      * Google OAuth provider for Gemini subscription users
      * Uses OAuth credentials from agent auth login (Google AI Pro/Ultra)
      *
