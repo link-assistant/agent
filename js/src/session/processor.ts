@@ -1,6 +1,11 @@
 import type { ModelsDev } from '../provider/models';
 import { MessageV2 } from './message-v2';
-import { type StreamTextResult, type Tool as AITool, APICallError } from 'ai';
+import {
+  type StreamTextResult,
+  type Tool as AITool,
+  APICallError,
+  JSONParseError,
+} from 'ai';
 import { Log } from '../util/log';
 import { Identifier } from '../id/id';
 import { Session } from '.';
@@ -205,6 +210,22 @@ export namespace SessionProcessor {
                   break;
                 }
                 case 'error':
+                  // Skip stream parse errors (malformed SSE from gateway/provider)
+                  // The AI SDK emits these as error events but continues the stream.
+                  // Following OpenAI Codex pattern: log and skip bad events.
+                  // See: https://github.com/link-assistant/agent/issues/169
+                  if (JSONParseError.isInstance(value.error)) {
+                    log.warn(() => ({
+                      message:
+                        'skipping malformed SSE event (stream parse error)',
+                      errorName: (value.error as Error)?.name,
+                      errorMessage: (value.error as Error)?.message?.substring(
+                        0,
+                        200
+                      ),
+                    }));
+                    continue;
+                  }
                   throw value.error;
 
                 case 'start-step':
@@ -364,7 +385,7 @@ export namespace SessionProcessor {
               providerID: input.providerID,
             });
 
-            // Check if error is retryable (APIError, SocketConnectionError, or TimeoutError)
+            // Check if error is retryable (APIError, SocketConnectionError, TimeoutError)
             const isRetryableAPIError =
               error?.name === 'APIError' && error.data.isRetryable;
             const isRetryableSocketError =
