@@ -853,8 +853,7 @@ export namespace MessageV2 {
           message.includes('AI_JSONParseError') ||
           message.includes('JSON parsing failed') ||
           message.includes('JSON Parse error') ||
-          (message.includes('Unexpected token') &&
-            message.includes('JSON')) ||
+          (message.includes('Unexpected token') && message.includes('JSON')) ||
           message.includes('is not valid JSON');
         if (isStreamParseError) {
           // Extract the malformed text if available
