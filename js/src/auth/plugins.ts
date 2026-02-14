@@ -2631,6 +2631,173 @@ const AlibabaPlugin: AuthPlugin = {
 };
 
 /**
+ * Kilo Gateway constants
+ * @see https://github.com/Kilo-Org/kilo/blob/main/packages/kilo-gateway/src/api/constants.ts
+ */
+const KILO_API_BASE = 'https://api.kilo.ai';
+const KILO_POLL_INTERVAL_MS = 3000;
+
+/**
+ * Kilo Gateway Auth Plugin
+ * Supports device authorization flow for Kilo Gateway
+ *
+ * @see https://github.com/Kilo-Org/kilo/blob/main/packages/kilo-gateway/src/auth/device-auth.ts
+ */
+const KiloPlugin: AuthPlugin = {
+  provider: 'kilo',
+  methods: [
+    {
+      label: 'Kilo Gateway (Device Authorization)',
+      type: 'oauth',
+      async authorize() {
+        // Initiate device authorization
+        const initResponse = await fetch(
+          `${KILO_API_BASE}/api/device-auth/codes`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+
+        if (!initResponse.ok) {
+          if (initResponse.status === 429) {
+            log.error(() => ({
+              message:
+                'kilo device auth rate limited - too many pending requests',
+            }));
+            return {
+              method: 'auto' as const,
+              async callback(): Promise<AuthResult> {
+                return { type: 'failed' };
+              },
+            };
+          }
+          log.error(() => ({
+            message: 'kilo device auth initiation failed',
+            status: initResponse.status,
+          }));
+          return {
+            method: 'auto' as const,
+            async callback(): Promise<AuthResult> {
+              return { type: 'failed' };
+            },
+          };
+        }
+
+        const authData = (await initResponse.json()) as {
+          code: string;
+          verificationUrl: string;
+          expiresIn: number;
+        };
+
+        return {
+          url: authData.verificationUrl,
+          instructions: `Enter code: ${authData.code}\nWaiting for authorization...`,
+          method: 'auto' as const,
+          async callback(): Promise<AuthResult> {
+            const maxAttempts = Math.ceil(
+              (authData.expiresIn * 1000) / KILO_POLL_INTERVAL_MS
+            );
+
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+              await new Promise((resolve) =>
+                setTimeout(resolve, KILO_POLL_INTERVAL_MS)
+              );
+
+              const pollResponse = await fetch(
+                `${KILO_API_BASE}/api/device-auth/codes/${authData.code}`
+              );
+
+              if (pollResponse.status === 202) {
+                // Still pending
+                continue;
+              }
+
+              if (pollResponse.status === 403) {
+                log.error(() => ({
+                  message: 'kilo device auth denied by user',
+                }));
+                return { type: 'failed' };
+              }
+
+              if (pollResponse.status === 410) {
+                log.error(() => ({
+                  message: 'kilo device auth code expired',
+                }));
+                return { type: 'failed' };
+              }
+
+              if (!pollResponse.ok) {
+                log.error(() => ({
+                  message: 'kilo device auth poll failed',
+                  status: pollResponse.status,
+                }));
+                return { type: 'failed' };
+              }
+
+              const data = (await pollResponse.json()) as {
+                status: string;
+                token?: string;
+                userEmail?: string;
+              };
+
+              if (data.status === 'approved' && data.token) {
+                log.info(() => ({
+                  message: 'kilo device auth approved',
+                  email: data.userEmail,
+                }));
+
+                // Token from Kilo device auth is long-lived (1 year)
+                const TOKEN_EXPIRATION_MS = 365 * 24 * 60 * 60 * 1000;
+                return {
+                  type: 'success',
+                  provider: 'kilo',
+                  refresh: data.token,
+                  access: data.token,
+                  expires: Date.now() + TOKEN_EXPIRATION_MS,
+                };
+              }
+            }
+
+            log.error(() => ({
+              message: 'kilo device auth timed out',
+            }));
+            return { type: 'failed' };
+          },
+        };
+      },
+    },
+    {
+      label: 'API Key',
+      type: 'api',
+      async authorize(inputs: Record<string, string>) {
+        const key = inputs['key'];
+        if (!key) return { type: 'failed' };
+        return {
+          type: 'success',
+          provider: 'kilo',
+          key,
+        };
+      },
+    },
+  ],
+  async loader(getAuth) {
+    const auth = await getAuth();
+    if (!auth) return {};
+
+    if (auth.type === 'api') {
+      return { apiKey: auth.key };
+    }
+
+    if (auth.type === 'oauth') {
+      return { apiKey: auth.access };
+    }
+
+    return {};
+  },
+};
+
+/**
  * Registry of all auth plugins
  */
 const plugins: Record<string, AuthPlugin> = {
@@ -2640,6 +2807,7 @@ const plugins: Record<string, AuthPlugin> = {
   google: GooglePlugin,
   'qwen-coder': QwenPlugin,
   alibaba: AlibabaPlugin,
+  kilo: KiloPlugin,
 };
 
 /**

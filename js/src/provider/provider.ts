@@ -324,19 +324,21 @@ export namespace Provider {
     },
     /**
      * Kilo provider - access to 500+ AI models through Kilo Gateway
-     * Uses OpenAI-compatible API at https://api.kilo.ai/api/gateway
+     * Uses OpenRouter-compatible API at https://api.kilo.ai/api/openrouter
      *
-     * Free models available without API key (using 'public' key):
+     * Authentication required: run `agent auth login` and select "Kilo Gateway"
+     * For API key authentication, set KILO_API_KEY environment variable
+     *
+     * Free models available after authentication:
      * - GLM-5 (z-ai/glm-5) - Free limited time, flagship Z.AI model
      * - GLM 4.7 (z-ai/glm-4.7:free) - Free, agent-centric model
      * - Kimi K2.5 (moonshot/kimi-k2.5:free) - Free, agentic capabilities
      * - MiniMax M2.1 (minimax/m2.1:free) - Free, general-purpose
      * - Giga Potato (giga-potato:free) - Free evaluation model
      *
-     * For paid models, set KILO_API_KEY environment variable
-     *
      * @see https://kilo.ai/docs/gateway
      * @see https://kilo.ai/docs/advanced-usage/free-and-budget-models
+     * @see https://github.com/Kilo-Org/kilo/tree/main/packages/kilo-gateway
      */
     kilo: async (input) => {
       const hasKey = await (async () => {
@@ -345,8 +347,7 @@ export namespace Provider {
         return false;
       })();
 
-      // For free models, we can use 'public' as the API key
-      // For paid models, user needs to set KILO_API_KEY
+      // Filter to only free models when no API key
       if (!hasKey) {
         for (const [key, value] of Object.entries(input.models)) {
           // Keep only free models (cost.input === 0) when no API key
@@ -355,13 +356,44 @@ export namespace Provider {
         }
       }
 
+      // Build options
+      const options: Record<string, any> = {};
+
+      // Kilo-specific headers for the OpenRouter-compatible API
+      // @see https://github.com/Kilo-Org/kilo/blob/main/packages/kilo-gateway/src/headers.ts
+      const headers: Record<string, string> = {
+        'User-Agent': 'opencode-kilo-provider',
+        'X-KILOCODE-EDITORNAME': 'link-assistant-agent',
+      };
+
+      // Pass KILO_ORG_ID if available
+      if (process.env['KILO_ORG_ID']) {
+        headers['X-KILOCODE-ORGANIZATIONID'] = process.env['KILO_ORG_ID'];
+      }
+
+      options.headers = headers;
+
+      // Use auth token if available (from `agent auth login` -> Kilo device auth)
+      if (!hasKey) {
+        // Without authentication, use 'anonymous' key
+        // Note: The Kilo API may reject anonymous requests for completions.
+        // Users should authenticate via `agent auth login` for reliable access.
+        options.apiKey = 'anonymous';
+      } else {
+        // If we have stored auth, the loader will provide the token
+        const auth = await Auth.get(input.id);
+        if (auth) {
+          if (auth.type === 'api') {
+            options.apiKey = auth.key;
+          } else if (auth.type === 'oauth') {
+            options.apiKey = auth.access;
+          }
+        }
+      }
+
       return {
         autoload: Object.keys(input.models).length > 0,
-        options: hasKey
-          ? {}
-          : {
-              apiKey: 'public',
-            },
+        options,
       };
     },
     /**
@@ -769,8 +801,8 @@ export namespace Provider {
     database['kilo'] = {
       id: 'kilo',
       name: 'Kilo Gateway',
-      npm: '@ai-sdk/openai-compatible',
-      api: 'https://api.kilo.ai/api/gateway',
+      npm: '@openrouter/ai-sdk-provider',
+      api: 'https://api.kilo.ai/api/openrouter',
       env: ['KILO_API_KEY'],
       models: {
         // GLM-5 - Flagship Z.AI model, free for limited time
