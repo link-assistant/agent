@@ -172,8 +172,10 @@ async function parseModelConfig(argv) {
       modelID = modelID || 'kimi-k2.5-free';
     }
 
+    // Log raw and parsed values to help diagnose model routing issues (#171)
     Log.Default.info(() => ({
       message: 'using explicit provider/model',
+      rawModel: modelArg,
       providerID,
       modelID,
     }));
