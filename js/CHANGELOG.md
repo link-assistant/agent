@@ -1,5 +1,27 @@
 # @link-assistant/agent
 
+## 0.12.2
+
+### Patch Changes
+
+- fix: Retry on stream parse errors (AI_JSONParseError)
+
+  Add StreamParseError as a retryable error type to handle malformed JSON in SSE streams
+  from AI providers. This fixes premature retry failures when providers return corrupted
+  streaming responses (e.g., concatenated SSE chunks, invalid JSON).
+
+  Changes:
+  - Add StreamParseError type with isRetryable: true
+  - Detect AI_JSONParseError, JSON parsing failures, and malformed JSON errors
+  - Retry stream parse errors with exponential backoff (1s, 2s, 4s up to 3 retries)
+  - Add streamParseErrorDelay() function for consistent retry timing
+  - Add comprehensive test coverage for StreamParseError detection
+
+  This ensures the agent's 7-day retry window works for all transient errors,
+  not just HTTP 429 rate limits and socket errors.
+
+  Fixes #169
+
 ## 0.12.1
 
 ### Patch Changes

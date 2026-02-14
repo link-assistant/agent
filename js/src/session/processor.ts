@@ -364,7 +364,7 @@ export namespace SessionProcessor {
               providerID: input.providerID,
             });
 
-            // Check if error is retryable (APIError, SocketConnectionError, or TimeoutError)
+            // Check if error is retryable (APIError, SocketConnectionError, TimeoutError, or StreamParseError)
             const isRetryableAPIError =
               error?.name === 'APIError' && error.data.isRetryable;
             const isRetryableSocketError =
@@ -375,6 +375,13 @@ export namespace SessionProcessor {
               error?.name === 'TimeoutError' &&
               error.data.isRetryable &&
               attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
+            // Stream parse errors are transient (malformed JSON from provider)
+            // and should be retried with exponential backoff
+            // See: https://github.com/link-assistant/agent/issues/169
+            const isRetryableStreamParseError =
+              error?.name === 'StreamParseError' &&
+              error.data.isRetryable &&
+              attempt < SessionRetry.STREAM_PARSE_ERROR_MAX_RETRIES;
 
             // For API errors (rate limits), check if we're within the retry timeout
             // See: https://github.com/link-assistant/agent/issues/157
@@ -388,7 +395,8 @@ export namespace SessionProcessor {
             if (
               (isRetryableAPIError && retryCheck.shouldRetry) ||
               isRetryableSocketError ||
-              isRetryableTimeoutError
+              isRetryableTimeoutError ||
+              isRetryableStreamParseError
             ) {
               attempt++;
               // Use error-specific delay calculation
@@ -400,7 +408,9 @@ export namespace SessionProcessor {
                     ? SessionRetry.socketErrorDelay(attempt)
                     : error?.name === 'TimeoutError'
                       ? SessionRetry.timeoutDelay(attempt)
-                      : SessionRetry.delay(error, attempt);
+                      : error?.name === 'StreamParseError'
+                        ? SessionRetry.streamParseErrorDelay(attempt)
+                        : SessionRetry.delay(error, attempt);
               } catch (delayError) {
                 // If retry-after exceeds AGENT_RETRY_TIMEOUT, fail immediately
                 if (

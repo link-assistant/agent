@@ -73,6 +73,26 @@ export namespace MessageV2 {
   );
   export type TimeoutError = z.infer<typeof TimeoutError.Schema>;
 
+  /**
+   * Stream parse error - caused by malformed JSON in SSE streams from AI providers.
+   * This can happen when:
+   * - SSE chunks are concatenated incorrectly (proxy issues)
+   * - Provider returns invalid JSON in stream
+   * - Network issues corrupt stream data
+   * These errors are transient and should be retried.
+   * See: https://github.com/link-assistant/agent/issues/169
+   * See: https://github.com/vercel/ai/issues/4099
+   */
+  export const StreamParseError = NamedError.create(
+    'StreamParseError',
+    z.object({
+      message: z.string(),
+      isRetryable: z.literal(true),
+      text: z.string().optional(), // The malformed text that failed to parse
+    })
+  );
+  export type StreamParseError = z.infer<typeof StreamParseError.Schema>;
+
   const PartBase = z.object({
     id: z.string(),
     sessionID: z.string(),
@@ -825,6 +845,25 @@ export namespace MessageV2 {
         ).toObject();
       case e instanceof Error: {
         const message = e.message || e.toString();
+        // Detect stream/JSON parse errors from AI SDK and providers
+        // These are transient and should be retried
+        // See: https://github.com/link-assistant/agent/issues/169
+        const isStreamParseError =
+          e.name === 'AI_JSONParseError' ||
+          message.includes('AI_JSONParseError') ||
+          message.includes('JSON parsing failed') ||
+          message.includes('JSON Parse error') ||
+          (message.includes('Unexpected token') &&
+            message.includes('JSON')) ||
+          message.includes('is not valid JSON');
+        if (isStreamParseError) {
+          // Extract the malformed text if available
+          const text = (e as { text?: string }).text;
+          return new MessageV2.StreamParseError(
+            { message, isRetryable: true, text },
+            { cause: e }
+          ).toObject();
+        }
         // Detect Bun socket connection errors (known Bun issue with 10s idle timeout)
         // See: https://github.com/oven-sh/bun/issues/14439
         const isSocketError =
