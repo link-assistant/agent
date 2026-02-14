@@ -1,109 +1,97 @@
-# Feature Request: `AI_JSONParseError` should support retry for mid-stream parse errors
+# Feature Request: `AI_JSONParseError` — recommend skip-and-continue pattern for consumers
 
 ## Description
 
-When using `streamText` with OpenAI-compatible providers (via `@ai-sdk/openai-compatible`), the AI SDK may throw `AI_JSONParseError` during stream consumption when a provider or gateway returns malformed SSE data. Currently, this error:
+When using `streamText` with OpenAI-compatible providers (via `@ai-sdk/openai-compatible`), the AI SDK may encounter malformed JSON in SSE data from gateways/proxies. The SDK handles this correctly:
 
-1. Has **no `isRetryable` property** (only `APICallError` has it)
-2. Is **never retried** by the SDK's built-in `retryWithExponentialBackoff` mechanism
-3. Occurs **after** the HTTP request succeeds (HTTP 200), so the request-level retry is already bypassed
+1. `safeParseJSON()` catches the parse failure, returns `{ success: false, error: JSONParseError }`
+2. The model handler emits `{ type: 'error', error: chunk.error }` and **returns** — the stream continues
+3. The `finishReason` is set to `'error'`
 
-These errors are typically **transient** — caused by:
-- SSE chunks being concatenated incorrectly at proxy/gateway level
-- Network issues corrupting stream data mid-flight
-- Provider temporarily returning invalid JSON in stream
+However, the recommended handling pattern for consumers is unclear. Many consumers (including OpenCode/sst and our agent) implement `case 'error': throw value.error;` in their `fullStream` iteration, which terminates the session on a single bad SSE event.
 
 ## Evidence from Production
 
-We observed this error when using Kimi K2.5 via the Kilo AI Gateway (`api.kilo.ai`):
+We observed this error when using Kimi K2.5 via OpenCode Zen (`opencode.ai/zen/v1`):
 
 ```json
 {
   "name": "AI_JSONParseError",
-  "cause": {},
   "text": "{\"id\":\"chatcmpl-jQugNdata:{\"id\":\"chatcmpl-iU6vkr3fItZ0Y4rTCmIyAnXO\",\"object\":\"chat.completion.chunk\",...}"
 }
 ```
 
-The `data:` SSE prefix of the second event was embedded inside the first event's JSON, indicating SSE chunking corruption at the gateway level.
-
-This is a known class of issue — similar reports:
-- [ollama/ollama#5417](https://github.com/ollama/ollama/issues/5417): Cloudflare Tunnel + Vercel AI SDK = AI_JSONParseError
-- [anomalyco/opencode#7692](https://github.com/anomalyco/opencode/issues/7692): Stream chunks concatenated incorrectly with GLM-4.7
-- [vercel/ai#4099](https://github.com/vercel/ai/issues/4099): streamText error handling
-
-## Current Behavior
-
-The AI SDK's parsing pipeline (`parseJsonEventStream`) uses `safeParseJSON` which returns `{ success: false, error: JSONParseError }` on parse failure. The OpenAI-compatible model handler then emits this as `{ type: 'error', error: ... }` in the stream. The default `onError` handler logs to console. The stream continues but the `finishReason` is set to `'error'`.
-
-There is no way for consumers to:
-- Retry the stream automatically on parse errors
-- Skip bad events and continue processing (like OpenAI Codex does)
-- Distinguish transient parse errors from permanent ones
+Two SSE events were concatenated: `data:` prefix of the second event embedded in the first event's JSON.
 
 ## How Other CLI Agents Handle This
 
-**OpenAI Codex CLI**: Skips unparseable SSE events with `continue;` and keeps processing. JSON parse errors are logged at debug level. Stream-level errors trigger up to 5 retries with exponential backoff. `CodexErr::Json` is explicitly marked retryable.
+| Agent | Pattern | Result |
+|-------|---------|--------|
+| **OpenAI Codex** (Rust) | `debug!("Failed to parse SSE event"); continue;` | Skip & continue |
+| **Gemini CLI** | `throw e;` in `@google/genai` SDK | Stream terminates (gap) |
+| **OpenCode** (upstream) | `case 'error': throw value.error;` | Session terminates (gap) |
 
-**Qwen Code**: SDK's `parseJsonLineSafe()` silently skips failed lines with a warning log.
+OpenAI Codex is the gold standard: skip corrupted events, log at debug level, keep processing.
 
-**Gemini CLI** and **OpenCode**: Same gap — JSON parse errors during SSE consumption are not caught/retried.
+## Suggestions
 
-## Proposed Solutions
+### 1. Document the recommended pattern
 
-### Option A: Add `isRetryable` property to `AI_JSONParseError`
+Add documentation showing how consumers should handle `{ type: 'error' }` events in `fullStream`:
 
 ```typescript
-// In JSONParseError constructor, or a subclass for stream context
+for await (const value of stream.fullStream) {
+  if (value.type === 'error') {
+    if (JSONParseError.isInstance(value.error)) {
+      // Skip corrupted SSE events — the stream continues
+      console.warn('Skipping malformed SSE event:', value.error.message);
+      continue;
+    }
+    throw value.error; // Other errors are still fatal
+  }
+  // ... handle other events
+}
+```
+
+### 2. Consider adding `isRetryable` to `AI_JSONParseError`
+
+```typescript
 class StreamJSONParseError extends JSONParseError {
   readonly isRetryable = true;
 }
 ```
 
-This would allow consumers to check `isRetryable` consistently across all error types.
-
-### Option B: Add `onStreamParseError` callback to `streamText`
+### 3. Consider `onStreamParseError` callback
 
 ```typescript
 const result = await streamText({
   model: myModel,
-  onStreamParseError: ({ error, skip }) => {
-    // Option to skip the bad event and continue
-    skip();
+  onStreamParseError: ({ error }) => {
+    // Log and skip by default
+    console.warn('Parse error in SSE stream:', error);
   },
-});
-```
-
-### Option C: Allow configuring stream-level retry
-
-```typescript
-const result = await streamText({
-  model: myModel,
-  streamRetries: 3, // Retry entire stream on mid-stream errors
 });
 ```
 
 ## Environment
 
-- AI SDK Version: Observed across v4.x and v5.x
-- Provider: `@ai-sdk/openai-compatible` (Kilo AI Gateway)
-- Model: Kimi K2.5 (moonshot/kimi-k2.5:free)
+- AI SDK: v6.x (observed across versions)
+- Provider: `@ai-sdk/openai-compatible` (OpenCode Zen gateway)
+- Model: Kimi K2.5 (`kimi-k2.5-free`)
 - Runtime: Bun 1.3.x
 - Timestamp: 2026-02-14T08:34:12Z
 
 ## Workaround
 
-We implemented a workaround by detecting `AI_JSONParseError` in our error handler and classifying it as retryable:
+We detect `JSONParseError` in our `fullStream` iteration and skip it:
 
 ```typescript
-const isStreamParseError =
-  e.name === 'AI_JSONParseError' ||
-  message.includes('AI_JSONParseError') ||
-  message.includes('JSON parsing failed');
-
-if (isStreamParseError) {
-  // Classify as retryable, retry with exponential backoff
-}
+case 'error':
+  if (JSONParseError.isInstance(value.error)) {
+    log.warn('skipping malformed SSE event');
+    continue;
+  }
+  throw value.error;
 ```
 
 See: https://github.com/link-assistant/agent/issues/169
