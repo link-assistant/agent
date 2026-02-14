@@ -76,12 +76,14 @@ export namespace MessageV2 {
   /**
    * Stream parse error - caused by malformed JSON in SSE streams from AI providers.
    * This can happen when:
-   * - SSE chunks are concatenated incorrectly (proxy issues)
-   * - Provider returns invalid JSON in stream
-   * - Network issues corrupt stream data
+   * - SSE chunks are concatenated incorrectly (gateway/proxy issues, e.g. Kilo AI Gateway)
+   * - Provider returns invalid JSON in stream (e.g. Kimi K2.5, GLM-4.7)
+   * - Network issues corrupt stream data mid-flight
+   * The Vercel AI SDK throws AI_JSONParseError which has no isRetryable property.
    * These errors are transient and should be retried.
    * See: https://github.com/link-assistant/agent/issues/169
-   * See: https://github.com/vercel/ai/issues/4099
+   * See: https://github.com/vercel/ai/issues/12595
+   * See: https://github.com/Kilo-Org/kilocode/issues/5875
    */
   export const StreamParseError = NamedError.create(
     'StreamParseError',
@@ -846,8 +848,11 @@ export namespace MessageV2 {
       case e instanceof Error: {
         const message = e.message || e.toString();
         // Detect stream/JSON parse errors from AI SDK and providers
-        // These are transient and should be retried
+        // AI_JSONParseError has no isRetryable property in the Vercel AI SDK
+        // and is never retried by the SDK's built-in retry mechanism.
+        // These are typically transient (SSE chunk corruption at gateway level).
         // See: https://github.com/link-assistant/agent/issues/169
+        // See: https://github.com/vercel/ai/issues/12595
         const isStreamParseError =
           e.name === 'AI_JSONParseError' ||
           message.includes('AI_JSONParseError') ||

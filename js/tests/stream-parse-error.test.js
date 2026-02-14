@@ -18,6 +18,20 @@ describe('StreamParseError Detection', () => {
     expect(result.data.text).toBe('{"id":"chatcmpl-jQugNdata:{...');
   });
 
+  test('detects exact Kilo Gateway SSE corruption pattern from issue #169', () => {
+    // This is the exact error from the production log (2026-02-14T08:34:12Z)
+    // SSE chunks concatenated: first chunk truncated + "data:" prefix + second chunk
+    const error = new Error(
+      'AI_JSONParseError: JSON parsing failed: Text: {"id":"chatcmpl-jQugNdata:{"id":"chatcmpl-iU6vkr3fItZ0Y4rTCmIyAnXO","object":"chat.completion.chunk","created":1771058051,"model":"kimi-k2.5","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}],"system_fingerprint":"fpv0_f7e5c49a"}.\nError message: JSON Parse error: Expected \'}\''
+    );
+    error.name = 'AI_JSONParseError';
+
+    const result = MessageV2.fromError(error, { providerID: 'opencode' });
+
+    expect(result.name).toBe('StreamParseError');
+    expect(result.data.isRetryable).toBe(true);
+  });
+
   test('detects AI_JSONParseError in error message', () => {
     const error = new Error('AI_JSONParseError: JSON parsing failed');
 

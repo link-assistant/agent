@@ -1,163 +1,231 @@
-# Case Study: Premature Retry Failure (Issue #169)
+# Case Study: Premature Session Termination Due to SSE Stream Corruption (Issue #169)
 
 ## Summary
 
-The issue reports that the retry mechanism failed sooner than the expected 7-day retry window. Analysis reveals this was caused by an unhandled `AI_JSONParseError` from the Vercel AI SDK when processing malformed SSE streaming data from the Kimi K2.5 API via OpenRouter.
+The agent's session terminated after ~5 minutes instead of retrying for the expected 7-day window. The root cause is a chain of three failures:
+
+1. **SSE stream corruption** at the Kilo AI Gateway level when proxying responses from Moonshot's Kimi K2.5 API
+2. **Vercel AI SDK** throwing `AI_JSONParseError` (which has no `isRetryable` property and no built-in retry for mid-stream errors)
+3. **Agent's error classifier** in `message-v2.ts` falling through to `NamedError.Unknown`, which is not retryable
+
+## Infrastructure Chain
+
+```
+Agent (Bun) → OpenCode Zen Provider → Kilo AI Gateway (api.kilo.ai) → Moonshot Kimi K2.5 API
+```
+
+- **Provider ID**: `opencode` (resolved from `--model kimi-k2.5-free`)
+- **SDK**: `@ai-sdk/openai-compatible` (OpenAI-compatible protocol)
+- **Gateway**: Kilo AI Gateway at `https://api.kilo.ai/api/gateway`
+- **Model**: `moonshot/kimi-k2.5:free` (Moonshot's Kimi K2.5, free tier)
+
+**Note**: OpenRouter is NOT involved in this incident. The previous analysis incorrectly attributed the SSE corruption to OpenRouter. The actual proxy is the Kilo AI Gateway.
 
 ## Timeline of Events
 
-| Time | Event | Details |
-|------|-------|---------|
-| 08:28:31 | Process started | Using `kimi-k2.5-free` model via OpenRouter |
-| 08:28:52 | Branch pushed | `issue-761-a0caf45f6eba` |
-| 08:28:58 | PR created | PR #778 created |
-| 08:29:06 | First session started | `ses_3a4bb6d8dffeiS5FRAjqmkJinT` |
-| 08:29:08 | Rate limit hit (429) | `retry-after: 55852` seconds (~15.5 hours) |
-| 08:29:08 | Retry scheduled | Will retry with 59155378ms delay (~16.4 hours) |
-| 08:29:11 - 08:30:31 | Multiple 429s | All correctly scheduled for retry |
-| 08:33:41 | Second agent session | `ses_3a4b73b0effeFXKMNNCv1Lm3b2` |
-| 08:34:12 | **Fatal error** | `AI_JSONParseError` - JSON parsing failed |
-| 08:34:12 | Process terminated | Error classified as `UsageLimit` |
-
-**Total runtime: ~5 minutes** (not 7 days)
+| Time (UTC) | Event | Details |
+|------------|-------|---------|
+| 08:28:31 | Process started | `solve v1.23.1`, model `kimi-k2.5-free` |
+| 08:28:51 | Branch created | `issue-761-a0caf45f6eba` |
+| 08:28:58 | PR created | PR #778 on target repo |
+| 08:29:06 | Session 1 started | `ses_3a4bb6d8dffeiS5FRAjqmkJinT`, providerID=`opencode` |
+| 08:29:08 | Rate limit (429) | `retry-after: 55852` seconds (~15.5 hours) |
+| 08:29:08–08:30:31 | Multiple 429s | All correctly scheduled with retry-after delays |
+| 08:33:41 | Session 2 started | `ses_3a4b73b0effeFXKMNNCv1Lm3b2`, providerID=`opencode` |
+| 08:34:12.210 | Stream error | `AI_JSONParseError: JSON parsing failed` |
+| 08:34:12.211 | Error classified | `NamedError.Unknown` (not retryable) |
+| 08:34:12.213 | Tool aborted | In-flight tool call marked "Tool execution aborted" |
+| 08:34:12.293 | Solve script | Misclassified as `UsageLimit` due to "Tool execution aborted" pattern |
+| 08:34:12.301 | **Session terminated** | Process exited, total runtime ~5 minutes |
 
 ## Root Cause Analysis
 
-### Primary Root Cause: Malformed SSE Response
+### Root Cause 1: Malformed SSE Data from Kilo AI Gateway
 
-The API returned corrupted JSON in the SSE stream:
+The SSE stream returned corrupted data where two SSE chunks were concatenated without proper delimiters:
 
-```json
-{"id":"chatcmpl-jQugNdata:{"id":"chatcmpl-iU6vkr3fItZ0Y4rTCmIyAnXO","object":"chat.completion.chunk"...
+```
+Received (corrupted):
+{"id":"chatcmpl-jQugNdata:{"id":"chatcmpl-iU6vkr3fItZ0Y4rTCmIyAnXO","object":"chat.completion.chunk","created":1771058051,"model":"kimi-k2.5","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}],"system_fingerprint":"fpv0_f7e5c49a"}
 ```
 
-Note the malformed data: `"chatcmpl-jQugNdata:{"` - this appears to be two SSE chunks concatenated together incorrectly. The correct format would be separate SSE events.
+Breaking this down:
+- `{"id":"chatcmpl-jQugN` — partial first chunk (truncated after the `id` value)
+- `data:` — SSE protocol prefix that should start a new line
+- `{"id":"chatcmpl-iU6vk...` — complete second chunk
 
-### Secondary Root Cause: AI_JSONParseError Not Retried
+Expected (correct SSE format):
+```
+data: {"id":"chatcmpl-jQugN","object":"chat.completion.chunk",...}\n\n
+data: {"id":"chatcmpl-iU6vkr3fItZ0Y4rTCmIyAnXO","object":"chat.completion.chunk",...}\n\n
+```
 
-The `AI_JSONParseError` is not classified as a retryable error in the current implementation:
+This is a known class of issue with AI gateways/proxies. Similar issues have been reported:
+- [OpenCode #7692](https://github.com/anomalyco/opencode/issues/7692): "JSON Parse Error with Zhipu GLM-4.7: Stream chunks are concatenated incorrectly"
+- [OpenCode #10967](https://github.com/anomalyco/opencode/issues/10967): "Error Writing Large Files (at least with Kimi K2.5)"
+- [Kilo-Org/kilocode #5433](https://github.com/Kilo-Org/kilocode/issues/5433): "Kimi K2.5 - Fails with Kilo Gateway"
+- [sglang #8613](https://github.com/sgl-project/sglang/issues/8613): "Kimi-K2 model outputs incomplete content during multi-turn streaming"
 
-1. **In `retry-fetch.ts`**: Only handles HTTP 429 responses and network errors (ConnectionClosed, ECONNRESET, etc.)
-2. **In `message-v2.ts`**: Only classifies these errors as retryable:
-   - `APICallError` with `isRetryable: true`
-   - `TimeoutError`
-   - `SocketConnectionError`
-3. **AI_JSONParseError** falls through to `NamedError.Unknown` which is **not retryable**
+### Root Cause 2: Vercel AI SDK Does Not Retry Mid-Stream Parse Errors
 
-### Tertiary Root Cause: Error Misclassification
+The Vercel AI SDK's SSE parsing pipeline is:
 
-The solve script detected the error pattern "Tool execution aborted" and misclassified it as `UsageLimit`, exiting the retry loop:
+```
+HTTP Response Body (bytes)
+  → TextDecoderStream (bytes → text)
+  → EventSourceParserStream (eventsource-parser library, text → SSE messages)
+  → TransformStream (SSE data → JSON.parse → ParseResult)
+  → OpenAI-compatible model handler (ParseResult → stream parts)
+```
 
-```json
-{
-  "errorType": "UsageLimit",
-  "errorMatch": "Tool execution aborted",
-  "limitReached": true
+Key findings from [AI SDK source code analysis](https://github.com/vercel/ai):
+- `AI_JSONParseError` has **NO `isRetryable` property** (only `APICallError` has it)
+- The SDK's retry mechanism (`retryWithExponentialBackoff`) only retries `APICallError` instances
+- Mid-stream errors (after HTTP 200 is received) are **never retried** by the SDK
+- The error is emitted as `{ type: 'error', error: JSONParseError }` in the stream
+- Default `onError` handler simply `console.error`s it
+
+References:
+- [Vercel AI SDK Error Reference](https://ai-sdk.dev/docs/reference/ai-sdk-errors/ai-json-parse-error)
+- [Vercel AI #4099](https://github.com/vercel/ai/issues/4099): streamText error handling
+- [Ollama #5417](https://github.com/ollama/ollama/issues/5417): Cloudflare Tunnel + Vercel AI SDK = AI_JSONParseError
+
+### Root Cause 3: Agent's Error Classifier Falls Through to UnknownError
+
+In `message-v2.ts:fromError()`, the error classification chain is:
+1. `DOMException AbortError` → `AbortedError` ❌
+2. `DOMException TimeoutError` → `TimeoutError` ❌
+3. `OutputLengthError` → pass through ❌
+4. `LoadAPIKeyError` → `AuthError` ❌
+5. `APICallError` → `APIError` ❌
+6. `Error` with socket message → `SocketConnectionError` ❌
+7. `Error` with timeout message → `TimeoutError` ❌
+8. **`AI_JSONParseError` falls through here** → `NamedError.Unknown`
+
+Since `NamedError.Unknown` is not in the retryable error list in `processor.ts`, the session terminates immediately.
+
+### Contributing Factor: Solve Script Error Misclassification
+
+The external solve script detected "Tool execution aborted" (a side effect of the stream error — in-flight tool calls are aborted when the stream errors out) and misclassified it as `UsageLimit`, preventing any further retry at the script level.
+
+## Comparison with Other CLI Agents
+
+### OpenAI Codex CLI (Rust)
+**Best practice found**: Codex **skips unparseable SSE events and continues processing the stream**. JSON parse errors on individual events are logged at debug level and the stream loop continues with `continue;`. Only SSE framing errors (protocol-level) terminate the stream, and even those trigger stream-level retries (up to 5 retries with exponential backoff). `CodexErr::Json` is explicitly marked as retryable.
+
+Key code (`codex-api/src/sse/responses.rs:373-379`):
+```rust
+let event: ResponsesStreamEvent = match serde_json::from_str(&sse.data) {
+    Ok(event) => event,
+    Err(e) => {
+        debug!("Failed to parse SSE event: {e}, data: {}", &sse.data);
+        continue;  // Skip and continue processing the stream
+    }
+};
+```
+
+### Gemini CLI
+**Two-layer retry architecture**: Layer 1 retries the HTTP connection (exponential backoff, 3 attempts). Layer 2 retries stream consumption errors including `InvalidStreamError` (when stream ends without finish reason, with empty response, or with malformed function call). However, `SyntaxError` from JSON.parse in the custom SSE parser is **NOT caught** — this is a gap similar to the agent's.
+
+### Qwen Code
+**Graceful JSON parse recovery in SDK**: The SDK's `parseJsonLineSafe()` function silently skips lines that fail to parse, logging a warning instead of crashing. At the stream level, `StreamContentError` for rate limits is retried with 60-second delays (up to 10 retries). `InvalidStreamError` is retried once with 500ms delay.
+
+### OpenCode (sst/opencode — this project's upstream)
+**Same gap as the agent**: `AI_JSONParseError` falls through to `NamedError.Unknown` in `fromError()` and is NOT retried. The `retryable()` function in `retry.ts` returns `undefined` for Unknown errors that don't contain parseable JSON.
+
+## Root Cause Summary
+
+| Layer | Responsible Party | Issue |
+|-------|------------------|-------|
+| SSE Stream | Kilo AI Gateway / Moonshot Kimi K2.5 | Corrupted SSE chunks (concatenated without delimiters) |
+| SSE Parsing | Vercel AI SDK (`eventsource-parser`) | No retry for mid-stream parse errors; `AI_JSONParseError` has no `isRetryable` |
+| Error Classification | Agent (`message-v2.ts`) | Falls through to `NamedError.Unknown` (not retryable) |
+| Process Management | Solve script | Misclassifies "Tool execution aborted" as `UsageLimit` |
+
+## Proposed Solutions
+
+### Solution 1: Skip-and-Continue (Codex approach) — Recommended for prevention
+
+Instead of terminating the stream on a single bad SSE event, skip the corrupted event and continue processing:
+
+```typescript
+// In a custom response handler or transform stream
+if (!chunk.success) {
+  log.warn('Skipping unparseable SSE event', { error: chunk.error.text });
+  return; // Skip this event, continue with next
 }
 ```
 
-## Technical Deep Dive
+This is the most resilient approach — used by OpenAI Codex. A single corrupted SSE chunk should not terminate an entire stream when subsequent chunks may be valid.
 
-### SSE Parsing Issue
+### Solution 2: Stream-Level Retry (Current approach, improved)
 
-According to [OpenRouter SSE Streaming Documentation](https://openrouter.ai/docs/api/reference/streaming):
+Detect `AI_JSONParseError` in `fromError()` and classify as `StreamParseError` (retryable). Retry the entire stream with exponential backoff:
 
-> "Some SSE client implementations might not parse the payload according to spec... leads to an uncaught error when you JSON.stringify the non-JSON payloads."
-
-The Vercel AI SDK handles SSE parsing internally. When the Kimi API returns malformed JSON (possibly due to response concatenation at the OpenRouter proxy level), the SDK throws `AI_JSONParseError`.
-
-### Error Flow
-
-```
-Kimi API → OpenRouter → Malformed SSE → AI SDK → AI_JSONParseError
-                                                         ↓
-                                        MessageV2.fromError() → NamedError.Unknown
-                                                         ↓
-                                        processor.ts checks: isRetryableAPIError? NO
-                                                         ↓
-                                        Error published, session terminated
+```typescript
+// In message-v2.ts fromError()
+const isStreamParseError =
+  e.name === 'AI_JSONParseError' ||
+  message.includes('AI_JSONParseError') ||
+  message.includes('JSON parsing failed');
+if (isStreamParseError) {
+  return new MessageV2.StreamParseError(
+    { message, isRetryable: true, text: (e as any).text },
+    { cause: e }
+  ).toObject();
+}
 ```
 
-### Vercel AI SDK Behavior
+### Solution 3: Upstream Fixes
 
-Per [GitHub Issue #4099](https://github.com/vercel/ai/issues/4099):
+File issues with:
+1. **Vercel AI SDK**: Request `isRetryable` property on `AI_JSONParseError`, or a configurable stream error handler
+2. **Kilo AI Gateway**: Report SSE stream corruption when proxying Kimi K2.5
+3. **Moonshot (Kimi K2.5)**: Report SSE stream format issues
 
-> "The error will happen after the function in your example has returned the stream text result... The error happens during the consumption of the stream, not during the creation."
+## External Issues to File
 
-This means:
-1. Stream parsing errors occur asynchronously during consumption
-2. They cannot be caught by wrapping `streamText()` in try/catch
-3. Errors flow through the stream's `fullStream` or `onError` callback
+### 1. Vercel AI SDK (`vercel/ai`)
 
-## Contributing Factors
+**Title**: `AI_JSONParseError` should support retry for mid-stream parse errors
 
-1. **Kimi K2.5 Free Tier**: Higher error rates due to rate limiting and provider routing
-2. **OpenRouter Proxy**: Can introduce SSE parsing issues when proxying streams
-3. **No Response Healing**: OpenRouter's [Response Healing](https://openrouter.ai/docs/guides/features/plugins/response-healing) feature could help but may not be enabled
-4. **AI SDK Default Retries**: Default `maxRetries: 2` may not apply to stream consumption errors
+**Key points**:
+- `AI_JSONParseError` has no `isRetryable` property
+- The SDK's built-in retry only works for `APICallError` and only for the initial HTTP request
+- Mid-stream parse errors (after HTTP 200) are never retried
+- Other CLI agents (OpenAI Codex) handle this by skipping bad events or retrying the stream
+- Propose: add `isRetryable` property, or provide a `onStreamParseError` callback, or expose a way to configure stream-level retry
 
-## Comparison with Expected Behavior
+### 2. Kilo AI Gateway (`Kilo-Org`)
 
-| Aspect | Expected | Actual |
-|--------|----------|--------|
-| Retry duration | 7 days | ~5 minutes |
-| Error handling | Retry all transient errors | Only HTTP 429 and network errors |
-| JSONParseError | Should retry (transient) | Not retried (treated as fatal) |
-| Error classification | Accurate | Misclassified as UsageLimit |
+**Title**: SSE stream corruption when proxying Kimi K2.5 — chunks concatenated without delimiters
 
-## Related Issues and PRs
+**Key points**:
+- Two SSE events concatenated: `{"id":"chatcmpl-jQugNdata:{"id":"chatcmpl-iU6vk...`
+- The `data:` prefix of the second event is embedded in the first event's JSON
+- This violates the SSE specification (RFC)
+- Timestamp: 2026-02-14T08:34:12Z
+- Model: `moonshot/kimi-k2.5:free`
+- Related: [Kilo-Org/kilocode #5433](https://github.com/Kilo-Org/kilocode/issues/5433)
 
-- [OpenCode #11541](https://github.com/anomalyco/opencode/issues/11541): Kimi K2.5 with OpenRouter errors
-- [OpenCode #11596](https://github.com/anomalyco/opencode/pull/11596): Fix for Kimi K2.5 reasoning field errors
-- [Vercel AI #4099](https://github.com/vercel/ai/issues/4099): streamText error handling
-- [Vercel AI #12585](https://github.com/vercel/ai/issues/12585): AI SDK ignores retry-after headers (related)
+### 3. Moonshot (moonshotai/Kimi-K2-Instruct)
 
-## Recommendations
+**Title**: Kimi K2.5 SSE streaming produces malformed chunks
 
-### Short-term Fixes
-
-1. **Add AI_JSONParseError to retryable errors**:
-   ```typescript
-   // In message-v2.ts fromError()
-   case e?.name === 'AI_JSONParseError':
-     return new MessageV2.APIError({
-       message: e.message,
-       statusCode: 500, // Treat as server error
-       isRetryable: true, // Mark as retryable
-       responseHeaders: {},
-       responseBody: e.text,
-     }, { cause: e }).toObject();
-   ```
-
-2. **Use AI SDK's onError callback** for better stream error handling
-
-3. **Implement stream-level retry** that wraps the entire stream consumption
-
-### Long-term Fixes
-
-1. **Create JSONParseError error class** with `isRetryable: true`
-2. **Improve error classification** in solve script to distinguish transient from permanent errors
-3. **Add response validation** before parsing
-4. **Consider enabling OpenRouter's Response Healing** for free tier models
-
-### Configuration
-
-Add environment variable to control JSONParseError retry behavior:
-```bash
-AGENT_RETRY_JSON_PARSE_ERRORS=true
-```
-
-## Files to Modify
-
-1. `js/src/session/message-v2.ts` - Add JSONParseError handling in `fromError()`
-2. `js/src/session/processor.ts` - Add JSONParseError to retryable error checks
-3. `js/src/provider/retry-fetch.ts` - Consider adding stream-level retry wrapper
-
-## External Reports Needed
-
-1. **OpenRouter**: Report malformed SSE response issue with Kimi K2.5
-2. **Vercel AI SDK**: Clarify retry behavior for JSONParseError (or propose making it retryable)
+**Key points**:
+- SSE chunks appear to be truncated and concatenated at the origin level
+- Multiple reports across different gateways (Kilo, OpenCode Zen)
+- Related: [sglang #8613](https://github.com/sgl-project/sglang/issues/8613)
 
 ## Conclusion
 
-The "premature failure" was caused by an unhandled stream parsing error (`AI_JSONParseError`) that the retry logic doesn't recognize as retryable. The 7-day retry window works correctly for HTTP 429 rate limits but doesn't cover all transient error types. The fix requires extending the retryable error classification to include stream parsing errors that are typically transient and recoverable upon retry.
+The premature session termination was caused by a cascade of failures across four layers:
+1. **Origin**: Kimi K2.5 or Kilo Gateway produced corrupted SSE chunks
+2. **SDK**: Vercel AI SDK correctly detected the corruption but provided no retry/recovery path
+3. **Agent**: Error classifier didn't recognize `AI_JSONParseError` as retryable
+4. **Process**: Solve script misclassified the downstream effect as a usage limit
+
+The best defense is defense in depth:
+- **Short-term**: Classify `AI_JSONParseError` as retryable (Solution 2, already implemented)
+- **Medium-term**: Implement skip-and-continue for individual bad SSE events (Solution 1, Codex approach)
+- **Long-term**: File upstream issues for proper fixes at gateway and SDK level (Solution 3)

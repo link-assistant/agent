@@ -1,87 +1,109 @@
-# Feature Request: Make AI_JSONParseError Retryable for Streaming
+# Feature Request: `AI_JSONParseError` should support retry for mid-stream parse errors
 
 ## Description
 
-When using `streamText` with providers that return malformed SSE responses (e.g., OpenRouter proxying to Kimi K2.5), the AI SDK throws `AI_JSONParseError` which is marked as `isRetryable: false`. However, these errors are typically transient and caused by:
+When using `streamText` with OpenAI-compatible providers (via `@ai-sdk/openai-compatible`), the AI SDK may throw `AI_JSONParseError` during stream consumption when a provider or gateway returns malformed SSE data. Currently, this error:
 
-1. SSE chunks being concatenated incorrectly at proxy level
-2. Network issues corrupting stream data
-3. Provider returning invalid JSON temporarily
+1. Has **no `isRetryable` property** (only `APICallError` has it)
+2. Is **never retried** by the SDK's built-in `retryWithExponentialBackoff` mechanism
+3. Occurs **after** the HTTP request succeeds (HTTP 200), so the request-level retry is already bypassed
 
-These errors should be retryable because they're transient infrastructure issues, not permanent failures.
+These errors are typically **transient** — caused by:
+- SSE chunks being concatenated incorrectly at proxy/gateway level
+- Network issues corrupting stream data mid-flight
+- Provider temporarily returning invalid JSON in stream
 
 ## Evidence from Production
 
-We observed this error pattern in production logs:
+We observed this error when using Kimi K2.5 via the Kilo AI Gateway (`api.kilo.ai`):
 
 ```json
 {
   "name": "AI_JSONParseError",
   "cause": {},
-  "text": "{\"id\":\"chatcmpl-jQugNdata:{\"id\":\"chatcmpl-iU6vkr3fItZ0Y4rTCmIyAnXO\",...}"
+  "text": "{\"id\":\"chatcmpl-jQugNdata:{\"id\":\"chatcmpl-iU6vkr3fItZ0Y4rTCmIyAnXO\",\"object\":\"chat.completion.chunk\",...}"
 }
 ```
 
-Notice the corrupted data: `"chatcmpl-jQugNdata:{"` - two SSE chunks concatenated together without proper parsing.
+The `data:` SSE prefix of the second event was embedded inside the first event's JSON, indicating SSE chunking corruption at the gateway level.
 
-The error currently has `isRetryable: false`, which prevents retry logic from working:
+This is a known class of issue — similar reports:
+- [ollama/ollama#5417](https://github.com/ollama/ollama/issues/5417): Cloudflare Tunnel + Vercel AI SDK = AI_JSONParseError
+- [anomalyco/opencode#7692](https://github.com/anomalyco/opencode/issues/7692): Stream chunks concatenated incorrectly with GLM-4.7
+- [vercel/ai#4099](https://github.com/vercel/ai/issues/4099): streamText error handling
 
-```json
-{
-  "isRetryable": false,
-  "name": "AI_APICallError",
-  ...
-}
-```
+## Current Behavior
 
-## Proposed Solution
+The AI SDK's parsing pipeline (`parseJsonEventStream`) uses `safeParseJSON` which returns `{ success: false, error: JSONParseError }` on parse failure. The OpenAI-compatible model handler then emits this as `{ type: 'error', error: ... }` in the stream. The default `onError` handler logs to console. The stream continues but the `finishReason` is set to `'error'`.
 
-Mark `AI_JSONParseError` as retryable when it occurs during stream consumption:
+There is no way for consumers to:
+- Retry the stream automatically on parse errors
+- Skip bad events and continue processing (like OpenAI Codex does)
+- Distinguish transient parse errors from permanent ones
+
+## How Other CLI Agents Handle This
+
+**OpenAI Codex CLI**: Skips unparseable SSE events with `continue;` and keeps processing. JSON parse errors are logged at debug level. Stream-level errors trigger up to 5 retries with exponential backoff. `CodexErr::Json` is explicitly marked retryable.
+
+**Qwen Code**: SDK's `parseJsonLineSafe()` silently skips failed lines with a warning log.
+
+**Gemini CLI** and **OpenCode**: Same gap — JSON parse errors during SSE consumption are not caught/retried.
+
+## Proposed Solutions
+
+### Option A: Add `isRetryable` property to `AI_JSONParseError`
 
 ```typescript
-// Current behavior
-throw new JSONParseError({ text, cause, isRetryable: false });
-
-// Proposed behavior for streaming errors
-throw new JSONParseError({ text, cause, isRetryable: true });
+// In JSONParseError constructor, or a subclass for stream context
+class StreamJSONParseError extends JSONParseError {
+  readonly isRetryable = true;
+}
 ```
 
-Alternatively, add a configuration option:
+This would allow consumers to check `isRetryable` consistently across all error types.
+
+### Option B: Add `onStreamParseError` callback to `streamText`
 
 ```typescript
 const result = await streamText({
   model: myModel,
-  retryParseErrors: true, // New option
-  // ...
+  onStreamParseError: ({ error, skip }) => {
+    // Option to skip the bad event and continue
+    skip();
+  },
+});
+```
+
+### Option C: Allow configuring stream-level retry
+
+```typescript
+const result = await streamText({
+  model: myModel,
+  streamRetries: 3, // Retry entire stream on mid-stream errors
 });
 ```
 
 ## Environment
 
-- AI SDK Version: Multiple (observed in v4.x and v5.x)
-- Providers: OpenRouter (proxying to various models)
+- AI SDK Version: Observed across v4.x and v5.x
+- Provider: `@ai-sdk/openai-compatible` (Kilo AI Gateway)
+- Model: Kimi K2.5 (moonshot/kimi-k2.5:free)
 - Runtime: Bun 1.3.x
+- Timestamp: 2026-02-14T08:34:12Z
 
 ## Workaround
 
-We implemented a workaround in our project by detecting JSONParseError in our error handling and treating it as retryable:
+We implemented a workaround by detecting `AI_JSONParseError` in our error handler and classifying it as retryable:
 
 ```typescript
 const isStreamParseError =
   e.name === 'AI_JSONParseError' ||
   message.includes('AI_JSONParseError') ||
-  message.includes('JSON parsing failed') ||
-  message.includes('JSON Parse error');
+  message.includes('JSON parsing failed');
 
 if (isStreamParseError) {
-  // Retry with exponential backoff
+  // Classify as retryable, retry with exponential backoff
 }
 ```
 
 See: https://github.com/link-assistant/agent/issues/169
-
-## Related Issues
-
-- #8577 - AI_JSONParseError with generateText (mentions isRetryable: false)
-- #4099 - StreamText error handling
-- #5417 (ollama/ollama) - Cloudflare Tunnel causing JSONParseError

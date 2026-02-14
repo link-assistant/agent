@@ -375,9 +375,12 @@ export namespace SessionProcessor {
               error?.name === 'TimeoutError' &&
               error.data.isRetryable &&
               attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
-            // Stream parse errors are transient (malformed JSON from provider)
-            // and should be retried with exponential backoff
+            // Stream parse errors are transient (malformed SSE from gateway/provider)
+            // AI_JSONParseError from Vercel AI SDK has no isRetryable property
+            // and is never retried by the SDK's built-in mechanism.
+            // We classify it as StreamParseError and retry with exponential backoff.
             // See: https://github.com/link-assistant/agent/issues/169
+            // See: https://github.com/vercel/ai/issues/12595
             const isRetryableStreamParseError =
               error?.name === 'StreamParseError' &&
               error.data.isRetryable &&

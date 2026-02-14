@@ -57,8 +57,10 @@ export namespace SessionRetry {
 
   // Stream parse error retry configuration
   // When SSE streams return malformed JSON (AI_JSONParseError), retry with exponential backoff
-  // These are typically transient issues with provider proxies or network
+  // These are typically transient issues with AI gateways (e.g. Kilo AI Gateway)
+  // corrupting SSE chunks when proxying provider responses (e.g. Kimi K2.5, GLM-4.7)
   // See: https://github.com/link-assistant/agent/issues/169
+  // See: https://github.com/vercel/ai/issues/12595
   export const STREAM_PARSE_ERROR_MAX_RETRIES = 3;
   export const STREAM_PARSE_ERROR_INITIAL_DELAY = 1000; // 1 second
   export const STREAM_PARSE_ERROR_BACKOFF_FACTOR = 2;
