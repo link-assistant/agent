@@ -128,8 +128,9 @@ export const AuthLoginCommand = cmd({
       'github-copilot': 1,
       openai: 2,
       google: 3,
-      openrouter: 4,
-      vercel: 5,
+      kilo: 4,
+      openrouter: 5,
+      vercel: 6,
     };
 
     // Note: Using `select` instead of `autocomplete` because `autocomplete` is only

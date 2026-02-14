@@ -324,19 +324,21 @@ export namespace Provider {
     },
     /**
      * Kilo provider - access to 500+ AI models through Kilo Gateway
-     * Uses OpenAI-compatible API at https://api.kilo.ai/api/gateway
+     * Uses OpenRouter-compatible API at https://api.kilo.ai/api/openrouter
      *
-     * Free models available without API key (using 'public' key):
+     * Authentication required: run `agent auth login` and select "Kilo Gateway"
+     * For API key authentication, set KILO_API_KEY environment variable
+     *
+     * Free models available after authentication:
      * - GLM-5 (z-ai/glm-5) - Free limited time, flagship Z.AI model
      * - GLM 4.7 (z-ai/glm-4.7:free) - Free, agent-centric model
      * - Kimi K2.5 (moonshot/kimi-k2.5:free) - Free, agentic capabilities
      * - MiniMax M2.1 (minimax/m2.1:free) - Free, general-purpose
      * - Giga Potato (giga-potato:free) - Free evaluation model
      *
-     * For paid models, set KILO_API_KEY environment variable
-     *
      * @see https://kilo.ai/docs/gateway
      * @see https://kilo.ai/docs/advanced-usage/free-and-budget-models
+     * @see https://github.com/Kilo-Org/kilo/tree/main/packages/kilo-gateway
      */
     kilo: async (input) => {
       const hasKey = await (async () => {
@@ -345,8 +347,7 @@ export namespace Provider {
         return false;
       })();
 
-      // For free models, we can use 'public' as the API key
-      // For paid models, user needs to set KILO_API_KEY
+      // Filter to only free models when no API key
       if (!hasKey) {
         for (const [key, value] of Object.entries(input.models)) {
           // Keep only free models (cost.input === 0) when no API key
@@ -355,13 +356,44 @@ export namespace Provider {
         }
       }
 
+      // Build options
+      const options: Record<string, any> = {};
+
+      // Kilo-specific headers for the OpenRouter-compatible API
+      // @see https://github.com/Kilo-Org/kilo/blob/main/packages/kilo-gateway/src/headers.ts
+      const headers: Record<string, string> = {
+        'User-Agent': 'opencode-kilo-provider',
+        'X-KILOCODE-EDITORNAME': 'link-assistant-agent',
+      };
+
+      // Pass KILO_ORG_ID if available
+      if (process.env['KILO_ORG_ID']) {
+        headers['X-KILOCODE-ORGANIZATIONID'] = process.env['KILO_ORG_ID'];
+      }
+
+      options.headers = headers;
+
+      // Use auth token if available (from `agent auth login` -> Kilo device auth)
+      if (!hasKey) {
+        // Without authentication, use 'anonymous' key
+        // Note: The Kilo API may reject anonymous requests for completions.
+        // Users should authenticate via `agent auth login` for reliable access.
+        options.apiKey = 'anonymous';
+      } else {
+        // If we have stored auth, the loader will provide the token
+        const auth = await Auth.get(input.id);
+        if (auth) {
+          if (auth.type === 'api') {
+            options.apiKey = auth.key;
+          } else if (auth.type === 'oauth') {
+            options.apiKey = auth.access;
+          }
+        }
+      }
+
       return {
         autoload: Object.keys(input.models).length > 0,
-        options: hasKey
-          ? {}
-          : {
-              apiKey: 'public',
-            },
+        options,
       };
     },
     /**
@@ -769,13 +801,14 @@ export namespace Provider {
     database['kilo'] = {
       id: 'kilo',
       name: 'Kilo Gateway',
-      npm: '@ai-sdk/openai-compatible',
-      api: 'https://api.kilo.ai/api/gateway',
+      npm: '@openrouter/ai-sdk-provider',
+      api: 'https://api.kilo.ai/api/openrouter',
       env: ['KILO_API_KEY'],
       models: {
-        // GLM-5 - Flagship Z.AI model, free for limited time
+        // GLM-5 - Flagship Z.AI model, free tier
+        // Kilo API model ID: z-ai/glm-5:free (NOT z-ai/glm-5 which is paid)
         'glm-5-free': {
-          id: 'z-ai/glm-5',
+          id: 'z-ai/glm-5:free',
           name: 'GLM-5 (Free)',
           release_date: '2026-02-11',
           attachment: false,
@@ -789,7 +822,7 @@ export namespace Provider {
             cache_write: 0,
           },
           limit: {
-            context: 202752,
+            context: 202800,
             output: 131072,
           },
           modalities: {
@@ -798,10 +831,11 @@ export namespace Provider {
           },
           options: {},
         },
-        // GLM 4.7 - Agent-centric model, free
-        'glm-4.7-free': {
-          id: 'z-ai/glm-4.7:free',
-          name: 'GLM 4.7 (Free)',
+        // GLM 4.5 Air - Free Z.AI model (replaces non-existent glm-4.7:free)
+        // Kilo API model ID: z-ai/glm-4.5-air:free
+        'glm-4.5-air-free': {
+          id: 'z-ai/glm-4.5-air:free',
+          name: 'GLM 4.5 Air (Free)',
           release_date: '2026-01-15',
           attachment: false,
           reasoning: true,
@@ -815,7 +849,7 @@ export namespace Provider {
           },
           limit: {
             context: 131072,
-            output: 65536,
+            output: 96000,
           },
           modalities: {
             input: ['text'],
@@ -823,13 +857,14 @@ export namespace Provider {
           },
           options: {},
         },
-        // Kimi K2.5 - Agentic capabilities, free
-        'kimi-k2.5-free': {
-          id: 'moonshot/kimi-k2.5:free',
-          name: 'Kimi K2.5 (Free)',
-          release_date: '2025-12-01',
+        // MiniMax M2.5 - General-purpose, free (upgraded from M2.1)
+        // Kilo API model ID: minimax/minimax-m2.5:free
+        'minimax-m2.5-free': {
+          id: 'minimax/minimax-m2.5:free',
+          name: 'MiniMax M2.5 (Free)',
+          release_date: '2026-01-01',
           attachment: false,
-          reasoning: false,
+          reasoning: true,
           temperature: true,
           tool_call: true,
           cost: {
@@ -839,33 +874,8 @@ export namespace Provider {
             cache_write: 0,
           },
           limit: {
-            context: 131072,
-            output: 65536,
-          },
-          modalities: {
-            input: ['text'],
-            output: ['text'],
-          },
-          options: {},
-        },
-        // MiniMax M2.1 - General-purpose, free
-        'minimax-m2.1-free': {
-          id: 'minimax/m2.1:free',
-          name: 'MiniMax M2.1 (Free)',
-          release_date: '2025-11-01',
-          attachment: false,
-          reasoning: false,
-          temperature: true,
-          tool_call: true,
-          cost: {
-            input: 0,
-            output: 0,
-            cache_read: 0,
-            cache_write: 0,
-          },
-          limit: {
-            context: 131072,
-            output: 65536,
+            context: 204800,
+            output: 131072,
           },
           modalities: {
             input: ['text'],
@@ -874,12 +884,13 @@ export namespace Provider {
           options: {},
         },
         // Giga Potato - Free evaluation model
+        // Kilo API model ID: giga-potato (no :free suffix)
         'giga-potato-free': {
-          id: 'giga-potato:free',
+          id: 'giga-potato',
           name: 'Giga Potato (Free)',
           release_date: '2026-01-01',
-          attachment: false,
-          reasoning: false,
+          attachment: true,
+          reasoning: true,
           temperature: true,
           tool_call: true,
           cost: {
@@ -889,18 +900,19 @@ export namespace Provider {
             cache_write: 0,
           },
           limit: {
-            context: 65536,
-            output: 32768,
+            context: 256000,
+            output: 32000,
           },
           modalities: {
-            input: ['text'],
+            input: ['text', 'image'],
             output: ['text'],
           },
           options: {},
         },
         // Trinity Large Preview - Preview model from Arcee AI
+        // Kilo API model ID: arcee-ai/trinity-large-preview:free
         'trinity-large-preview': {
-          id: 'arcee/trinity-large-preview',
+          id: 'arcee-ai/trinity-large-preview:free',
           name: 'Trinity Large Preview (Free)',
           release_date: '2026-01-01',
           attachment: false,
@@ -914,8 +926,34 @@ export namespace Provider {
             cache_write: 0,
           },
           limit: {
-            context: 65536,
-            output: 32768,
+            context: 131000,
+            output: 65536,
+          },
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          options: {},
+        },
+        // DeepSeek R1 - Reasoning model, free
+        // Kilo API model ID: deepseek/deepseek-r1-0528:free
+        'deepseek-r1-free': {
+          id: 'deepseek/deepseek-r1-0528:free',
+          name: 'DeepSeek R1 (Free)',
+          release_date: '2025-05-28',
+          attachment: false,
+          reasoning: true,
+          temperature: true,
+          tool_call: false,
+          cost: {
+            input: 0,
+            output: 0,
+            cache_read: 0,
+            cache_write: 0,
+          },
+          limit: {
+            context: 163840,
+            output: 163840,
           },
           modalities: {
             input: ['text'],
@@ -1293,9 +1331,9 @@ export namespace Provider {
     if (providerID === 'kilo') {
       priority = [
         'glm-5-free',
-        'glm-4.7-free',
-        'kimi-k2.5-free',
-        'minimax-m2.1-free',
+        'glm-4.5-air-free',
+        'minimax-m2.5-free',
+        'deepseek-r1-free',
         'giga-potato-free',
       ];
     }
@@ -1391,10 +1429,9 @@ export namespace Provider {
    * Priority for free models:
    * 1. If model is uniquely available in one provider, use that provider
    * 2. If model is available in multiple providers, prioritize based on free model availability:
-   *    - kilo: glm-5-free, glm-4.7-free, minimax-m2.1-free, giga-potato-free (unique to Kilo)
-   *    - opencode: minimax-m2.5-free, big-pickle, gpt-5-nano (unique to OpenCode)
-   *    - SHARED: kimi-k2.5-free (available in both)
-   * 3. For shared models like kimi-k2.5-free, prefer OpenCode first, then fall back to Kilo on rate limit
+   *    - kilo: glm-5-free, glm-4.5-air-free, minimax-m2.5-free, giga-potato-free, deepseek-r1-free (unique to Kilo)
+   *    - opencode: big-pickle, gpt-5-nano (unique to OpenCode)
+   * 3. For shared models, prefer OpenCode first, then fall back to Kilo on rate limit
    *
    * @param modelID - Short model name without provider prefix
    * @returns Provider ID that should handle this model, or undefined if not found
@@ -1408,9 +1445,11 @@ export namespace Provider {
     // Models unique to Kilo (GLM models from Z.AI are only free on Kilo)
     const kiloUniqueModels = [
       'glm-5-free',
-      'glm-4.7-free',
+      'glm-4.5-air-free',
+      'minimax-m2.5-free',
       'giga-potato-free',
       'trinity-large-preview',
+      'deepseek-r1-free',
     ];
 
     // Check if it's a Kilo-unique model
@@ -1515,10 +1554,8 @@ export namespace Provider {
    * If user specifies "kilo/kimi-k2.5-free", no fallback will occur.
    */
   const SHARED_FREE_MODELS: Record<string, string[]> = {
-    // kimi-k2.5-free is available in both OpenCode and Kilo
-    'kimi-k2.5-free': ['opencode', 'kilo'],
-    // Note: minimax-m2.1-free is Kilo only, minimax-m2.5-free is OpenCode only
-    // They are different model versions, not shared
+    // Currently no shared models between OpenCode and Kilo providers.
+    // Kilo models use different IDs than OpenCode models.
   };
 
   /**
