@@ -55,16 +55,6 @@ export namespace SessionRetry {
   export const TIMEOUT_MAX_RETRIES = 3;
   export const TIMEOUT_DELAYS = [30_000, 60_000, 120_000]; // 30s, 60s, 120s
 
-  // Stream parse error retry configuration
-  // When SSE streams return malformed JSON (AI_JSONParseError), retry with exponential backoff
-  // These are typically transient issues with AI gateways (e.g. Kilo AI Gateway)
-  // corrupting SSE chunks when proxying provider responses (e.g. Kimi K2.5, GLM-4.7)
-  // See: https://github.com/link-assistant/agent/issues/169
-  // See: https://github.com/vercel/ai/issues/12595
-  export const STREAM_PARSE_ERROR_MAX_RETRIES = 3;
-  export const STREAM_PARSE_ERROR_INITIAL_DELAY = 1000; // 1 second
-  export const STREAM_PARSE_ERROR_BACKOFF_FACTOR = 2;
-
   // Rate limit retry state tracking
   // Tracks total time spent retrying for each error type
   // See: https://github.com/link-assistant/agent/issues/157
@@ -295,18 +285,5 @@ export namespace SessionRetry {
   export function timeoutDelay(attempt: number): number {
     const index = Math.min(attempt - 1, TIMEOUT_DELAYS.length - 1);
     return TIMEOUT_DELAYS[index];
-  }
-
-  /**
-   * Calculate delay for stream parse error retries.
-   * Uses exponential backoff: 1s, 2s, 4s, etc.
-   * These errors are typically caused by malformed SSE data from providers.
-   * See: https://github.com/link-assistant/agent/issues/169
-   */
-  export function streamParseErrorDelay(attempt: number): number {
-    return (
-      STREAM_PARSE_ERROR_INITIAL_DELAY *
-      Math.pow(STREAM_PARSE_ERROR_BACKOFF_FACTOR, attempt - 1)
-    );
   }
 }

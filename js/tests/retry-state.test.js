@@ -206,28 +206,3 @@ describe('SessionRetry Configuration', () => {
     expect(timeout).toBe(604800);
   });
 });
-
-describe('Stream Parse Error Retry', () => {
-  // See: https://github.com/link-assistant/agent/issues/169
-  // Stream parse errors (AI_JSONParseError) should be retried like socket errors
-
-  test('STREAM_PARSE_ERROR_MAX_RETRIES is defined', () => {
-    expect(SessionRetry.STREAM_PARSE_ERROR_MAX_RETRIES).toBe(3);
-  });
-
-  test('streamParseErrorDelay uses exponential backoff', () => {
-    const delay1 = SessionRetry.streamParseErrorDelay(1);
-    const delay2 = SessionRetry.streamParseErrorDelay(2);
-    const delay3 = SessionRetry.streamParseErrorDelay(3);
-
-    // Should follow exponential backoff: 1s, 2s, 4s
-    expect(delay1).toBe(1000); // 1 second
-    expect(delay2).toBe(2000); // 2 seconds
-    expect(delay3).toBe(4000); // 4 seconds
-  });
-
-  test('streamParseErrorDelay constants are defined', () => {
-    expect(SessionRetry.STREAM_PARSE_ERROR_INITIAL_DELAY).toBe(1000);
-    expect(SessionRetry.STREAM_PARSE_ERROR_BACKOFF_FACTOR).toBe(2);
-  });
-});

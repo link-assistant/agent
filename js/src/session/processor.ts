@@ -1,6 +1,11 @@
 import type { ModelsDev } from '../provider/models';
 import { MessageV2 } from './message-v2';
-import { type StreamTextResult, type Tool as AITool, APICallError } from 'ai';
+import {
+  type StreamTextResult,
+  type Tool as AITool,
+  APICallError,
+  JSONParseError,
+} from 'ai';
 import { Log } from '../util/log';
 import { Identifier } from '../id/id';
 import { Session } from '.';
@@ -205,6 +210,22 @@ export namespace SessionProcessor {
                   break;
                 }
                 case 'error':
+                  // Skip stream parse errors (malformed SSE from gateway/provider)
+                  // The AI SDK emits these as error events but continues the stream.
+                  // Following OpenAI Codex pattern: log and skip bad events.
+                  // See: https://github.com/link-assistant/agent/issues/169
+                  if (JSONParseError.isInstance(value.error)) {
+                    log.warn(() => ({
+                      message:
+                        'skipping malformed SSE event (stream parse error)',
+                      errorName: (value.error as Error)?.name,
+                      errorMessage: (value.error as Error)?.message?.substring(
+                        0,
+                        200
+                      ),
+                    }));
+                    continue;
+                  }
                   throw value.error;
 
                 case 'start-step':
@@ -364,7 +385,7 @@ export namespace SessionProcessor {
               providerID: input.providerID,
             });
 
-            // Check if error is retryable (APIError, SocketConnectionError, TimeoutError, or StreamParseError)
+            // Check if error is retryable (APIError, SocketConnectionError, TimeoutError)
             const isRetryableAPIError =
               error?.name === 'APIError' && error.data.isRetryable;
             const isRetryableSocketError =
@@ -375,16 +396,6 @@ export namespace SessionProcessor {
               error?.name === 'TimeoutError' &&
               error.data.isRetryable &&
               attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
-            // Stream parse errors are transient (malformed SSE from gateway/provider)
-            // AI_JSONParseError from Vercel AI SDK has no isRetryable property
-            // and is never retried by the SDK's built-in mechanism.
-            // We classify it as StreamParseError and retry with exponential backoff.
-            // See: https://github.com/link-assistant/agent/issues/169
-            // See: https://github.com/vercel/ai/issues/12595
-            const isRetryableStreamParseError =
-              error?.name === 'StreamParseError' &&
-              error.data.isRetryable &&
-              attempt < SessionRetry.STREAM_PARSE_ERROR_MAX_RETRIES;
 
             // For API errors (rate limits), check if we're within the retry timeout
             // See: https://github.com/link-assistant/agent/issues/157
@@ -398,8 +409,7 @@ export namespace SessionProcessor {
             if (
               (isRetryableAPIError && retryCheck.shouldRetry) ||
               isRetryableSocketError ||
-              isRetryableTimeoutError ||
-              isRetryableStreamParseError
+              isRetryableTimeoutError
             ) {
               attempt++;
               // Use error-specific delay calculation
@@ -411,9 +421,7 @@ export namespace SessionProcessor {
                     ? SessionRetry.socketErrorDelay(attempt)
                     : error?.name === 'TimeoutError'
                       ? SessionRetry.timeoutDelay(attempt)
-                      : error?.name === 'StreamParseError'
-                        ? SessionRetry.streamParseErrorDelay(attempt)
-                        : SessionRetry.delay(error, attempt);
+                      : SessionRetry.delay(error, attempt);
               } catch (delayError) {
                 // If retry-after exceeds AGENT_RETRY_TIMEOUT, fail immediately
                 if (

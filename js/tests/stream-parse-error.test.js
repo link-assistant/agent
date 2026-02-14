@@ -1,24 +1,26 @@
 import { test, expect, describe } from 'bun:test';
 import { MessageV2 } from '../src/session/message-v2.ts';
 
-describe('StreamParseError Detection', () => {
+describe('Stream Parse Error Handling', () => {
   // See: https://github.com/link-assistant/agent/issues/169
-  // AI_JSONParseError should be classified as StreamParseError and be retryable
+  // AI_JSONParseError is NOT retryable — it is skipped at the processor level
+  // (case 'error' in fullStream iteration), similar to OpenAI Codex approach.
+  // The fromError() function should classify it as UnknownError since
+  // the error is handled at the stream level, not at the retry level.
 
-  test('detects AI_JSONParseError by name', () => {
+  test('AI_JSONParseError falls through to UnknownError (not retryable)', () => {
     const error = new Error('JSON parsing failed');
     error.name = 'AI_JSONParseError';
     error.text = '{"id":"chatcmpl-jQugNdata:{...';
 
     const result = MessageV2.fromError(error, { providerID: 'test' });
 
-    expect(result.name).toBe('StreamParseError');
-    expect(result.data.isRetryable).toBe(true);
-    expect(result.data.message).toBe('JSON parsing failed');
-    expect(result.data.text).toBe('{"id":"chatcmpl-jQugNdata:{...');
+    // Should be UnknownError — not retryable, not StreamParseError
+    // The fix is at the processor level: skip the bad SSE event, not retry
+    expect(result.name).toBe('UnknownError');
   });
 
-  test('detects exact Kilo Gateway SSE corruption pattern from issue #169', () => {
+  test('exact production error from issue #169 classified as UnknownError', () => {
     // This is the exact error from the production log (2026-02-14T08:34:12Z)
     // SSE chunks concatenated: first chunk truncated + "data:" prefix + second chunk
     const error = new Error(
@@ -28,60 +30,7 @@ describe('StreamParseError Detection', () => {
 
     const result = MessageV2.fromError(error, { providerID: 'opencode' });
 
-    expect(result.name).toBe('StreamParseError');
-    expect(result.data.isRetryable).toBe(true);
-  });
-
-  test('detects AI_JSONParseError in error message', () => {
-    const error = new Error('AI_JSONParseError: JSON parsing failed');
-
-    const result = MessageV2.fromError(error, { providerID: 'test' });
-
-    expect(result.name).toBe('StreamParseError');
-    expect(result.data.isRetryable).toBe(true);
-  });
-
-  test('detects JSON parsing failed error', () => {
-    const error = new Error('JSON parsing failed: Unexpected token');
-
-    const result = MessageV2.fromError(error, { providerID: 'test' });
-
-    expect(result.name).toBe('StreamParseError');
-    expect(result.data.isRetryable).toBe(true);
-  });
-
-  test('detects JSON Parse error', () => {
-    const error = new Error("JSON Parse error: Expected '}'");
-
-    const result = MessageV2.fromError(error, { providerID: 'test' });
-
-    expect(result.name).toBe('StreamParseError');
-    expect(result.data.isRetryable).toBe(true);
-  });
-
-  test('detects "is not valid JSON" error', () => {
-    const error = new Error('"undefined" is not valid JSON');
-
-    const result = MessageV2.fromError(error, { providerID: 'test' });
-
-    expect(result.name).toBe('StreamParseError');
-    expect(result.data.isRetryable).toBe(true);
-  });
-
-  test('detects Unexpected token in JSON error', () => {
-    const error = new Error('Unexpected token < in JSON at position 0');
-
-    const result = MessageV2.fromError(error, { providerID: 'test' });
-
-    expect(result.name).toBe('StreamParseError');
-    expect(result.data.isRetryable).toBe(true);
-  });
-
-  test('does not classify non-JSON errors as StreamParseError', () => {
-    const error = new Error('Network request failed');
-
-    const result = MessageV2.fromError(error, { providerID: 'test' });
-
+    // Should be UnknownError — the fix handles this at the processor/stream level
     expect(result.name).toBe('UnknownError');
   });
 
@@ -102,40 +51,12 @@ describe('StreamParseError Detection', () => {
     expect(result.name).toBe('TimeoutError');
     expect(result.data.isRetryable).toBe(true);
   });
-});
 
-describe('StreamParseError Type', () => {
-  test('StreamParseError can be instantiated', () => {
-    const error = new MessageV2.StreamParseError(
-      {
-        message: 'Test parse error',
-        isRetryable: true,
-        text: 'malformed JSON',
-      },
-      {}
-    );
+  test('generic errors are classified as UnknownError', () => {
+    const error = new Error('Network request failed');
 
-    expect(error.name).toBe('StreamParseError');
-    expect(error.data.message).toBe('Test parse error');
-    expect(error.data.isRetryable).toBe(true);
-    expect(error.data.text).toBe('malformed JSON');
-  });
+    const result = MessageV2.fromError(error, { providerID: 'test' });
 
-  test('StreamParseError.isInstance works', () => {
-    const error = new MessageV2.StreamParseError(
-      { message: 'Test', isRetryable: true },
-      {}
-    );
-
-    expect(MessageV2.StreamParseError.isInstance(error)).toBe(true);
-  });
-
-  test('StreamParseError text field is optional', () => {
-    const error = new MessageV2.StreamParseError(
-      { message: 'Test', isRetryable: true },
-      {}
-    );
-
-    expect(error.data.text).toBeUndefined();
+    expect(result.name).toBe('UnknownError');
   });
 });
