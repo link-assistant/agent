@@ -13,26 +13,69 @@ export namespace BunProc {
   // Lock key for serializing package installations to prevent race conditions
   const INSTALL_LOCK_KEY = 'bun-install';
 
+  // Default timeout for subprocess commands (2 minutes)
+  // This prevents indefinite hangs from known Bun issues:
+  // - HTTP 304 response handling (https://github.com/oven-sh/bun/issues/5831)
+  // - Failed dependency fetch (https://github.com/oven-sh/bun/issues/26341)
+  // - IPv6 configuration issues
+  const DEFAULT_TIMEOUT_MS = 120000;
+
+  // Timeout specifically for package installation (60 seconds)
+  // Package installations should complete within this time for typical packages
+  const INSTALL_TIMEOUT_MS = 60000;
+
+  export const TimeoutError = NamedError.create(
+    'BunTimeoutError',
+    z.object({
+      cmd: z.array(z.string()),
+      timeoutMs: z.number(),
+    })
+  );
+
   export async function run(
     cmd: string[],
-    options?: Bun.SpawnOptions.OptionsObject<any, any, any>
+    options?: Bun.SpawnOptions.OptionsObject<any, any, any> & {
+      timeout?: number;
+    }
   ) {
+    const timeout = options?.timeout ?? DEFAULT_TIMEOUT_MS;
+
     log.info(() => ({
       message: 'running',
       cmd: [which(), ...cmd],
-      ...options,
+      timeout,
+      cwd: options?.cwd,
     }));
+
     const result = Bun.spawn([which(), ...cmd], {
       ...options,
       stdout: 'pipe',
       stderr: 'pipe',
+      timeout, // Automatically kills process after timeout
+      killSignal: 'SIGTERM', // Graceful termination signal
       env: {
         ...process.env,
         ...options?.env,
         BUN_BE_BUN: '1',
       },
     });
+
     const code = await result.exited;
+
+    // Check if process was killed due to timeout
+    if (result.signalCode === 'SIGTERM' && code !== 0) {
+      log.error(() => ({
+        message: 'command timed out',
+        cmd: [which(), ...cmd],
+        timeout,
+        signalCode: result.signalCode,
+      }));
+      throw new TimeoutError({
+        cmd: [which(), ...cmd],
+        timeoutMs: timeout,
+      });
+    }
+
     const stdout = result.stdout
       ? typeof result.stdout === 'number'
         ? result.stdout
@@ -82,6 +125,13 @@ export namespace BunProc {
       errorMsg.includes('EACCES') ||
       errorMsg.includes('EBUSY')
     );
+  }
+
+  /**
+   * Check if an error is a timeout error
+   */
+  function isTimeoutError(error: unknown): boolean {
+    return error instanceof TimeoutError;
   }
 
   /**
@@ -139,12 +189,13 @@ export namespace BunProc {
       version,
     }));
 
-    // Retry logic for cache-related errors
+    // Retry logic for cache-related errors and timeout errors
     let lastError: Error | undefined;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         await BunProc.run(args, {
           cwd: Global.Path.cache,
+          timeout: INSTALL_TIMEOUT_MS, // Use specific timeout for package installation
         });
 
         log.info(() => ({
@@ -159,6 +210,7 @@ export namespace BunProc {
       } catch (e) {
         const errorMsg = e instanceof Error ? e.message : String(e);
         const isCacheError = isCacheRelatedError(errorMsg);
+        const isTimeout = isTimeoutError(e);
 
         log.warn(() => ({
           message: 'package installation attempt failed',
@@ -168,11 +220,15 @@ export namespace BunProc {
           maxRetries: MAX_RETRIES,
           error: errorMsg,
           isCacheError,
+          isTimeout,
         }));
 
-        if (isCacheError && attempt < MAX_RETRIES) {
+        // Retry on cache-related errors or timeout errors
+        if ((isCacheError || isTimeout) && attempt < MAX_RETRIES) {
           log.info(() => ({
-            message: 'retrying installation after cache-related error',
+            message: isTimeout
+              ? 'retrying installation after timeout (possible network issue)'
+              : 'retrying installation after cache-related error',
             pkg,
             version,
             attempt,
@@ -184,7 +240,7 @@ export namespace BunProc {
           continue;
         }
 
-        // Non-cache error or final attempt - log and throw
+        // Non-retriable error or final attempt - log and throw
         log.error(() => ({
           message: 'package installation failed',
           pkg,
@@ -192,14 +248,24 @@ export namespace BunProc {
           error: errorMsg,
           stack: e instanceof Error ? e.stack : undefined,
           possibleCacheCorruption: isCacheError,
+          timedOut: isTimeout,
           attempts: attempt,
         }));
 
-        // Provide helpful recovery instructions for cache-related errors
+        // Provide helpful recovery instructions
         if (isCacheError) {
           log.error(() => ({
             message:
               'Bun package cache may be corrupted. Try clearing the cache with: bun pm cache rm',
+          }));
+        }
+
+        if (isTimeout) {
+          log.error(() => ({
+            message:
+              'Package installation timed out. This may be due to network issues or Bun hanging. ' +
+              'Try: 1) Check network connectivity, 2) Run "bun pm cache rm" to clear cache, ' +
+              '3) Check for IPv6 issues (try disabling IPv6)',
           }));
         }
 
