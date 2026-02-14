@@ -67,11 +67,74 @@ export namespace ModelsDev {
 
   export type Provider = z.infer<typeof Provider>;
 
+  /**
+   * Cache staleness threshold in milliseconds (1 hour).
+   * If the cache is older than this, we await the refresh before using the data.
+   */
+  const CACHE_STALE_THRESHOLD_MS = 60 * 60 * 1000;
+
+  /**
+   * Get the models database, refreshing from models.dev if needed.
+   *
+   * This function handles cache staleness properly:
+   * - If cache doesn't exist: await refresh to ensure fresh data
+   * - If cache is stale (> 1 hour old): await refresh to ensure up-to-date models
+   * - If cache is fresh: trigger background refresh but use cached data immediately
+   *
+   * This prevents ProviderModelNotFoundError when:
+   * - User runs agent for the first time (no cache)
+   * - User has outdated cache missing new models like kimi-k2.5-free
+   *
+   * @see https://github.com/link-assistant/agent/issues/175
+   */
   export async function get() {
-    refresh();
     const file = Bun.file(filepath);
+
+    // Check if cache exists and get its modification time
+    const exists = await file.exists();
+
+    if (!exists) {
+      // No cache - must await refresh to get initial data
+      log.info(() => ({
+        message: 'no cache found, awaiting refresh',
+        path: filepath,
+      }));
+      await refresh();
+    } else {
+      // Check if cache is stale
+      const stats = await file.stat().catch(() => null);
+      const mtime = stats?.mtime?.getTime() ?? 0;
+      const isStale = Date.now() - mtime > CACHE_STALE_THRESHOLD_MS;
+
+      if (isStale) {
+        // Stale cache - await refresh to get updated model list
+        log.info(() => ({
+          message: 'cache is stale, awaiting refresh',
+          path: filepath,
+          age: Date.now() - mtime,
+          threshold: CACHE_STALE_THRESHOLD_MS,
+        }));
+        await refresh();
+      } else {
+        // Fresh cache - trigger background refresh but don't wait
+        log.info(() => ({
+          message: 'cache is fresh, triggering background refresh',
+          path: filepath,
+          age: Date.now() - mtime,
+        }));
+        refresh();
+      }
+    }
+
+    // Now read the cache file
     const result = await file.json().catch(() => {});
     if (result) return result as Record<string, Provider>;
+
+    // Fallback to bundled data if cache read failed
+    log.warn(() => ({
+      message: 'cache read failed, using bundled data',
+      path: filepath,
+    }));
     const json = await data();
     return JSON.parse(json) as Record<string, Provider>;
   }

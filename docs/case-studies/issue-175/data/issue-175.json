@@ -1,0 +1,66 @@
+{
+  "issue_number": 175,
+  "title": "`echo 'hi' | agent --model kimi-k2.5-free` is not working on macOS",
+  "reporter": "konard",
+  "reported_at": "2026-02-14T20:28:55Z",
+  "labels": ["bug"],
+  "environment": {
+    "os": "macOS",
+    "bun_version": "1.2.20",
+    "agent_version": "0.13.1"
+  },
+  "command": "echo 'hi' | agent --model kimi-k2.5-free",
+  "error": {
+    "type": "ProviderModelNotFoundError",
+    "data": {
+      "providerID": "opencode",
+      "modelID": "kimi-k2.5-free"
+    },
+    "stack_trace": [
+      "at new NamedError (1:23)",
+      "at new ProviderModelNotFoundError (/Users/konard/.bun/install/global/node_modules/@link-assistant/agent/src/util/error.ts:28:9)",
+      "at getModel (/Users/konard/.bun/install/global/node_modules/@link-assistant/agent/src/provider/provider.ts:1253:13)"
+    ]
+  },
+  "relevant_logs": [
+    {
+      "type": "log",
+      "level": "info",
+      "service": "provider",
+      "providerID": "opencode",
+      "message": "found"
+    },
+    {
+      "type": "log",
+      "level": "info",
+      "service": "provider",
+      "providerID": "kilo",
+      "message": "found"
+    },
+    {
+      "type": "log",
+      "level": "warn",
+      "service": "provider",
+      "modelID": "kimi-k2.5-free",
+      "message": "unable to resolve short model name, using opencode as default"
+    },
+    {
+      "type": "log",
+      "level": "info",
+      "service": "default",
+      "input": "kimi-k2.5-free",
+      "providerID": "opencode",
+      "modelID": "kimi-k2.5-free",
+      "message": "resolved short model name"
+    },
+    {
+      "type": "log",
+      "level": "error",
+      "service": "session.prompt",
+      "providerID": "opencode",
+      "modelID": "kimi-k2.5-free",
+      "error": "ProviderModelNotFoundError",
+      "message": "Failed to initialize specified model - NOT falling back to default (explicit provider specified)"
+    }
+  ]
+}
