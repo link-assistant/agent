@@ -194,9 +194,8 @@ echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"ls -
 echo "hi" | agent
 
 # Other free models (in order of recommendation)
-echo "hi" | agent --model opencode/minimax-m2.1-free
+echo "hi" | agent --model opencode/minimax-m2.5-free
 echo "hi" | agent --model opencode/gpt-5-nano
-echo "hi" | agent --model opencode/glm-4.7-free
 echo "hi" | agent --model opencode/big-pickle
 
 # Premium models (OpenCode Zen subscription)

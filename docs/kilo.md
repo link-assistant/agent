@@ -17,14 +17,16 @@ The Kilo Gateway offers:
 
 The following models are available without setting up an API key:
 
-| Model                    | Model ID                      | Provider       | Context Window | Status              |
-| ------------------------ | ----------------------------- | -------------- | -------------- | ------------------- |
-| **GLM-5 (recommended)**  | `kilo/glm-5-free`             | Z.AI           | 202,752 tokens | Free (limited time) |
-| GLM 4.7                  | `kilo/glm-4.7-free`           | Z.AI           | 131,072 tokens | Free                |
-| Kimi K2.5                | `kilo/kimi-k2.5-free`         | MoonshotAI     | 131,072 tokens | Free                |
-| MiniMax M2.1             | `kilo/minimax-m2.1-free`      | MiniMax        | 131,072 tokens | Free                |
-| Giga Potato              | `kilo/giga-potato-free`       | Unknown        | 65,536 tokens  | Free (evaluation)   |
-| Trinity Large Preview    | `kilo/trinity-large-preview`  | Arcee AI       | 65,536 tokens  | Free (preview)      |
+| Model                      | Model ID                       | Provider       | Context Window | Status              |
+| -------------------------- | ------------------------------ | -------------- | -------------- | ------------------- |
+| **GLM-5 (recommended)**    | `kilo/glm-5-free`              | Z.AI           | 202,752 tokens | Free (limited time) |
+| GLM 4.5 Air                | `kilo/glm-4.5-air-free`        | Z.AI           | 131,072 tokens | Free                |
+| MiniMax M2.5               | `kilo/minimax-m2.5-free`       | MiniMax        | 204,800 tokens | Free                |
+| DeepSeek R1                | `kilo/deepseek-r1-free`        | DeepSeek       | 163,840 tokens | Free                |
+| Giga Potato                | `kilo/giga-potato-free`        | Unknown        | 256,000 tokens | Free (evaluation)   |
+| Trinity Large Preview      | `kilo/trinity-large-preview`   | Arcee AI       | 131,000 tokens | Free (preview)      |
+
+> **Note:** `kilo/glm-4.7-free`, `kilo/kimi-k2.5-free`, and `kilo/minimax-m2.1-free` are no longer the recommended free models. They have been replaced by the models listed above. See [Kilo Free Models Documentation](https://kilo.ai/docs/advanced-usage/free-and-budget-models) for current availability.
 
 ### GLM-5: Flagship Free Model
 
@@ -57,11 +59,14 @@ Free models work out of the box with no configuration:
 # GLM-5 (recommended)
 echo "hello" | agent --model kilo/glm-5-free
 
-# GLM 4.7
-echo "hello" | agent --model kilo/glm-4.7-free
+# GLM 4.5 Air
+echo "hello" | agent --model kilo/glm-4.5-air-free
 
-# Kimi K2.5
-echo "hello" | agent --model kilo/kimi-k2.5-free
+# MiniMax M2.5
+echo "hello" | agent --model kilo/minimax-m2.5-free
+
+# DeepSeek R1 (reasoning model)
+echo "hello" | agent --model kilo/deepseek-r1-free
 ```
 
 ### Using Paid Models
@@ -105,14 +110,14 @@ const result = streamText({
 
 ## Comparison with OpenCode Zen
 
-| Feature          | OpenCode Zen             | Kilo Gateway                  |
-| ---------------- | ------------------------ | ----------------------------- |
-| Free Models      | 5 (Kimi K2.5, etc.)      | 6+ (GLM-5, GLM 4.7, etc.)     |
-| Flagship Free    | Kimi K2.5 Free           | GLM-5 (limited time)          |
-| API Format       | OpenAI-compatible        | OpenAI-compatible             |
-| Free API Key     | `public`                 | `public`                      |
-| Total Models     | 50+                      | 500+                          |
-| BYOK Support     | Yes                      | Yes                           |
+| Feature          | OpenCode Zen                            | Kilo Gateway                     |
+| ---------------- | --------------------------------------- | -------------------------------- |
+| Free Models      | 4 (Kimi K2.5, MiniMax M2.5, etc.)       | 6+ (GLM-5, MiniMax M2.5, etc.)   |
+| Flagship Free    | Kimi K2.5 Free                          | GLM-5 (limited time)             |
+| API Format       | OpenAI-compatible                       | OpenAI-compatible                |
+| Free API Key     | `public`                                | `public`                         |
+| Total Models     | 50+                                     | 500+                             |
+| BYOK Support     | Yes                                     | Yes                              |
 
 ## More Information
 
