@@ -74,7 +74,9 @@ test('--output-response-model flag includes model info in step_finish events', a
   expect(typeof stepFinish.part.model.providerID).toBe('string');
   expect(typeof stepFinish.part.model.requestedModelID).toBe('string');
 
-  console.log('\n✅ --output-response-model includes model info in step_finish:');
+  console.log(
+    '\n✅ --output-response-model includes model info in step_finish:'
+  );
   console.log(JSON.stringify(stepFinish.part.model, null, 2));
 });
 
@@ -133,7 +135,9 @@ test('--summarize-session flag controls session summarization', async () => {
   );
 
   // Check that session summarization is disabled by default
-  expect(result.stdout + result.stderr).toContain('session summarization disabled');
+  expect(result.stdout + result.stderr).toContain(
+    'session summarization disabled'
+  );
 
   console.log('\n✅ Session summarization is disabled by default');
 });
