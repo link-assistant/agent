@@ -1,5 +1,72 @@
 # @link-assistant/agent
 
+## 0.13.5
+
+### Patch Changes
+
+- 34f4877: Add unit suffixes to all time-related log fields for clarity
+
+  Standardized all time-related log fields in retry-fetch.ts and session/retry.ts
+  to include the Ms (milliseconds) suffix, making logs crystal clear and eliminating
+  confusion about time units.
+
+  Changes:
+  - retry-fetch.ts: Renamed delay→delayMs, elapsed→elapsedMs, remainingTimeout→remainingTimeoutMs,
+    minInterval→minIntervalMs, maxRetryTimeout→maxRetryTimeoutMs, backoffDelay→backoffDelayMs,
+    maxBackoffDelay→maxBackoffDelayMs
+  - session/retry.ts: Renamed elapsedTime→elapsedTimeMs, maxTime→maxTimeMs,
+    backoffDelay→backoffDelayMs, maxBackoffDelay→maxBackoffDelayMs, maxCap→maxCapMs
+
+  This is a logging-only change with no functional impact. All tests pass.
+
+  Fixes #181
+
+- b5d4705: fix: resolve CLI warnings by fixing root causes
+  - Add package staleness check to refresh 'latest' packages after 24 hours
+    - Fixes specificationVersion v2 warning by ensuring @ai-sdk/openai-compatible is updated to v2.x (with v3 spec support)
+  - Change models.dev cache fallback message from 'warn' to 'info' level
+    - Using bundled data is expected fallback behavior, not a warning condition
+
+## 0.13.4
+
+### Patch Changes
+
+- 08d9e95: Fix rate limit wait being aborted by provider timeout (#183)
+
+  When a rate limit (429) response includes a long retry-after header (e.g., 15 hours),
+  the agent would fail with "The operation timed out." after only 5 minutes. This occurred
+  because the rate limit wait shared the same AbortSignal as the provider timeout.
+
+  Solution: Use isolated AbortController for rate limit waits that only respects the global
+  AGENT_RETRY_TIMEOUT (default 7 days), not provider-level timeouts.
+
+  Key changes:
+  - Added createIsolatedRateLimitSignal() for rate limit waits
+  - Rate limit waits now periodically check for user cancellation (every 10s)
+  - Proper cleanup of event listeners and timers to prevent memory leaks
+  - Added comprehensive timeout hierarchy documentation
+
+## 0.13.3
+
+### Patch Changes
+
+- Fix rate limit wait being aborted by provider timeout (#183)
+
+  Problem: When a rate limit (429) response includes a long retry-after header
+  (e.g., 15 hours), the agent would fail with "The operation timed out."
+  after only 5 minutes.
+
+  Solution: Use isolated AbortController for rate limit waits that only respects
+  the global AGENT_RETRY_TIMEOUT (default 7 days), not provider-level timeouts.
+
+  Key changes:
+  - Added createIsolatedRateLimitSignal() for rate limit waits
+  - Rate limit waits now periodically check for user cancellation (every 10s)
+  - Proper cleanup of event listeners and timers to prevent memory leaks
+  - Added comprehensive timeout hierarchy documentation
+
+  Fixes #183
+
 ## 0.13.2
 
 ### Patch Changes

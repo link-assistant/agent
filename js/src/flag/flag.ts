@@ -4,6 +4,11 @@ export namespace Flag {
     return process.env[newKey] ?? process.env[oldKey];
   }
 
+  function truthy(key: string) {
+    const value = process.env[key]?.toLowerCase();
+    return value === 'true' || value === '1';
+  }
+
   function truthyCompat(newKey: string, oldKey: string): boolean {
     const value = (getEnv(newKey, oldKey) ?? '').toLowerCase();
     return value === 'true' || value === '1';
@@ -188,10 +193,5 @@ export namespace Flag {
   // Allow setting compact JSON mode programmatically (e.g., from CLI --compact-json flag)
   export function setCompactJson(value: boolean) {
     _compactJson = value;
-  }
-
-  function truthy(key: string) {
-    const value = process.env[key]?.toLowerCase();
-    return value === 'true' || value === '1';
   }
 }

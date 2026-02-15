@@ -141,6 +141,14 @@ export namespace BunProc {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  /**
+   * Staleness threshold for 'latest' version packages (24 hours).
+   * Packages installed as 'latest' will be refreshed after this period.
+   * This ensures users get updated packages with bug fixes and new features.
+   * @see https://github.com/link-assistant/agent/issues/177
+   */
+  const LATEST_VERSION_STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
+
   export async function install(pkg: string, version = 'latest') {
     const mod = path.join(Global.Path.cache, 'node_modules', pkg);
 
@@ -150,11 +158,41 @@ export namespace BunProc {
 
     const pkgjson = Bun.file(path.join(Global.Path.cache, 'package.json'));
     const parsed = await pkgjson.json().catch(async () => {
-      const result = { dependencies: {} };
+      const result = { dependencies: {}, _installTime: {} };
       await Bun.write(pkgjson.name!, JSON.stringify(result, null, 2));
       return result;
     });
-    if (parsed.dependencies[pkg] === version) return mod;
+
+    // Initialize _installTime tracking if not present
+    if (!parsed._installTime) {
+      parsed._installTime = {};
+    }
+
+    // Check if package is already installed with the requested version
+    const installedVersion = parsed.dependencies[pkg];
+    const installTime = parsed._installTime[pkg] as number | undefined;
+
+    if (installedVersion === version) {
+      // For 'latest' version, check if installation is stale and needs refresh
+      // This ensures users get updated packages with important fixes
+      // @see https://github.com/link-assistant/agent/issues/177 (specificationVersion v3 support)
+      if (version === 'latest' && installTime) {
+        const age = Date.now() - installTime;
+        if (age < LATEST_VERSION_STALE_THRESHOLD_MS) {
+          return mod;
+        }
+        log.info(() => ({
+          message: 'refreshing stale latest package',
+          pkg,
+          version,
+          ageMs: age,
+          threshold: LATEST_VERSION_STALE_THRESHOLD_MS,
+        }));
+      } else if (version !== 'latest') {
+        // For explicit versions, don't reinstall
+        return mod;
+      }
+    }
 
     // Check for dry-run mode
     if (Flag.OPENCODE_DRY_RUN) {
@@ -205,6 +243,8 @@ export namespace BunProc {
           attempt,
         }));
         parsed.dependencies[pkg] = version;
+        // Track installation time for 'latest' version staleness checks
+        parsed._installTime[pkg] = Date.now();
         await Bun.write(pkgjson.name!, JSON.stringify(parsed, null, 2));
         return mod;
       } catch (e) {

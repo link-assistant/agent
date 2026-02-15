@@ -20,7 +20,12 @@ import { Flag } from '../flag/flag';
  * By wrapping fetch, we handle rate limits at the HTTP layer with time-based retries,
  * ensuring the agent's 7-week global timeout is respected.
  *
+ * Important: Rate limit waits use ISOLATED AbortControllers that are NOT subject to
+ * provider/stream timeouts. This prevents long rate limit waits (e.g., 15 hours) from
+ * being aborted by short provider timeouts (e.g., 5 minutes).
+ *
  * @see https://github.com/link-assistant/agent/issues/167
+ * @see https://github.com/link-assistant/agent/issues/183
  * @see https://github.com/vercel/ai/issues/12585
  */
 
@@ -125,8 +130,8 @@ export namespace RetryFetch {
       log.info(() => ({
         message: 'using retry-after value',
         retryAfterMs,
-        delay,
-        minInterval,
+        delayMs: delay,
+        minIntervalMs: minInterval,
       }));
       return addJitter(delay);
     }
@@ -140,31 +145,117 @@ export namespace RetryFetch {
     log.info(() => ({
       message: 'no retry-after header, using exponential backoff',
       attempt,
-      backoffDelay,
-      delay,
-      minInterval,
-      maxBackoffDelay,
+      backoffDelayMs: backoffDelay,
+      delayMs: delay,
+      minIntervalMs: minInterval,
+      maxBackoffDelayMs: maxBackoffDelay,
     }));
     return addJitter(delay);
   }
 
   /**
    * Sleep for the specified duration, but respect abort signals.
+   * Properly cleans up event listeners to prevent memory leaks.
    */
   async function sleep(ms: number, signal?: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {
+      // Check if already aborted before starting
+      if (signal?.aborted) {
+        reject(new DOMException('Aborted', 'AbortError'));
+        return;
+      }
+
       const timeout = setTimeout(resolve, ms);
+
       if (signal) {
-        signal.addEventListener(
-          'abort',
-          () => {
-            clearTimeout(timeout);
-            reject(new DOMException('Aborted', 'AbortError'));
-          },
-          { once: true }
-        );
+        const abortHandler = () => {
+          clearTimeout(timeout);
+          reject(new DOMException('Aborted', 'AbortError'));
+        };
+
+        signal.addEventListener('abort', abortHandler, { once: true });
+
+        // Clean up the listener when the timeout completes normally
+        // This prevents memory leaks on long-running processes
+        const originalResolve = resolve;
+        // eslint-disable-next-line no-param-reassign
+        resolve = (value) => {
+          signal.removeEventListener('abort', abortHandler);
+          originalResolve(value);
+        };
       }
     });
+  }
+
+  /**
+   * Create an isolated AbortController for rate limit waits.
+   *
+   * This controller is NOT connected to the request's AbortSignal, so it won't be
+   * affected by provider timeouts (default 5 minutes) or stream timeouts.
+   * It only respects the global AGENT_RETRY_TIMEOUT.
+   *
+   * However, it DOES check the user's abort signal periodically (every 10 seconds)
+   * to allow user cancellation during long rate limit waits.
+   *
+   * This solves issue #183 where long rate limit waits (e.g., 15 hours) were being
+   * aborted by the provider timeout (5 minutes).
+   *
+   * @param remainingTimeout Maximum time allowed for this wait (ms)
+   * @param userSignal Optional user abort signal to check periodically
+   * @returns An object with the signal and a cleanup function
+   * @see https://github.com/link-assistant/agent/issues/183
+   */
+  function createIsolatedRateLimitSignal(
+    remainingTimeout: number,
+    userSignal?: AbortSignal
+  ): {
+    signal: AbortSignal;
+    cleanup: () => void;
+  } {
+    const controller = new AbortController();
+    const timers: NodeJS.Timeout[] = [];
+
+    // Set a timeout based on the global AGENT_RETRY_TIMEOUT (not provider timeout)
+    const globalTimeoutId = setTimeout(() => {
+      controller.abort(
+        new DOMException(
+          'Rate limit wait exceeded global timeout',
+          'TimeoutError'
+        )
+      );
+    }, remainingTimeout);
+    timers.push(globalTimeoutId);
+
+    // Periodically check if user canceled (every 10 seconds)
+    // This allows user cancellation during long rate limit waits
+    // without being affected by provider timeouts
+    if (userSignal) {
+      const checkUserCancellation = () => {
+        if (userSignal.aborted) {
+          controller.abort(
+            new DOMException(
+              'User canceled during rate limit wait',
+              'AbortError'
+            )
+          );
+        }
+      };
+
+      // Check immediately and then every 10 seconds
+      checkUserCancellation();
+      const intervalId = setInterval(checkUserCancellation, 10_000);
+      timers.push(intervalId as unknown as NodeJS.Timeout);
+    }
+
+    return {
+      signal: controller.signal,
+      cleanup: () => {
+        for (const timer of timers) {
+          clearTimeout(timer);
+          clearInterval(timer as unknown as NodeJS.Timeout);
+        }
+      },
+    };
   }
 
   /**
@@ -243,8 +334,8 @@ export namespace RetryFetch {
                 message:
                   'network error retry timeout exceeded, re-throwing error',
                 sessionID,
-                elapsed,
-                maxRetryTimeout,
+                elapsedMs: elapsed,
+                maxRetryTimeoutMs: maxRetryTimeout,
                 error: (error as Error).message,
               }));
               throw error;
@@ -259,7 +350,7 @@ export namespace RetryFetch {
               message: 'network error, retrying',
               sessionID,
               attempt,
-              delay,
+              delayMs: delay,
               error: (error as Error).message,
             }));
             await sleep(delay, init?.signal ?? undefined);
@@ -279,8 +370,8 @@ export namespace RetryFetch {
           log.warn(() => ({
             message: 'retry timeout exceeded in fetch wrapper, returning 429',
             sessionID,
-            elapsed,
-            maxRetryTimeout,
+            elapsedMs: elapsed,
+            maxRetryTimeoutMs: maxRetryTimeout,
           }));
           return response; // Let higher-level handling take over
         }
@@ -299,8 +390,8 @@ export namespace RetryFetch {
             message:
               'retry-after exceeds remaining timeout, returning 429 response',
             sessionID,
-            elapsed,
-            remainingTimeout: maxRetryTimeout - elapsed,
+            elapsedMs: elapsed,
+            remainingTimeoutMs: maxRetryTimeout - elapsed,
           }));
           return response;
         }
@@ -310,33 +401,64 @@ export namespace RetryFetch {
           log.warn(() => ({
             message: 'delay would exceed retry timeout, returning 429 response',
             sessionID,
-            elapsed,
-            delay,
-            maxRetryTimeout,
+            elapsedMs: elapsed,
+            delayMs: delay,
+            maxRetryTimeoutMs: maxRetryTimeout,
           }));
           return response;
         }
+
+        const remainingTimeout = maxRetryTimeout - elapsed;
 
         log.info(() => ({
           message: 'rate limited, will retry',
           sessionID,
           attempt,
-          delay,
+          delayMs: delay,
           delayMinutes: (delay / 1000 / 60).toFixed(2),
-          elapsed,
-          remainingTimeout: maxRetryTimeout - elapsed,
+          delayHours: (delay / 1000 / 3600).toFixed(2),
+          elapsedMs: elapsed,
+          remainingTimeoutMs: remainingTimeout,
+          remainingTimeoutHours: (remainingTimeout / 1000 / 3600).toFixed(2),
+          isolatedSignal: true, // Indicates we're using isolated signal for this wait
         }));
 
-        // Wait before retrying
+        // Wait before retrying using ISOLATED signal
+        // This is critical for issue #183: Rate limit waits can be hours long (e.g., 15 hours),
+        // but provider timeouts are typically 5 minutes. By using an isolated AbortController
+        // that only respects AGENT_RETRY_TIMEOUT, we prevent the provider timeout from
+        // aborting long rate limit waits.
+        //
+        // The isolated signal periodically checks the user's abort signal (every 10 seconds)
+        // to allow user cancellation during long waits.
+        const { signal: isolatedSignal, cleanup } =
+          createIsolatedRateLimitSignal(
+            remainingTimeout,
+            init?.signal ?? undefined
+          );
+
         try {
-          await sleep(delay, init?.signal ?? undefined);
-        } catch {
-          // Aborted - return the last response
+          await sleep(delay, isolatedSignal);
+        } catch (sleepError) {
+          // Check if the original request was aborted (user cancellation)
+          // In that case, we should stop retrying
+          if (init?.signal?.aborted) {
+            log.info(() => ({
+              message: 'rate limit wait aborted by user cancellation',
+              sessionID,
+            }));
+            return response;
+          }
+
+          // Otherwise, it was the isolated timeout - log and return
           log.info(() => ({
-            message: 'retry sleep aborted, returning last response',
+            message: 'rate limit wait exceeded global timeout',
             sessionID,
+            sleepError: String(sleepError),
           }));
           return response;
+        } finally {
+          cleanup();
         }
       }
     };
