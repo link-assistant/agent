@@ -1,5 +1,5 @@
 ---
-"@link-assistant/agent": patch
+'@link-assistant/agent': patch
 ---
 
 Update free models: replace minimax-m2.1-free with minimax-m2.5-free
