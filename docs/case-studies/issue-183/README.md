@@ -356,9 +356,40 @@ The fundamental conflict is between:
 
 These two mechanisms serve different purposes and should not share the same abort signal chain when rate limit handling is active.
 
-## Files Changed
+## Implementation
 
-This case study documents the issue but does not include a fix implementation. See the proposed solutions above for implementation guidance.
+The fix has been implemented in PR #184 using **Solution 1: Isolated AbortController for Rate Limit Waits**.
+
+### Changes Made
+
+1. **`js/src/provider/retry-fetch.ts`**:
+   - Added `createIsolatedRateLimitSignal()` function that creates an AbortController not connected to the request's abort signal
+   - The isolated signal only respects `AGENT_RETRY_TIMEOUT` (default 7 days)
+   - Periodic check (every 10 seconds) for user cancellation during long waits
+   - Proper cleanup of timers to prevent memory leaks
+
+2. **`docs/timeout-hierarchy.md`**:
+   - Added comprehensive documentation of the timeout hierarchy
+   - Documented the signal chain architecture before and after the fix
+   - Added best practices based on research of similar projects
+
+### How It Works
+
+```
+Before Fix:
+sleep(15h) ← request's AbortSignal ← provider timeout (5 min) → ABORT!
+
+After Fix:
+sleep(15h) ← isolated AbortController ← only AGENT_RETRY_TIMEOUT (7 days) → OK
+            └── periodic check (10s) → user cancellation → ABORT (if user canceled)
+```
+
+### Testing
+
+The fix can be verified by:
+1. Running a request that returns a 429 with a long `retry-after` header (e.g., 15 hours)
+2. Confirming the agent waits for the full duration (or until `AGENT_RETRY_TIMEOUT`)
+3. Confirming user cancellation still works during the wait
 
 ## Data Files
 
