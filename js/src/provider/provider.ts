@@ -18,8 +18,47 @@ import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';
 import { RetryFetch } from './retry-fetch';
 
+// Direct imports for bundled providers - these are pre-installed to avoid runtime installation hangs
+// @see https://github.com/link-assistant/agent/issues/173
+// @see https://github.com/oven-sh/bun/issues/5831 (bun install hangs sporadically)
+import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createAzure } from '@ai-sdk/azure';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createVertex } from '@ai-sdk/google-vertex';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createXai } from '@ai-sdk/xai';
+import { createMistral } from '@ai-sdk/mistral';
+import { createGroq } from '@ai-sdk/groq';
+
 export namespace Provider {
   const log = Log.create({ service: 'provider' });
+
+  /**
+   * Bundled providers - these are pre-installed and imported statically
+   * to avoid runtime package installation which can hang or timeout.
+   *
+   * When a provider's npm package is in this map, we use the pre-installed
+   * version instead of dynamically installing via `bun add`.
+   *
+   * @see https://github.com/link-assistant/agent/issues/173
+   * @see https://github.com/Kilo-Org/kilo (reference implementation)
+   */
+  const BUNDLED_PROVIDERS: Record<string, (options: any) => SDK> = {
+    '@ai-sdk/amazon-bedrock': createAmazonBedrock,
+    '@ai-sdk/anthropic': createAnthropic,
+    '@ai-sdk/azure': createAzure,
+    '@ai-sdk/google': createGoogleGenerativeAI,
+    '@ai-sdk/google-vertex': createVertex,
+    '@ai-sdk/openai': createOpenAI,
+    '@ai-sdk/openai-compatible': createOpenAICompatible,
+    '@openrouter/ai-sdk-provider': createOpenRouter,
+    '@ai-sdk/xai': createXai,
+    '@ai-sdk/mistral': createMistral,
+    '@ai-sdk/groq': createGroq,
+  };
 
   type CustomLoader = (provider: ModelsDev.Provider) => Promise<{
     autoload: boolean;
@@ -1128,37 +1167,7 @@ export namespace Provider {
       const existing = s.sdk.get(key);
       if (existing) return existing;
 
-      let installedPath: string;
-      if (!pkg.startsWith('file://')) {
-        log.info(() => ({
-          message: 'installing provider package',
-          providerID: provider.id,
-          pkg,
-          version: 'latest',
-        }));
-        installedPath = await BunProc.install(pkg, 'latest');
-        log.info(() => ({
-          message: 'provider package installed successfully',
-          providerID: provider.id,
-          pkg,
-          installedPath,
-        }));
-      } else {
-        log.info(() => ({ message: 'loading local provider', pkg }));
-        installedPath = pkg;
-      }
-
-      // The `google-vertex-anthropic` provider points to the `@ai-sdk/google-vertex` package.
-      // Ref: https://github.com/sst/models.dev/blob/0a87de42ab177bebad0620a889e2eb2b4a5dd4ab/providers/google-vertex-anthropic/provider.toml
-      // However, the actual export is at the subpath `@ai-sdk/google-vertex/anthropic`.
-      // Ref: https://ai-sdk.dev/providers/ai-sdk-providers/google-vertex#google-vertex-anthropic-provider-usage
-      // In addition, Bun's dynamic import logic does not support subpath imports,
-      // so we patch the import path to load directly from `dist`.
-      const modPath =
-        provider.id === 'google-vertex-anthropic'
-          ? `${installedPath}/dist/anthropic/index.mjs`
-          : installedPath;
-      const mod = await import(modPath);
+      // Apply timeout wrapper to options if timeout is specified
       if (options['timeout'] !== undefined && options['timeout'] !== null) {
         // Preserve custom fetch if it exists, wrap it with timeout logic
         const customFetch = options['fetch'];
@@ -1191,6 +1200,58 @@ export namespace Provider {
       options['fetch'] = RetryFetch.wrap(existingFetch, {
         sessionID: provider.id,
       });
+
+      // Check if we have a bundled provider first - this avoids runtime package installation
+      // which can hang or timeout due to known Bun issues
+      // @see https://github.com/link-assistant/agent/issues/173
+      // @see https://github.com/oven-sh/bun/issues/5831
+      const bundledFn = BUNDLED_PROVIDERS[pkg];
+      if (bundledFn) {
+        log.info(() => ({
+          message: 'using bundled provider (no installation needed)',
+          providerID: provider.id,
+          pkg,
+        }));
+        const loaded = bundledFn({
+          name: provider.id,
+          ...options,
+        });
+        s.sdk.set(key, loaded);
+        return loaded as SDK;
+      }
+
+      // Fall back to dynamic installation for non-bundled providers
+      let installedPath: string;
+      if (!pkg.startsWith('file://')) {
+        log.info(() => ({
+          message: 'installing provider package (not bundled)',
+          providerID: provider.id,
+          pkg,
+          version: 'latest',
+        }));
+        installedPath = await BunProc.install(pkg, 'latest');
+        log.info(() => ({
+          message: 'provider package installed successfully',
+          providerID: provider.id,
+          pkg,
+          installedPath,
+        }));
+      } else {
+        log.info(() => ({ message: 'loading local provider', pkg }));
+        installedPath = pkg;
+      }
+
+      // The `google-vertex-anthropic` provider points to the `@ai-sdk/google-vertex` package.
+      // Ref: https://github.com/sst/models.dev/blob/0a87de42ab177bebad0620a889e2eb2b4a5dd4ab/providers/google-vertex-anthropic/provider.toml
+      // However, the actual export is at the subpath `@ai-sdk/google-vertex/anthropic`.
+      // Ref: https://ai-sdk.dev/providers/ai-sdk-providers/google-vertex#google-vertex-anthropic-provider-usage
+      // In addition, Bun's dynamic import logic does not support subpath imports,
+      // so we patch the import path to load directly from `dist`.
+      const modPath =
+        provider.id === 'google-vertex-anthropic'
+          ? `${installedPath}/dist/anthropic/index.mjs`
+          : installedPath;
+      const mod = await import(modPath);
 
       const fn = mod[Object.keys(mod).find((key) => key.startsWith('create'))!];
       const loaded = fn({
