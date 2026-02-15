@@ -4,37 +4,6 @@ export namespace Flag {
     return process.env[newKey] ?? process.env[oldKey];
   }
 
-  /**
-   * Suppress AI SDK warnings by default to avoid noise in CLI output.
-   *
-   * The AI SDK logs warnings to console for:
-   * - specificationVersion v2 compatibility mode (when using @ai-sdk/openai-compatible)
-   * - Model version mismatches
-   *
-   * These warnings are expected when using the OpenAI-compatible provider with AI SDK 6.x
-   * since the provider still implements v2 specification.
-   *
-   * Users can re-enable warnings by setting:
-   * - AGENT_ENABLE_AI_SDK_WARNINGS=true or 1
-   * - AI_SDK_LOG_WARNINGS=true (native AI SDK flag)
-   *
-   * @see https://github.com/link-assistant/agent/issues/177
-   * @see https://github.com/vercel/ai/issues/12615
-   */
-  export function initAISDKWarnings(): void {
-    // Check if user explicitly wants AI SDK warnings
-    const enableWarnings = truthy('AGENT_ENABLE_AI_SDK_WARNINGS');
-
-    // Suppress AI SDK warnings unless explicitly enabled
-    // The globalThis.AI_SDK_LOG_WARNINGS flag is checked by the AI SDK before logging warnings
-    if (
-      !enableWarnings &&
-      (globalThis as any).AI_SDK_LOG_WARNINGS === undefined
-    ) {
-      (globalThis as any).AI_SDK_LOG_WARNINGS = false;
-    }
-  }
-
   function truthy(key: string) {
     const value = process.env[key]?.toLowerCase();
     return value === 'true' || value === '1';
@@ -191,9 +160,4 @@ export namespace Flag {
   export function setCompactJson(value: boolean) {
     _compactJson = value;
   }
-
-  // Auto-initialize AI SDK warnings suppression when module is loaded
-  // This ensures warnings are suppressed before any AI SDK imports
-  // @see https://github.com/link-assistant/agent/issues/177
-  initAISDKWarnings();
 }

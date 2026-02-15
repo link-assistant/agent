@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-The Agent CLI outputs several warnings during normal operation that should be addressed to ensure highest possible reliability. This case study analyzes three distinct warnings found in the user's execution log and proposes solutions.
+The Agent CLI outputs several warnings during normal operation that should be addressed to ensure highest possible reliability. This case study analyzes three distinct warnings found in the user's execution log and proposes solutions that fix the **root causes** without suppressing warnings.
 
 ## Warnings Identified
 
@@ -31,7 +31,7 @@ The cache file exists but fails to be read as JSON after refresh attempt. This h
 2. `refresh()` is awaited but the fetch may fail silently or write invalid content
 3. Subsequent `file.json().catch(() => {})` returns undefined, triggering the warning
 
-**Impact:** Low - Falls back to bundled data, but indicates potential cache corruption or network issues.
+**Analysis:** This is not actually a warning condition - using bundled data is expected fallback behavior when the cache is unavailable or corrupted. The message should be at `info` level, not `warn`.
 
 ---
 
@@ -45,7 +45,7 @@ AI SDK Warning System: To turn off warning logging, set the AI_SDK_LOG_WARNINGS 
 **Root Cause:**
 This is an informational message from Vercel's AI SDK that appears the first time any warning is logged. It's part of the warning infrastructure added in [vercel/ai#8343](https://github.com/vercel/ai/pull/8343).
 
-**Impact:** Very Low - This is purely informational and appears only once per session.
+**Impact:** Very Low - This notice only appears when another AI SDK warning is triggered. If we fix the root cause of Warning 3, this notice will not appear.
 
 ---
 
@@ -106,13 +106,13 @@ log.warn(() => ({
 }));
 ```
 
-**Issue:** The `refresh()` function doesn't guarantee a valid cache file exists after it returns. The `fetch` may fail silently, or the file may be corrupted.
+**Issue:** The message incorrectly uses `warn` level when falling back to bundled data is actually expected behavior - not a warning condition.
 
 ### Warning 2: AI SDK Warning System Notice
 
 **Code Location:** External - Vercel AI SDK `ai` package
 
-This warning is logged the first time the AI SDK logs any warning. It's informational to help users understand they can disable warnings.
+This warning is logged the first time the AI SDK logs any warning. If we fix Warning 3 (the root cause), this notice will not appear.
 
 ### Warning 3: specificationVersion Compatibility Mode
 
@@ -132,54 +132,11 @@ if (parsed.dependencies[pkg] === version) return mod;
 // returns early without checking if there's a newer version available
 ```
 
-## Proposed Solutions
+## Solutions Implemented
 
-### Solution 1: Suppress Cache Warning (Internal)
-
-**Approach:** Change the log level from `warn` to `info` since falling back to bundled data is expected behavior when cache is unavailable.
-
-**Pros:**
-- Simple change
-- No external dependencies
-- Bundled data fallback is a valid fallback mechanism
-
-**Cons:**
-- Doesn't fix the underlying cache read issue
-
-### Solution 2: Fix Cache Write/Read Race Condition (Internal)
-
-**Approach:** Ensure cache file is valid JSON before completing refresh.
-
-**Pros:**
-- Fixes root cause
-- Prevents future cache corruption issues
-
-**Cons:**
-- More complex implementation
-
-### Solution 3: Suppress AI SDK Warnings (Internal)
-
-**Approach:** Set `globalThis.AI_SDK_LOG_WARNINGS = false` at startup.
-
-**Pros:**
-- Simple one-line fix
-- Removes all AI SDK warning noise
-
-**Cons:**
-- May hide legitimate warnings
-- Should be configurable rather than always suppressed
-
-### Solution 4: Report Issue to Vercel AI SDK (External) - ALREADY FIXED
-
-**Approach:** File an issue to request `@ai-sdk/openai-compatible` be updated to v3 specification.
-
-**Status:** The upstream package **already supports v3** in v2.x releases (verified 2026-02-15).
-
-### Solution 5: Fix Package Staleness Check (Internal) - ROOT CAUSE FIX
+### Solution 1: Fix Package Staleness Check (Root Cause Fix) - `js/src/bun/index.ts`
 
 **Approach:** Update `BunProc.install()` to refresh 'latest' packages periodically (every 24 hours).
-
-**Code Location:** `js/src/bun/index.ts`
 
 **Pros:**
 - Fixes the actual root cause of the specificationVersion warning
@@ -190,11 +147,23 @@ if (parsed.dependencies[pkg] === version) return mod;
 - Slightly longer startup time when packages need refresh
 - Requires tracking installation timestamps
 
-## Recommended Implementation
+### Solution 2: Correct Log Level for Cache Fallback - `js/src/provider/models.ts`
 
-1. **Immediate (Solution 5):** Fix package staleness check to refresh 'latest' packages
-2. **Short-term:** Change cache fallback message from `warn` to `info` level
-3. **Fallback:** Keep AI SDK warning suppression as an escape hatch for edge cases
+**Approach:** Change the log level from `warn` to `info` since falling back to bundled data is expected behavior when cache is unavailable.
+
+**Pros:**
+- Accurately reflects that bundled data is a valid fallback mechanism
+- Not a warning condition - the CLI works correctly with bundled data
+
+## Why NOT Suppression
+
+The reviewer feedback emphasized that **warnings should not be suppressed** because:
+
+1. We may have new warnings in the future - suppressing them prevents fresh feedback from components
+2. All output should remain JSON-parsable (warnings can be wrapped as JSON if needed)
+3. Fixing root causes is the only acceptable approach
+
+Therefore, the `AI_SDK_LOG_WARNINGS = false` suppression approach was **removed** from the implementation.
 
 ## Related Resources
 
@@ -207,13 +176,13 @@ if (parsed.dependencies[pkg] === version) return mod;
 
 | Repository | Issue | Description | Status |
 |------------|-------|-------------|--------|
-| vercel/ai | [#12615](https://github.com/vercel/ai/issues/12615) | @ai-sdk/openai-compatible v3 upgrade | Filed |
+| vercel/ai | [#12615](https://github.com/vercel/ai/issues/12615) | @ai-sdk/openai-compatible v3 upgrade | Filed (Note: Upstream already fixed in v2.x) |
 
 ## Implementation (PR #178)
 
-The following changes were implemented to fix the warnings:
+The following changes were implemented to fix the warnings by addressing root causes:
 
-### 1. Package Staleness Check (Root Cause Fix) (`js/src/bun/index.ts`)
+### 1. Package Staleness Check (Root Cause Fix) - `js/src/bun/index.ts`
 
 Added staleness tracking for 'latest' version packages to ensure users get updated packages:
 
@@ -224,67 +193,58 @@ const LATEST_VERSION_STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 export async function install(pkg: string, version = 'latest') {
   // ... existing setup code ...
 
-  // For 'latest' version, check if installation is stale and needs refresh
-  if (version === 'latest' && installTime) {
-    const age = Date.now() - installTime;
-    if (age < LATEST_VERSION_STALE_THRESHOLD_MS) {
-      return mod;
+  // Track installation time via _installTime metadata
+  const installTime = parsed._installTime[pkg] as number | undefined;
+
+  if (installedVersion === version) {
+    // For 'latest' version, check if installation is stale and needs refresh
+    if (version === 'latest' && installTime) {
+      const age = Date.now() - installTime;
+      if (age < LATEST_VERSION_STALE_THRESHOLD_MS) {
+        return mod;
+      }
+      log.info(() => ({
+        message: 'refreshing stale latest package',
+        pkg,
+        version,
+        ageMs: age,
+        threshold: LATEST_VERSION_STALE_THRESHOLD_MS,
+      }));
     }
-    log.info(() => ({
-      message: 'refreshing stale latest package',
-      pkg,
-      version,
-      ageMs: age,
-      threshold: LATEST_VERSION_STALE_THRESHOLD_MS,
-    }));
+    // ... continue with installation ...
   }
-  // ... continue with installation ...
 }
 ```
 
 This ensures users who installed `@ai-sdk/openai-compatible` when v1.x was "latest" will automatically get v2.x (with v3 spec support) on next CLI run.
 
-### 2. AI SDK Warning Suppression (Fallback) (`js/src/flag/flag.ts`)
-
-Added `Flag.initAISDKWarnings()` function that suppresses AI SDK warnings by default as a fallback:
-
-```typescript
-export function initAISDKWarnings(): void {
-  const enableWarnings = truthy('AGENT_ENABLE_AI_SDK_WARNINGS');
-  if (!enableWarnings && (globalThis as any).AI_SDK_LOG_WARNINGS === undefined) {
-    (globalThis as any).AI_SDK_LOG_WARNINGS = false;
-  }
-}
-```
-
-Users can re-enable warnings by setting `AGENT_ENABLE_AI_SDK_WARNINGS=true`.
-
-### 3. Early Initialization (`js/src/index.js`)
-
-Call `Flag.initAISDKWarnings()` at the very start of the CLI, before any AI SDK imports:
-
-```javascript
-import { Flag } from './flag/flag.ts';
-
-// Initialize AI SDK warning suppression early
-Flag.initAISDKWarnings();
-```
-
-### 4. Cache Warning Level Change (`js/src/provider/models.ts`)
+### 2. Cache Warning Level Change - `js/src/provider/models.ts`
 
 Changed the cache fallback message from `warn` to `info` level since using bundled data is expected behavior:
 
 ```typescript
+// Fallback to bundled data if cache read failed
+// This is expected behavior when the cache is unavailable or corrupted
+// Using info level since bundled data is a valid fallback mechanism
 log.info(() => ({
   message: 'cache unavailable, using bundled data',
   path: filepath,
 }));
 ```
 
+## Summary of Fixes
+
+| Warning | Root Cause | Solution |
+|---------|------------|----------|
+| `specificationVersion v2 compatibility mode` | Outdated cached package (v1.x) | Package staleness check refreshes to v2.x |
+| `AI SDK Warning System notice` | Triggered by other warnings | No warnings = no system notice |
+| `cache read failed, using bundled data` | Incorrect log level | Changed from `warn` to `info` level |
+
 ## Implementation Notes
 
 The Agent CLI uses AI SDK v6.0.1 (`"ai": "^6.0.1"` in package.json). The specificationVersion warning comes from the dynamically installed `@ai-sdk/openai-compatible` package which is used by OpenCode provider.
 
-The root cause fix (staleness check) ensures users get updated packages automatically. The warning suppression is kept as a fallback for edge cases where the updated package still triggers warnings.
-
-The echo and cache providers already correctly implement `specificationVersion: 'v2'` in their model implementations, but since they are internal synthetic providers, they don't trigger the external warning.
+The root cause fix (staleness check) ensures users get updated packages automatically. This approach:
+- Fixes the actual problem instead of hiding it
+- Allows future warnings to be visible for debugging
+- Maintains clean JSON-parsable output
