@@ -748,12 +748,12 @@ async function main() {
             })
             .option('output-response-model', {
               type: 'boolean',
-              description: 'Include model info in output (providerID, requestedModelID, respondedModelID)',
+              description: 'Include model info in step_finish output',
               default: false,
             })
             .option('summarize-session', {
               type: 'boolean',
-              description: 'Generate session summaries using AI (default: false)',
+              description: 'Generate AI session summaries',
               default: false,
             }),
         handler: async (argv) => {
