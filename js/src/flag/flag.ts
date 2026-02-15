@@ -27,7 +27,10 @@ export namespace Flag {
 
     // Suppress AI SDK warnings unless explicitly enabled
     // The globalThis.AI_SDK_LOG_WARNINGS flag is checked by the AI SDK before logging warnings
-    if (!enableWarnings && (globalThis as any).AI_SDK_LOG_WARNINGS === undefined) {
+    if (
+      !enableWarnings &&
+      (globalThis as any).AI_SDK_LOG_WARNINGS === undefined
+    ) {
       (globalThis as any).AI_SDK_LOG_WARNINGS = false;
     }
   }
@@ -188,5 +191,4 @@ export namespace Flag {
   export function setCompactJson(value: boolean) {
     _compactJson = value;
   }
-
 }
