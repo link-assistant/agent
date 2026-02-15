@@ -1397,9 +1397,8 @@ export namespace Provider {
     if (providerID === 'opencode' || providerID === 'local') {
       priority = [
         'kimi-k2.5-free',
-        'minimax-m2.1-free',
+        'minimax-m2.5-free',
         'gpt-5-nano',
-        'glm-4.7-free',
         'big-pickle',
       ];
     }
@@ -1430,9 +1429,8 @@ export namespace Provider {
   const priority = [
     'glm-5-free',
     'kimi-k2.5-free',
-    'minimax-m2.1-free',
+    'minimax-m2.5-free',
     'gpt-5-nano',
-    'glm-4.7-free',
     'big-pickle',
     'gpt-5',
     'claude-sonnet-4',

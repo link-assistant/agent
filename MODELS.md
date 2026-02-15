@@ -31,12 +31,13 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 | ---------------------------------------- | ----------------------------- | ------ | ------ | ----------- | ------------ |
 | **Free Models (Output: $0.00)**          |
 | Kimi K2.5 Free (recommended)             | `opencode/kimi-k2.5-free`     | Free   | Free   | Free        | -            |
-| MiniMax M2.1 Free                        | `opencode/minimax-m2.1-free`  | Free   | Free   | Free        | -            |
+| MiniMax M2.5 Free                        | `opencode/minimax-m2.5-free`  | Free   | Free   | Free        | -            |
 | GPT 5 Nano                               | `opencode/gpt-5-nano`         | Free   | Free   | Free        | -            |
-| GLM 4.7 Free                             | `opencode/glm-4.7-free`       | Free   | Free   | Free        | -            |
 | Big Pickle                               | `opencode/big-pickle`         | Free   | Free   | Free        | -            |
 | **Discontinued Free Models**             |
 | ~~Grok Code Fast 1~~                     | `opencode/grok-code`          | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
+| ~~MiniMax M2.1 Free~~                    | `opencode/minimax-m2.1-free`  | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
+| ~~GLM 4.7 Free~~                         | `opencode/glm-4.7-free`       | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | **Paid Models (sorted by output price)** |
 | Qwen3 Coder 480B                         | `opencode/qwen3-coder-480b` | $0.45  | $1.50  | -           | -            |
 | GLM 4.6                                  | `opencode/glm-4-6`          | $0.60  | $2.20  | $0.10       | -            |
@@ -64,10 +65,11 @@ The default model is **Kimi K2.5 Free** (`opencode/kimi-k2.5-free`), which is co
 ### Free Models (in order of recommendation)
 
 1. **Kimi K2.5 Free** (`opencode/kimi-k2.5-free`) - Best recommended free model
-2. **MiniMax M2.1 Free** (`opencode/minimax-m2.1-free`) - Good alternative
+2. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Good alternative (upgraded from M2.1)
 3. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable free option
-4. **GLM 4.7 Free** (`opencode/glm-4.7-free`) - Another free option
-5. **Big Pickle** (`opencode/big-pickle`) - Basic free model
+4. **Big Pickle** (`opencode/big-pickle`) - Basic free model
+
+> **Note:** `opencode/minimax-m2.1-free` and `opencode/glm-4.7-free` are no longer available as free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
 
 ## Usage Examples
 
@@ -81,14 +83,11 @@ echo "hello" | agent
 ### Using Other Free Models
 
 ```bash
-# MiniMax M2.1 Free
-echo "hello" | agent --model opencode/minimax-m2.1-free
+# MiniMax M2.5 Free
+echo "hello" | agent --model opencode/minimax-m2.5-free
 
 # GPT 5 Nano
 echo "hello" | agent --model opencode/gpt-5-nano
-
-# GLM 4.7 Free
-echo "hello" | agent --model opencode/glm-4.7-free
 
 # Big Pickle (basic free)
 echo "hello" | agent --model opencode/big-pickle
@@ -214,14 +213,16 @@ For more details, see the [OpenRouter Documentation](docs/openrouter.md).
 
 Kilo offers several free models that work without setting up an API key:
 
-| Model                    | Model ID                      | Context Window | Description                                        |
-| ------------------------ | ----------------------------- | -------------- | -------------------------------------------------- |
-| **GLM-5 (recommended)**  | `kilo/glm-5-free`             | 202,752 tokens | Z.AI flagship model, matches Opus 4.5 on many tasks |
-| GLM 4.7                  | `kilo/glm-4.7-free`           | 131,072 tokens | Agent-centric model with strong coding capabilities |
-| Kimi K2.5                | `kilo/kimi-k2.5-free`         | 131,072 tokens | Agentic capabilities, tool use, code synthesis     |
-| MiniMax M2.1             | `kilo/minimax-m2.1-free`      | 131,072 tokens | Strong general-purpose performance                 |
-| Giga Potato              | `kilo/giga-potato-free`       | 65,536 tokens  | Free evaluation model                              |
-| Trinity Large Preview    | `kilo/trinity-large-preview`  | 65,536 tokens  | Arcee AI preview model                             |
+| Model                     | Model ID                       | Context Window | Description                                          |
+| ------------------------- | ------------------------------ | -------------- | ---------------------------------------------------- |
+| **GLM-5 (recommended)**   | `kilo/glm-5-free`              | 202,752 tokens | Z.AI flagship model, matches Opus 4.5 on many tasks  |
+| GLM 4.5 Air               | `kilo/glm-4.5-air-free`        | 131,072 tokens | Free Z.AI model with agent-centric capabilities      |
+| MiniMax M2.5              | `kilo/minimax-m2.5-free`       | 204,800 tokens | Strong general-purpose performance (upgraded from M2.1) |
+| DeepSeek R1               | `kilo/deepseek-r1-free`        | 163,840 tokens | Advanced reasoning model                             |
+| Giga Potato               | `kilo/giga-potato-free`        | 256,000 tokens | Free evaluation model                                |
+| Trinity Large Preview     | `kilo/trinity-large-preview`   | 131,000 tokens | Arcee AI preview model                               |
+
+> **Note:** `kilo/glm-4.7-free` and `kilo/minimax-m2.1-free` are no longer the recommended free models. Use `kilo/glm-4.5-air-free` and `kilo/minimax-m2.5-free` instead.
 
 > **Note:** GLM-5 is currently free for a limited time. See [GLM-5 Announcement](https://blog.kilo.ai/p/glm-5-free-limited-time) for details.
 
@@ -255,14 +256,14 @@ Get your API key at [app.kilo.ai](https://app.kilo.ai).
 # Using GLM-5 (recommended free model)
 echo "hello" | agent --model kilo/glm-5-free
 
-# Using GLM 4.7 (free, agent-centric)
-echo "hello" | agent --model kilo/glm-4.7-free
+# Using GLM 4.5 Air (free, agent-centric)
+echo "hello" | agent --model kilo/glm-4.5-air-free
 
-# Using Kimi K2.5 (free)
-echo "hello" | agent --model kilo/kimi-k2.5-free
+# Using MiniMax M2.5 (free)
+echo "hello" | agent --model kilo/minimax-m2.5-free
 
-# Using MiniMax M2.1 (free)
-echo "hello" | agent --model kilo/minimax-m2.1-free
+# Using DeepSeek R1 (free, reasoning)
+echo "hello" | agent --model kilo/deepseek-r1-free
 
 # Using Giga Potato (free evaluation)
 echo "hello" | agent --model kilo/giga-potato-free

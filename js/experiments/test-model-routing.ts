@@ -19,8 +19,8 @@ async function testModelRouting() {
     console.log(
       `  ${id}: ${modelKeys.length} models - ${modelKeys.slice(0, 5).join(', ')}${modelKeys.length > 5 ? '...' : ''}`
     );
-    if (modelKeys.includes('minimax-m2.1-free')) {
-      console.log(`    ↳ has minimax-m2.1-free`);
+    if (modelKeys.includes('minimax-m2.5-free')) {
+      console.log(`    ↳ has minimax-m2.5-free`);
     }
   }
   console.log('');
@@ -67,19 +67,12 @@ async function testModelRouting() {
       expectedModel: 'kimi-k2.5-free',
       description: 'Short name - Kimi K2.5 (shared, prefer OpenCode)',
     },
-    // Note: minimax-m2.1-free is ONLY in Kilo (OpenCode has minimax-m2.5-free instead)
-    {
-      input: 'minimax-m2.1-free',
-      expectedProvider: 'kilo',
-      expectedModel: 'minimax-m2.1-free',
-      description: 'Short name - MiniMax M2.1 (Kilo unique)',
-    },
-    // Test OpenCode's minimax variant
+    // minimax-m2.5-free is available on both OpenCode and Kilo; prefer OpenCode
     {
       input: 'minimax-m2.5-free',
       expectedProvider: 'opencode',
       expectedModel: 'minimax-m2.5-free',
-      description: 'Short name - MiniMax M2.5 (OpenCode unique)',
+      description: 'Short name - MiniMax M2.5 (shared, prefer OpenCode)',
     },
   ];
 
