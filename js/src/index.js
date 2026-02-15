@@ -747,7 +747,7 @@ async function main() {
             .option('output-response-model', {
               type: 'boolean',
               description: 'Include model info in step_finish output',
-              default: false,
+              default: true,
             })
             .option('summarize-session', {
               type: 'boolean',
@@ -931,8 +931,9 @@ async function main() {
         if (argv['generate-title'] === true) {
           Flag.setGenerateTitle(true);
         }
-        if (argv['output-response-model'] === true) {
-          Flag.setOutputResponseModel(true);
+        // output-response-model is enabled by default, only set if explicitly disabled
+        if (argv['output-response-model'] === false) {
+          Flag.setOutputResponseModel(false);
         }
         if (argv['summarize-session'] === true) {
           Flag.setSummarizeSession(true);

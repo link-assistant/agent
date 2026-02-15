@@ -78,12 +78,19 @@ export namespace Flag {
   }
 
   // Output response model information in step-finish parts
-  // When enabled, includes model info (providerID, requestedModelID, respondedModelID) in output
+  // Enabled by default - includes model info (providerID, requestedModelID, respondedModelID) in output
+  // Can be disabled with AGENT_OUTPUT_RESPONSE_MODEL=false
   // See: https://github.com/link-assistant/agent/issues/179
-  export let OUTPUT_RESPONSE_MODEL = truthyCompat(
-    'LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL',
-    'AGENT_OUTPUT_RESPONSE_MODEL'
-  );
+  export let OUTPUT_RESPONSE_MODEL = (() => {
+    const value = (
+      getEnv(
+        'LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL',
+        'AGENT_OUTPUT_RESPONSE_MODEL'
+      ) ?? ''
+    ).toLowerCase();
+    if (value === 'false' || value === '0') return false;
+    return true; // Default to true
+  })();
 
   // Allow setting output-response-model mode programmatically (e.g., from CLI --output-response-model flag)
   export function setOutputResponseModel(value: boolean) {

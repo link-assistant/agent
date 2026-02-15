@@ -101,9 +101,9 @@ When these are disabled, `getSmallModel` is not called, so no confusing model me
 - Eliminates confusing log messages about auxiliary models
 - Users can explicitly enable these features when needed
 
-### Solution 2: `--output-response-model` Flag
+### Solution 2: `--output-response-model` Flag (Enabled by Default)
 
-Added a new flag that includes model information in `step_finish` parts:
+Added a new flag that includes model information in `step_finish` parts. **This is now enabled by default** to provide transparency about which models are used.
 
 ```json
 {
@@ -121,8 +121,8 @@ Added a new flag that includes model information in `step_finish` parts:
 ```
 
 **Usage**:
-- CLI flag: `agent --output-response-model`
-- Environment variable: `AGENT_OUTPUT_RESPONSE_MODEL=true`
+- **Default**: Enabled automatically
+- To disable: `agent --no-output-response-model` or `AGENT_OUTPUT_RESPONSE_MODEL=false`
 
 **Schema Changes**:
 - `modelID` → `requestedModelID` (clearer: what you asked for)
@@ -193,8 +193,8 @@ The `response.modelId` field contains "the model that was used to generate the r
 ### New CLI Options
 
 ```bash
-# Include model info in step_finish events
-agent --output-response-model
+# Model info in step_finish events (enabled by default)
+# To disable: agent --no-output-response-model
 
 # Enable session summarization (disabled by default)
 agent --summarize-session
@@ -203,14 +203,14 @@ agent --summarize-session
 agent --generate-title
 
 # Combine for full auxiliary task support
-agent --generate-title --summarize-session --output-response-model
+agent --generate-title --summarize-session
 ```
 
 ### Environment Variables
 
 ```bash
-# Include model info in output
-export AGENT_OUTPUT_RESPONSE_MODEL=true
+# Disable model info in output (enabled by default)
+export AGENT_OUTPUT_RESPONSE_MODEL=false
 
 # Enable session summarization
 export AGENT_SUMMARIZE_SESSION=true
