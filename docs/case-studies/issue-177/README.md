@@ -56,12 +56,18 @@ This is an informational message from Vercel's AI SDK that appears the first tim
 AI SDK Warning (opencode.chat / kimi-k2.5-free): The feature "specificationVersion" is used in a compatibility mode. Using v2 specification compatibility mode. Some features may not be available.
 ```
 
-**Root Cause:**
-The AI SDK v6 uses `specificationVersion: 'v3'` but the OpenCode provider (`@ai-sdk/openai-compatible`) returns a model using the older `v2` specification. This triggers a compatibility warning added in [vercel/ai#10770](https://github.com/vercel/ai/pull/10770).
+**Root Cause Analysis (Updated 2026-02-15):**
+
+After deep investigation, the **actual root cause** was discovered:
+
+1. The upstream `@ai-sdk/openai-compatible` package **already supports v3** - I verified the current source code shows `specificationVersion = 'v3'` (v2.x releases).
+2. However, users who installed the CLI when v1.x was "latest" have an **outdated cached version** because `BunProc.install()` with `'latest'` doesn't update if `package.json` already has `"latest"` as the version string.
+3. The warning appears because the cached v1.x package implements `specificationVersion: 'v2'`.
 
 **Technical Details:**
 - AI SDK 6.x expects `specificationVersion: 'v3'`
-- The `@ai-sdk/openai-compatible` provider package implements `specificationVersion: 'v2'`
+- `@ai-sdk/openai-compatible` v2.x implements `specificationVersion: 'v3'` (FIXED UPSTREAM)
+- `@ai-sdk/openai-compatible` v1.x implements `specificationVersion: 'v2'` (OLD)
 - SDK runs v2 models in compatibility mode, triggering this warning
 - The warning appears for each model instantiation (appears twice in the log)
 
@@ -110,12 +116,21 @@ This warning is logged the first time the AI SDK logs any warning. It's informat
 
 ### Warning 3: specificationVersion Compatibility Mode
 
-**Code Location:** External - `@ai-sdk/openai-compatible` package
+**Code Location:** `js/src/bun/index.ts:144-157` (root cause) and External - `@ai-sdk/openai-compatible` package
 
 The warning is triggered because:
 1. AI SDK 6.x expects models to implement `specificationVersion: 'v3'`
-2. `@ai-sdk/openai-compatible` still implements `specificationVersion: 'v2'`
-3. The SDK detects this mismatch and logs a warning
+2. The upstream `@ai-sdk/openai-compatible` v2.x **already supports v3** (verified in source)
+3. However, users with cached v1.x packages don't get updated because `BunProc.install()` with `'latest'` version doesn't refresh when the package.json already has `"latest"` recorded
+4. The SDK detects the v2 spec in the outdated cached package and logs a warning
+
+**Root Cause Code:**
+```typescript
+// js/src/bun/index.ts line 157 (BEFORE FIX)
+if (parsed.dependencies[pkg] === version) return mod;
+// When version === 'latest' and pkg already has 'latest' in dependencies,
+// returns early without checking if there's a newer version available
+```
 
 ## Proposed Solutions
 
@@ -154,23 +169,32 @@ The warning is triggered because:
 - May hide legitimate warnings
 - Should be configurable rather than always suppressed
 
-### Solution 4: Report Issue to Vercel AI SDK (External)
+### Solution 4: Report Issue to Vercel AI SDK (External) - ALREADY FIXED
 
 **Approach:** File an issue to request `@ai-sdk/openai-compatible` be updated to v3 specification.
 
+**Status:** The upstream package **already supports v3** in v2.x releases (verified 2026-02-15).
+
+### Solution 5: Fix Package Staleness Check (Internal) - ROOT CAUSE FIX
+
+**Approach:** Update `BunProc.install()` to refresh 'latest' packages periodically (every 24 hours).
+
+**Code Location:** `js/src/bun/index.ts`
+
 **Pros:**
-- Fixes root cause upstream
-- Benefits all users of the package
+- Fixes the actual root cause of the specificationVersion warning
+- Ensures users get updated packages with bug fixes and security patches
+- No suppression of legitimate warnings needed
 
 **Cons:**
-- Dependent on external timeline
-- May take time to be released
+- Slightly longer startup time when packages need refresh
+- Requires tracking installation timestamps
 
 ## Recommended Implementation
 
-1. **Immediate:** Suppress AI SDK warnings via environment variable or global flag
-2. **Short-term:** Improve cache error handling with better fallback messaging
-3. **Long-term:** File issue with Vercel AI SDK for specificationVersion upgrade
+1. **Immediate (Solution 5):** Fix package staleness check to refresh 'latest' packages
+2. **Short-term:** Change cache fallback message from `warn` to `info` level
+3. **Fallback:** Keep AI SDK warning suppression as an escape hatch for edge cases
 
 ## Related Resources
 
@@ -189,9 +213,40 @@ The warning is triggered because:
 
 The following changes were implemented to fix the warnings:
 
-### 1. AI SDK Warning Suppression (`js/src/flag/flag.ts`)
+### 1. Package Staleness Check (Root Cause Fix) (`js/src/bun/index.ts`)
 
-Added `Flag.initAISDKWarnings()` function that suppresses AI SDK warnings by default:
+Added staleness tracking for 'latest' version packages to ensure users get updated packages:
+
+```typescript
+// Staleness threshold for 'latest' version packages (24 hours)
+const LATEST_VERSION_STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
+
+export async function install(pkg: string, version = 'latest') {
+  // ... existing setup code ...
+
+  // For 'latest' version, check if installation is stale and needs refresh
+  if (version === 'latest' && installTime) {
+    const age = Date.now() - installTime;
+    if (age < LATEST_VERSION_STALE_THRESHOLD_MS) {
+      return mod;
+    }
+    log.info(() => ({
+      message: 'refreshing stale latest package',
+      pkg,
+      version,
+      ageMs: age,
+      threshold: LATEST_VERSION_STALE_THRESHOLD_MS,
+    }));
+  }
+  // ... continue with installation ...
+}
+```
+
+This ensures users who installed `@ai-sdk/openai-compatible` when v1.x was "latest" will automatically get v2.x (with v3 spec support) on next CLI run.
+
+### 2. AI SDK Warning Suppression (Fallback) (`js/src/flag/flag.ts`)
+
+Added `Flag.initAISDKWarnings()` function that suppresses AI SDK warnings by default as a fallback:
 
 ```typescript
 export function initAISDKWarnings(): void {
@@ -204,7 +259,7 @@ export function initAISDKWarnings(): void {
 
 Users can re-enable warnings by setting `AGENT_ENABLE_AI_SDK_WARNINGS=true`.
 
-### 2. Early Initialization (`js/src/index.js`)
+### 3. Early Initialization (`js/src/index.js`)
 
 Call `Flag.initAISDKWarnings()` at the very start of the CLI, before any AI SDK imports:
 
@@ -215,7 +270,7 @@ import { Flag } from './flag/flag.ts';
 Flag.initAISDKWarnings();
 ```
 
-### 3. Cache Warning Level Change (`js/src/provider/models.ts`)
+### 4. Cache Warning Level Change (`js/src/provider/models.ts`)
 
 Changed the cache fallback message from `warn` to `info` level since using bundled data is expected behavior:
 
@@ -229,5 +284,7 @@ log.info(() => ({
 ## Implementation Notes
 
 The Agent CLI uses AI SDK v6.0.1 (`"ai": "^6.0.1"` in package.json). The specificationVersion warning comes from the dynamically installed `@ai-sdk/openai-compatible` package which is used by OpenCode provider.
+
+The root cause fix (staleness check) ensures users get updated packages automatically. The warning suppression is kept as a fallback for edge cases where the updated package still triggers warnings.
 
 The echo and cache providers already correctly implement `specificationVersion: 'v2'` in their model implementations, but since they are internal synthetic providers, they don't trigger the external warning.
