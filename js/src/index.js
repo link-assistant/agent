@@ -914,44 +914,26 @@ async function main() {
           await runAgentMode(argv, request);
         },
       })
-      // Initialize logging early for all CLI commands
-      // This prevents debug output from appearing in CLI unless --verbose is used
+      // Initialize logging and flags early for all CLI commands
       .middleware(async (argv) => {
-        // Set global compact JSON setting (CLI flag or environment variable)
         const isCompact = argv['compact-json'] === true || Flag.COMPACT_JSON();
         if (isCompact) {
           setCompactJson(true);
         }
-
-        // Set verbose flag if requested
         if (argv.verbose) {
           Flag.setVerbose(true);
         }
-
-        // Set dry-run flag if requested
         if (argv['dry-run']) {
           Flag.setDryRun(true);
         }
-
-        // Set generate-title flag if explicitly enabled
-        // Default is false to save tokens and prevent rate limit issues
-        // See: https://github.com/link-assistant/agent/issues/157
         if (argv['generate-title'] === true) {
           Flag.setGenerateTitle(true);
         }
-
-        // Set output-used-model flag if explicitly enabled
-        // When enabled, includes model info in step-finish output parts
-        // See: https://github.com/link-assistant/agent/issues/179
         if (argv['output-used-model'] === true) {
           Flag.setOutputUsedModel(true);
         }
-
-        // Initialize logging system
-        // - Print logs to stdout only when verbose for clean CLI output
-        // - Use verbose flag to enable DEBUG level logging
         await Log.init({
-          print: Flag.OPENCODE_VERBOSE, // Output logs only when verbose for clean CLI output
+          print: Flag.OPENCODE_VERBOSE,
           level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
           compactJson: isCompact,
         });
