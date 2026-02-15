@@ -1,0 +1,32 @@
+{
+  "warnings": [
+    {
+      "message": "warn: incorrect peer dependency \"ai@6.0.86\"",
+      "cause": {
+        "package": "@openrouter/ai-sdk-provider@1.5.4",
+        "peerDependency": "ai@^5.0.0",
+        "installedVersion": "ai@6.0.86"
+      },
+      "solution": {
+        "action": "Update @openrouter/ai-sdk-provider to ^2.2.3",
+        "newPeerDependency": "ai@^6.0.0"
+      }
+    },
+    {
+      "message": "warn: incorrect peer dependency \"solid-js@1.9.11\"",
+      "cause": {
+        "package": "@opentui/solid@0.1.46",
+        "peerDependency": "solid-js@1.9.9 (exact)",
+        "installedVersion": "solid-js@1.9.11"
+      },
+      "solution": {
+        "action": "Report to @opentui maintainers to use version range",
+        "workaround": "Pin solid-js to 1.9.9"
+      }
+    }
+  ],
+  "resolutionStatus": {
+    "ai_warning": "fixable by updating @openrouter/ai-sdk-provider",
+    "solid_warning": "requires upstream fix in @opentui/solid"
+  }
+}
