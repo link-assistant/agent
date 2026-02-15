@@ -1,5 +1,5 @@
 /**
- * Tests for --output-used-model flag
+ * Tests for --output-response-model flag
  * @see https://github.com/link-assistant/agent/issues/179
  */
 
@@ -54,13 +54,13 @@ function parseJSONOutput(stdout) {
   }
 }
 
-test('--output-used-model flag includes model info in step_finish events', async () => {
+test('--output-response-model flag includes model info in step_finish events', async () => {
   const projectRoot = process.cwd();
   const input = '{"message":"hi"}';
 
-  // Run with --output-used-model flag
+  // Run with --output-response-model flag
   const result = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js --output-used-model`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --output-response-model`
   );
   const events = parseJSONOutput(result.stdout);
 
@@ -68,21 +68,21 @@ test('--output-used-model flag includes model info in step_finish events', async
   const stepFinishEvents = events.filter((e) => e.type === 'step_finish');
   expect(stepFinishEvents.length > 0).toBeTruthy();
 
-  // Check that step_finish includes model info
+  // Check that step_finish includes model info with new field names
   const stepFinish = stepFinishEvents[0];
   expect(stepFinish.part.model).toBeTruthy();
   expect(typeof stepFinish.part.model.providerID).toBe('string');
-  expect(typeof stepFinish.part.model.modelID).toBe('string');
+  expect(typeof stepFinish.part.model.requestedModelID).toBe('string');
 
-  console.log('\n✅ --output-used-model includes model info in step_finish:');
+  console.log('\n✅ --output-response-model includes model info in step_finish:');
   console.log(JSON.stringify(stepFinish.part.model, null, 2));
 });
 
-test('Without --output-used-model flag, model info is NOT included', async () => {
+test('Without --output-response-model flag, model info is NOT included', async () => {
   const projectRoot = process.cwd();
   const input = '{"message":"hi"}';
 
-  // Run without --output-used-model flag
+  // Run without --output-response-model flag
   const result = await sh(
     `echo '${input}' | bun run ${projectRoot}/src/index.js`
   );
@@ -100,13 +100,13 @@ test('Without --output-used-model flag, model info is NOT included', async () =>
   console.log('\n✅ Without flag, model info is not included');
 });
 
-test('AGENT_OUTPUT_USED_MODEL env var enables model info output', async () => {
+test('AGENT_OUTPUT_RESPONSE_MODEL env var enables model info output', async () => {
   const projectRoot = process.cwd();
   const input = '{"message":"hi"}';
 
   // Run with environment variable
   const result = await sh(
-    `echo '${input}' | AGENT_OUTPUT_USED_MODEL=true bun run ${projectRoot}/src/index.js`
+    `echo '${input}' | AGENT_OUTPUT_RESPONSE_MODEL=true bun run ${projectRoot}/src/index.js`
   );
   const events = parseJSONOutput(result.stdout);
 
@@ -114,11 +114,26 @@ test('AGENT_OUTPUT_USED_MODEL env var enables model info output', async () => {
   const stepFinishEvents = events.filter((e) => e.type === 'step_finish');
   expect(stepFinishEvents.length > 0).toBeTruthy();
 
-  // Check that step_finish includes model info
+  // Check that step_finish includes model info with new field names
   const stepFinish = stepFinishEvents[0];
   expect(stepFinish.part.model).toBeTruthy();
   expect(typeof stepFinish.part.model.providerID).toBe('string');
-  expect(typeof stepFinish.part.model.modelID).toBe('string');
+  expect(typeof stepFinish.part.model.requestedModelID).toBe('string');
 
-  console.log('\n✅ AGENT_OUTPUT_USED_MODEL=true enables model info');
+  console.log('\n✅ AGENT_OUTPUT_RESPONSE_MODEL=true enables model info');
+});
+
+test('--summarize-session flag controls session summarization', async () => {
+  const projectRoot = process.cwd();
+  const input = '{"message":"hi"}';
+
+  // Run without --summarize-session flag (default: disabled)
+  const result = await sh(
+    `echo '${input}' | bun run ${projectRoot}/src/index.js 2>&1`
+  );
+
+  // Check that session summarization is disabled by default
+  expect(result.stdout + result.stderr).toContain('session summarization disabled');
+
+  console.log('\n✅ Session summarization is disabled by default');
 });

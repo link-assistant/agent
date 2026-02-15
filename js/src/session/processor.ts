@@ -263,16 +263,16 @@ export namespace SessionProcessor {
                   input.assistantMessage.cost += usage.cost;
                   input.assistantMessage.tokens = usage.tokens;
 
-                  // Build model info if --output-used-model flag is enabled
+                  // Build model info if --output-response-model flag is enabled
                   // @see https://github.com/link-assistant/agent/issues/179
                   const modelInfo: MessageV2.ModelInfo | undefined =
-                    Flag.OUTPUT_USED_MODEL
+                    Flag.OUTPUT_RESPONSE_MODEL
                       ? {
                           providerID: input.providerID,
-                          modelID: input.model.id,
-                          // Get responseModelId from finish-step response if available
+                          requestedModelID: input.model.id,
+                          // Get respondedModelID from finish-step response if available
                           // AI SDK includes response.modelId when available from provider
-                          responseModelId:
+                          respondedModelID:
                             (value as any).response?.modelId ?? undefined,
                         }
                       : undefined;

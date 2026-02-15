@@ -77,17 +77,31 @@ export namespace Flag {
     GENERATE_TITLE = value;
   }
 
-  // Output used model information in step-finish and text parts
-  // When enabled, includes model info (providerID, modelID, responseModelId) in output
+  // Output response model information in step-finish parts
+  // When enabled, includes model info (providerID, requestedModelID, respondedModelID) in output
   // See: https://github.com/link-assistant/agent/issues/179
-  export let OUTPUT_USED_MODEL = truthyCompat(
-    'LINK_ASSISTANT_AGENT_OUTPUT_USED_MODEL',
-    'AGENT_OUTPUT_USED_MODEL'
+  export let OUTPUT_RESPONSE_MODEL = truthyCompat(
+    'LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL',
+    'AGENT_OUTPUT_RESPONSE_MODEL'
   );
 
-  // Allow setting output-used-model mode programmatically (e.g., from CLI --output-used-model flag)
-  export function setOutputUsedModel(value: boolean) {
-    OUTPUT_USED_MODEL = value;
+  // Allow setting output-response-model mode programmatically (e.g., from CLI --output-response-model flag)
+  export function setOutputResponseModel(value: boolean) {
+    OUTPUT_RESPONSE_MODEL = value;
+  }
+
+  // Session summarization configuration
+  // When disabled, session summaries will not be generated
+  // This saves tokens and prevents rate limit issues with free tier models
+  // See: https://github.com/link-assistant/agent/issues/179
+  export let SUMMARIZE_SESSION = truthyCompat(
+    'LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION',
+    'AGENT_SUMMARIZE_SESSION'
+  );
+
+  // Allow setting summarize-session mode programmatically (e.g., from CLI --summarize-session flag)
+  export function setSummarizeSession(value: boolean) {
+    SUMMARIZE_SESSION = value;
   }
 
   // Retry timeout configuration

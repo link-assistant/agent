@@ -746,10 +746,16 @@ async function main() {
               description:
                 'Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)',
             })
-            .option('output-used-model', {
+            .option('output-response-model', {
               type: 'boolean',
               description:
-                'Include model information in output parts (providerID, modelID, responseModelId). See: issue #179',
+                'Include model information in output parts (providerID, requestedModelID, respondedModelID). See: issue #179',
+              default: false,
+            })
+            .option('summarize-session', {
+              type: 'boolean',
+              description:
+                'Generate session summaries using AI (default: false). Disabling saves tokens and prevents rate limit issues.',
               default: false,
             }),
         handler: async (argv) => {
@@ -929,8 +935,11 @@ async function main() {
         if (argv['generate-title'] === true) {
           Flag.setGenerateTitle(true);
         }
-        if (argv['output-used-model'] === true) {
-          Flag.setOutputUsedModel(true);
+        if (argv['output-response-model'] === true) {
+          Flag.setOutputResponseModel(true);
+        }
+        if (argv['summarize-session'] === true) {
+          Flag.setSummarizeSession(true);
         }
         await Log.init({
           print: Flag.OPENCODE_VERBOSE,

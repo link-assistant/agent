@@ -85,53 +85,25 @@ The current implementation doesn't include model information in the output parts
 1. The AI SDK's `streamText` response does include model information via `result.response.modelId`
 2. However, this information is not currently extracted and included in the event outputs
 
-## Proposed Solutions
+## Implemented Solutions
 
-### Solution 1: Suppress Small Model Logs When Not Primary
+### Solution 1: Disable Auxiliary Tasks by Default (Token Savings)
 
-Add a flag to `getModel` calls to indicate whether they're for auxiliary operations (title gen, summarization) vs primary operations. Reduce log level for auxiliary operations.
+By making `--generate-title` and `--summarize-session` opt-in instead of opt-out:
 
-**Pros**: Reduces user confusion, logs stay accurate
-**Cons**: Adds complexity, hides potentially useful debug info
+- **`--generate-title`**: Already disabled by default (from issue #157)
+- **`--summarize-session`**: Now disabled by default
 
-### Solution 2: Add Context to Log Messages
+When these are disabled, `getSmallModel` is not called, so no confusing model mentions appear.
 
-Update log messages to clearly indicate the purpose:
+**Benefits**:
+- Saves tokens on every request
+- Eliminates confusing log messages about auxiliary models
+- Users can explicitly enable these features when needed
 
-```json
-{
-  "message": "getModel (title generation)",
-  "modelID": "kimi-k2.5-free"
-}
-```
+### Solution 2: `--output-response-model` Flag
 
-**Pros**: Transparent about what's happening
-**Cons**: Doesn't reduce log noise
-
-### Solution 3: Implement `--output-used-model` Flag
-
-Add an optional flag that includes model information in each output part:
-
-```json
-{
-  "type": "text",
-  "part": {
-    "text": "Hi! How can I help you today?",
-    "model": {
-      "providerID": "opencode",
-      "modelID": "big-pickle",
-      "responseModelId": "gpt-4o-mini-2024-07-18"
-    }
-  }
-}
-```
-
-**Pros**: User gets clear info about which model answered
-**Cons**: Increases output size (hence the opt-in flag)
-
-### Solution 4: Add Model Info to Step Parts
-
-Include model information in `step-start` and `step-finish` parts:
+Added a new flag that includes model information in `step_finish` parts:
 
 ```json
 {
@@ -140,24 +112,65 @@ Include model information in `step-start` and `step-finish` parts:
     "type": "step-finish",
     "model": {
       "providerID": "opencode",
-      "modelID": "big-pickle",
-      "responseModelId": "actual-model-id-from-api"
+      "requestedModelID": "big-pickle",
+      "respondedModelID": "gpt-4o-mini-2024-07-18"
     },
     "tokens": {...}
   }
 }
 ```
 
-**Pros**: Natural place for model info (step-finish already has token info)
-**Cons**: May not cover all use cases user wants
+**Usage**:
+- CLI flag: `agent --output-response-model`
+- Environment variable: `AGENT_OUTPUT_RESPONSE_MODEL=true`
 
-## Recommended Implementation
+**Schema Changes**:
+- `modelID` → `requestedModelID` (clearer: what you asked for)
+- `responseModelId` → `respondedModelID` (clearer: what actually responded)
 
-Based on analysis, recommend implementing:
+### Solution 3: Clearer Log Messages for Auxiliary Tasks
 
-1. **Add `--output-used-model` flag** - To include model information in output when requested
-2. **Add model info to `step-finish` parts** - Include model info alongside tokens for each step
-3. **Add context to auxiliary model log messages** - To clarify why other models appear
+Updated `getSmallModel` to log with explicit context:
+
+```json
+{
+  "message": "selected small model for auxiliary task",
+  "modelID": "kimi-k2.5-free",
+  "providerID": "opencode",
+  "hint": "This model is used for title/summary generation, not primary requests"
+}
+```
+
+## Files Modified
+
+1. **`js/src/flag/flag.ts`**
+   - Added `OUTPUT_RESPONSE_MODEL` flag
+   - Added `SUMMARIZE_SESSION` flag
+   - Added setter functions for both
+
+2. **`js/src/index.js`**
+   - Added `--output-response-model` CLI option
+   - Added `--summarize-session` CLI option
+   - Wired up middleware to set flags
+
+3. **`js/src/session/message-v2.ts`**
+   - Added `ModelInfo` schema with `providerID`, `requestedModelID`, `respondedModelID`
+   - Added optional `model` field to `StepFinishPart`
+
+4. **`js/src/session/processor.ts`**
+   - Extract model info from finish-step response
+   - Include model info in step_finish when flag is enabled
+
+5. **`js/src/session/summary.ts`**
+   - Added check for `SUMMARIZE_SESSION` flag
+   - Skip AI-powered summarization when disabled
+
+6. **`js/src/provider/provider.ts`**
+   - Already had clear log messages (from initial implementation)
+
+7. **`js/tests/output-response-model.test.js`** (renamed from output-used-model.test.js)
+   - Tests for `--output-response-model` flag
+   - Tests for `--summarize-session` behavior
 
 ## Technical Implementation Details
 
@@ -177,14 +190,34 @@ const modelId = result.response.modelId;
 
 The `response.modelId` field contains "the model that was used to generate the response. The AI SDK uses the response model from the provider response when available."
 
-### Files to Modify
+### New CLI Options
 
-1. `js/src/flag/flag.ts` - Add `OUTPUT_USED_MODEL` flag
-2. `js/src/cli/bootstrap.ts` - Add `--output-used-model` CLI option
-3. `js/src/session/message-v2.ts` - Add model field to `StepFinishPart`
-4. `js/src/session/processor.ts` - Extract and store model info from response
-5. `js/src/cli/continuous-mode.js` - Include model info when outputting parts
-6. `js/src/session/prompt.ts` - Add context to auxiliary model usage logs
+```bash
+# Include model info in step_finish events
+agent --output-response-model
+
+# Enable session summarization (disabled by default)
+agent --summarize-session
+
+# Enable title generation (disabled by default)
+agent --generate-title
+
+# Combine for full auxiliary task support
+agent --generate-title --summarize-session --output-response-model
+```
+
+### Environment Variables
+
+```bash
+# Include model info in output
+export AGENT_OUTPUT_RESPONSE_MODEL=true
+
+# Enable session summarization
+export AGENT_SUMMARIZE_SESSION=true
+
+# Enable title generation
+export AGENT_GENERATE_TITLE=true
+```
 
 ## References
 

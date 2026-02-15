@@ -13,6 +13,7 @@ import path from 'path';
 import { Instance } from '../project/instance';
 import { Storage } from '../storage/storage';
 import { Bus } from '../bus';
+import { Flag } from '../flag/flag';
 
 export namespace SessionSummary {
   const log = Log.create({ service: 'session.summary' });
@@ -78,6 +79,16 @@ export namespace SessionSummary {
       diffs,
     };
     await Session.updateMessage(userMsg);
+
+    // Skip AI-powered summarization if disabled (default)
+    // See: https://github.com/link-assistant/agent/issues/179
+    if (!Flag.SUMMARIZE_SESSION) {
+      log.info(() => ({
+        message: 'session summarization disabled',
+        hint: 'Enable with --summarize-session flag or AGENT_SUMMARIZE_SESSION=true',
+      }));
+      return;
+    }
 
     const assistantMsg = messages.find((m) => m.info.role === 'assistant')!
       .info as MessageV2.Assistant;

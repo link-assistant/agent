@@ -226,14 +226,14 @@ export namespace MessageV2 {
 
   /**
    * Model information for output parts.
-   * Included when --output-used-model flag is enabled.
+   * Included when --output-response-model flag is enabled.
    * @see https://github.com/link-assistant/agent/issues/179
    */
   export const ModelInfo = z
     .object({
       providerID: z.string(),
-      modelID: z.string(),
-      responseModelId: z.string().optional(),
+      requestedModelID: z.string(),
+      respondedModelID: z.string().optional(),
     })
     .meta({
       ref: 'ModelInfo',
@@ -254,7 +254,7 @@ export namespace MessageV2 {
         write: z.number(),
       }),
     }),
-    // Model info included when --output-used-model is enabled
+    // Model info included when --output-response-model is enabled
     // @see https://github.com/link-assistant/agent/issues/179
     model: ModelInfo.optional(),
   }).meta({
