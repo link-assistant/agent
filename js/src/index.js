@@ -748,14 +748,12 @@ async function main() {
             })
             .option('output-response-model', {
               type: 'boolean',
-              description:
-                'Include model information in output parts (providerID, requestedModelID, respondedModelID). See: issue #179',
+              description: 'Include model info in output (providerID, requestedModelID, respondedModelID)',
               default: false,
             })
             .option('summarize-session', {
               type: 'boolean',
-              description:
-                'Generate session summaries using AI (default: false). Disabling saves tokens and prevents rate limit issues.',
+              description: 'Generate session summaries using AI (default: false)',
               default: false,
             }),
         handler: async (argv) => {
