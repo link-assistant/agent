@@ -1,5 +1,17 @@
 # @link-assistant/agent
 
+## 0.16.0
+
+### Minor Changes
+
+- 5024dd4: Bundle AI SDK providers to prevent runtime installation timeouts
+  - Added common AI SDK providers as static dependencies
+  - Created BUNDLED_PROVIDERS map to check bundled packages first
+  - Fall back to dynamic installation only for non-bundled providers
+  - Fixes issue where `--model kilo/glm-5-free` would hang indefinitely
+
+  This addresses known Bun package installation issues that cause timeouts.
+
 ## 0.14.0
 
 ### Minor Changes
