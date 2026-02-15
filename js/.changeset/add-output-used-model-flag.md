@@ -40,6 +40,7 @@ which means:
 ### Renamed Fields
 
 The model info schema now uses clearer field names:
+
 - `modelID` → `requestedModelID` (the model you asked for)
 - `responseModelId` → `respondedModelID` (the actual model that responded)
 
