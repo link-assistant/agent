@@ -130,8 +130,8 @@ export namespace RetryFetch {
       log.info(() => ({
         message: 'using retry-after value',
         retryAfterMs,
-        delay,
-        minInterval,
+        delayMs: delay,
+        minIntervalMs: minInterval,
       }));
       return addJitter(delay);
     }
@@ -145,10 +145,10 @@ export namespace RetryFetch {
     log.info(() => ({
       message: 'no retry-after header, using exponential backoff',
       attempt,
-      backoffDelay,
-      delay,
-      minInterval,
-      maxBackoffDelay,
+      backoffDelayMs: backoffDelay,
+      delayMs: delay,
+      minIntervalMs: minInterval,
+      maxBackoffDelayMs: maxBackoffDelay,
     }));
     return addJitter(delay);
   }
@@ -334,8 +334,8 @@ export namespace RetryFetch {
                 message:
                   'network error retry timeout exceeded, re-throwing error',
                 sessionID,
-                elapsed,
-                maxRetryTimeout,
+                elapsedMs: elapsed,
+                maxRetryTimeoutMs: maxRetryTimeout,
                 error: (error as Error).message,
               }));
               throw error;
@@ -350,7 +350,7 @@ export namespace RetryFetch {
               message: 'network error, retrying',
               sessionID,
               attempt,
-              delay,
+              delayMs: delay,
               error: (error as Error).message,
             }));
             await sleep(delay, init?.signal ?? undefined);
@@ -370,8 +370,8 @@ export namespace RetryFetch {
           log.warn(() => ({
             message: 'retry timeout exceeded in fetch wrapper, returning 429',
             sessionID,
-            elapsed,
-            maxRetryTimeout,
+            elapsedMs: elapsed,
+            maxRetryTimeoutMs: maxRetryTimeout,
           }));
           return response; // Let higher-level handling take over
         }
@@ -390,8 +390,8 @@ export namespace RetryFetch {
             message:
               'retry-after exceeds remaining timeout, returning 429 response',
             sessionID,
-            elapsed,
-            remainingTimeout: maxRetryTimeout - elapsed,
+            elapsedMs: elapsed,
+            remainingTimeoutMs: maxRetryTimeout - elapsed,
           }));
           return response;
         }
@@ -401,9 +401,9 @@ export namespace RetryFetch {
           log.warn(() => ({
             message: 'delay would exceed retry timeout, returning 429 response',
             sessionID,
-            elapsed,
-            delay,
-            maxRetryTimeout,
+            elapsedMs: elapsed,
+            delayMs: delay,
+            maxRetryTimeoutMs: maxRetryTimeout,
           }));
           return response;
         }
@@ -414,11 +414,11 @@ export namespace RetryFetch {
           message: 'rate limited, will retry',
           sessionID,
           attempt,
-          delay,
+          delayMs: delay,
           delayMinutes: (delay / 1000 / 60).toFixed(2),
           delayHours: (delay / 1000 / 3600).toFixed(2),
-          elapsed,
-          remainingTimeout,
+          elapsedMs: elapsed,
+          remainingTimeoutMs: remainingTimeout,
           remainingTimeoutHours: (remainingTimeout / 1000 / 3600).toFixed(2),
           isolatedSignal: true, // Indicates we're using isolated signal for this wait
         }));

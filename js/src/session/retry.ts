@@ -94,8 +94,8 @@ export namespace SessionRetry {
         message: 'retry timeout exceeded',
         sessionID,
         errorType,
-        elapsedTime,
-        maxTime,
+        elapsedTimeMs: elapsedTime,
+        maxTimeMs: maxTime,
       }));
       return { shouldRetry: false, elapsedTime, maxTime };
     }
@@ -245,8 +245,8 @@ export namespace SessionRetry {
       log.info(() => ({
         message: 'no retry-after header, using exponential backoff',
         attempt,
-        backoffDelay,
-        maxBackoffDelay,
+        backoffDelayMs: backoffDelay,
+        maxBackoffDelayMs: maxBackoffDelay,
       }));
       return addJitter(backoffDelay);
     }
@@ -260,8 +260,8 @@ export namespace SessionRetry {
       message:
         'no response headers, using exponential backoff with conservative cap',
       attempt,
-      backoffDelay,
-      maxCap: RETRY_MAX_DELAY_NO_HEADERS,
+      backoffDelayMs: backoffDelay,
+      maxCapMs: RETRY_MAX_DELAY_NO_HEADERS,
     }));
     return addJitter(backoffDelay);
   }
