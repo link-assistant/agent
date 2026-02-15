@@ -256,9 +256,24 @@ export namespace SessionProcessor {
                   });
                   // Use toFinishReason to safely convert object/string finishReason to string
                   // See: https://github.com/link-assistant/agent/issues/125
-                  const finishReason = Session.toFinishReason(
-                    value.finishReason
-                  );
+                  // Also check providerMetadata for finish reason if undefined
+                  // OpenRouter-compatible APIs (like Kilo) may not populate finishReason in standard location
+                  // See: https://github.com/link-assistant/agent/issues/187
+                  let rawFinishReason = value.finishReason;
+                  if (rawFinishReason === undefined) {
+                    // Try to extract from OpenRouter provider metadata
+                    // The openrouter metadata may contain finish_reason or other indicators
+                    const openrouterMeta =
+                      value.providerMetadata?.['openrouter'];
+                    if (openrouterMeta) {
+                      // OpenRouter sometimes includes reason in reasoning_details or annotations
+                      // For now, if we have usage data, we can assume it completed successfully
+                      if (openrouterMeta['usage']) {
+                        rawFinishReason = 'stop';
+                      }
+                    }
+                  }
+                  const finishReason = Session.toFinishReason(rawFinishReason);
                   input.assistantMessage.finish = finishReason;
                   input.assistantMessage.cost += usage.cost;
                   input.assistantMessage.tokens = usage.tokens;

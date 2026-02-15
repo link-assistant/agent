@@ -614,15 +614,59 @@ export namespace Session {
       const safeNum = (n: number): number =>
         Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
 
+      // Check if standard usage has valid data (inputTokens or outputTokens defined)
+      // If not, try to extract from providerMetadata.openrouter.usage
+      // This handles cases where OpenRouter-compatible APIs (like Kilo) put usage in metadata
+      // See: https://github.com/link-assistant/agent/issues/187
+      const openrouterUsage = input.metadata?.['openrouter']?.['usage'] as
+        | {
+            promptTokens?: number;
+            completionTokens?: number;
+            totalTokens?: number;
+            cost?: number;
+            promptTokensDetails?: { cachedTokens?: number };
+            completionTokensDetails?: { reasoningTokens?: number };
+            costDetails?: { upstreamInferenceCost?: number };
+          }
+        | undefined;
+
+      const standardUsageIsEmpty =
+        input.usage.inputTokens === undefined &&
+        input.usage.outputTokens === undefined;
+
+      // If standard usage is empty but openrouter metadata has usage, use it as source
+      let effectiveUsage = input.usage;
+      if (standardUsageIsEmpty && openrouterUsage) {
+        if (Flag.OPENCODE_VERBOSE) {
+          log.debug(() => ({
+            message:
+              'Standard usage empty, falling back to openrouter metadata',
+            openrouterUsage: JSON.stringify(openrouterUsage),
+          }));
+        }
+        // Create a usage-like object from openrouter metadata
+        // The openrouter usage uses camelCase: promptTokens, completionTokens
+        effectiveUsage = {
+          ...input.usage,
+          inputTokens: openrouterUsage.promptTokens,
+          outputTokens: openrouterUsage.completionTokens,
+          totalTokens: openrouterUsage.totalTokens,
+          cachedInputTokens:
+            openrouterUsage.promptTokensDetails?.cachedTokens ?? 0,
+          reasoningTokens:
+            openrouterUsage.completionTokensDetails?.reasoningTokens ?? 0,
+        };
+      }
+
       // Extract top-level cachedInputTokens
       const topLevelCachedInputTokens = safeNum(
-        toNumber(input.usage.cachedInputTokens, 'cachedInputTokens')
+        toNumber(effectiveUsage.cachedInputTokens, 'cachedInputTokens')
       );
 
       // Some providers (e.g., opencode/grok-code) nest cacheRead inside inputTokens object
       // e.g., inputTokens: { total: 12703, noCache: 12511, cacheRead: 192 }
       // See: https://github.com/link-assistant/agent/issues/127
-      const inputTokensObj = input.usage.inputTokens;
+      const inputTokensObj = effectiveUsage.inputTokens;
       const nestedCacheRead =
         typeof inputTokensObj === 'object' && inputTokensObj !== null
           ? safeNum(
@@ -641,7 +685,7 @@ export namespace Session {
       );
 
       const rawInputTokens = safeNum(
-        toNumber(input.usage.inputTokens, 'inputTokens')
+        toNumber(effectiveUsage.inputTokens, 'inputTokens')
       );
       const adjustedInputTokens = excludesCachedTokens
         ? rawInputTokens
@@ -660,9 +704,9 @@ export namespace Session {
       // e.g., outputTokens: { total: 562, text: -805, reasoning: 1367 }
       // See: https://github.com/link-assistant/agent/issues/127
       const topLevelReasoningTokens = safeNum(
-        toNumber(input.usage?.reasoningTokens, 'reasoningTokens')
+        toNumber(effectiveUsage?.reasoningTokens, 'reasoningTokens')
       );
-      const outputTokensObj = input.usage.outputTokens;
+      const outputTokensObj = effectiveUsage.outputTokens;
       const nestedReasoning =
         typeof outputTokensObj === 'object' && outputTokensObj !== null
           ? safeNum(
@@ -676,7 +720,7 @@ export namespace Session {
 
       const tokens = {
         input: Math.max(0, adjustedInputTokens), // Ensure non-negative
-        output: safeNum(toNumber(input.usage.outputTokens, 'outputTokens')),
+        output: safeNum(toNumber(effectiveUsage.outputTokens, 'outputTokens')),
         reasoning: reasoningTokens,
         cache: {
           write: cacheWriteTokens,
