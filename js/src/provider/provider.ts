@@ -1297,11 +1297,25 @@ export namespace Provider {
     }
   }
 
+  /**
+   * Get a small/cheap model for auxiliary tasks like title generation and summarization.
+   * This is NOT the primary model for user requests - it's used for background tasks.
+   *
+   * Note: Logs from this function may show a different model than what the user specified.
+   * This is by design - we use cheaper models for auxiliary tasks to save tokens/costs.
+   *
+   * @see https://github.com/link-assistant/agent/issues/179
+   */
   export async function getSmallModel(providerID: string) {
     const cfg = await Config.get();
 
     if (cfg.small_model) {
       const parsed = parseModel(cfg.small_model);
+      log.info(() => ({
+        message: 'using configured small_model for auxiliary task',
+        modelID: parsed.modelID,
+        providerID: parsed.providerID,
+      }));
       return getModel(parsed.providerID, parsed.modelID);
     }
 
@@ -1339,7 +1353,15 @@ export namespace Provider {
     }
     for (const item of priority) {
       for (const model of Object.keys(provider.info.models)) {
-        if (model.includes(item)) return getModel(providerID, model);
+        if (model.includes(item)) {
+          log.info(() => ({
+            message: 'selected small model for auxiliary task',
+            modelID: model,
+            providerID,
+            hint: 'This model is used for title/summary generation, not primary requests',
+          }));
+          return getModel(providerID, model);
+        }
       }
     }
   }

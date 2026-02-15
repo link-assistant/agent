@@ -745,6 +745,12 @@ async function main() {
               type: 'number',
               description:
                 'Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)',
+            })
+            .option('output-used-model', {
+              type: 'boolean',
+              description:
+                'Include model information in output parts (providerID, modelID, responseModelId). See: issue #179',
+              default: false,
             }),
         handler: async (argv) => {
           // Check both CLI flag and environment variable for compact JSON mode
@@ -932,6 +938,13 @@ async function main() {
         // See: https://github.com/link-assistant/agent/issues/157
         if (argv['generate-title'] === true) {
           Flag.setGenerateTitle(true);
+        }
+
+        // Set output-used-model flag if explicitly enabled
+        // When enabled, includes model info in step-finish output parts
+        // See: https://github.com/link-assistant/agent/issues/179
+        if (argv['output-used-model'] === true) {
+          Flag.setOutputUsedModel(true);
         }
 
         // Initialize logging system

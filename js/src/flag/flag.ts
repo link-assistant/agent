@@ -77,6 +77,19 @@ export namespace Flag {
     GENERATE_TITLE = value;
   }
 
+  // Output used model information in step-finish and text parts
+  // When enabled, includes model info (providerID, modelID, responseModelId) in output
+  // See: https://github.com/link-assistant/agent/issues/179
+  export let OUTPUT_USED_MODEL = truthyCompat(
+    'LINK_ASSISTANT_AGENT_OUTPUT_USED_MODEL',
+    'AGENT_OUTPUT_USED_MODEL'
+  );
+
+  // Allow setting output-used-model mode programmatically (e.g., from CLI --output-used-model flag)
+  export function setOutputUsedModel(value: boolean) {
+    OUTPUT_USED_MODEL = value;
+  }
+
   // Retry timeout configuration
   // Maximum total time to keep retrying for the same error type (default: 7 days in seconds)
   // For different error types, the timer resets

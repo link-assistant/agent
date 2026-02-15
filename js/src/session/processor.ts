@@ -16,6 +16,7 @@ import { SessionSummary } from './summary';
 import { Bus } from '../bus';
 import { SessionRetry } from './retry';
 import { SessionStatus } from './status';
+import { Flag } from '../flag/flag';
 
 export namespace SessionProcessor {
   const DOOM_LOOP_THRESHOLD = 3;
@@ -261,6 +262,21 @@ export namespace SessionProcessor {
                   input.assistantMessage.finish = finishReason;
                   input.assistantMessage.cost += usage.cost;
                   input.assistantMessage.tokens = usage.tokens;
+
+                  // Build model info if --output-used-model flag is enabled
+                  // @see https://github.com/link-assistant/agent/issues/179
+                  const modelInfo: MessageV2.ModelInfo | undefined =
+                    Flag.OUTPUT_USED_MODEL
+                      ? {
+                          providerID: input.providerID,
+                          modelID: input.model.id,
+                          // Get responseModelId from finish-step response if available
+                          // AI SDK includes response.modelId when available from provider
+                          responseModelId:
+                            (value as any).response?.modelId ?? undefined,
+                        }
+                      : undefined;
+
                   await Session.updatePart({
                     id: Identifier.ascending('part'),
                     reason: finishReason,
@@ -270,6 +286,7 @@ export namespace SessionProcessor {
                     type: 'step-finish',
                     tokens: usage.tokens,
                     cost: usage.cost,
+                    model: modelInfo,
                   });
                   await Session.updateMessage(input.assistantMessage);
                   if (snapshot) {
