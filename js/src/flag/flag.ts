@@ -191,4 +191,9 @@ export namespace Flag {
   export function setCompactJson(value: boolean) {
     _compactJson = value;
   }
+
+  // Auto-initialize AI SDK warnings suppression when module is loaded
+  // This ensures warnings are suppressed before any AI SDK imports
+  // @see https://github.com/link-assistant/agent/issues/177
+  initAISDKWarnings();
 }

@@ -1,13 +1,8 @@
 #!/usr/bin/env bun
-
-import { setProcessName } from './cli/process-name.ts';
-import { Flag } from './flag/flag.ts';
-
-// Initialize AI SDK warning suppression early, before any AI SDK imports
-// This prevents noise from specificationVersion v2 compatibility warnings
+// Import Flag module first to suppress AI SDK warnings before any AI SDK imports
 // @see https://github.com/link-assistant/agent/issues/177
-Flag.initAISDKWarnings();
-
+import { Flag } from './flag/flag.ts';
+import { setProcessName } from './cli/process-name.ts';
 setProcessName('agent');
 
 import { Server } from './server/server.ts';
