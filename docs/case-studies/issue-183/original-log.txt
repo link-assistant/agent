@@ -1,0 +1,118 @@
+# Original Issue #183 Log Data
+# Date: 2026-02-15T08:45:53Z
+# Issue: error: The operation timed out
+
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.309Z",
+  "service": "ripgrep",
+  "cwd": "/tmp/gh-issue-solver-1771145129998",
+  "limit": 200,
+  "message": "tree"
+}
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.346Z",
+  "service": "session.processor",
+  "message": "process"
+}
+{
+  "type": "session.status",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.355Z",
+  "service": "bus",
+  "message": "publishing"
+}
+{
+  "type": "message.updated",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.364Z",
+  "service": "bus",
+  "message": "publishing"
+}
+{
+  "type": "session.updated",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.369Z",
+  "service": "bus",
+  "message": "publishing"
+}
+{
+  "type": "session.diff",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.369Z",
+  "service": "bus",
+  "message": "publishing"
+}
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.682Z",
+  "service": "retry-fetch",
+  "headerValue": 54847,
+  "delayMs": 54847000,
+  "message": "parsed retry-after header (seconds)"
+}
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.682Z",
+  "service": "retry-fetch",
+  "retryAfterMs": 54847000,
+  "delay": 54847000,
+  "minInterval": 30000,
+  "message": "using retry-after value"
+}
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.682Z",
+  "service": "retry-fetch",
+  "sessionID": "opencode",
+  "attempt": 1,
+  "delay": 55763274,
+  "delayMinutes": "929.39",
+  "elapsed": 313,
+  "remainingTimeout": 604799687,
+  "message": "rate limited, will retry"
+}
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.765Z",
+  "service": "retry-fetch",
+  "headerValue": 54847,
+  "delayMs": 54847000,
+  "message": "parsed retry-after header (seconds)"
+}
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.765Z",
+  "service": "retry-fetch",
+  "retryAfterMs": 54847000,
+  "delay": 54847000,
+  "minInterval": 30000,
+  "message": "using retry-after value"
+}
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:45:53.765Z",
+  "service": "retry-fetch",
+  "sessionID": "opencode",
+  "attempt": 1,
+  "delay": 56828877,
+  "delayMinutes": "947.15",
+  "elapsed": 406,
+  "remainingTimeout": 604799594,
+  "message": "rate limited, will retry"
+}
+{
+  "type": "error",
+  "timestamp": 1771145453193,
+  "sessionID": "ses_39f85b550ffe7GaNPe7osuiGuW",
+  "error": "The operation timed out."
+}
