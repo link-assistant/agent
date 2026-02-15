@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
-
+import { Flag } from './flag/flag.ts';
 import { setProcessName } from './cli/process-name.ts';
-
 setProcessName('agent');
 
 import { Server } from './server/server.ts';
@@ -19,7 +18,6 @@ import {
 } from './json-standard/index.ts';
 import { McpCommand } from './cli/cmd/mcp.ts';
 import { AuthCommand } from './cli/cmd/auth.ts';
-import { Flag } from './flag/flag.ts';
 import { FormatError } from './cli/error.ts';
 import { UI } from './cli/ui.ts';
 import {

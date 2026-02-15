@@ -1,0 +1,57 @@
+konard@MacBook-Pro-Konstantin ~ % bun install -g @link-assistant/agent
+bun add v1.2.20 (6ad208bc)
+
+installed @link-assistant/agent@0.13.2 with binaries:
+ - agent
+
+9 packages installed [4.34s]
+konard@MacBook-Pro-Konstantin ~ % echo 'hi' | agent --model kimi-k2.5-free
+{
+  "type": "status",
+  "mode": "stdin-stream",
+  "message": "Agent CLI in continuous listening mode. Accepts JSON and plain text input.",
+  "hint": "Press CTRL+C to exit. Use --help for options.",
+  "acceptedFormats": [
+    "JSON object with \"message\" field",
+    "Plain text"
+  ],
+  "options": {
+    "interactive": true,
+    "autoMergeQueuedMessages": true,
+    "alwaysAcceptStdin": true,
+    "compactJson": false
+  }
+}
+{
+  "type": "log",
+  "level": "info",
+  "timestamp": "2026-02-15T08:22:25.079Z",
+  "service": "default",
+  "version": "0.13.2",
+  "command": "/Users/konard/.bun/bin/bun /Users/konard/.bun/install/global/node_modules/@link-assistant/agent/src/index.js --model kimi-k2.5-free",
+  "workingDirectory": "/Users/konard",
+  "scriptPath": "/Users/konard/.bun/install/global/node_modules/@link-assistant/agent/src/index.js",
+  "message": "Agent started (continuous mode)"
+}
+
+... (See full log in issue-177.json)
+
+WARNINGS IDENTIFIED:
+===================
+
+1. INTERNAL WARNING (level: warn):
+   {
+     "type": "log",
+     "level": "warn",
+     "timestamp": "2026-02-15T08:22:25.204Z",
+     "service": "models.dev",
+     "path": "/Users/konard/.cache/link-assistant-agent/models.json",
+     "message": "cache read failed, using bundled data"
+   }
+
+2. AI SDK WARNING (first occurrence):
+   AI SDK Warning System: To turn off warning logging, set the AI_SDK_LOG_WARNINGS global to false.
+   AI SDK Warning (opencode.chat / kimi-k2.5-free): The feature "specificationVersion" is used in a compatibility mode. Using v2 specification compatibility mode. Some features may not be available.
+
+3. AI SDK WARNING (second occurrence during loop step 1):
+   AI SDK Warning (opencode.chat / kimi-k2.5-free): The feature "specificationVersion" is used in a compatibility mode. Using v2 specification compatibility mode. Some features may not be available.

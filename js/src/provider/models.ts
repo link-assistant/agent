@@ -131,8 +131,11 @@ export namespace ModelsDev {
     if (result) return result as Record<string, Provider>;
 
     // Fallback to bundled data if cache read failed
-    log.warn(() => ({
-      message: 'cache read failed, using bundled data',
+    // This is expected behavior when the cache is unavailable or corrupted
+    // Using info level since bundled data is a valid fallback mechanism
+    // @see https://github.com/link-assistant/agent/issues/177
+    log.info(() => ({
+      message: 'cache unavailable, using bundled data',
       path: filepath,
     }));
     const json = await data();
