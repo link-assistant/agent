@@ -1,9 +1,7 @@
 #!/usr/bin/env bun
 
 import { setProcessName } from './cli/process-name.ts';
-
 setProcessName('agent');
-
 import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
 import { Log } from './util/log.ts';
