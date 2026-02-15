@@ -2,7 +2,6 @@
 import { Flag } from './flag/flag.ts';
 import { setProcessName } from './cli/process-name.ts';
 setProcessName('agent');
-
 import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
 import { Log } from './util/log.ts';
@@ -743,6 +742,16 @@ async function main() {
               type: 'number',
               description:
                 'Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)',
+            })
+            .option('output-response-model', {
+              type: 'boolean',
+              description: 'Include model info in step_finish output',
+              default: true,
+            })
+            .option('summarize-session', {
+              type: 'boolean',
+              description: 'Generate AI session summaries',
+              default: false,
             }),
         handler: async (argv) => {
           // Check both CLI flag and environment variable for compact JSON mode
@@ -906,37 +915,30 @@ async function main() {
           await runAgentMode(argv, request);
         },
       })
-      // Initialize logging early for all CLI commands
-      // This prevents debug output from appearing in CLI unless --verbose is used
+      // Initialize logging and flags early for all CLI commands
       .middleware(async (argv) => {
-        // Set global compact JSON setting (CLI flag or environment variable)
         const isCompact = argv['compact-json'] === true || Flag.COMPACT_JSON();
         if (isCompact) {
           setCompactJson(true);
         }
-
-        // Set verbose flag if requested
         if (argv.verbose) {
           Flag.setVerbose(true);
         }
-
-        // Set dry-run flag if requested
         if (argv['dry-run']) {
           Flag.setDryRun(true);
         }
-
-        // Set generate-title flag if explicitly enabled
-        // Default is false to save tokens and prevent rate limit issues
-        // See: https://github.com/link-assistant/agent/issues/157
         if (argv['generate-title'] === true) {
           Flag.setGenerateTitle(true);
         }
-
-        // Initialize logging system
-        // - Print logs to stdout only when verbose for clean CLI output
-        // - Use verbose flag to enable DEBUG level logging
+        // output-response-model is enabled by default, only set if explicitly disabled
+        if (argv['output-response-model'] === false) {
+          Flag.setOutputResponseModel(false);
+        }
+        if (argv['summarize-session'] === true) {
+          Flag.setSummarizeSession(true);
+        }
         await Log.init({
-          print: Flag.OPENCODE_VERBOSE, // Output logs only when verbose for clean CLI output
+          print: Flag.OPENCODE_VERBOSE,
           level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
           compactJson: isCompact,
         });

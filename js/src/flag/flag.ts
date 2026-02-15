@@ -82,6 +82,40 @@ export namespace Flag {
     GENERATE_TITLE = value;
   }
 
+  // Output response model information in step-finish parts
+  // Enabled by default - includes model info (providerID, requestedModelID, respondedModelID) in output
+  // Can be disabled with AGENT_OUTPUT_RESPONSE_MODEL=false
+  // See: https://github.com/link-assistant/agent/issues/179
+  export let OUTPUT_RESPONSE_MODEL = (() => {
+    const value = (
+      getEnv(
+        'LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL',
+        'AGENT_OUTPUT_RESPONSE_MODEL'
+      ) ?? ''
+    ).toLowerCase();
+    if (value === 'false' || value === '0') return false;
+    return true; // Default to true
+  })();
+
+  // Allow setting output-response-model mode programmatically (e.g., from CLI --output-response-model flag)
+  export function setOutputResponseModel(value: boolean) {
+    OUTPUT_RESPONSE_MODEL = value;
+  }
+
+  // Session summarization configuration
+  // When disabled, session summaries will not be generated
+  // This saves tokens and prevents rate limit issues with free tier models
+  // See: https://github.com/link-assistant/agent/issues/179
+  export let SUMMARIZE_SESSION = truthyCompat(
+    'LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION',
+    'AGENT_SUMMARIZE_SESSION'
+  );
+
+  // Allow setting summarize-session mode programmatically (e.g., from CLI --summarize-session flag)
+  export function setSummarizeSession(value: boolean) {
+    SUMMARIZE_SESSION = value;
+  }
+
   // Retry timeout configuration
   // Maximum total time to keep retrying for the same error type (default: 7 days in seconds)
   // For different error types, the timer resets

@@ -224,6 +224,22 @@ export namespace MessageV2 {
   });
   export type StepStartPart = z.infer<typeof StepStartPart>;
 
+  /**
+   * Model information for output parts.
+   * Included when --output-response-model flag is enabled.
+   * @see https://github.com/link-assistant/agent/issues/179
+   */
+  export const ModelInfo = z
+    .object({
+      providerID: z.string(),
+      requestedModelID: z.string(),
+      respondedModelID: z.string().optional(),
+    })
+    .meta({
+      ref: 'ModelInfo',
+    });
+  export type ModelInfo = z.infer<typeof ModelInfo>;
+
   export const StepFinishPart = PartBase.extend({
     type: z.literal('step-finish'),
     reason: z.string(),
@@ -238,6 +254,9 @@ export namespace MessageV2 {
         write: z.number(),
       }),
     }),
+    // Model info included when --output-response-model is enabled
+    // @see https://github.com/link-assistant/agent/issues/179
+    model: ModelInfo.optional(),
   }).meta({
     ref: 'StepFinishPart',
   });
