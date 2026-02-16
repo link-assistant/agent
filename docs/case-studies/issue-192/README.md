@@ -120,34 +120,52 @@ console.log('DEBUG: process.argv =', process.argv);
 console.log('DEBUG: hideBin(process.argv) =', hideBin(process.argv));
 ```
 
-### Solution 3: Explicitly Verify Model Argument
+### Solution 3: Model Argument Safeguard (IMPLEMENTED)
 
-Add validation to detect model mismatch between command line and parsed value:
+A safeguard was implemented to detect and correct mismatches between `argv.model` and `process.argv`.
+
+**Implementation** (in `js/src/index.js`):
 
 ```javascript
-async function parseModelConfig(argv) {
-  const modelArg = argv.model;
-
-  // Check if process.argv contains a different model
-  const processModelArg = process.argv.find(
-    (arg, i) => arg === '--model' && process.argv[i + 1]
-  );
-  if (processModelArg) {
-    const processModel = process.argv[process.argv.indexOf('--model') + 1];
-    if (processModel !== modelArg) {
-      Log.Default.warn(() => ({
-        message: 'Model argument mismatch detected',
-        processArgv: processModel,
-        yargsModel: modelArg,
-      }));
-      // Use the process.argv value as it's the true user intent
-      return parseModelFromString(processModel);
+/**
+ * Extract model argument directly from process.argv
+ * This is a safeguard against yargs caching issues (#192)
+ */
+function getModelFromProcessArgv() {
+  const args = process.argv;
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg.startsWith('--model=')) {
+      return arg.substring('--model='.length);
     }
+    if (arg === '--model' && i + 1 < args.length) {
+      return args[i + 1];
+    }
+    // Also handles -m=value and -m value formats
   }
+  return null;
+}
 
-  // ... existing code
+async function parseModelConfig(argv) {
+  // SAFEGUARD: Detect yargs/cache mismatch (#192)
+  const cliModelArg = getModelFromProcessArgv();
+  let modelArg = argv.model;
+
+  if (cliModelArg && cliModelArg !== modelArg) {
+    // Mismatch detected! Log warning and use the correct value from CLI
+    Log.Default.warn(() => ({
+      message: 'model argument mismatch detected - using CLI value',
+      yargsModel: modelArg,
+      cliModel: cliModelArg,
+      processArgv: process.argv.join(' '),
+    }));
+    modelArg = cliModelArg;
+  }
+  // ... rest of model parsing
 }
 ```
+
+**Test Script**: `experiments/issue-192/test-model-safeguard.js`
 
 ### Solution 4: Investigate Bun Hot Module Replacement
 
@@ -173,9 +191,18 @@ This issue appears to be a **recurrence of the model routing bug** (Issues #165,
 
 1. Clear Bun cache on the production server
 2. Reinstall the agent package
-3. Add diagnostic logging to capture early argument state
-4. Consider implementing model validation as a safeguard
+3. ✅ Add diagnostic logging to capture early argument state (implemented)
+4. ✅ Implement model validation safeguard (implemented)
 
 ### Key Lesson
 
 When deploying fixes to JavaScript runtimes like Bun that use aggressive caching, always clear the cache after updates to ensure the new code is actually being executed.
+
+## Implementation Status
+
+- ✅ **Safeguard Implemented**: Added `getModelFromProcessArgv()` function to extract model directly from `process.argv`
+- ✅ **Mismatch Detection**: Added warning log when `argv.model` differs from CLI argument
+- ✅ **Automatic Correction**: Uses CLI value when mismatch is detected
+- ✅ **Test Script Added**: `experiments/issue-192/test-model-safeguard.js`
+
+The safeguard ensures that even if yargs/Bun caching returns the default value, the agent will detect the mismatch and use the correct model specified by the user.

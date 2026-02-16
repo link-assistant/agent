@@ -138,6 +138,35 @@ function readStdinWithTimeout(timeout = null) {
 // It outputs to stdout for non-error messages, stderr for errors
 
 /**
+ * Extract model argument directly from process.argv
+ * This is a safeguard against yargs caching issues (#192)
+ * @returns {string|null} - The model argument from CLI or null if not found
+ */
+function getModelFromProcessArgv() {
+  const args = process.argv;
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    // Handle --model=value format
+    if (arg.startsWith('--model=')) {
+      return arg.substring('--model='.length);
+    }
+    // Handle --model value format
+    if (arg === '--model' && i + 1 < args.length) {
+      return args[i + 1];
+    }
+    // Handle -m=value format
+    if (arg.startsWith('-m=')) {
+      return arg.substring('-m='.length);
+    }
+    // Handle -m value format (but not if it looks like another flag)
+    if (arg === '-m' && i + 1 < args.length && !args[i + 1].startsWith('-')) {
+      return args[i + 1];
+    }
+  }
+  return null;
+}
+
+/**
  * Parse model configuration from argv
  * Supports both explicit provider/model format and short model names.
  *
@@ -151,7 +180,23 @@ function readStdinWithTimeout(timeout = null) {
  * @returns {object} - { providerID, modelID }
  */
 async function parseModelConfig(argv) {
-  const modelArg = argv.model;
+  // SAFEGUARD: Detect yargs/cache mismatch (#192)
+  // In some edge cases (Bun cache corruption, concurrent processes),
+  // argv.model may return the default value instead of the CLI argument.
+  // This safeguard validates argv.model against process.argv and corrects if needed.
+  const cliModelArg = getModelFromProcessArgv();
+  let modelArg = argv.model;
+
+  if (cliModelArg && cliModelArg !== modelArg) {
+    // Mismatch detected! Log warning and use the correct value from CLI
+    Log.Default.warn(() => ({
+      message: 'model argument mismatch detected - using CLI value',
+      yargsModel: modelArg,
+      cliModel: cliModelArg,
+      processArgv: process.argv.join(' '),
+    }));
+    modelArg = cliModelArg;
+  }
 
   let providerID;
   let modelID;
