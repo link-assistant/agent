@@ -5,6 +5,7 @@ setProcessName('agent');
 import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
 import { Log } from './util/log.ts';
+import { getModelFromProcessArgv } from './cli/argv.ts';
 // Bus is used via createBusEventSubscription in event-handler.js
 import { Session } from './session/index.ts';
 import { SessionPrompt } from './session/prompt.ts';
@@ -134,24 +135,20 @@ function readStdinWithTimeout(timeout = null) {
   });
 }
 
-// outputStatus is now imported from './cli/output.ts'
-// It outputs to stdout for non-error messages, stderr for errors
-
-/**
- * Parse model configuration from argv
- * Supports both explicit provider/model format and short model names.
- *
- * Format examples:
- * - "kilo/glm-5-free" -> uses kilo provider with glm-5-free model (explicit)
- * - "opencode/kimi-k2.5-free" -> uses opencode provider (explicit)
- * - "glm-5-free" -> resolved to kilo provider (unique free model)
- * - "kimi-k2.5-free" -> resolved to opencode provider (shared model, opencode preferred)
- *
- * @param {object} argv - Command line arguments
- * @returns {object} - { providerID, modelID }
- */
+/** Parse model config from argv. Supports "provider/model" or short "model" format. */
 async function parseModelConfig(argv) {
-  const modelArg = argv.model;
+  // Safeguard: validate argv.model against process.argv to detect yargs/cache mismatch (#192)
+  const cliModelArg = getModelFromProcessArgv();
+  let modelArg = argv.model;
+  if (cliModelArg && cliModelArg !== modelArg) {
+    Log.Default.warn(() => ({
+      message: 'model argument mismatch detected - using CLI value',
+      yargsModel: modelArg,
+      cliModel: cliModelArg,
+      processArgv: process.argv.join(' '),
+    }));
+    modelArg = cliModelArg;
+  }
 
   let providerID;
   let modelID;

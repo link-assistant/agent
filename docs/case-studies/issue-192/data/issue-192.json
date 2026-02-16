@@ -1,0 +1,74 @@
+{
+  "issue": {
+    "url": "https://github.com/link-assistant/agent/issues/192",
+    "number": 192,
+    "title": "Instead of `--model kilo/glm-5-free` the `opencode/kimi-k2.5-free` was used",
+    "reporter": "konard",
+    "date": "2026-02-16",
+    "labels": ["bug"],
+    "state": "open"
+  },
+  "environment": {
+    "agentVersion": "0.16.3",
+    "solveVersion": "1.23.9",
+    "platform": "linux",
+    "node": "v20.20.0",
+    "bun": "latest"
+  },
+  "command": {
+    "original": "solve https://github.com/Jhon-Crow/godot-topdown-MVP/pull/780 --tool agent --model kilo/glm-5-free --attach-logs --verbose --no-tool-check --auto-resume-on-limit-reset --auto-restart-until-mergeable --tokens-budget-stats",
+    "expectedModel": "kilo/glm-5-free",
+    "actualModel": "opencode/kimi-k2.5-free"
+  },
+  "relatedIssues": [
+    {"number": 165, "title": "Support for kilo models didn't work", "status": "closed"},
+    {"number": 171, "title": "`--model kilo/glm-5-free` is not working", "status": "closed"},
+    {"number": 173, "title": "`--model kilo/glm-5-free` is still not working", "status": "closed"}
+  ],
+  "relatedPRs": [
+    {"number": 166, "title": "fix: Respect explicit provider/model in kilo routing", "mergedAt": "2026-02-13T23:34:53Z"}
+  ],
+  "rootCause": {
+    "hypothesis": "Bun runtime cache serving stale code despite correct version being installed",
+    "confidence": "medium",
+    "alternativeHypotheses": [
+      "yargs argument parsing anomaly in ESM-first v18",
+      "Unknown environment-specific factor affecting argument parsing"
+    ]
+  },
+  "reproduction": {
+    "locallyReproducible": false,
+    "productionReproducible": true,
+    "testCommands": [
+      "agent --model kilo/glm-5-free --verbose --dry-run",
+      "echo \"hi\" | agent --model kilo/glm-5-free --verbose --dry-run"
+    ]
+  },
+  "proposedSolutions": [
+    {
+      "id": 1,
+      "name": "Clear Bun Cache",
+      "type": "workaround",
+      "effort": "low",
+      "commands": [
+        "bun pm cache rm",
+        "bun uninstall -g @link-assistant/agent",
+        "bun install -g @link-assistant/agent"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Add Diagnostic Logging",
+      "type": "fix",
+      "effort": "low",
+      "description": "Add logging for process.argv before yargs parsing"
+    },
+    {
+      "id": 3,
+      "name": "Model Validation Safeguard",
+      "type": "fix",
+      "effort": "medium",
+      "description": "Validate model argument against process.argv and detect mismatches"
+    }
+  ]
+}
