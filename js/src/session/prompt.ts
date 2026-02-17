@@ -272,13 +272,46 @@ export namespace SessionPrompt {
         throw new Error(
           'No user message found in stream. This should never happen.'
         );
+
+      // Check if we should exit the agentic loop
+      // We exit when: the assistant has a finish reason, it's not 'tool-calls',
+      // and the assistant message is newer than the last user message
       if (
         lastAssistant?.finish &&
         lastAssistant.finish !== 'tool-calls' &&
         lastUser.id < lastAssistant.id
       ) {
-        log.info(() => ({ message: 'exiting loop', sessionID }));
-        break;
+        // SAFETY CHECK for issue #194: If finish reason is 'unknown', check for tool calls
+        // Some providers (e.g., Kimi K2.5 via OpenCode) return undefined finishReason
+        // which gets converted to 'unknown'. If there were tool calls made, we should
+        // continue the loop to execute them instead of prematurely exiting.
+        // See: https://github.com/link-assistant/agent/issues/194
+        if (lastAssistant.finish === 'unknown') {
+          const lastAssistantParts = msgs.find(
+            (m) => m.info.id === lastAssistant.id
+          )?.parts;
+          const hasToolCalls = lastAssistantParts?.some(
+            (p) =>
+              p.type === 'tool' &&
+              (p.state.status === 'completed' || p.state.status === 'running')
+          );
+          if (hasToolCalls) {
+            log.info(() => ({
+              message:
+                'continuing loop despite unknown finish reason - tool calls detected',
+              sessionID,
+              finishReason: lastAssistant.finish,
+              hint: 'Provider returned undefined finishReason but made tool calls',
+            }));
+            // Don't break - continue the loop to handle tool call results
+          } else {
+            log.info(() => ({ message: 'exiting loop', sessionID }));
+            break;
+          }
+        } else {
+          log.info(() => ({ message: 'exiting loop', sessionID }));
+          break;
+        }
       }
 
       step++;

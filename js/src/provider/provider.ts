@@ -1593,13 +1593,20 @@ export namespace Provider {
    * Parse a model string that may or may not include a provider prefix.
    * If no provider is specified, attempts to resolve the short model name to the appropriate provider.
    *
+   * IMPORTANT: If the model cannot be resolved, this function throws an error instead of
+   * silently falling back to a default. This ensures the user gets their requested model
+   * or a clear error explaining why it's not available.
+   *
    * Examples:
    * - "kilo/glm-5-free" -> { providerID: "kilo", modelID: "glm-5-free" }
    * - "glm-5-free" -> { providerID: "kilo", modelID: "glm-5-free" } (resolved)
    * - "kimi-k2.5-free" -> { providerID: "opencode", modelID: "kimi-k2.5-free" } (resolved)
+   * - "nonexistent-model" -> throws ModelNotFoundError
    *
    * @param model - Model string with or without provider prefix
    * @returns Parsed provider ID and model ID
+   * @throws ModelNotFoundError if the model cannot be found in any provider
+   * @see https://github.com/link-assistant/agent/issues/194
    */
   export async function parseModelWithResolution(
     model: string
@@ -1616,15 +1623,36 @@ export namespace Provider {
       return resolved;
     }
 
-    // Unable to resolve - fall back to default behavior (opencode provider)
-    log.warn(() => ({
-      message: 'unable to resolve short model name, using opencode as default',
-      modelID: model,
+    // Unable to resolve - fail with a clear error instead of silently falling back
+    // This prevents the issue where user requests model X but gets model Y
+    // See: https://github.com/link-assistant/agent/issues/194
+    const s = await state();
+    const availableModels: string[] = [];
+
+    // Collect some available models to suggest
+    for (const [providerID, provider] of Object.entries(s.providers)) {
+      for (const modelID of Object.keys(provider.info.models).slice(0, 3)) {
+        availableModels.push(`${providerID}/${modelID}`);
+      }
+      if (availableModels.length >= 6) break;
+    }
+
+    const suggestion =
+      availableModels.length > 0
+        ? `Model "${model}" not found in any provider. Available models include: ${availableModels.join(', ')}. Use --model provider/model-id format for explicit selection.`
+        : `Model "${model}" not found. No providers are currently available. Check your API keys or authentication.`;
+
+    log.error(() => ({
+      message: 'model not found - refusing to silently fallback',
+      requestedModel: model,
+      availableModels,
     }));
-    return {
-      providerID: 'opencode',
+
+    throw new ModelNotFoundError({
+      providerID: 'unknown',
       modelID: model,
-    };
+      suggestion,
+    });
   }
 
   /**

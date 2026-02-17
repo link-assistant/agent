@@ -274,14 +274,98 @@ if (cliModelArg && cliModelArg !== modelArg) {
 ## Recommendations
 
 ### Immediate Actions
-1. **Fix the loop exit condition** to handle `"unknown"` finish reason more robustly
-2. **Add model validation** to error clearly when a requested model doesn't exist
-3. **Improve logging** to make model fallback behavior visible to users
+1. **Fix the loop exit condition** to handle `"unknown"` finish reason more robustly ✅ IMPLEMENTED
+2. **Add model validation** to error clearly when a requested model doesn't exist ✅ IMPLEMENTED
+3. **Improve logging** to make model fallback behavior visible to users ✅ IMPLEMENTED
 
 ### Long-term Improvements
 1. **Standardize finish reason handling** across all providers with a unified enum
-2. **Add integration tests** that verify agentic loop behavior with various finish reasons
+2. **Add integration tests** that verify agentic loop behavior with various finish reasons ✅ IMPLEMENTED
 3. **Consider reporting to upstream** (OpenCode/OpenRouter) about missing `finishReason` in API responses
+
+---
+
+## Implemented Solutions
+
+### Solution 1: Strict Model Validation (No Silent Fallback)
+
+**File**: `js/src/provider/provider.ts` - `parseModelWithResolution()`
+
+When a requested model is not found, the system now throws `ModelNotFoundError` with a helpful suggestion instead of silently falling back to a default model.
+
+```typescript
+// Before: Silent fallback to opencode provider
+return {
+  providerID: 'opencode',
+  modelID: model,
+};
+
+// After: Throw error with available models
+throw new ModelNotFoundError({
+  providerID: 'unknown',
+  modelID: model,
+  suggestion: `Model "${model}" not found in any provider. Available models include: ${availableModels.join(', ')}`
+});
+```
+
+**Impact**: Users now get immediate, clear feedback when they request a model that doesn't exist, instead of having their request silently routed to a different model.
+
+### Solution 2: Finish Reason Inference from Tool Calls
+
+**File**: `js/src/session/processor.ts` - `finish-step` handler
+
+When the provider returns `undefined` for `finishReason` but there are pending tool calls, we now infer `'tool-calls'` as the finish reason.
+
+```typescript
+// CRITICAL FIX for issue #194: Infer finish reason from tool calls
+if (rawFinishReason === undefined) {
+  const pendingToolCallCount = Object.keys(toolcalls).length;
+  if (pendingToolCallCount > 0) {
+    log.info(() => ({
+      message: 'inferred tool-calls finish reason from pending tool calls',
+      pendingToolCallCount,
+      providerID: input.providerID,
+    }));
+    rawFinishReason = 'tool-calls';
+  }
+}
+```
+
+**Impact**: The agent now correctly continues executing tool calls even when the provider doesn't return a proper `finishReason`.
+
+### Solution 3: Safe Loop Exit for Unknown Finish Reason
+
+**File**: `js/src/session/prompt.ts` - agentic loop
+
+When the finish reason is `'unknown'`, we now check if any tool calls were made. If so, we continue the loop instead of exiting prematurely.
+
+```typescript
+// SAFETY CHECK for issue #194: If finish reason is 'unknown', check for tool calls
+if (lastAssistant.finish === 'unknown') {
+  const lastAssistantParts = msgs.find((m) => m.info.id === lastAssistant.id)?.parts;
+  const hasToolCalls = lastAssistantParts?.some(
+    (p) => p.type === 'tool' && (p.state.status === 'completed' || p.state.status === 'running')
+  );
+  if (hasToolCalls) {
+    log.info(() => ({
+      message: 'continuing loop despite unknown finish reason - tool calls detected',
+    }));
+    // Don't break - continue the loop
+  }
+}
+```
+
+**Impact**: Even if the finish reason inference fails, the agent will still continue executing if tool calls were detected in the response.
+
+### Test Coverage Added
+
+**File**: `js/tests/model-validation.test.ts`
+
+Added comprehensive test documentation for:
+- Model validation with `ModelNotFoundError`
+- Finish reason inference from tool calls
+- Loop exit condition behavior with `'unknown'` finish reason
+- Integration scenarios documenting the original failure and expected behavior after fix
 
 ---
 
@@ -301,27 +385,30 @@ if (cliModelArg && cliModelArg !== modelArg) {
 
 ---
 
-## Files Affected
+## Files Modified
 
-| File | Role |
-|------|------|
-| `js/src/session/prompt.ts` | Agentic loop logic (exit condition) |
-| `js/src/session/processor.ts` | Finish reason detection |
-| `js/src/session/index.ts` | `toFinishReason` conversion |
-| `js/src/provider/provider.ts` | Model resolution and routing |
-| `js/src/index.js` | Model argument parsing |
-| `js/src/cli/argv.ts` | CLI argument extraction |
+| File | Changes |
+|------|---------|
+| `js/src/provider/provider.ts` | `parseModelWithResolution()` now throws `ModelNotFoundError` instead of silent fallback |
+| `js/src/session/processor.ts` | Added finish reason inference from pending tool calls |
+| `js/src/session/prompt.ts` | Added safety check to continue loop when `'unknown'` but tool calls exist |
+| `js/tests/model-validation.test.ts` | New test file documenting expected behavior |
 
 ---
 
 ## Conclusion
 
-The premature termination bug is caused by a combination of:
+The premature termination bug was caused by a combination of:
 1. Kimi K2.5 API not returning a proper `finishReason` field
 2. The agent treating `"unknown"` as a valid completion reason
 3. Model routing falling back to a different model than requested
 
-The recommended fix is to update the agentic loop exit condition to:
-- Not exit on `"unknown"` finish reason when tool calls were made
-- Provide better error messages for model resolution failures
-- Add more robust finish reason detection from provider metadata
+**All three issues have been addressed:**
+- Strict model validation prevents silent fallback to wrong models
+- Finish reason inference from tool calls ensures proper loop continuation
+- Safety check on `'unknown'` finish reason provides defense-in-depth
+
+Users will now get:
+- Clear error messages when requesting non-existent models
+- Proper execution of tool calls even with providers that don't return `finishReason`
+- Robust agentic loops that don't exit prematurely
