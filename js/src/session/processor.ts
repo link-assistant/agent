@@ -273,6 +273,26 @@ export namespace SessionProcessor {
                       }
                     }
                   }
+
+                  // CRITICAL FIX for issue #194: Infer finish reason from tool calls
+                  // If finishReason is still undefined but we have pending tool calls,
+                  // the model intended to make tool calls - infer 'tool-calls' as the reason.
+                  // This prevents premature loop exit when providers don't return finishReason.
+                  // See: https://github.com/link-assistant/agent/issues/194
+                  if (rawFinishReason === undefined) {
+                    const pendingToolCallCount = Object.keys(toolcalls).length;
+                    if (pendingToolCallCount > 0) {
+                      log.info(() => ({
+                        message:
+                          'inferred tool-calls finish reason from pending tool calls',
+                        pendingToolCallCount,
+                        providerID: input.providerID,
+                        hint: 'Provider returned undefined finishReason but made tool calls',
+                      }));
+                      rawFinishReason = 'tool-calls';
+                    }
+                  }
+
                   const finishReason = Session.toFinishReason(rawFinishReason);
                   input.assistantMessage.finish = finishReason;
                   input.assistantMessage.cost += usage.cost;
