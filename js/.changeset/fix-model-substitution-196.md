@@ -1,5 +1,5 @@
 ---
-"@link-assistant/agent": patch
+'@link-assistant/agent': patch
 ---
 
 fix: validate model argument and detect zero-token provider failures (#196)
