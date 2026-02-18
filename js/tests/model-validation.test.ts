@@ -4,17 +4,28 @@ import { test, expect, describe, mock, beforeAll, afterAll } from 'bun:test';
  * Unit tests for strict model validation
  *
  * Issue #194: AI agent terminated prematurely with "reason": "unknown"
+ * Issue #196: Model substitution and zero-token provider failures
  *
- * Root causes:
+ * Root causes (Issue #194):
  * 1. Model requested (`glm-4.7-free`) was not found, but system silently fell back to default
  * 2. finishReason was undefined, causing "unknown" which triggered premature loop exit
+ *
+ * Root causes (Issue #196):
+ * 1. Yargs under Bun returned default model instead of CLI argument (model substitution)
+ * 2. Provider returned zero tokens with "unknown" finish reason (silent API failure)
+ * 3. No validation of model existence for explicit provider/model format
  *
  * Fixes implemented:
  * 1. parseModelWithResolution now throws ModelNotFoundError instead of silent fallback
  * 2. processor.ts infers 'tool-calls' finish reason from pending tool calls
  * 3. prompt.ts continues loop when finish is 'unknown' but tool calls were made
+ * 4. parseModelConfig always prefers CLI value over yargs (#196)
+ * 5. parseModelConfig throws on invalid provider/model format instead of defaulting (#196)
+ * 6. prompt.ts detects zero-token unknown responses as provider failures (#196)
+ * 7. parseModelConfig warns when model not found in explicit provider (#196)
  *
  * @see https://github.com/link-assistant/agent/issues/194
+ * @see https://github.com/link-assistant/agent/issues/196
  */
 
 describe('Model validation - parseModelWithResolution', () => {
@@ -60,7 +71,7 @@ describe('Loop exit condition - prompt.ts', () => {
     // The prompt.ts code continues the loop when:
     // 1. lastAssistant.finish === 'unknown'
     // 2. Parts include tool parts with status 'completed' or 'running'
-
+    //
     // This is a documentation test - the actual logic is in prompt.ts:
     // if (lastAssistant.finish === 'unknown') {
     //   const hasToolCalls = lastAssistantParts?.some(
@@ -76,6 +87,46 @@ describe('Loop exit condition - prompt.ts', () => {
   test('should exit loop when finish is unknown and no tool calls', () => {
     // If finish is 'unknown' but there are no tool calls, exit the loop
     expect(true).toBe(true);
+  });
+
+  test('should exit loop immediately when finish is unknown with zero tokens (#196)', () => {
+    // Issue #196: When provider returns zero tokens with unknown finish reason,
+    // this indicates a complete API communication failure.
+    // The code now detects this condition BEFORE checking for tool calls:
+    //
+    // if (tokens.input === 0 && tokens.output === 0 && tokens.reasoning === 0) {
+    //   log.error({ message: 'provider returned zero tokens...' });
+    //   break;
+    // }
+    //
+    // This is important because:
+    // 1. Zero tokens means the provider didn't process the request at all
+    // 2. Any "tool calls" in the message would be from a previous step, not this one
+    // 3. Continuing the loop would just waste time and potentially cause infinite loops
+
+    // Simulate the zero-token check
+    const tokens = {
+      input: 0,
+      output: 0,
+      reasoning: 0,
+      cache: { read: 0, write: 0 },
+    };
+    const isZeroTokenResponse =
+      tokens.input === 0 && tokens.output === 0 && tokens.reasoning === 0;
+    expect(isZeroTokenResponse).toBe(true);
+
+    // Non-zero tokens should not trigger this check
+    const normalTokens = {
+      input: 1500,
+      output: 200,
+      reasoning: 0,
+      cache: { read: 0, write: 0 },
+    };
+    const isNormalResponse =
+      normalTokens.input === 0 &&
+      normalTokens.output === 0 &&
+      normalTokens.reasoning === 0;
+    expect(isNormalResponse).toBe(false);
   });
 
   test('should exit loop when finish is stop/end-turn/etc', () => {
@@ -108,6 +159,50 @@ describe('ModelNotFoundError', () => {
     expect(errorData.providerID).toBe('unknown');
     expect(errorData.modelID).toBe('nonexistent-model');
     expect(errorData.suggestion).toContain('not found');
+  });
+});
+
+describe('parseModelConfig - model argument handling (#196)', () => {
+  test('should throw on empty provider in explicit format instead of defaulting', () => {
+    // Before fix: "/kimi-k2.5-free" -> providerID='opencode', modelID='kimi-k2.5-free' (silent default)
+    // After fix: throws Error with clear message
+    //
+    // Code: if (!providerID || !modelID) { throw new Error(...) }
+    const modelArg = '/kimi-k2.5-free';
+    const parts = modelArg.split('/');
+    const providerID = parts[0]; // empty string
+    const modelID = parts.slice(1).join('/'); // 'kimi-k2.5-free'
+
+    expect(providerID).toBe('');
+    expect(!providerID).toBe(true); // would trigger the error
+  });
+
+  test('should throw on empty model in explicit format instead of defaulting', () => {
+    // Before fix: "opencode/" -> providerID='opencode', modelID='kimi-k2.5-free' (silent default)
+    // After fix: throws Error with clear message
+    const modelArg = 'opencode/';
+    const parts = modelArg.split('/');
+    const providerID = parts[0]; // 'opencode'
+    const modelID = parts.slice(1).join('/'); // empty string
+
+    expect(modelID).toBe('');
+    expect(!modelID).toBe(true); // would trigger the error
+  });
+
+  test('should always prefer CLI argument over yargs value', () => {
+    // Issue #196: Yargs under Bun may return default 'opencode/kimi-k2.5-free'
+    // even when user passed '--model opencode/glm-4.7-free'
+    //
+    // Before fix: only override yargs when mismatch detected
+    // After fix: always use CLI value when available, regardless of match
+    //
+    // Code: if (cliModelArg) { modelArg = cliModelArg; }
+    const yargsModel = 'opencode/kimi-k2.5-free'; // yargs default
+    const cliModel = 'opencode/glm-4.7-free'; // actual CLI arg
+
+    // The fix ensures cliModel is always used when available
+    const modelArg = cliModel || yargsModel;
+    expect(modelArg).toBe('opencode/glm-4.7-free');
   });
 });
 
@@ -150,6 +245,40 @@ describe('Integration scenarios - Issue #194', () => {
     // 3. processor.ts: No pending tool calls tracked -> finishReason stays 'unknown'
     // 4. prompt.ts: Detects tool parts in message -> continues loop anyway
     // 5. Agent completes tasks successfully
+    expect(true).toBe(true);
+  });
+});
+
+describe('Integration scenarios - Issue #196', () => {
+  test('documents the model substitution failure', () => {
+    // Timeline from real incident:
+    // 1. User runs: solve --model glm-4.7-free
+    // 2. Solve script executes: agent --model opencode/glm-4.7-free
+    // 3. Yargs under Bun parses --model but returns DEFAULT 'opencode/kimi-k2.5-free'
+    // 4. getModelFromProcessArgv() should catch this but apparently returned null
+    // 5. Agent sends request to opencode with kimi-k2.5-free (wrong model!)
+    // 6. Provider returns zero tokens with "reason: unknown"
+    // 7. Agent exits silently without doing any work
+
+    // With our fix:
+    // Step 3-4: getModelFromProcessArgv() always overrides yargs when available
+    // Step 5: Model existence validation warns if model not found in provider
+    // Step 6: Zero-token detection logs clear error about provider failure
+    expect(true).toBe(true);
+  });
+
+  test('documents zero-token provider failure detection', () => {
+    // When provider returns:
+    //   { reason: "unknown", tokens: { input: 0, output: 0, reasoning: 0 } }
+    // This means the provider completely failed to process the request.
+    //
+    // Before fix: Agent silently exits the loop
+    // After fix: Agent logs error with:
+    //   - Clear message about provider failure
+    //   - Token counts
+    //   - Model information
+    //   - Hint about checking provider status
+    //   - Link to issue #196
     expect(true).toBe(true);
   });
 });

@@ -287,6 +287,30 @@ export namespace SessionPrompt {
         // continue the loop to execute them instead of prematurely exiting.
         // See: https://github.com/link-assistant/agent/issues/194
         if (lastAssistant.finish === 'unknown') {
+          // SAFETY CHECK for issue #196: Detect zero-token responses as provider failures
+          // When all tokens are 0 and finish reason is 'unknown', this indicates the provider
+          // returned an empty/error response (e.g., rate limit, model unavailable, API failure).
+          // Log a clear error message so the problem is visible in logs.
+          const tokens = lastAssistant.tokens;
+          if (
+            tokens.input === 0 &&
+            tokens.output === 0 &&
+            tokens.reasoning === 0
+          ) {
+            log.error(() => ({
+              message:
+                'provider returned zero tokens with unknown finish reason - possible API failure',
+              sessionID,
+              finishReason: lastAssistant.finish,
+              tokens,
+              cost: lastAssistant.cost,
+              model: lastAssistant.model,
+              hint: 'This usually indicates the provider failed to process the request. Check provider status, model availability, and API keys.',
+              issue: 'https://github.com/link-assistant/agent/issues/196',
+            }));
+            break;
+          }
+
           const lastAssistantParts = msgs.find(
             (m) => m.info.id === lastAssistant.id
           )?.parts;
