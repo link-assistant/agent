@@ -298,6 +298,29 @@ export namespace SessionProcessor {
                   input.assistantMessage.cost += usage.cost;
                   input.assistantMessage.tokens = usage.tokens;
 
+                  // Log warning when provider returns zero tokens (#198)
+                  if (
+                    usage.tokens.input === 0 &&
+                    usage.tokens.output === 0 &&
+                    usage.tokens.reasoning === 0 &&
+                    finishReason === 'unknown'
+                  ) {
+                    log.warn(() => ({
+                      message:
+                        'provider returned zero tokens with unknown finish reason at step level',
+                      providerID: input.providerID,
+                      requestedModelID: input.model.id,
+                      respondedModelID:
+                        (value as any).response?.modelId ?? 'none',
+                      rawFinishReason: String(value.finishReason ?? 'undefined'),
+                      rawUsage: JSON.stringify(value.usage ?? null),
+                      providerMetadata: JSON.stringify(
+                        value.providerMetadata ?? null
+                      ),
+                      issue: 'https://github.com/link-assistant/agent/issues/198',
+                    }));
+                  }
+
                   // Build model info if --output-response-model flag is enabled
                   // @see https://github.com/link-assistant/agent/issues/179
                   const modelInfo: MessageV2.ModelInfo | undefined =
