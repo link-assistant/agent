@@ -137,16 +137,25 @@ function readStdinWithTimeout(timeout = null) {
 
 /** Parse model config from argv. Supports "provider/model" or short "model" format. */
 async function parseModelConfig(argv) {
-  // Safeguard: validate argv.model against process.argv to detect yargs/cache mismatch (#192)
+  // Safeguard: validate argv.model against process.argv to detect yargs/cache mismatch (#192, #196)
+  // This is critical because yargs under Bun may fail to parse --model correctly,
+  // returning the default value instead of the user's CLI argument.
   const cliModelArg = getModelFromProcessArgv();
   let modelArg = argv.model;
-  if (cliModelArg && cliModelArg !== modelArg) {
-    Log.Default.warn(() => ({
-      message: 'model argument mismatch detected - using CLI value',
-      yargsModel: modelArg,
-      cliModel: cliModelArg,
-      processArgv: process.argv.join(' '),
-    }));
+
+  // ALWAYS prefer the CLI value over yargs when available (#196)
+  // The yargs default 'opencode/kimi-k2.5-free' can silently override user's --model argument
+  if (cliModelArg) {
+    if (cliModelArg !== modelArg) {
+      Log.Default.warn(() => ({
+        message: 'model argument mismatch detected - using CLI value',
+        yargsModel: modelArg,
+        cliModel: cliModelArg,
+        processArgv: process.argv.join(' '),
+      }));
+    }
+    // Always use CLI value when available, even if it matches yargs
+    // This ensures we use the actual CLI argument, not a cached/default yargs value
     modelArg = cliModelArg;
   }
 
@@ -161,9 +170,12 @@ async function parseModelConfig(argv) {
     modelID = modelParts.slice(1).join('/');
 
     // Validate that providerID and modelID are not empty
+    // Do NOT fall back to defaults - if the user provided an invalid format, fail clearly (#196)
     if (!providerID || !modelID) {
-      providerID = providerID || 'opencode';
-      modelID = modelID || 'kimi-k2.5-free';
+      throw new Error(
+        `Invalid model format: "${modelArg}". Expected "provider/model" format (e.g., "opencode/kimi-k2.5-free"). ` +
+        `Provider: "${providerID || '(empty)'}", Model: "${modelID || '(empty)'}".`
+      );
     }
 
     // Log raw and parsed values to help diagnose model routing issues (#171)
@@ -173,6 +185,32 @@ async function parseModelConfig(argv) {
       providerID,
       modelID,
     }));
+
+    // Validate that the model exists in the provider (#196)
+    // Without this check, a non-existent model silently proceeds and fails at API call time
+    // with confusing "reason: unknown" and zero tokens
+    try {
+      const { Provider } = await import('./provider/provider.ts');
+      const s = await Provider.state();
+      const provider = s.providers[providerID];
+      if (provider && !provider.info.models[modelID]) {
+        // Provider exists but model doesn't - warn and suggest alternatives
+        const availableModels = Object.keys(provider.info.models).slice(0, 5);
+        Log.Default.warn(() => ({
+          message: 'model not found in provider - will attempt anyway (provider may support unlisted models)',
+          providerID,
+          modelID,
+          availableModels,
+        }));
+      }
+    } catch (validationError) {
+      // Don't fail on validation errors - the model may still work
+      // This is a best-effort check
+      Log.Default.info(() => ({
+        message: 'skipping model existence validation',
+        reason: validationError?.message,
+      }));
+    }
   } else {
     // Short model name - resolve to appropriate provider
     // Import Provider to use parseModelWithResolution
