@@ -174,7 +174,7 @@ async function parseModelConfig(argv) {
     if (!providerID || !modelID) {
       throw new Error(
         `Invalid model format: "${modelArg}". Expected "provider/model" format (e.g., "opencode/kimi-k2.5-free"). ` +
-        `Provider: "${providerID || '(empty)'}", Model: "${modelID || '(empty)'}".`
+          `Provider: "${providerID || '(empty)'}", Model: "${modelID || '(empty)'}".`
       );
     }
 
@@ -197,7 +197,8 @@ async function parseModelConfig(argv) {
         // Provider exists but model doesn't - warn and suggest alternatives
         const availableModels = Object.keys(provider.info.models).slice(0, 5);
         Log.Default.warn(() => ({
-          message: 'model not found in provider - will attempt anyway (provider may support unlisted models)',
+          message:
+            'model not found in provider - will attempt anyway (provider may support unlisted models)',
           providerID,
           modelID,
           availableModels,
