@@ -312,12 +312,15 @@ export namespace SessionProcessor {
                       requestedModelID: input.model.id,
                       respondedModelID:
                         (value as any).response?.modelId ?? 'none',
-                      rawFinishReason: String(value.finishReason ?? 'undefined'),
+                      rawFinishReason: String(
+                        value.finishReason ?? 'undefined'
+                      ),
                       rawUsage: JSON.stringify(value.usage ?? null),
                       providerMetadata: JSON.stringify(
                         value.providerMetadata ?? null
                       ),
-                      issue: 'https://github.com/link-assistant/agent/issues/198',
+                      issue:
+                        'https://github.com/link-assistant/agent/issues/198',
                     }));
                   }
 
