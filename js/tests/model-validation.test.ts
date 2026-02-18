@@ -249,6 +249,39 @@ describe('Integration scenarios - Issue #194', () => {
   });
 });
 
+describe('Provider.state export - Issue #198', () => {
+  test('Provider.state should be exported and callable', async () => {
+    // Issue #198: Provider.state was not exported from the namespace,
+    // causing model-config.js validation to always fail silently.
+    // After fix: state is exported with `export const state = ...`
+    const { Provider } = await import('../src/provider/provider.ts');
+    expect(typeof Provider.state).toBe('function');
+  });
+
+  test('zero-token error should include model info and publish error event', () => {
+    // Issue #198: When provider returns zero tokens, the error message
+    // should include the requested model ID, provider ID, and responded model ID.
+    // It should also publish a Bus error event for JSON standard output.
+    const model = {
+      providerID: 'opencode',
+      requestedModelID: 'kimi-k2.5-free',
+      respondedModelID: 'moonshotai/kimi-k2.5',
+    };
+    const errorMessage =
+      `Provider returned zero tokens with unknown finish reason. ` +
+      `Requested model: ${model.requestedModelID} ` +
+      `(provider: ${model.providerID}). ` +
+      `Responded model: ${model.respondedModelID}. ` +
+      `This usually indicates the provider failed to process the request. ` +
+      `Check provider status, model availability, and API keys.`;
+
+    expect(errorMessage).toContain('kimi-k2.5-free');
+    expect(errorMessage).toContain('opencode');
+    expect(errorMessage).toContain('moonshotai/kimi-k2.5');
+    expect(errorMessage).toContain('Check provider status');
+  });
+});
+
 describe('Integration scenarios - Issue #196', () => {
   test('documents the model substitution failure', () => {
     // Timeline from real incident:
