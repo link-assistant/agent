@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.16.7
+
+### Patch Changes
+
+- c51339d: fix: export Provider.state and improve zero-token error handling (#198)
+
 ## 0.16.6
 
 ### Patch Changes
