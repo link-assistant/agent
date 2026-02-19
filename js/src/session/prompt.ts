@@ -297,17 +297,29 @@ export namespace SessionPrompt {
             tokens.output === 0 &&
             tokens.reasoning === 0
           ) {
+            const errorMessage =
+              `Provider returned zero tokens with unknown finish reason. ` +
+              `Requested model: ${lastAssistant.model?.requestedModelID ?? 'unknown'} ` +
+              `(provider: ${lastAssistant.model?.providerID ?? 'unknown'}). ` +
+              `Responded model: ${lastAssistant.model?.respondedModelID ?? 'unknown'}. ` +
+              `This usually indicates the provider failed to process the request. ` +
+              `Check provider status, model availability, and API keys.`;
             log.error(() => ({
-              message:
-                'provider returned zero tokens with unknown finish reason - possible API failure',
+              message: errorMessage,
               sessionID,
               finishReason: lastAssistant.finish,
               tokens,
               cost: lastAssistant.cost,
               model: lastAssistant.model,
-              hint: 'This usually indicates the provider failed to process the request. Check provider status, model availability, and API keys.',
-              issue: 'https://github.com/link-assistant/agent/issues/196',
+              issue: 'https://github.com/link-assistant/agent/issues/198',
             }));
+            // Publish error event so JSON standard output includes it (#198)
+            Bus.publish(Session.Event.Error, {
+              sessionID,
+              error: new NamedError.Unknown({
+                message: errorMessage,
+              }).toObject(),
+            });
             break;
           }
 
@@ -637,6 +649,8 @@ export namespace SessionPrompt {
         log.info(() => ({
           message: 'Model',
           model: `${model.providerID}/${model.modelID}`,
+          apiModelID: model.info?.id ?? model.modelID,
+          npm: model.npm,
         }));
         log.info(() => ({ message: 'Session ID', sessionID }));
         log.info(() => ({ message: 'Agent', agent: agent.name }));

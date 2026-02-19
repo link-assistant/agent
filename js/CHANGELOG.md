@@ -1,5 +1,17 @@
 # @link-assistant/agent
 
+## 0.16.6
+
+### Patch Changes
+
+- fix: export Provider.state and improve zero-token error handling (#198)
+  - Export Provider.state from namespace so model validation actually works
+    (was always throwing TypeError, causing validation to be silently skipped)
+  - Publish error event when zero-token + unknown finish reason detected,
+    so JSON standard output includes actionable error with model/provider info
+  - Add step-level warning in processor with raw response metadata for debugging
+  - Add case study analysis with timeline reconstruction and root cause analysis
+
 ## 0.16.5
 
 ### Patch Changes
