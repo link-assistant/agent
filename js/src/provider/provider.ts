@@ -1201,6 +1201,113 @@ export namespace Provider {
         sessionID: provider.id,
       });
 
+      // Wrap fetch with verbose HTTP logging when --verbose is enabled
+      // This logs raw HTTP request/response details for debugging provider issues
+      // See: https://github.com/link-assistant/agent/issues/200
+      if (Flag.OPENCODE_VERBOSE) {
+        const innerFetch = options['fetch'];
+        options['fetch'] = async (
+          input: RequestInfo | URL,
+          init?: RequestInit
+        ): Promise<Response> => {
+          const url =
+            typeof input === 'string'
+              ? input
+              : input instanceof URL
+                ? input.toString()
+                : input.url;
+          const method = init?.method ?? 'GET';
+
+          // Sanitize headers - mask authorization values
+          const sanitizedHeaders: Record<string, string> = {};
+          const rawHeaders = init?.headers;
+          if (rawHeaders) {
+            const entries =
+              rawHeaders instanceof Headers
+                ? Array.from(rawHeaders.entries())
+                : Array.isArray(rawHeaders)
+                  ? rawHeaders
+                  : Object.entries(rawHeaders);
+            for (const [key, value] of entries) {
+              const lower = key.toLowerCase();
+              if (
+                lower === 'authorization' ||
+                lower === 'x-api-key' ||
+                lower === 'api-key'
+              ) {
+                sanitizedHeaders[key] =
+                  typeof value === 'string' && value.length > 8
+                    ? value.slice(0, 4) + '...' + value.slice(-4)
+                    : '[REDACTED]';
+              } else {
+                sanitizedHeaders[key] = String(value);
+              }
+            }
+          }
+
+          // Log request body preview (truncated)
+          let bodyPreview: string | undefined;
+          if (init?.body) {
+            const bodyStr =
+              typeof init.body === 'string'
+                ? init.body
+                : init.body instanceof ArrayBuffer ||
+                    init.body instanceof Uint8Array
+                  ? `[binary ${(init.body as ArrayBuffer).byteLength ?? (init.body as Uint8Array).length} bytes]`
+                  : undefined;
+            if (bodyStr && typeof bodyStr === 'string') {
+              bodyPreview =
+                bodyStr.length > 2000
+                  ? bodyStr.slice(0, 2000) +
+                    `... [truncated, total ${bodyStr.length} chars]`
+                  : bodyStr;
+            }
+          }
+
+          log.info(() => ({
+            message: 'HTTP request',
+            providerID: provider.id,
+            method,
+            url,
+            headers: sanitizedHeaders,
+            bodyPreview,
+          }));
+
+          const startMs = Date.now();
+          try {
+            const response = await innerFetch(input, init);
+            const durationMs = Date.now() - startMs;
+
+            log.info(() => ({
+              message: 'HTTP response',
+              providerID: provider.id,
+              method,
+              url,
+              status: response.status,
+              statusText: response.statusText,
+              durationMs,
+              responseHeaders: Object.fromEntries(response.headers.entries()),
+            }));
+
+            return response;
+          } catch (error) {
+            const durationMs = Date.now() - startMs;
+            log.error(() => ({
+              message: 'HTTP request failed',
+              providerID: provider.id,
+              method,
+              url,
+              durationMs,
+              error:
+                error instanceof Error
+                  ? { name: error.name, message: error.message }
+                  : String(error),
+            }));
+            throw error;
+          }
+        };
+      }
+
       // Check if we have a bundled provider first - this avoids runtime package installation
       // which can hang or timeout due to known Bun issues
       // @see https://github.com/link-assistant/agent/issues/173
@@ -1310,8 +1417,21 @@ export namespace Provider {
 
     // For synthetic providers, we don't need model info from the database
     const info = isSyntheticProvider ? null : provider.info.models[modelID];
-    if (!isSyntheticProvider && !info)
-      throw new ModelNotFoundError({ providerID, modelID });
+    if (!isSyntheticProvider && !info) {
+      const availableInProvider = Object.keys(provider.info.models).slice(
+        0,
+        10
+      );
+      const suggestion = `Model "${modelID}" not found in provider "${providerID}". Available models: ${availableInProvider.join(', ')}${Object.keys(provider.info.models).length > 10 ? ` (and ${Object.keys(provider.info.models).length - 10} more)` : ''}.`;
+      log.error(() => ({
+        message: 'model not found in provider',
+        providerID,
+        modelID,
+        availableModels: availableInProvider,
+        totalModels: Object.keys(provider.info.models).length,
+      }));
+      throw new ModelNotFoundError({ providerID, modelID, suggestion });
+    }
 
     try {
       const keyReal = `${providerID}/${modelID}`;
