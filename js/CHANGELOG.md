@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.16.8
+
+### Patch Changes
+
+- 732fe74: Add verbose HTTP logging for debugging provider issues and improve model-not-found error messages to list available models
+
 ## 0.16.7
 
 ### Patch Changes
