@@ -97,8 +97,7 @@ describe('Verbose HTTP logging - body preview truncation', () => {
     if (!body) return undefined;
     if (body.length > maxLength) {
       return (
-        body.slice(0, maxLength) +
-        `... [truncated, total ${body.length} chars]`
+        body.slice(0, maxLength) + `... [truncated, total ${body.length} chars]`
       );
     }
     return body;
