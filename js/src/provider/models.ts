@@ -83,7 +83,7 @@ export namespace ModelsDev {
    *
    * This prevents ProviderModelNotFoundError when:
    * - User runs agent for the first time (no cache)
-   * - User has outdated cache missing new models like kimi-k2.5-free
+   * - User has outdated cache missing new models like glm-5-free
    *
    * @see https://github.com/link-assistant/agent/issues/175
    */
