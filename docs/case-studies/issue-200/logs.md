@@ -153,13 +153,13 @@ ProviderModelNotFoundError: ProviderModelNotFoundError
 - `big-pickle`
 - `minimax-m2.5-free`
 
-Note: `kimi-k2.5-free` was previously available but has been removed from the provider's model list.
+Note: `kimi-k2.5-free` is confirmed available on OpenCode (https://opencode.ai/docs/zen) and in models.dev/api.json. The absence from the available models list at time of failure was due to temporary cache staleness.
 
 ---
 
 ## Summary of Findings
 
-All four cases share a common root cause: **the model `kimi-k2.5-free` was removed from the `opencode` provider**, causing `ProviderModelNotFoundError` in the agent's `getModel()` function at `src/provider/provider.ts`.
+All four cases share a common root cause: **the locally cached model catalog did not include `kimi-k2.5-free`** at runtime, causing `ProviderModelNotFoundError` in the agent's `getModel()` function at `src/provider/provider.ts`. The model is confirmed available on OpenCode — the issue was temporary cache staleness.
 
 | Case | PR | Error Type | Model | Provider | Stack Location |
 |------|-----|-----------|-------|----------|----------------|
