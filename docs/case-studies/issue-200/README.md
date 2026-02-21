@@ -40,24 +40,75 @@ When a model was not found in a provider, the error simply said `ProviderModelNo
 ### Tertiary Issue: Model Catalog Sync
 The models.dev API catalog can become stale. Models listed as available may be removed by providers without notice, causing `ProviderModelNotFoundError` at runtime.
 
-## Solution Implemented
+## Solution Implemented (PR #202)
 
-1. **HTTP-level verbose logging** (`provider.ts`): When `--verbose` is enabled, every HTTP request/response is logged as JSON including:
-   - URL, method, sanitized headers (API keys masked)
-   - Request body preview (truncated to 2000 chars)
-   - Response status, status text, headers, duration
+### 1. Fix default model (root cause fix)
+Changed the hardcoded default model from the removed `opencode/kimi-k2.5-free` to `kilo/glm-5-free` which is a stable free model in the Kilo Gateway. Updated all references across:
+- `index.js` (CLI default)
+- `tool/task.ts` (subagent fallback)
+- `cli/model-config.js` (validation messages and OAuth redirect)
+- `provider/provider.ts` (small model priority lists)
 
-2. **Improved error messages** (`provider.ts:getModel`): `ProviderModelNotFoundError` now includes available models in the provider, making it immediately clear what went wrong.
+### 2. Safe JSON error serialization
+Added cyclic-reference-safe JSON serializer in `cli/output.ts`:
+- Handles cyclic references (returns `[Circular]` instead of throwing)
+- Serializes Error objects to plain objects with name, message, stack, cause
+- Handles BigInt values
+- Fallback for serialization failures (guaranteed JSON output)
+
+### 3. Robust global error handlers
+Improved `uncaughtException` and `unhandledRejection` handlers in `index.js`:
+- Wrapped in try/catch to prevent serialization failures from causing non-JSON output
+- Include error.data in rejection output for debugging ProviderModelNotFoundError
+- Last-resort minimal JSON fallback written directly to stderr
+
+### 4. Model resolution verbose logging
+Added debug logging in `session/prompt.ts`:
+- Logs model resolution attempts before API calls
+- Logs successful resolution with resolved model ID
+- Logs failures with stack trace and troubleshooting hints
+
+### 5. HTTP-level verbose logging (already existed)
+When `--verbose` is enabled, every HTTP request/response is logged as JSON including:
+- URL, method, sanitized headers (API keys masked)
+- Request body preview (truncated to 2000 chars)
+- Response status, status text, headers, duration
+
+### 6. Unit tests
+Added `tests/safe-json-serialization.test.ts` with 7 tests covering:
+- Simple message serialization
+- Cyclic reference handling
+- Error object serialization
+- Nested cyclic references
+- Null/undefined handling
+- Compact vs pretty mode
+- Error cause chain serialization
 
 ## Data Files
 
+- `logs.md` — Detailed error logs extracted from all affected PRs
 - `pr851-issue-comments.json` — Comments from godot-topdown-MVP PR #851
 - `pr850-issue-comments.json` — Comments from godot-topdown-MVP PR #850
 - `pr424-issue-comments.json` — Comments from rdf-grapher PR #424
 - `pr851-review-comments.json` — Review comments from PR #851
 
+## Comparison with Reference Implementations
+
+### kilo-Org/kilo
+- Uses `ModelCache` with 5-minute TTL for model catalog (`provider/model-cache.ts`)
+- Has `@kilocode/kilo-gateway` package for dynamic model fetching
+- Our approach: uses `models.dev/api.json` with 1-hour cache staleness threshold
+
+### anomalyco/opencode
+- Has comprehensive `ProviderError` module (`provider/error.ts`) with:
+  - Context overflow detection patterns for 12+ providers
+  - Stream error parsing (`parseStreamError`) for structured error handling
+  - API call error parsing with retryable classification
+- Our code has similar but less comprehensive error parsing in `session/message-v2.ts`
+
 ## Recommendations
 
-1. **Monitor models.dev sync**: Consider adding a health check that verifies model availability before task execution.
-2. **Fallback model support**: When a specific model fails, automatically suggest alternatives from the same provider.
-3. **Structured error events**: Publish model resolution failures as bus events so the UI can display actionable messages.
+1. **Dynamic default model**: Instead of hardcoding a default, use `Provider.defaultModel()` which already has smart fallback logic
+2. **Model availability check**: Add pre-flight check during startup to verify default model exists
+3. **Port ProviderError patterns**: Adopt overflow detection patterns from opencode for better error classification
+4. **Structured error events**: Publish model resolution failures as bus events for UI display
