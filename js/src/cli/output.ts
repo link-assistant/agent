@@ -62,16 +62,62 @@ export function isCompactJson(): boolean {
 }
 
 /**
- * Format a message as JSON string
+ * Safe JSON replacer that handles cyclic references and non-serializable values.
+ * Returns a replacer function that tracks seen objects to detect cycles.
+ *
+ * @see https://github.com/link-assistant/agent/issues/200
+ */
+function createSafeReplacer(): (key: string, value: unknown) => unknown {
+  const seen = new WeakSet();
+  return (_key: string, value: unknown) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return '[Circular]';
+      }
+      seen.add(value);
+    }
+    // Convert Error objects to plain objects
+    if (value instanceof Error) {
+      return {
+        name: value.name,
+        message: value.message,
+        stack: value.stack,
+        ...(value.cause ? { cause: value.cause } : {}),
+      };
+    }
+    // Handle BigInt (not JSON-serializable by default)
+    if (typeof value === 'bigint') {
+      return value.toString();
+    }
+    return value;
+  };
+}
+
+/**
+ * Format a message as JSON string.
+ * Handles cyclic references and non-serializable values safely.
+ *
  * @param message - The message object to format
  * @param compact - Override the global compact setting
+ * @see https://github.com/link-assistant/agent/issues/200
  */
 export function formatJson(message: OutputMessage, compact?: boolean): string {
-  // Check local, global, and Flag settings for compact mode
   const useCompact = compact ?? isCompactJson();
-  return useCompact
-    ? JSON.stringify(message)
-    : JSON.stringify(message, null, 2);
+  try {
+    return useCompact
+      ? JSON.stringify(message, createSafeReplacer())
+      : JSON.stringify(message, createSafeReplacer(), 2);
+  } catch (_e) {
+    // Last resort fallback - should never happen with safe replacer
+    const fallback: OutputMessage = {
+      type: message.type ?? 'error',
+      message: 'Failed to serialize output',
+      serializationError: _e instanceof Error ? _e.message : String(_e),
+    };
+    return useCompact
+      ? JSON.stringify(fallback)
+      : JSON.stringify(fallback, null, 2);
+  }
 }
 
 /**
