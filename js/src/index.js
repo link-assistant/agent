@@ -61,7 +61,9 @@ const originalStderrWrite = process.stderr.write.bind(process.stderr);
 process.stderr.write = function (chunk, encoding, callback) {
   const str = typeof chunk === 'string' ? chunk : chunk.toString();
   const trimmed = str.trim();
-  if (!trimmed) return originalStderrWrite(chunk, encoding, callback);
+  if (!trimmed) {
+    return originalStderrWrite(chunk, encoding, callback);
+  }
 
   // Check if it's already valid JSON
   if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
@@ -75,11 +77,11 @@ process.stderr.write = function (chunk, encoding, callback) {
   }
 
   // Wrap non-JSON stderr output in JSON envelope
-  const wrapped = JSON.stringify({
+  const wrapped = `${JSON.stringify({
     type: 'error',
     errorType: 'RuntimeError',
     message: trimmed,
-  }) + '\n';
+  })}\n`;
   return originalStderrWrite(wrapped, encoding, callback);
 };
 
