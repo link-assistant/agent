@@ -54,6 +54,35 @@ try {
 // Track if any errors occurred during execution
 let hasError = false;
 
+// Intercept stderr writes to ensure ALL output is JSON (#200)
+// Bun runtime may print errors in plain text format (e.g., stack traces with source code)
+// This interceptor wraps any non-JSON stderr output in a JSON envelope
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+process.stderr.write = function (chunk, encoding, callback) {
+  const str = typeof chunk === 'string' ? chunk : chunk.toString();
+  const trimmed = str.trim();
+  if (!trimmed) return originalStderrWrite(chunk, encoding, callback);
+
+  // Check if it's already valid JSON
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      JSON.parse(trimmed);
+      // Already JSON, pass through
+      return originalStderrWrite(chunk, encoding, callback);
+    } catch (_e) {
+      // Not valid JSON, wrap it
+    }
+  }
+
+  // Wrap non-JSON stderr output in JSON envelope
+  const wrapped = JSON.stringify({
+    type: 'error',
+    errorType: 'RuntimeError',
+    message: trimmed,
+  }) + '\n';
+  return originalStderrWrite(wrapped, encoding, callback);
+};
+
 // Install global error handlers to ensure non-zero exit codes
 // All output is JSON to ensure machine-parsability (#200)
 process.on('uncaughtException', (error) => {
