@@ -1418,18 +1418,45 @@ export namespace Provider {
     // For synthetic providers, we don't need model info from the database
     let info = isSyntheticProvider ? null : provider.info.models[modelID];
     if (!isSyntheticProvider && !info) {
-      // Model not in provider's known list - this can happen due to:
-      // - Stale bundled data (build-time snapshot of models.dev)
-      // - Stale cache (1-hour TTL)
-      // - Provider supports unlisted models
-      // Instead of throwing, create a minimal fallback info and try anyway (#200)
+      // Model not in provider's known list - try refreshing the cache first (#200)
+      // This handles stale bundled data or expired cache (1-hour TTL)
+      log.info(() => ({
+        message: 'model not in catalog - refreshing models cache',
+        providerID,
+        modelID,
+      }));
+      try {
+        await ModelsDev.refresh();
+        const freshDB = await ModelsDev.get();
+        const freshProvider = freshDB[providerID];
+        if (freshProvider?.models[modelID]) {
+          // Model found after refresh - update provider info and use it
+          provider.info.models[modelID] = freshProvider.models[modelID];
+          info = freshProvider.models[modelID];
+          log.info(() => ({
+            message: 'model found after cache refresh',
+            providerID,
+            modelID,
+          }));
+        }
+      } catch (refreshError) {
+        log.warn(() => ({
+          message: 'cache refresh failed',
+          error: refreshError instanceof Error ? refreshError.message : String(refreshError),
+        }));
+      }
+    }
+
+    if (!isSyntheticProvider && !info) {
+      // Still not found after refresh - create fallback info and try anyway
+      // Provider may support unlisted models
       const availableInProvider = Object.keys(provider.info.models).slice(
         0,
         10
       );
       log.warn(() => ({
         message:
-          'model not in provider catalog - attempting anyway (may be unlisted or cache may be stale)',
+          'model not in provider catalog after refresh - attempting anyway (may be unlisted)',
         providerID,
         modelID,
         availableModels: availableInProvider,
