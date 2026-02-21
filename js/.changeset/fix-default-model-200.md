@@ -1,5 +1,5 @@
 ---
-"@link-assistant/agent": patch
+'@link-assistant/agent': patch
 ---
 
 fix: change default model from removed kimi-k2.5-free to kilo/glm-5-free and improve error serialization
