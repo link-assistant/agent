@@ -85,11 +85,13 @@ describe('Stderr JSON interception (#200)', () => {
         }
       }
 
-      return JSON.stringify({
-        type: 'error',
-        errorType: 'RuntimeError',
-        message: trimmed,
-      }) + '\n';
+      return (
+        JSON.stringify({
+          type: 'error',
+          errorType: 'RuntimeError',
+          message: trimmed,
+        }) + '\n'
+      );
     }
 
     // Plain text should be wrapped
@@ -105,7 +107,8 @@ describe('Stderr JSON interception (#200)', () => {
     expect(wrapIfNotJson(jsonText)).toBe(jsonText);
 
     // Bun stack trace should be wrapped
-    const bunTrace = '1428 |         providerID,\n1429 |         modelID,\n       ^\nProviderModelNotFoundError: ProviderModelNotFoundError';
+    const bunTrace =
+      '1428 |         providerID,\n1429 |         modelID,\n       ^\nProviderModelNotFoundError: ProviderModelNotFoundError';
     const wrappedTrace = wrapIfNotJson(bunTrace);
     const parsedTrace = JSON.parse(wrappedTrace);
     expect(parsedTrace.type).toBe('error');

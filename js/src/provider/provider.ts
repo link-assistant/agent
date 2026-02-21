@@ -1442,7 +1442,10 @@ export namespace Provider {
       } catch (refreshError) {
         log.warn(() => ({
           message: 'cache refresh failed',
-          error: refreshError instanceof Error ? refreshError.message : String(refreshError),
+          error:
+            refreshError instanceof Error
+              ? refreshError.message
+              : String(refreshError),
         }));
       }
     }
