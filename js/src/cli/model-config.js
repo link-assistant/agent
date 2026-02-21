@@ -16,7 +16,7 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
   let modelArg = argv.model;
 
   // ALWAYS prefer the CLI value over yargs when available (#196)
-  // The yargs default 'kilo/glm-5-free' can silently override user's --model argument
+  // The yargs default 'opencode/kimi-k2.5-free' can silently override user's --model argument
   if (cliModelArg) {
     if (cliModelArg !== modelArg) {
       Log.Default.warn(() => ({
@@ -45,7 +45,7 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     // Do NOT fall back to defaults - if the user provided an invalid format, fail clearly (#196)
     if (!providerID || !modelID) {
       throw new Error(
-        `Invalid model format: "${modelArg}". Expected "provider/model" format (e.g., "kilo/glm-5-free"). ` +
+        `Invalid model format: "${modelArg}". Expected "provider/model" format (e.g., "opencode/kimi-k2.5-free"). ` +
           `Provider: "${providerID || '(empty)'}", Model: "${modelID || '(empty)'}".`
       );
     }
@@ -124,9 +124,9 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     // Set environment variable for the provider to use
     process.env.CLAUDE_CODE_OAUTH_TOKEN = creds.accessToken;
 
-    // If user specified the default model (kilo/glm-5-free), switch to claude-oauth
+    // If user specified the default model (opencode/kimi-k2.5-free), switch to claude-oauth
     // If user explicitly specified kilo or another provider, warn but respect their choice
-    if (providerID === 'kilo' && modelID === 'glm-5-free') {
+    if (providerID === 'opencode' && modelID === 'kimi-k2.5-free') {
       providerID = 'claude-oauth';
       modelID = 'claude-sonnet-4-5';
     } else if (!['claude-oauth', 'anthropic'].includes(providerID)) {

@@ -1516,7 +1516,7 @@ export namespace Provider {
     }
     if (providerID === 'opencode' || providerID === 'local') {
       priority = [
-        'glm-5-free',
+        'kimi-k2.5-free',
         'minimax-m2.5-free',
         'gpt-5-nano',
         'big-pickle',
@@ -1548,6 +1548,7 @@ export namespace Provider {
 
   const priority = [
     'glm-5-free',
+    'kimi-k2.5-free',
     'minimax-m2.5-free',
     'gpt-5-nano',
     'big-pickle',
@@ -1719,7 +1720,7 @@ export namespace Provider {
    * Examples:
    * - "kilo/glm-5-free" -> { providerID: "kilo", modelID: "glm-5-free" }
    * - "glm-5-free" -> { providerID: "kilo", modelID: "glm-5-free" } (resolved)
-   * - "minimax-m2.5-free" -> { providerID: "kilo", modelID: "minimax-m2.5-free" } (resolved)
+   * - "kimi-k2.5-free" -> { providerID: "opencode", modelID: "kimi-k2.5-free" } (resolved)
    * - "nonexistent-model" -> throws ModelNotFoundError
    *
    * @param model - Model string with or without provider prefix
@@ -1779,7 +1780,7 @@ export namespace Provider {
    * When one provider hits rate limits, the system can try an alternative.
    *
    * Note: This is only used for models without explicit provider specification.
-   * If user specifies "kilo/glm-5-free", no fallback will occur.
+   * If user specifies "kilo/kimi-k2.5-free", no fallback will occur.
    */
   const SHARED_FREE_MODELS: Record<string, string[]> = {
     // Currently no shared models between OpenCode and Kilo providers.
@@ -1791,7 +1792,7 @@ export namespace Provider {
    * This function returns a list of alternative providers that offer the same model.
    *
    * Note: This only returns alternatives for models without explicit provider specification.
-   * If the original request had an explicit provider (like "kilo/glm-5-free"), this returns empty array.
+   * If the original request had an explicit provider (like "kilo/kimi-k2.5-free"), this returns empty array.
    *
    * @param modelID - The model ID to find alternatives for
    * @param failedProviderID - The provider that failed
