@@ -68,11 +68,11 @@ process.on('uncaughtException', (error) => {
   } catch (_serializationError) {
     // Last resort: write minimal JSON directly to stderr
     process.stderr.write(
-      JSON.stringify({
+      `${JSON.stringify({
         type: 'error',
         errorType: 'UncaughtException',
         message: String(error),
-      }) + '\n'
+      })}\n`
     );
   }
   process.exit(1);
@@ -98,11 +98,11 @@ process.on('unhandledRejection', (reason, _promise) => {
   } catch (_serializationError) {
     // Last resort: write minimal JSON directly to stderr
     process.stderr.write(
-      JSON.stringify({
+      `${JSON.stringify({
         type: 'error',
         errorType: 'UnhandledRejection',
         message: String(reason),
-      }) + '\n'
+      })}\n`
     );
   }
   process.exit(1);
