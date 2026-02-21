@@ -1416,21 +1416,70 @@ export namespace Provider {
       providerID === 'link-assistant' || providerID === 'link-assistant/cache';
 
     // For synthetic providers, we don't need model info from the database
-    const info = isSyntheticProvider ? null : provider.info.models[modelID];
+    let info = isSyntheticProvider ? null : provider.info.models[modelID];
     if (!isSyntheticProvider && !info) {
+      // Model not in provider's known list - try refreshing the cache first (#200)
+      // This handles stale bundled data or expired cache (1-hour TTL)
+      log.info(() => ({
+        message: 'model not in catalog - refreshing models cache',
+        providerID,
+        modelID,
+      }));
+      try {
+        await ModelsDev.refresh();
+        const freshDB = await ModelsDev.get();
+        const freshProvider = freshDB[providerID];
+        if (freshProvider?.models[modelID]) {
+          // Model found after refresh - update provider info and use it
+          provider.info.models[modelID] = freshProvider.models[modelID];
+          info = freshProvider.models[modelID];
+          log.info(() => ({
+            message: 'model found after cache refresh',
+            providerID,
+            modelID,
+          }));
+        }
+      } catch (refreshError) {
+        log.warn(() => ({
+          message: 'cache refresh failed',
+          error:
+            refreshError instanceof Error
+              ? refreshError.message
+              : String(refreshError),
+        }));
+      }
+    }
+
+    if (!isSyntheticProvider && !info) {
+      // Still not found after refresh - create fallback info and try anyway
+      // Provider may support unlisted models
       const availableInProvider = Object.keys(provider.info.models).slice(
         0,
         10
       );
-      const suggestion = `Model "${modelID}" not found in provider "${providerID}". Available models: ${availableInProvider.join(', ')}${Object.keys(provider.info.models).length > 10 ? ` (and ${Object.keys(provider.info.models).length - 10} more)` : ''}.`;
-      log.error(() => ({
-        message: 'model not found in provider',
+      log.warn(() => ({
+        message:
+          'model not in provider catalog after refresh - attempting anyway (may be unlisted)',
         providerID,
         modelID,
         availableModels: availableInProvider,
         totalModels: Object.keys(provider.info.models).length,
       }));
-      throw new ModelNotFoundError({ providerID, modelID, suggestion });
+
+      // Create a minimal fallback model info so SDK loading can proceed
+      // Use sensible defaults - the provider will reject if the model truly doesn't exist
+      info = {
+        id: modelID,
+        name: modelID,
+        release_date: '',
+        attachment: false,
+        reasoning: false,
+        temperature: true,
+        tool_call: true,
+        cost: { input: 0, output: 0 },
+        limit: { context: 128000, output: 16384 },
+        options: {},
+      } as ModelsDev.Model;
     }
 
     try {
