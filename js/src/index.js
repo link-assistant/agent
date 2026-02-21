@@ -55,28 +55,56 @@ try {
 let hasError = false;
 
 // Install global error handlers to ensure non-zero exit codes
+// All output is JSON to ensure machine-parsability (#200)
 process.on('uncaughtException', (error) => {
   hasError = true;
-  outputError({
-    errorType: error.name || 'UncaughtException',
-    message: error.message,
-    stack: error.stack,
-  });
+  try {
+    outputError({
+      errorType: error?.name || 'UncaughtException',
+      message: error?.message || String(error),
+      stack: error?.stack,
+      ...(error?.cause ? { cause: String(error.cause) } : {}),
+    });
+  } catch (_serializationError) {
+    // Last resort: write minimal JSON directly to stderr
+    process.stderr.write(
+      JSON.stringify({
+        type: 'error',
+        errorType: 'UncaughtException',
+        message: String(error),
+      }) + '\n'
+    );
+  }
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, _promise) => {
   hasError = true;
-  const errorOutput = {
-    errorType: 'UnhandledRejection',
-    message: reason?.message || String(reason),
-    stack: reason?.stack,
-  };
-  // If the error has a data property with a suggestion (e.g., ProviderModelNotFoundError), add it as a hint
-  if (reason?.data?.suggestion) {
-    errorOutput.hint = reason.data.suggestion;
+  try {
+    const errorOutput = {
+      errorType: 'UnhandledRejection',
+      message: reason?.message || String(reason),
+      stack: reason?.stack,
+    };
+    // If the error has a data property with a suggestion (e.g., ProviderModelNotFoundError), add it as a hint
+    if (reason?.data?.suggestion) {
+      errorOutput.hint = reason.data.suggestion;
+    }
+    // Include error data for debugging (#200)
+    if (reason?.data) {
+      errorOutput.data = reason.data;
+    }
+    outputError(errorOutput);
+  } catch (_serializationError) {
+    // Last resort: write minimal JSON directly to stderr
+    process.stderr.write(
+      JSON.stringify({
+        type: 'error',
+        errorType: 'UnhandledRejection',
+        message: String(reason),
+      }) + '\n'
+    );
   }
-  outputError(errorOutput);
   process.exit(1);
 });
 

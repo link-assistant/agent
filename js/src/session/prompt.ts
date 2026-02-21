@@ -362,10 +362,24 @@ export namespace SessionPrompt {
 
       let model;
       try {
+        // Log model resolution attempt for debugging (#200)
+        log.info(() => ({
+          message: 'resolving model',
+          providerID: lastUser.model.providerID,
+          modelID: lastUser.model.modelID,
+          sessionID,
+          step,
+        }));
         model = await Provider.getModel(
           lastUser.model.providerID,
           lastUser.model.modelID
         );
+        log.info(() => ({
+          message: 'model resolved successfully',
+          providerID: lastUser.model.providerID,
+          modelID: lastUser.model.modelID,
+          resolvedModelID: model.language?.modelId,
+        }));
       } catch (error) {
         // When an explicit provider is specified, do NOT silently fall back to default
         // This ensures user's explicit choice is respected
@@ -376,6 +390,8 @@ export namespace SessionPrompt {
           providerID: lastUser.model.providerID,
           modelID: lastUser.model.modelID,
           error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          hint: 'Check that the model exists in the provider. Use --verbose for more details.',
         }));
         // Re-throw the error so it can be handled by the caller
         throw error;
