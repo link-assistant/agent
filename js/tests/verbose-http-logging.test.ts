@@ -183,6 +183,128 @@ describe('Rate limit detection', () => {
   });
 });
 
+describe('Verbose HTTP logging - response body streaming', () => {
+  /**
+   * Tests the response body logging logic for streaming (SSE) responses.
+   * Mirrors the logic in provider.ts getSDK verbose logging.
+   *
+   * @see https://github.com/link-assistant/agent/issues/204
+   */
+
+  const responseBodyMaxChars = 4000;
+
+  function getResponseBodyPreview(bodyText: string): string {
+    return bodyText.length > responseBodyMaxChars
+      ? bodyText.slice(0, responseBodyMaxChars) +
+          `... [truncated, total ${bodyText.length} chars]`
+      : bodyText;
+  }
+
+  function isStreamingContentType(contentType: string): boolean {
+    return (
+      contentType.includes('event-stream') ||
+      contentType.includes('octet-stream')
+    );
+  }
+
+  test('identifies SSE content-type as streaming', () => {
+    expect(isStreamingContentType('text/event-stream; charset=utf-8')).toBe(
+      true
+    );
+    expect(isStreamingContentType('application/octet-stream')).toBe(true);
+    expect(isStreamingContentType('application/json')).toBe(false);
+    expect(isStreamingContentType('text/plain')).toBe(false);
+  });
+
+  test('does not truncate short response body', () => {
+    const body = '{"choices":[{"message":{"content":"hello"}}]}';
+    expect(getResponseBodyPreview(body)).toBe(body);
+  });
+
+  test('truncates long response body with size info', () => {
+    const body = 'data: ' + 'x'.repeat(5000);
+    const preview = getResponseBodyPreview(body);
+    expect(preview).toContain('... [truncated, total');
+    expect(preview.length).toBeLessThan(body.length);
+  });
+
+  test('tee() splits stream into two independently readable streams', async () => {
+    const encoder = new TextEncoder();
+    const sseEvents = [
+      'data: {"choices":[{"delta":{"content":"hello"}}]}\n\n',
+      'data: {"choices":[{"delta":{"content":" world"}}]}\n\n',
+      'data: [DONE]\n\n',
+    ];
+
+    const stream = new ReadableStream({
+      start(controller) {
+        for (const event of sseEvents) {
+          controller.enqueue(encoder.encode(event));
+        }
+        controller.close();
+      },
+    });
+
+    const [sdkStream, logStream] = stream.tee();
+
+    // Read both streams independently
+    const sdkText = await new Response(sdkStream).text();
+    const logText = await new Response(logStream).text();
+
+    // Both should have the same content
+    expect(sdkText).toBe(sseEvents.join(''));
+    expect(logText).toBe(sseEvents.join(''));
+    expect(sdkText).toContain('hello');
+    expect(sdkText).toContain('[DONE]');
+  });
+
+  test('reconstructed non-streaming Response preserves status and headers', () => {
+    const bodyText = '{"error": "model not found"}';
+    const originalResponse = new Response(bodyText, {
+      status: 404,
+      statusText: 'Not Found',
+      headers: { 'content-type': 'application/json' },
+    });
+
+    // Simulate reconstruction after buffering body
+    const reconstructed = new Response(bodyText, {
+      status: originalResponse.status,
+      statusText: originalResponse.statusText,
+      headers: originalResponse.headers,
+    });
+
+    expect(reconstructed.status).toBe(404);
+    expect(reconstructed.statusText).toBe('Not Found');
+    expect(reconstructed.headers.get('content-type')).toBe('application/json');
+  });
+
+  test('reconstructed streaming Response preserves status and headers', () => {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('data: test\n\n'));
+        controller.close();
+      },
+    });
+
+    const [sdkStream] = stream.tee();
+
+    const originalHeaders = new Headers({
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-cache',
+    });
+
+    const reconstructed = new Response(sdkStream, {
+      status: 200,
+      statusText: 'OK',
+      headers: originalHeaders,
+    });
+
+    expect(reconstructed.status).toBe(200);
+    expect(reconstructed.headers.get('content-type')).toBe('text/event-stream');
+    expect(reconstructed.headers.get('cache-control')).toBe('no-cache');
+  });
+});
+
 describe('Model parsing', () => {
   function parseModel(model: string) {
     const [providerID, ...rest] = model.split('/');
