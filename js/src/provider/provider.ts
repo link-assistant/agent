@@ -1289,6 +1289,85 @@ export namespace Provider {
               responseHeaders: Object.fromEntries(response.headers.entries()),
             }));
 
+            // Log response body for debugging provider failures
+            // For streaming responses (SSE/event-stream), tee() the stream so the AI SDK
+            // still receives the full stream while we asynchronously log a preview.
+            // For non-streaming responses, buffer the body and reconstruct the Response.
+            // See: https://github.com/link-assistant/agent/issues/204
+            const responseBodyMaxChars = 4000;
+            const contentType = response.headers.get('content-type') ?? '';
+            const isStreaming =
+              contentType.includes('event-stream') ||
+              contentType.includes('octet-stream');
+
+            if (response.body) {
+              if (isStreaming) {
+                // Tee the stream: one copy for AI SDK, one for logging
+                const [sdkStream, logStream] = response.body.tee();
+
+                // Consume log stream asynchronously (does not block SDK)
+                (async () => {
+                  try {
+                    const reader = logStream.getReader();
+                    const decoder = new TextDecoder();
+                    let bodyPreview = '';
+                    let truncated = false;
+                    while (true) {
+                      const { done, value } = await reader.read();
+                      if (done) break;
+                      if (!truncated) {
+                        const chunk = decoder.decode(value, { stream: true });
+                        bodyPreview += chunk;
+                        if (bodyPreview.length > responseBodyMaxChars) {
+                          bodyPreview = bodyPreview.slice(
+                            0,
+                            responseBodyMaxChars
+                          );
+                          truncated = true;
+                        }
+                      }
+                    }
+                    log.info(() => ({
+                      message: 'HTTP response body (stream)',
+                      providerID: provider.id,
+                      url,
+                      bodyPreview: truncated
+                        ? bodyPreview + `... [truncated]`
+                        : bodyPreview,
+                    }));
+                  } catch {
+                    // Ignore logging errors — do not affect the SDK stream
+                  }
+                })();
+
+                // Return response with the SDK's copy of the stream
+                return new Response(sdkStream, {
+                  status: response.status,
+                  statusText: response.statusText,
+                  headers: response.headers,
+                });
+              } else {
+                // Non-streaming: buffer body, log it, reconstruct Response
+                const bodyText = await response.text();
+                const bodyPreview =
+                  bodyText.length > responseBodyMaxChars
+                    ? bodyText.slice(0, responseBodyMaxChars) +
+                      `... [truncated, total ${bodyText.length} chars]`
+                    : bodyText;
+                log.info(() => ({
+                  message: 'HTTP response body',
+                  providerID: provider.id,
+                  url,
+                  bodyPreview,
+                }));
+                return new Response(bodyText, {
+                  status: response.status,
+                  statusText: response.statusText,
+                  headers: response.headers,
+                });
+              }
+            }
+
             return response;
           } catch (error) {
             const durationMs = Date.now() - startMs;
