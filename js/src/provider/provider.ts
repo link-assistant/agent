@@ -1201,15 +1201,23 @@ export namespace Provider {
         sessionID: provider.id,
       });
 
-      // Wrap fetch with verbose HTTP logging when --verbose is enabled
-      // This logs raw HTTP request/response details for debugging provider issues
+      // Wrap fetch with verbose HTTP logging for debugging provider issues.
+      // IMPORTANT: The verbose check is done at call time (not SDK creation time)
+      // because the SDK is cached and Flag.OPENCODE_VERBOSE may change after creation.
+      // When verbose is disabled, the wrapper is a no-op passthrough with negligible overhead.
       // See: https://github.com/link-assistant/agent/issues/200
-      if (Flag.OPENCODE_VERBOSE) {
+      // See: https://github.com/link-assistant/agent/issues/206
+      {
         const innerFetch = options['fetch'];
         options['fetch'] = async (
           input: RequestInfo | URL,
           init?: RequestInit
         ): Promise<Response> => {
+          // Check verbose flag at call time — not at SDK creation time
+          if (!Flag.OPENCODE_VERBOSE) {
+            return innerFetch(input, init);
+          }
+
           const url =
             typeof input === 'string'
               ? input

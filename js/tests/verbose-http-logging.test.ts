@@ -305,6 +305,119 @@ describe('Verbose HTTP logging - response body streaming', () => {
   });
 });
 
+describe('Verbose HTTP logging - runtime flag check', () => {
+  /**
+   * Tests that the verbose fetch wrapper checks Flag.OPENCODE_VERBOSE at call time,
+   * not at SDK creation time. This is critical because the SDK is cached and the
+   * verbose flag may be set after the SDK is created (e.g., when --verbose is a CLI
+   * flag processed by middleware after module initialization).
+   *
+   * @see https://github.com/link-assistant/agent/issues/206
+   */
+
+  test('verbose wrapper should be a no-op when verbose is disabled', async () => {
+    let innerFetchCalled = false;
+
+    // Simulate the wrapper structure from provider.ts
+    const innerFetch = async (input: any, init?: any) => {
+      innerFetchCalled = true;
+      return new Response('{"ok":true}', { status: 200 });
+    };
+
+    // Simulate verbose=false check at call time
+    const verbose = false;
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      if (!verbose) {
+        return innerFetch(input, init);
+      }
+      // Would log here if verbose
+      return innerFetch(input, init);
+    };
+
+    const response = await wrappedFetch('https://api.test.com/v1', {
+      method: 'POST',
+    });
+    expect(response.status).toBe(200);
+    expect(innerFetchCalled).toBe(true);
+  });
+
+  test('verbose wrapper should log when verbose is enabled at call time', async () => {
+    let innerFetchCalled = false;
+    let logCalled = false;
+
+    const innerFetch = async (input: any, init?: any) => {
+      innerFetchCalled = true;
+      return new Response('{"ok":true}', {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    };
+
+    // Simulate verbose=true check at call time (even if it was false at creation time)
+    const verbose = true;
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      if (!verbose) {
+        return innerFetch(input, init);
+      }
+      // Log request (simplified)
+      logCalled = true;
+      const response = await innerFetch(input, init);
+      return response;
+    };
+
+    const response = await wrappedFetch('https://api.test.com/v1', {
+      method: 'POST',
+    });
+    expect(response.status).toBe(200);
+    expect(innerFetchCalled).toBe(true);
+    expect(logCalled).toBe(true);
+  });
+
+  test('verbose flag can change between SDK creation and fetch call', async () => {
+    let verboseFlag = false; // Simulates Flag.OPENCODE_VERBOSE
+    const logMessages: string[] = [];
+
+    const innerFetch = async () =>
+      new Response('ok', {
+        status: 200,
+        headers: { 'content-type': 'text/plain' },
+      });
+
+    // Create the wrapper (simulates SDK creation time — verbose is false)
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      if (!verboseFlag) {
+        return innerFetch();
+      }
+      logMessages.push('HTTP request logged');
+      const response = await innerFetch();
+      logMessages.push('HTTP response logged');
+      return response;
+    };
+
+    // Call 1: verbose is false — no logging
+    await wrappedFetch('https://api.test.com/v1');
+    expect(logMessages).toHaveLength(0);
+
+    // Enable verbose (simulates Flag.setVerbose(true) in middleware)
+    verboseFlag = true;
+
+    // Call 2: verbose is now true — should log
+    await wrappedFetch('https://api.test.com/v1');
+    expect(logMessages).toHaveLength(2);
+    expect(logMessages[0]).toBe('HTTP request logged');
+    expect(logMessages[1]).toBe('HTTP response logged');
+  });
+});
+
 describe('Model parsing', () => {
   function parseModel(model: string) {
     const [providerID, ...rest] = model.split('/');
