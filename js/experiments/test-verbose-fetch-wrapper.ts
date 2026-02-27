@@ -18,25 +18,35 @@ let verboseWrapperCalled = false;
 // Create a mock fetch that records calls
 const mockFetch = async (input: any, init?: any) => {
   customFetchCalled = true;
-  customFetchUrl = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  customFetchUrl =
+    typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.toString()
+        : input.url;
   console.log(`[MOCK FETCH] Called with URL: ${customFetchUrl}`);
 
   // Return a mock response
-  return new Response(JSON.stringify({
-    id: 'test',
-    object: 'chat.completion',
-    created: Date.now(),
-    model: 'test-model',
-    choices: [{
-      index: 0,
-      message: { role: 'assistant', content: 'Hello!' },
-      finish_reason: 'stop',
-    }],
-    usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-  }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify({
+      id: 'test',
+      object: 'chat.completion',
+      created: Date.now(),
+      model: 'test-model',
+      choices: [
+        {
+          index: 0,
+          message: { role: 'assistant', content: 'Hello!' },
+          finish_reason: 'stop',
+        },
+      ],
+      usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+    }),
+    {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }
+  );
 };
 
 // Simulate the SDK creation with and without verbose
@@ -57,16 +67,26 @@ async function testSDKCreation(verboseEnabled: boolean) {
   // Simulate verbose wrapping (exactly as in provider.ts)
   if (verbose) {
     const innerFetch = options['fetch'];
-    options['fetch'] = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    options['fetch'] = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ): Promise<Response> => {
       verboseWrapperCalled = true;
-      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : (input as Request).url;
       const method = init?.method ?? 'GET';
 
       console.log(`[VERBOSE WRAPPER] HTTP ${method} ${url}`);
 
       const response = await innerFetch(input, init);
 
-      console.log(`[VERBOSE WRAPPER] HTTP ${response.status} ${response.statusText}`);
+      console.log(
+        `[VERBOSE WRAPPER] HTTP ${response.status} ${response.statusText}`
+      );
 
       return response;
     };
@@ -130,10 +150,14 @@ try {
 console.log('\n=== CONCLUSION ===');
 if (verboseWrapperCalled) {
   console.log('SUCCESS: The verbose fetch wrapper IS called by the AI SDK.');
-  console.log('The bug must be elsewhere (e.g., logging configuration, flag timing).');
+  console.log(
+    'The bug must be elsewhere (e.g., logging configuration, flag timing).'
+  );
 } else if (customFetchCalled) {
   console.log('PARTIAL: Custom fetch was called but NOT the verbose wrapper.');
-  console.log('This means the SDK uses its own fetch path that bypasses our wrapper.');
+  console.log(
+    'This means the SDK uses its own fetch path that bypasses our wrapper.'
+  );
 } else {
   console.log('FAILURE: Neither custom fetch nor verbose wrapper was called.');
   console.log('The SDK completely ignores the fetch option!');

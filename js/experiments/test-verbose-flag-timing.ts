@@ -40,8 +40,12 @@ console.log(`Destructured import: ${OPENCODE_VERBOSE}`);
 console.log(`Match: ${OPENCODE_VERBOSE === Flag.OPENCODE_VERBOSE}`);
 
 if (OPENCODE_VERBOSE !== Flag.OPENCODE_VERBOSE) {
-  console.log('\n❌ BUG FOUND: Destructured import does NOT reflect setVerbose() change!');
-  console.log('The issue is that "import { OPENCODE_VERBOSE }" captures the value at import time,');
+  console.log(
+    '\n❌ BUG FOUND: Destructured import does NOT reflect setVerbose() change!'
+  );
+  console.log(
+    'The issue is that "import { OPENCODE_VERBOSE }" captures the value at import time,'
+  );
   console.log('while Flag.OPENCODE_VERBOSE uses the live binding.');
 } else {
   console.log('\n✅ Both access paths return the same value');
