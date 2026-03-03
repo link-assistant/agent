@@ -95,4 +95,6 @@ console.log('All scenarios passed ✅');
 console.log(
   '\nConclusion: isModelNotSupportedError() reliably detects the ModelError'
 );
-console.log('pattern while avoiding false positives on real auth/rate-limit errors.');
+console.log(
+  'pattern while avoiding false positives on real auth/rate-limit errors.'
+);

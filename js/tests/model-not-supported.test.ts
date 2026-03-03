@@ -55,9 +55,9 @@ describe('isModelNotSupportedError (#208)', () => {
   });
 
   test('does NOT flag plain auth error text', () => {
-    expect(
-      SessionProcessor.isModelNotSupportedError('Unauthorized')
-    ).toBe(false);
+    expect(SessionProcessor.isModelNotSupportedError('Unauthorized')).toBe(
+      false
+    );
   });
 
   // --- Text fallback patterns ---
@@ -72,7 +72,9 @@ describe('isModelNotSupportedError (#208)', () => {
 
   test('detects case-insensitive "model not supported" in plain text', () => {
     expect(
-      SessionProcessor.isModelNotSupportedError('Model not supported: kimi-k2.5-free')
+      SessionProcessor.isModelNotSupportedError(
+        'Model not supported: kimi-k2.5-free'
+      )
     ).toBe(true);
   });
 
