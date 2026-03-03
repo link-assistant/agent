@@ -22,6 +22,34 @@ export namespace SessionProcessor {
   const DOOM_LOOP_THRESHOLD = 3;
   const log = Log.create({ service: 'session.processor' });
 
+  /**
+   * Detect model-not-supported errors from an API response body.
+   *
+   * Some providers (e.g., OpenCode, OpenRouter) return HTTP 401 with a body
+   * like {"type":"ModelError","message":"Model X not supported"} instead of
+   * the semantically correct 400/404. Without this check the error looks like
+   * an authentication failure, making diagnostics confusing.
+   *
+   * See: https://github.com/link-assistant/agent/issues/208
+   */
+  export function isModelNotSupportedError(responseBody: string): boolean {
+    try {
+      const parsed = JSON.parse(responseBody);
+      // OpenCode/OpenRouter format: {"type":"error","error":{"type":"ModelError","message":"..."}}
+      if (parsed?.error?.type === 'ModelError') return true;
+      // Flat format: {"type":"ModelError","message":"..."}
+      if (parsed?.type === 'ModelError') return true;
+      return false;
+    } catch {
+      // If response body is not JSON, check for common text patterns
+      return (
+        responseBody.includes('ModelError') ||
+        responseBody.toLowerCase().includes('model not supported') ||
+        responseBody.toLowerCase().includes('model not found')
+      );
+    }
+  }
+
   export type Info = Awaited<ReturnType<typeof create>>;
   export type Result = Awaited<ReturnType<Info['process']>>;
 
@@ -551,6 +579,37 @@ export namespace SessionProcessor {
 
             // Clear retry state on non-retryable error
             SessionRetry.clearRetryState(input.sessionID);
+
+            // Detect model-not-supported errors from provider response body.
+            // OpenCode and similar proxies return HTTP 401 with
+            // {"type":"ModelError","message":"Model X not supported"}.
+            // Without this check the error looks like an auth failure (401),
+            // but it's actually a model-availability issue.
+            // See: https://github.com/link-assistant/agent/issues/208
+            if (
+              error?.name === 'APIError' &&
+              error.data.statusCode === 401 &&
+              error.data.responseBody
+            ) {
+              const isModelError = isModelNotSupportedError(
+                error.data.responseBody
+              );
+              if (isModelError) {
+                log.error(() => ({
+                  message:
+                    'model not supported by provider — this is NOT an auth error',
+                  hint: 'The model was found in the local cache but the provider rejected it. The model may have been removed or is temporarily unavailable.',
+                  providerID: input.providerID,
+                  modelID: input.model.id,
+                  statusCode: error.data.statusCode,
+                  responseBody: error.data.responseBody,
+                  suggestion:
+                    'Try a different model or check the provider status. Use --model <provider>/<model-id> to specify an alternative.',
+                  issue: 'https://github.com/link-assistant/agent/issues/208',
+                }));
+              }
+            }
+
             input.assistantMessage.error = error;
             Bus.publish(Session.Event.Error, {
               sessionID: input.assistantMessage.sessionID,
