@@ -290,6 +290,21 @@ This would help:
 | `js/src/session/message-v2.ts` | `fromError()` converts AI SDK errors to typed errors |
 | `js/src/flag/flag.ts` | Runtime flags (RETRY_TIMEOUT, MAX_RETRY_DELAY, etc.) |
 
+## Documentation Updates
+
+As a result of this case study, the following documentation was updated to reflect that `kimi-k2.5-free` is no longer available on OpenCode Zen:
+
+- `FREE_MODELS.md` — Removed `opencode/kimi-k2.5-free` from active free models; added to "Discontinued Free Models" with reference to this issue. Updated default recommendation to `big-pickle`.
+- `MODELS.md` — Moved `opencode/kimi-k2.5-free` to discontinued section. Updated default model to `opencode/big-pickle`.
+- `README.md`, `EXAMPLES.md`, `js/README.md`, `rust/README.md` — Updated all examples from `opencode/kimi-k2.5-free` to `opencode/big-pickle`.
+- `js/src/provider/provider.ts` — Removed `kimi-k2.5-free` from provider priority arrays; updated default to `big-pickle`.
+- `js/src/tool/task.ts` — Updated hardcoded fallback default model from `kimi-k2.5-free` to `big-pickle`.
+
+**Current free models on OpenCode Zen** (as of March 2026, per [opencode.ai/docs/zen/](https://opencode.ai/docs/zen/)):
+1. `opencode/big-pickle` — Stealth model (free during evaluation period)
+2. `opencode/minimax-m2.5-free` — Strong general-purpose model (free during beta)
+3. `opencode/gpt-5-nano` — Reliable OpenAI-powered free model
+
 ## Data Files
 
 - `solution-draft-log.txt` — Full 1920-line log from the failing run (gist: `642e9c6e87bac2824400accbd9fe36f7`)

@@ -104,7 +104,7 @@ agent [OPTIONS]
 
 Options:
       --model <MODEL>                    Model to use in format providerID/modelID
-                                         [default: opencode/kimi-k2.5-free]
+                                         [default: opencode/big-pickle]
       --json-standard <JSON_STANDARD>    JSON output format standard
                                          [possible values: opencode, claude]
                                          [default: opencode]
