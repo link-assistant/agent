@@ -305,10 +305,19 @@ As a result of this case study, the following documentation was updated to refle
 
 ### Phase 2 (PR #210, 2026-03-04)
 
-A follow-up run (see `solution-draft-log-2.txt`) revealed that despite invoking with `--model minimax-m2.5-free`, the agent still resolved `kimi-k2.5-free`. The root cause was that the yargs CLI default in `index.js` still referenced `opencode/kimi-k2.5-free`. When the yargs caching bug (issue #192) caused the CLI argument to be silently dropped, `argv.model` fell back to the stale yargs default. The following additional code changes were made:
+A follow-up run (see `solution-draft-log-2.txt`) revealed that despite invoking with `--model minimax-m2.5-free`, the agent still resolved `kimi-k2.5-free`. Investigation revealed the root cause was a **`command-stream` argument quoting bug** in `hive-mind`'s `agent.lib.mjs`: the entire `agentArgs` string (e.g., `--model opencode/minimax-m2.5-free --verbose`) was passed as a single quoted argument to the shell, preventing yargs and `getModelFromProcessArgv()` from finding `--model` as a separate flag. The agent fell back to the stale yargs default `opencode/kimi-k2.5-free`. The following additional code changes were made:
 
 - `js/src/index.js` — Updated `--model` yargs default from `opencode/kimi-k2.5-free` to `opencode/minimax-m2.5-free`.
 - `js/src/cli/model-config.js` — Updated `--use-existing-claude-oauth` default-model check and related comments from `kimi-k2.5-free` to `minimax-m2.5-free`.
+
+### Phase 3 (PR #210, 2026-03-04)
+
+Following the issue comment requesting centralization of the default model value, the default is now defined as a single constant:
+
+- `js/src/cli/defaults.ts` — New file: exports `DEFAULT_MODEL = 'opencode/minimax-m2.5-free'`, `DEFAULT_PROVIDER_ID`, and `DEFAULT_MODEL_ID` constants.
+- `js/src/index.js` — Imports `DEFAULT_MODEL` from `defaults.ts` and uses it as the yargs default.
+- `js/src/cli/model-config.js` — Imports `DEFAULT_PROVIDER_ID` and `DEFAULT_MODEL_ID` from `defaults.ts` and uses them in the `--use-existing-claude-oauth` check and error messages.
+- `js/src/tool/task.ts` — Imports `DEFAULT_PROVIDER_ID` and `DEFAULT_MODEL_ID` from `defaults.ts` and uses them as the fallback model when no parent model is provided.
 
 **Current free models on OpenCode Zen** (as of March 2026, per [opencode.ai/docs/zen/](https://opencode.ai/docs/zen/)):
 1. `opencode/minimax-m2.5-free` — Strong general-purpose model (recommended default)
@@ -338,14 +347,36 @@ The available models at the provider were already correct (`minimax-m2.5-free`, 
 
 ### Root Cause of Second Failure
 
-The yargs default in `index.js` was not updated in Phase 1. When the yargs caching bug (#192) strikes:
+Deep investigation of the log reveals a **`command-stream` argument quoting bug** in the `hive-mind` package (`agent.lib.mjs`):
 
-1. `getModelFromProcessArgv()` correctly returns `'opencode/minimax-m2.5-free'` (from `process.argv`)
-2. But wait — looking at log line 231 vs 306 again: the command shows `opencode/minimax-m2.5-free` being passed, yet the agent resolves `opencode/kimi-k2.5-free`
-3. This means `getModelFromProcessArgv()` actually returned `null` (no `--model` was found in `process.argv` from the agent's perspective), and `argv.model` was `'opencode/kimi-k2.5-free'` (the stale yargs default)
-4. The discrepancy between what `solve` logged (building the command with `minimax-m2.5-free`) and what the agent process saw (kimi default) suggests the `--model` flag was dropped during process invocation, and the agent fell back to its yargs default
+1. `agent.lib.mjs` builds `agentArgs` as a single string:
+   ```js
+   let agentArgs = `--model ${mappedModel}`;    // "--model opencode/minimax-m2.5-free"
+   if (argv.verbose) agentArgs += ' --verbose'; // "--model opencode/minimax-m2.5-free --verbose"
+   ```
+2. This string is passed as a template literal interpolation to the `command-stream` `$` tag:
+   ```js
+   $({ cwd: tempDir })`cat ${promptFile} | ${agentPath} ${agentArgs}`
+   ```
+3. The `command-stream` `quote()` function wraps values containing spaces in single quotes:
+   ```
+   cat /tmp/file | agent '--model opencode/minimax-m2.5-free --verbose'
+   ```
+4. The agent binary receives the **entire args string as a single argument** (one `process.argv` element), not as separate flags
+5. Both yargs and `getModelFromProcessArgv()` look for `--model` as a separate flag; neither finds it in the single-element string
+6. The agent falls back to the yargs default: `opencode/kimi-k2.5-free` (still the old value in the installed 0.16.13 build)
 
-**Fix:** Update the yargs default to `'opencode/minimax-m2.5-free'` so that even when `--model` is not received by the agent process, it defaults to the correct current free model.
+**Evidence**: When the agent logs `command = process.argv.join(' ')`, it appears to show separate flags because `join(' ')` of an array containing `'--model opencode/minimax-m2.5-free --verbose'` looks identical to separate elements joined with spaces. The `getModelFromProcessArgv()` function only looks for `args[i] === '--model'` (exact element match), so it returns `null` and the yargs default is used.
+
+**Fix (this repo):** Update the yargs default to `'opencode/minimax-m2.5-free'` (Phase 2) AND centralize the default as `DEFAULT_MODEL` constant in `js/src/cli/defaults.ts` (Phase 3) so:
+- If `command-stream` drops the `--model` flag, the default is at least the correct current model
+- When the default model changes again, only `defaults.ts` needs updating
+
+**Fix (hive-mind, separate repo):** The `agent.lib.mjs` should pass model as a separate argument instead of a combined string, e.g.:
+```js
+// Instead of: agentArgs = `--model ${mappedModel} --verbose`
+// Use separate argv array elements: ['--model', mappedModel, '--verbose']
+```
 
 ## Data Files
 
