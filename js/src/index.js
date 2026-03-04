@@ -588,7 +588,7 @@ async function main() {
             .option('model', {
               type: 'string',
               description: 'Model to use in format providerID/modelID',
-              default: 'opencode/kimi-k2.5-free',
+              default: 'opencode/minimax-m2.5-free',
             })
             .option('json-standard', {
               type: 'string',

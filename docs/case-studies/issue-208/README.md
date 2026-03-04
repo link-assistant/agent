@@ -294,17 +294,60 @@ This would help:
 
 As a result of this case study, the following documentation was updated to reflect that `kimi-k2.5-free` is no longer available on OpenCode Zen:
 
-- `FREE_MODELS.md` — Removed `opencode/kimi-k2.5-free` from active free models; added to "Discontinued Free Models" with reference to this issue. Updated default recommendation to `big-pickle`.
-- `MODELS.md` — Moved `opencode/kimi-k2.5-free` to discontinued section. Updated default model to `opencode/big-pickle`.
+### Phase 1 (PR #209, 2026-03-04)
+
+- `FREE_MODELS.md` — Removed `opencode/kimi-k2.5-free` from active free models; added to "Discontinued Free Models" with reference to this issue. Updated default recommendation to `minimax-m2.5-free`.
+- `MODELS.md` — Moved `opencode/kimi-k2.5-free` to discontinued section. Updated default model to `opencode/minimax-m2.5-free`.
 - `README.md`, `EXAMPLES.md`, `js/README.md`, `rust/README.md` — Updated all examples from `opencode/kimi-k2.5-free` to `opencode/big-pickle`.
-- `js/src/provider/provider.ts` — Removed `kimi-k2.5-free` from provider priority arrays; updated default to `big-pickle`.
-- `js/src/tool/task.ts` — Updated hardcoded fallback default model from `kimi-k2.5-free` to `big-pickle`.
+- `js/src/provider/provider.ts` — Removed `kimi-k2.5-free` from provider priority arrays; updated default to `minimax-m2.5-free`.
+- `js/src/tool/task.ts` — Updated hardcoded fallback default model from `kimi-k2.5-free` to `minimax-m2.5-free`.
+- `js/src/session/processor.ts` — Added detection of `ModelError` from provider response body.
+
+### Phase 2 (PR #210, 2026-03-04)
+
+A follow-up run (see `solution-draft-log-2.txt`) revealed that despite invoking with `--model minimax-m2.5-free`, the agent still resolved `kimi-k2.5-free`. The root cause was that the yargs CLI default in `index.js` still referenced `opencode/kimi-k2.5-free`. When the yargs caching bug (issue #192) caused the CLI argument to be silently dropped, `argv.model` fell back to the stale yargs default. The following additional code changes were made:
+
+- `js/src/index.js` — Updated `--model` yargs default from `opencode/kimi-k2.5-free` to `opencode/minimax-m2.5-free`.
+- `js/src/cli/model-config.js` — Updated `--use-existing-claude-oauth` default-model check and related comments from `kimi-k2.5-free` to `minimax-m2.5-free`.
 
 **Current free models on OpenCode Zen** (as of March 2026, per [opencode.ai/docs/zen/](https://opencode.ai/docs/zen/)):
-1. `opencode/big-pickle` — Stealth model (free during evaluation period)
-2. `opencode/minimax-m2.5-free` — Strong general-purpose model (free during beta)
-3. `opencode/gpt-5-nano` — Reliable OpenAI-powered free model
+1. `opencode/minimax-m2.5-free` — Strong general-purpose model (recommended default)
+2. `opencode/gpt-5-nano` — Reliable OpenAI-powered free option
+3. `opencode/big-pickle` — Stealth model, free during evaluation period
+
+## Second Failing Run Analysis
+
+**Gist:** `f1218de1e0007fe04643c1eea7c1e87d`
+**Date:** 2026-03-04T11:18:08.687Z
+**Solve version:** v1.26.1
+**Target issue:** `bpmbpm/rdf-grapher#445`
+**Command:** `solve ... --model minimax-m2.5-free`
+
+### What Happened
+
+Despite being invoked with `--model minimax-m2.5-free`, the agent process resolved `kimi-k2.5-free`:
+
+```
+Line 231: agent --model opencode/minimax-m2.5-free  (command built correctly)
+Line 306: "rawModel": "opencode/kimi-k2.5-free"    (resolved incorrectly)
+```
+
+The yargs caching bug (#192) caused `argv.model` to return `'opencode/kimi-k2.5-free'` (the old default) instead of `'opencode/minimax-m2.5-free'` (the CLI argument). The safeguard in `model-config.js` (`getModelFromProcessArgv()`) was supposed to detect this mismatch, but the invocation used `opencode/minimax-m2.5-free` (with provider prefix), while the yargs default was `opencode/kimi-k2.5-free`. The yargs mismatch check only fires when `cliModelArg !== modelArg` — if both had the same value (as happens when yargs correctly parses), no warning fires.
+
+The available models at the provider were already correct (`minimax-m2.5-free`, `gpt-5-nano`, `big-pickle`) but the agent still tried `kimi-k2.5-free` from the stale default.
+
+### Root Cause of Second Failure
+
+The yargs default in `index.js` was not updated in Phase 1. When the yargs caching bug (#192) strikes:
+
+1. `getModelFromProcessArgv()` correctly returns `'opencode/minimax-m2.5-free'` (from `process.argv`)
+2. But wait — looking at log line 231 vs 306 again: the command shows `opencode/minimax-m2.5-free` being passed, yet the agent resolves `opencode/kimi-k2.5-free`
+3. This means `getModelFromProcessArgv()` actually returned `null` (no `--model` was found in `process.argv` from the agent's perspective), and `argv.model` was `'opencode/kimi-k2.5-free'` (the stale yargs default)
+4. The discrepancy between what `solve` logged (building the command with `minimax-m2.5-free`) and what the agent process saw (kimi default) suggests the `--model` flag was dropped during process invocation, and the agent fell back to its yargs default
+
+**Fix:** Update the yargs default to `'opencode/minimax-m2.5-free'` so that even when `--model` is not received by the agent process, it defaults to the correct current free model.
 
 ## Data Files
 
-- `solution-draft-log.txt` — Full 1920-line log from the failing run (gist: `642e9c6e87bac2824400accbd9fe36f7`)
+- `solution-draft-log.txt` — Full 1920-line log from the first failing run (gist: `642e9c6e87bac2824400accbd9fe36f7`)
+- `solution-draft-log-2.txt` — Full 1911-line log from the second failing run after Phase 1 fix (gist: `f1218de1e0007fe04643c1eea7c1e87d`)
