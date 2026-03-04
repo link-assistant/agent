@@ -23,19 +23,19 @@ describe('ModelsDev cache handling', () => {
 
   test('echo provider works in dry-run mode', async () => {
     // This tests that the echo provider works correctly in dry-run mode
-    // We use --dry-run to enable the echo provider
+    // We use --dry-run and --model link-assistant/echo to enable the echo provider explicitly
 
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --dry-run --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --dry-run --model link-assistant/echo --no-always-accept-stdin`
     );
     const output = result.stdout + result.stderr;
 
     // Should NOT get ProviderModelNotFoundError
     expect(output).not.toContain('ProviderModelNotFoundError');
 
-    // Should see the model being used (echo provider outputs the input)
-    expect(output).toContain('echo') || expect(output).toContain('hi');
+    // Should see the echo model being used
+    expect(output).toContain('echo');
   });
 
   test('models.dev refresh is triggered on startup', async () => {

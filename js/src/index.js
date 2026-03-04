@@ -6,6 +6,7 @@ import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
 import { Log } from './util/log.ts';
 import { parseModelConfig } from './cli/model-config.js';
+import { DEFAULT_MODEL } from './cli/defaults.ts';
 // Bus is used via createBusEventSubscription in event-handler.js
 import { Session } from './session/index.ts';
 import { SessionPrompt } from './session/prompt.ts';
@@ -588,7 +589,7 @@ async function main() {
             .option('model', {
               type: 'string',
               description: 'Model to use in format providerID/modelID',
-              default: 'opencode/kimi-k2.5-free',
+              default: DEFAULT_MODEL,
             })
             .option('json-standard', {
               type: 'string',
