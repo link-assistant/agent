@@ -1651,7 +1651,7 @@ export namespace Provider {
       priority = priority.filter((m) => m !== 'claude-haiku-4.5');
     }
     if (providerID === 'opencode' || providerID === 'local') {
-      priority = ['big-pickle', 'minimax-m2.5-free', 'gpt-5-nano'];
+      priority = ['minimax-m2.5-free', 'gpt-5-nano', 'big-pickle'];
     }
     if (providerID === 'kilo') {
       priority = [
@@ -1679,9 +1679,9 @@ export namespace Provider {
 
   const priority = [
     'glm-5-free',
-    'big-pickle',
     'minimax-m2.5-free',
     'gpt-5-nano',
+    'big-pickle',
     'gpt-5',
     'claude-sonnet-4',
     'gemini-3-pro',

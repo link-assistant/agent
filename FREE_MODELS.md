@@ -9,7 +9,7 @@ This document lists all free AI models currently supported by the agent. Free mo
 Use any free model with the `--model` flag:
 
 ```bash
-echo "hello" | agent --model opencode/big-pickle
+echo "hello" | agent --model opencode/minimax-m2.5-free
 ```
 
 ## OpenCode Zen Free Models
@@ -18,21 +18,21 @@ echo "hello" | agent --model opencode/big-pickle
 
 | Model             | Model ID                      | Description                                      |
 | ----------------- | ----------------------------- | ------------------------------------------------ |
-| Big Pickle        | `opencode/big-pickle`         | **Recommended.** Stealth model, free during evaluation period |
-| MiniMax M2.5 Free | `opencode/minimax-m2.5-free`  | Strong general-purpose performance               |
+| MiniMax M2.5 Free | `opencode/minimax-m2.5-free`  | **Recommended.** Strong general-purpose performance |
 | GPT 5 Nano        | `opencode/gpt-5-nano`         | Reliable OpenAI-powered free option              |
+| Big Pickle        | `opencode/big-pickle`         | Stealth model, free during evaluation period     |
 
 ### Usage Examples
 
 ```bash
-# Big Pickle (recommended)
-echo "hello" | agent --model opencode/big-pickle
-
-# MiniMax M2.5 Free
+# MiniMax M2.5 Free (recommended)
 echo "hello" | agent --model opencode/minimax-m2.5-free
 
 # GPT 5 Nano
 echo "hello" | agent --model opencode/gpt-5-nano
+
+# Big Pickle
+echo "hello" | agent --model opencode/big-pickle
 ```
 
 ---
@@ -90,7 +90,7 @@ The following models were previously free but are no longer available:
 
 ### Use OpenCode Zen when:
 - You want the most tested and reliable free models
-- You prefer `big-pickle` as the recommended choice
+- You prefer `minimax-m2.5-free` as the recommended choice
 - You need a simple, curated list of models
 
 ### Use Kilo Gateway when:
@@ -102,8 +102,8 @@ The following models were previously free but are no longer available:
 
 The agent intelligently routes model requests:
 
-- `big-pickle` without provider prefix → OpenCode Zen (`opencode/big-pickle`)
 - `minimax-m2.5-free` without provider prefix → OpenCode Zen (`opencode/minimax-m2.5-free`)
+- `big-pickle` without provider prefix → OpenCode Zen (`opencode/big-pickle`)
 - `kilo/minimax-m2.5-free` explicitly → Kilo Gateway
 
 ---

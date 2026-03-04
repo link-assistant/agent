@@ -20,11 +20,11 @@
 
 > This is the JavaScript/Bun implementation. See also the [Rust implementation](../rust/README.md).
 
-This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/big-pickle` mode with:
+This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/minimax-m2.5-free` mode with:
 
-- ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/big-pickle`
+- ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/minimax-m2.5-free`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
-- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen Big Pickle, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
+- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen MiniMax M2.5 Free, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
 - ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
 - ✅ **Full Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
@@ -169,7 +169,7 @@ echo '{"message":"hi"}' | agent
 **With custom model:**
 
 ```bash
-echo "hi" | agent --model opencode/big-pickle
+echo "hi" | agent --model opencode/minimax-m2.5-free
 ```
 
 ### More Examples
@@ -190,7 +190,7 @@ echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"ls -
 **Using different models:**
 
 ```bash
-# Default model (free Kimi K2.5)
+# Default model (free MiniMax M2.5)
 echo "hi" | agent
 
 # Other free models (in order of recommendation)
@@ -280,7 +280,7 @@ agent [options]
 
 Options:
   --model                        Model to use in format providerID/modelID
-                                 Default: opencode/big-pickle
+                                 Default: opencode/minimax-m2.5-free
   --json-standard                JSON output format standard
                                  Choices: "opencode" (default), "claude" (experimental)
   --use-existing-claude-oauth    Use existing Claude OAuth credentials
