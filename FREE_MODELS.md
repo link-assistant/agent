@@ -2,14 +2,14 @@
 
 This document lists all free AI models currently supported by the agent. Free models require no API key and are available for immediate use.
 
-> **Last Updated:** February 2026
+> **Last Updated:** March 2026
 
 ## Quick Start
 
 Use any free model with the `--model` flag:
 
 ```bash
-echo "hello" | agent --model opencode/kimi-k2.5-free
+echo "hello" | agent --model opencode/minimax-m2.5-free
 ```
 
 ## OpenCode Zen Free Models
@@ -18,18 +18,14 @@ echo "hello" | agent --model opencode/kimi-k2.5-free
 
 | Model             | Model ID                      | Description                                      |
 | ----------------- | ----------------------------- | ------------------------------------------------ |
-| Kimi K2.5 Free    | `opencode/kimi-k2.5-free`     | **Recommended.** Best free model for coding tasks |
-| MiniMax M2.5 Free | `opencode/minimax-m2.5-free`  | Strong general-purpose performance               |
+| MiniMax M2.5 Free | `opencode/minimax-m2.5-free`  | **Recommended.** Strong general-purpose performance |
 | GPT 5 Nano        | `opencode/gpt-5-nano`         | Reliable OpenAI-powered free option              |
 | Big Pickle        | `opencode/big-pickle`         | Stealth model, free during evaluation period     |
 
 ### Usage Examples
 
 ```bash
-# Kimi K2.5 Free (recommended)
-echo "hello" | agent --model opencode/kimi-k2.5-free
-
-# MiniMax M2.5 Free
+# MiniMax M2.5 Free (recommended)
 echo "hello" | agent --model opencode/minimax-m2.5-free
 
 # GPT 5 Nano
@@ -81,6 +77,7 @@ The following models were previously free but are no longer available:
 
 | Model              | Former Model ID               | Status                                   |
 | ------------------ | ----------------------------- | ---------------------------------------- |
+| Kimi K2.5 Free     | `opencode/kimi-k2.5-free`     | Removed from OpenCode Zen (March 2026) — see [issue #208](https://github.com/link-assistant/agent/issues/208) |
 | Grok Code Fast 1   | `opencode/grok-code`          | Discontinued January 2026                |
 | MiniMax M2.1 Free  | `opencode/minimax-m2.1-free`  | Replaced by `opencode/minimax-m2.5-free` |
 | GLM 4.7 Free       | `opencode/glm-4.7-free`       | No longer free on OpenCode Zen           |
@@ -93,7 +90,7 @@ The following models were previously free but are no longer available:
 
 ### Use OpenCode Zen when:
 - You want the most tested and reliable free models
-- You prefer `kimi-k2.5-free` as the recommended choice
+- You prefer `minimax-m2.5-free` as the recommended choice
 - You need a simple, curated list of models
 
 ### Use Kilo Gateway when:
@@ -106,6 +103,7 @@ The following models were previously free but are no longer available:
 The agent intelligently routes model requests:
 
 - `minimax-m2.5-free` without provider prefix → OpenCode Zen (`opencode/minimax-m2.5-free`)
+- `big-pickle` without provider prefix → OpenCode Zen (`opencode/big-pickle`)
 - `kilo/minimax-m2.5-free` explicitly → Kilo Gateway
 
 ---

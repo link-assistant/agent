@@ -30,11 +30,11 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 | Model                                    | Model ID                      | Input  | Output | Cached Read | Cached Write |
 | ---------------------------------------- | ----------------------------- | ------ | ------ | ----------- | ------------ |
 | **Free Models (Output: $0.00)**          |
-| Kimi K2.5 Free (recommended)             | `opencode/kimi-k2.5-free`     | Free   | Free   | Free        | -            |
-| MiniMax M2.5 Free                        | `opencode/minimax-m2.5-free`  | Free   | Free   | Free        | -            |
+| MiniMax M2.5 Free (recommended)          | `opencode/minimax-m2.5-free`  | Free   | Free   | Free        | -            |
 | GPT 5 Nano                               | `opencode/gpt-5-nano`         | Free   | Free   | Free        | -            |
 | Big Pickle                               | `opencode/big-pickle`         | Free   | Free   | Free        | -            |
 | **Discontinued Free Models**             |
+| ~~Kimi K2.5 Free~~                       | `opencode/kimi-k2.5-free`     | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | ~~Grok Code Fast 1~~                     | `opencode/grok-code`          | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | ~~MiniMax M2.1 Free~~                    | `opencode/minimax-m2.1-free`  | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | ~~GLM 4.7 Free~~                         | `opencode/glm-4.7-free`       | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
@@ -58,38 +58,41 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 
 ## Default Model
 
-The default model is **Kimi K2.5 Free** (`opencode/kimi-k2.5-free`), which is completely free and recommended for coding tasks.
+The default model is **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`), which is completely free and recommended for coding tasks.
+
+> **Note:** Big Pickle (`opencode/big-pickle`) was previously the default free model, but MiniMax M2.5 Free is now the recommended choice.
+
+> **Note:** Kimi K2.5 Free (`opencode/kimi-k2.5-free`) was previously the default free model, but it was removed from the OpenCode Zen provider in March 2026. See [Case Study #208](docs/case-studies/issue-208/README.md) for details.
 
 > **Note:** Grok Code Fast 1 (`opencode/grok-code`) was previously the default free model, but xAI ended the free tier for this model on OpenCode Zen in January 2026. **The grok-code model is no longer included as a free model in OpenCode Zen subscription.** See [Case Study #133](docs/case-studies/issue-133/README.md) for details.
 
 ### Free Models (in order of recommendation)
 
-1. **Kimi K2.5 Free** (`opencode/kimi-k2.5-free`) - Best recommended free model
-2. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Good alternative (upgraded from M2.1)
-3. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable free option
-4. **Big Pickle** (`opencode/big-pickle`) - Basic free model
+1. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Recommended free model (strong general-purpose performance)
+2. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable OpenAI-powered free option
+3. **Big Pickle** (`opencode/big-pickle`) - Stealth model, free during evaluation
 
-> **Note:** `opencode/minimax-m2.1-free` and `opencode/glm-4.7-free` are no longer available as free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
+> **Note:** `opencode/kimi-k2.5-free`, `opencode/minimax-m2.1-free`, and `opencode/glm-4.7-free` are no longer available as free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
 
 ## Usage Examples
 
 ### Using the Default Model (Free)
 
 ```bash
-# Uses opencode/kimi-k2.5-free by default
+# Uses opencode/minimax-m2.5-free by default
 echo "hello" | agent
 ```
 
 ### Using Other Free Models
 
 ```bash
-# MiniMax M2.5 Free
+# MiniMax M2.5 Free (recommended free)
 echo "hello" | agent --model opencode/minimax-m2.5-free
 
 # GPT 5 Nano
 echo "hello" | agent --model opencode/gpt-5-nano
 
-# Big Pickle (basic free)
+# Big Pickle
 echo "hello" | agent --model opencode/big-pickle
 ```
 

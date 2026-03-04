@@ -99,7 +99,7 @@ export const TaskTool = Tool.define('task', async () => {
 
       const model = agent.model ??
         parentModel ?? {
-          modelID: 'kimi-k2.5-free',
+          modelID: 'minimax-m2.5-free',
           providerID: 'opencode',
         };
 
