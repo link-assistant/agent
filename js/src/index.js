@@ -334,7 +334,12 @@ async function runAgentMode(argv, request) {
     },
   });
 
-  // Explicitly exit to ensure process terminates
+  // Explicitly exit to ensure process terminates (#213)
+  Log.Default.info(() => ({
+    message: 'Agent exiting',
+    hasError,
+    uptimeSeconds: Math.round(process.uptime()),
+  }));
   process.exit(hasError ? 1 : 0);
 }
 
@@ -412,7 +417,12 @@ async function runContinuousAgentMode(argv) {
     },
   });
 
-  // Explicitly exit to ensure process terminates
+  // Explicitly exit to ensure process terminates (#213)
+  Log.Default.info(() => ({
+    message: 'Agent exiting',
+    hasError,
+    uptimeSeconds: Math.round(process.uptime()),
+  }));
   process.exit(hasError ? 1 : 0);
 }
 
