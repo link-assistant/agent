@@ -835,3 +835,179 @@ describe('Session.getUsage() - nested token extraction (issue #127)', () => {
     expect(Number.isFinite(result.cost)).toBe(true);
   });
 });
+
+/**
+ * Unit tests for issue #211 - anthropic provider metadata fallback
+ * When using opencode provider with @ai-sdk/anthropic SDK, the standard AI SDK
+ * usage object is empty but providerMetadata.anthropic.usage has valid token data.
+ *
+ * @see https://github.com/link-assistant/agent/issues/211
+ */
+describe('Session.getUsage() - anthropic metadata fallback (issue #211)', () => {
+  const mockModel = {
+    id: 'minimax-m2.5-free',
+    name: 'MiniMax M2.5 Free',
+    provider: 'opencode',
+    cost: {
+      input: 0,
+      output: 0,
+      cache_read: 0,
+      cache_write: 0,
+    },
+  };
+
+  test('falls back to anthropic metadata when standard usage is empty (undefined tokens)', () => {
+    // This is the exact scenario from issue #211: opencode/minimax-m2.5-free
+    // Standard usage has undefined inputTokens/outputTokens
+    // But providerMetadata.anthropic.usage has valid data
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: undefined as any,
+        outputTokens: undefined as any,
+      },
+      metadata: {
+        anthropic: {
+          usage: {
+            input_tokens: 14533,
+            output_tokens: 164,
+          },
+        },
+      },
+    });
+
+    expect(result.tokens.input).toBe(14533);
+    expect(result.tokens.output).toBe(164);
+  });
+
+  test('falls back to anthropic metadata when standard usage has zero tokens', () => {
+    // Some providers set tokens to 0 instead of undefined
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      metadata: {
+        anthropic: {
+          usage: {
+            input_tokens: 5000,
+            output_tokens: 200,
+          },
+        },
+      },
+    });
+
+    expect(result.tokens.input).toBe(5000);
+    expect(result.tokens.output).toBe(200);
+  });
+
+  test('includes cache_read_input_tokens from anthropic metadata', () => {
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: undefined as any,
+        outputTokens: undefined as any,
+      },
+      metadata: {
+        anthropic: {
+          usage: {
+            input_tokens: 10000,
+            output_tokens: 300,
+            cache_read_input_tokens: 5000,
+          },
+        },
+      },
+    });
+
+    expect(result.tokens.input).toBe(10000);
+    expect(result.tokens.output).toBe(300);
+    expect(result.tokens.cache.read).toBe(5000);
+  });
+
+  test('prefers standard usage when it has valid data over anthropic metadata', () => {
+    // When standard usage has real data, it should NOT fall back to anthropic metadata
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: 1000,
+        outputTokens: 500,
+      },
+      metadata: {
+        anthropic: {
+          usage: {
+            input_tokens: 9999,
+            output_tokens: 8888,
+          },
+        },
+      },
+    });
+
+    // Should use standard usage, not anthropic metadata
+    expect(result.tokens.input).toBe(1000);
+    expect(result.tokens.output).toBe(500);
+  });
+
+  test('does not crash when anthropic metadata is missing', () => {
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: undefined as any,
+        outputTokens: undefined as any,
+      },
+      // No metadata at all
+    });
+
+    expect(result.tokens.input).toBe(0);
+    expect(result.tokens.output).toBe(0);
+  });
+
+  test('does not crash when anthropic metadata has no usage', () => {
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: undefined as any,
+        outputTokens: undefined as any,
+      },
+      metadata: {
+        anthropic: {
+          // No usage field
+        },
+      },
+    });
+
+    expect(result.tokens.input).toBe(0);
+    expect(result.tokens.output).toBe(0);
+  });
+
+  test('prefers openrouter metadata over anthropic metadata', () => {
+    // If both openrouter and anthropic metadata are present, openrouter should win
+    // openrouter uses camelCase keys: promptTokens, completionTokens
+    const result = Session.getUsage({
+      model: mockModel as any,
+      usage: {
+        inputTokens: undefined as any,
+        outputTokens: undefined as any,
+      },
+      metadata: {
+        openrouter: {
+          usage: {
+            promptTokens: 7777,
+            completionTokens: 333,
+            totalTokens: 8110,
+          },
+        },
+        anthropic: {
+          usage: {
+            input_tokens: 9999,
+            output_tokens: 8888,
+          },
+        },
+      },
+    });
+
+    // Should use openrouter metadata (it's checked first in the code)
+    expect(result.tokens.input).toBe(7777);
+    expect(result.tokens.output).toBe(333);
+  });
+});
