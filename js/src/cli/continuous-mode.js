@@ -377,15 +377,24 @@ export async function runContinuousServerMode(
 
     // Wait for stdin to end (EOF or close)
     await new Promise((resolve) => {
+      let resolved = false;
+      const safeResolve = () => {
+        if (!resolved) {
+          resolved = true;
+          resolve();
+        }
+      };
+
       const checkRunning = setInterval(() => {
         if (!stdinReader.isRunning()) {
           clearInterval(checkRunning);
           // Wait for any pending messages to complete
           const waitForPending = () => {
             if (!isProcessing && pendingMessages.length === 0) {
-              resolve();
+              safeResolve();
             } else {
-              setTimeout(waitForPending, 100);
+              // Use .unref() to prevent keeping the event loop alive (#213)
+              setTimeout(waitForPending, 100).unref();
             }
           };
           waitForPending();
@@ -394,8 +403,8 @@ export async function runContinuousServerMode(
       // Allow process to exit naturally when no other work remains
       checkRunning.unref();
 
-      // Also handle SIGINT
-      process.on('SIGINT', () => {
+      // Handle SIGINT — use 'once' to avoid accumulating handlers (#213)
+      const sigintHandler = () => {
         outputStatus(
           {
             type: 'status',
@@ -404,8 +413,9 @@ export async function runContinuousServerMode(
           compactJson
         );
         clearInterval(checkRunning);
-        resolve();
-      });
+        safeResolve();
+      };
+      process.once('SIGINT', sigintHandler);
     });
   } finally {
     if (stdinReader) {
@@ -596,15 +606,24 @@ export async function runContinuousDirectMode(
 
     // Wait for stdin to end (EOF or close)
     await new Promise((resolve) => {
+      let resolved = false;
+      const safeResolve = () => {
+        if (!resolved) {
+          resolved = true;
+          resolve();
+        }
+      };
+
       const checkRunning = setInterval(() => {
         if (!stdinReader.isRunning()) {
           clearInterval(checkRunning);
           // Wait for any pending messages to complete
           const waitForPending = () => {
             if (!isProcessing && pendingMessages.length === 0) {
-              resolve();
+              safeResolve();
             } else {
-              setTimeout(waitForPending, 100);
+              // Use .unref() to prevent keeping the event loop alive (#213)
+              setTimeout(waitForPending, 100).unref();
             }
           };
           waitForPending();
@@ -613,8 +632,8 @@ export async function runContinuousDirectMode(
       // Allow process to exit naturally when no other work remains
       checkRunning.unref();
 
-      // Also handle SIGINT
-      process.on('SIGINT', () => {
+      // Handle SIGINT — use 'once' to avoid accumulating handlers (#213)
+      const sigintHandler = () => {
         outputStatus(
           {
             type: 'status',
@@ -623,8 +642,9 @@ export async function runContinuousDirectMode(
           compactJson
         );
         clearInterval(checkRunning);
-        resolve();
-      });
+        safeResolve();
+      };
+      process.once('SIGINT', sigintHandler);
     });
   } finally {
     if (stdinReader) {

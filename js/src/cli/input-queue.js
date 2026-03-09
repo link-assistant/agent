@@ -178,11 +178,13 @@ export function createContinuousStdinReader(options = {}) {
     isRunning = false;
   };
 
+  const handleError = () => {
+    isRunning = false;
+  };
+
   process.stdin.on('data', handleData);
   process.stdin.on('end', handleEnd);
-  process.stdin.on('error', () => {
-    isRunning = false;
-  });
+  process.stdin.on('error', handleError);
 
   return {
     queue: inputQueue,
@@ -191,6 +193,7 @@ export function createContinuousStdinReader(options = {}) {
       inputQueue.flush();
       process.stdin.removeListener('data', handleData);
       process.stdin.removeListener('end', handleEnd);
+      process.stdin.removeListener('error', handleError);
     },
     isRunning: () => isRunning,
   };

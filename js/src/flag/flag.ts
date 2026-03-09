@@ -167,6 +167,19 @@ export namespace Flag {
     return val ? parseInt(val, 10) : 600_000;
   }
 
+  // Process lifetime timeout - maximum time in seconds before the process force-exits
+  // This prevents zombie/leaked processes from accumulating when tests or parent processes
+  // fail to clean up child agent processes. Default: 0 (disabled).
+  // Set AGENT_PROCESS_LIFETIME_TIMEOUT=1800 for 30-minute max lifetime.
+  // See: https://github.com/link-assistant/agent/issues/213
+  export function PROCESS_LIFETIME_TIMEOUT(): number {
+    const val = getEnv(
+      'LINK_ASSISTANT_AGENT_PROCESS_LIFETIME_TIMEOUT',
+      'AGENT_PROCESS_LIFETIME_TIMEOUT'
+    );
+    return val ? parseInt(val, 10) : 0; // Default: disabled (0 = no timeout)
+  }
+
   // Compact JSON mode - output JSON on single lines (NDJSON format)
   // Enabled by AGENT_CLI_COMPACT env var or --compact-json flag
   // Uses getter to check env var at runtime for tests

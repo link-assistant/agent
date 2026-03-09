@@ -55,6 +55,31 @@ try {
 // Track if any errors occurred during execution
 let hasError = false;
 
+// Process lifetime watchdog — prevents zombie processes from accumulating.
+// When AGENT_PROCESS_LIFETIME_TIMEOUT is set (in seconds), the process will
+// force-exit after that duration. The timer is unref'd so it won't prevent
+// normal exit. See: https://github.com/link-assistant/agent/issues/213
+const processLifetimeTimeout = Flag.PROCESS_LIFETIME_TIMEOUT();
+if (processLifetimeTimeout > 0) {
+  const timer = setTimeout(() => {
+    try {
+      const uptimeSeconds = Math.round(process.uptime());
+      process.stderr.write(
+        `${JSON.stringify({
+          type: 'error',
+          errorType: 'ProcessLifetimeTimeout',
+          message: `Process exceeded maximum lifetime of ${processLifetimeTimeout}s (uptime: ${uptimeSeconds}s). Force exiting to prevent zombie process.`,
+          issue: 'https://github.com/link-assistant/agent/issues/213',
+        })}\n`
+      );
+    } catch (_e) {
+      // ignore
+    }
+    process.exit(2);
+  }, processLifetimeTimeout * 1000);
+  timer.unref();
+}
+
 // Intercept stderr writes to ensure ALL output is JSON (#200)
 // Bun runtime may print errors in plain text format (e.g., stack traces with source code)
 // This interceptor wraps any non-JSON stderr output in a JSON envelope
