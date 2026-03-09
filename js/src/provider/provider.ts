@@ -1272,22 +1272,26 @@ export namespace Provider {
             }
           }
 
-          log.info(() => ({
-            message: 'HTTP request',
+          // Use direct (non-lazy) logging for HTTP request/response to ensure output
+          // is not lost when piped through external process wrappers (e.g., solve.mjs).
+          // The verbose check is already done above, so lazy evaluation is not needed here.
+          // See: https://github.com/link-assistant/agent/issues/211
+          log.info('HTTP request', {
             providerID: provider.id,
             method,
             url,
             headers: sanitizedHeaders,
             bodyPreview,
-          }));
+          });
 
           const startMs = Date.now();
           try {
             const response = await innerFetch(input, init);
             const durationMs = Date.now() - startMs;
 
-            log.info(() => ({
-              message: 'HTTP response',
+            // Use direct (non-lazy) logging to ensure HTTP response details are captured
+            // See: https://github.com/link-assistant/agent/issues/211
+            log.info('HTTP response', {
               providerID: provider.id,
               method,
               url,
@@ -1295,7 +1299,7 @@ export namespace Provider {
               statusText: response.statusText,
               durationMs,
               responseHeaders: Object.fromEntries(response.headers.entries()),
-            }));
+            });
 
             // Log response body for debugging provider failures
             // For streaming responses (SSE/event-stream), tee() the stream so the AI SDK
@@ -1335,14 +1339,15 @@ export namespace Provider {
                         }
                       }
                     }
-                    log.info(() => ({
-                      message: 'HTTP response body (stream)',
+                    // Use direct (non-lazy) logging for stream body
+                    // See: https://github.com/link-assistant/agent/issues/211
+                    log.info('HTTP response body (stream)', {
                       providerID: provider.id,
                       url,
                       bodyPreview: truncated
                         ? bodyPreview + `... [truncated]`
                         : bodyPreview,
-                    }));
+                    });
                   } catch {
                     // Ignore logging errors — do not affect the SDK stream
                   }
@@ -1362,12 +1367,13 @@ export namespace Provider {
                     ? bodyText.slice(0, responseBodyMaxChars) +
                       `... [truncated, total ${bodyText.length} chars]`
                     : bodyText;
-                log.info(() => ({
-                  message: 'HTTP response body',
+                // Use direct (non-lazy) logging for non-streaming body
+                // See: https://github.com/link-assistant/agent/issues/211
+                log.info('HTTP response body', {
                   providerID: provider.id,
                   url,
                   bodyPreview,
-                }));
+                });
                 return new Response(bodyText, {
                   status: response.status,
                   statusText: response.statusText,
@@ -1379,8 +1385,9 @@ export namespace Provider {
             return response;
           } catch (error) {
             const durationMs = Date.now() - startMs;
-            log.error(() => ({
-              message: 'HTTP request failed',
+            // Use direct (non-lazy) logging for error path
+            // See: https://github.com/link-assistant/agent/issues/211
+            log.error('HTTP request failed', {
               providerID: provider.id,
               method,
               url,
@@ -1389,7 +1396,7 @@ export namespace Provider {
                 error instanceof Error
                   ? { name: error.name, message: error.message }
                   : String(error),
-            }));
+            });
             throw error;
           }
         };
