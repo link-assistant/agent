@@ -630,9 +630,14 @@ export namespace Session {
           }
         | undefined;
 
+      // Check if standard usage has valid data (inputTokens or outputTokens defined)
+      // Also check for zero-valued tokens (some providers set them to 0 instead of undefined)
       const standardUsageIsEmpty =
-        input.usage.inputTokens === undefined &&
-        input.usage.outputTokens === undefined;
+        (input.usage.inputTokens === undefined &&
+          input.usage.outputTokens === undefined) ||
+        (input.usage.inputTokens === 0 &&
+          input.usage.outputTokens === 0 &&
+          !input.usage.totalTokens);
 
       // If standard usage is empty but openrouter metadata has usage, use it as source
       let effectiveUsage = input.usage;
@@ -656,6 +661,41 @@ export namespace Session {
           reasoningTokens:
             openrouterUsage.completionTokensDetails?.reasoningTokens ?? 0,
         };
+      }
+
+      // If still empty, try providerMetadata.anthropic.usage as fallback
+      // Some providers (e.g., opencode using @ai-sdk/anthropic) return usage in
+      // Anthropic-specific metadata with snake_case keys (input_tokens, output_tokens)
+      // while the standard AI SDK usage object remains empty.
+      // See: https://github.com/link-assistant/agent/issues/211
+      if (standardUsageIsEmpty && !openrouterUsage) {
+        const anthropicUsage = input.metadata?.['anthropic']?.['usage'] as
+          | {
+              input_tokens?: number;
+              output_tokens?: number;
+              cache_creation_input_tokens?: number;
+              cache_read_input_tokens?: number;
+            }
+          | undefined;
+
+        if (
+          anthropicUsage &&
+          (anthropicUsage.input_tokens || anthropicUsage.output_tokens)
+        ) {
+          if (Flag.OPENCODE_VERBOSE) {
+            log.debug(() => ({
+              message:
+                'Standard usage empty, falling back to anthropic provider metadata',
+              anthropicUsage: JSON.stringify(anthropicUsage),
+            }));
+          }
+          effectiveUsage = {
+            ...input.usage,
+            inputTokens: anthropicUsage.input_tokens ?? 0,
+            outputTokens: anthropicUsage.output_tokens ?? 0,
+            cachedInputTokens: anthropicUsage.cache_read_input_tokens ?? 0,
+          };
+        }
       }
 
       // Extract top-level cachedInputTokens
