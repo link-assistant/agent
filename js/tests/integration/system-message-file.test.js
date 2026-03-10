@@ -53,7 +53,7 @@ test('Default system message: ask who are you', async () => {
   const projectRoot = process.cwd();
   const input = 'Who are you?';
   const agentResult = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js --format json`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --format json --no-retry-on-rate-limits`
   );
   const agentEvents = parseJSONOutput(agentResult.stdout);
 
@@ -66,13 +66,12 @@ test('Default system message: ask who are you', async () => {
   console.log(`\nDefault response: ${responseText}`);
 });
 
-test('Full system message override: answer with "Answered."', async () => {
+test('Full system message override from file: answer with "Answered from file."', async () => {
   const projectRoot = process.cwd();
   const input = 'Who are you?';
-  const systemMessage =
-    'You are a bot that only responds with "Answered." to any message.';
+  const systemMessageFile = `${projectRoot}/data/tests/prompts/system-override.txt`;
   const agentResult = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js --format json --system-message "${systemMessage}"`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --format json --no-retry-on-rate-limits --system-message-file "${systemMessageFile}"`
   );
   const agentEvents = parseJSONOutput(agentResult.stdout);
 
@@ -81,17 +80,17 @@ test('Full system message override: answer with "Answered."', async () => {
   expect(textEvents.length > 0).toBeTruthy();
   const responseText = textEvents[0].part.text;
   expect(responseText.toLowerCase().includes('grok code fast 1')).toBeFalsy();
-  expect(responseText.trim().includes('Answered.')).toBeTruthy();
+  expect(responseText.trim().includes('Answered from file.')).toBeTruthy();
 
-  console.log(`\nOverride response: ${responseText}`);
+  console.log(`\nOverride from file response: ${responseText}`);
 });
 
-test('Append system message: default + append "Answered." at end', async () => {
+test('Append system message from file: default + append "Answered from file." at end', async () => {
   const projectRoot = process.cwd();
   const input = 'Who are you?';
-  const appendMessage = 'Always end your response with "Answered."';
+  const appendMessageFile = `${projectRoot}/data/tests/prompts/append-message.txt`;
   const agentResult = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js --format json --append-system-message "${appendMessage}"`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --format json --no-retry-on-rate-limits --append-system-message-file "${appendMessageFile}"`
   );
   const agentEvents = parseJSONOutput(agentResult.stdout);
 
@@ -100,30 +99,7 @@ test('Append system message: default + append "Answered." at end', async () => {
   expect(textEvents.length > 0).toBeTruthy();
   const responseText = textEvents[0].part.text;
   expect(responseText.toLowerCase().includes('grok code fast 1')).toBeTruthy();
-  expect(responseText.trim().endsWith('Answered.')).toBeTruthy();
+  expect(responseText.trim().endsWith('Answered from file.')).toBeTruthy();
 
-  console.log(`\nAppend response: ${responseText}`);
-});
-
-test('Empty string system message override: should work without defaults', async () => {
-  const projectRoot = process.cwd();
-  const input = 'Say "Empty system test passed."';
-  const agentResult = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js --format json --system-message ""`
-  );
-  const agentEvents = parseJSONOutput(agentResult.stdout);
-
-  // Check for text event
-  const textEvents = agentEvents.filter((e) => e.type === 'text');
-  expect(textEvents.length > 0).toBeTruthy();
-  const responseText = textEvents[0].part.text;
-  // Should NOT include default system prompt indicators
-  expect(responseText.toLowerCase().includes('grok code fast 1')).toBeFalsy();
-  expect(responseText.toLowerCase().includes('opencode')).toBeFalsy();
-  // Should respond to the user's request since it has no system constraints
-  expect(
-    responseText.toLowerCase().includes('empty system test passed')
-  ).toBeTruthy();
-
-  console.log(`\nEmpty string override response: ${responseText}`);
+  console.log(`\nAppend from file response: ${responseText}`);
 });

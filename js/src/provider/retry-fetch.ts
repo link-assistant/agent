@@ -370,6 +370,16 @@ export namespace RetryFetch {
           return response;
         }
 
+        // If retry on rate limits is disabled, return 429 immediately
+        if (!Flag.RETRY_ON_RATE_LIMITS) {
+          log.info(() => ({
+            message:
+              'rate limit retry disabled (--no-retry-on-rate-limits), returning 429',
+            sessionID,
+          }));
+          return response;
+        }
+
         // Check if we're within the global retry timeout
         const elapsed = Date.now() - startTime;
         if (elapsed >= maxRetryTimeout) {

@@ -55,7 +55,7 @@ describe('OpenCode JSON Standard', () => {
   test('default output format is opencode (pretty-printed JSON)', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -77,13 +77,13 @@ describe('OpenCode JSON Standard', () => {
 
     // Get default output
     const defaultResult = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`
     );
     const defaultEvents = parseJSONOutput(defaultResult.stdout);
 
     // Get explicit opencode output
     const opencodeResult = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const opencodeEvents = parseJSONOutput(opencodeResult.stdout);
 
@@ -99,7 +99,7 @@ describe('OpenCode JSON Standard', () => {
   test('opencode format includes required fields', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -123,7 +123,7 @@ describe('OpenCode JSON Standard', () => {
   test('opencode format event types', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -155,7 +155,7 @@ describe('OpenCode JSON Standard', () => {
   test('opencode format text event has text content', async () => {
     const input = '{"message":"2+2?"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -176,7 +176,7 @@ describe('OpenCode JSON Standard', () => {
   test('opencode format step_start has part with id', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -192,7 +192,7 @@ describe('OpenCode JSON Standard', () => {
   test('opencode format step_finish has part with id', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -209,7 +209,7 @@ describe('OpenCode JSON Standard', () => {
     const input = '{"message":"hi"}';
     const beforeTime = Date.now();
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const afterTime = Date.now();
     const events = parseJSONOutput(result.stdout);
@@ -227,7 +227,7 @@ describe('OpenCode JSON Standard', () => {
   test('opencode format is pretty-printed (multi-line JSON)', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const stdout = result.stdout;
 

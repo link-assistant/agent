@@ -143,7 +143,7 @@ describe('Echo provider (dry-run mode)', () => {
   test('dry-run mode echoes back "hi" message', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -161,7 +161,7 @@ describe('Echo provider (dry-run mode)', () => {
   test('dry-run mode echoes back "How are you?" message', async () => {
     const input = '{"message":"How are you?"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -179,7 +179,7 @@ describe('Echo provider (dry-run mode)', () => {
   test('dry-run mode echoes back plain text input', async () => {
     const input = 'Hello, world!';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -197,7 +197,7 @@ describe('Echo provider (dry-run mode)', () => {
   test('dry-run mode produces complete event structure', async () => {
     const input = '{"message":"test"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -235,7 +235,7 @@ describe('Echo provider (dry-run mode)', () => {
   test('dry-run mode uses link-assistant/echo provider', async () => {
     const input = '{"message":"test provider check"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -250,7 +250,7 @@ describe('Echo provider (dry-run mode)', () => {
   test('dry-run mode incurs zero cost', async () => {
     const input = '{"message":"cost check"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -274,7 +274,7 @@ describe('Echo provider (dry-run mode)', () => {
 
     for (const input of inputs) {
       const result = await sh(
-        `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+        `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
       );
       const events = parseJSONOutput(result.stdout);
 
@@ -299,7 +299,7 @@ describe('Echo provider (dry-run mode)', () => {
       metadata: { test: true, id: 123 },
     });
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --dry-run --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --dry-run --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -319,7 +319,7 @@ describe('Echo provider (dry-run mode)', () => {
   test('dry-run mode handles empty message', async () => {
     const input = '{"message":""}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 
@@ -338,7 +338,7 @@ describe('Echo provider (dry-run mode)', () => {
     const longMessage = 'A'.repeat(1000);
     const input = `{"message":"${longMessage}"}`;
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const events = parseJSONOutput(result.stdout);
 

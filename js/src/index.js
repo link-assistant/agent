@@ -718,6 +718,12 @@ async function main() {
               description:
                 'Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)',
             })
+            .option('retry-on-rate-limits', {
+              type: 'boolean',
+              description:
+                'Retry AI completions API requests when rate limited (HTTP 429). Use --no-retry-on-rate-limits in integration tests to fail fast instead of waiting.',
+              default: true,
+            })
             .option('output-response-model', {
               type: 'boolean',
               description: 'Include model info in step_finish output',
@@ -911,6 +917,10 @@ async function main() {
         }
         if (argv['summarize-session'] === true) {
           Flag.setSummarizeSession(true);
+        }
+        // retry-on-rate-limits is enabled by default, only set if explicitly disabled
+        if (argv['retry-on-rate-limits'] === false) {
+          Flag.setRetryOnRateLimits(false);
         }
         await Log.init({
           print: Flag.OPENCODE_VERBOSE,

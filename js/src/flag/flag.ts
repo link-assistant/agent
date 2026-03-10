@@ -194,4 +194,13 @@ export namespace Flag {
   export function setCompactJson(value: boolean) {
     _compactJson = value;
   }
+
+  // Retry on rate limits - when disabled, 429 responses are returned immediately without retrying
+  // Enabled by default. Use --no-retry-on-rate-limits in integration tests to avoid waiting for rate limits.
+  export let RETRY_ON_RATE_LIMITS = true;
+
+  // Allow setting retry-on-rate-limits mode programmatically (e.g., from CLI --retry-on-rate-limits flag)
+  export function setRetryOnRateLimits(value: boolean) {
+    RETRY_ON_RATE_LIMITS = value;
+  }
 }

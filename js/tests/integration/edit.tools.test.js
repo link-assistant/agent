@@ -22,9 +22,13 @@ if (!existsSync(tmpDir)) {
 // Helper to run agent-cli using spawn
 async function runAgentCli(input) {
   return new Promise((resolve, reject) => {
-    const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+    const proc = spawn(
+      'bun',
+      ['run', join(process.cwd(), 'src/index.js'), '--no-retry-on-rate-limits'],
+      {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      }
+    );
 
     let stdout = '';
     let stderr = '';
@@ -200,7 +204,7 @@ test('Agent-cli edit tool produces 100% compatible JSON output with OpenCode', a
     // Get agent-cli output (using different file)
     // const projectRoot = process.cwd()
     const agentInput = `{"message":"edit file","tools":[{"name":"edit","params":{"filePath":"${agentFileName}","oldString":"Hello","newString":"Hi"}}]}`;
-    // const agentResult = await $`echo ${agentInput} | bun run ${projectRoot}/src/index.js`.quiet()
+    // const agentResult = await $`echo ${agentInput} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet()
     const agentResult = await runAgentCli(agentInput);
     const agentLines = agentResult.stdout
       .toString()

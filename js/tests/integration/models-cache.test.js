@@ -27,7 +27,7 @@ describe('ModelsDev cache handling', () => {
 
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --dry-run --model link-assistant/echo --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --dry-run --model link-assistant/echo --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const output = result.stdout + result.stderr;
 
@@ -44,7 +44,7 @@ describe('ModelsDev cache handling', () => {
 
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --dry-run --no-always-accept-stdin`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --dry-run --no-always-accept-stdin --no-retry-on-rate-limits`
     );
     const output = result.stdout + result.stderr;
 

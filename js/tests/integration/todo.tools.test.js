@@ -121,7 +121,7 @@ test('Agent-cli todowrite and todoread tools produce 100% compatible JSON output
   // Get agent-cli output
   const projectRoot = process.cwd();
   const agentResult =
-    await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+    await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
   const agentLines = agentResult.stdout
     .toString()
     .trim()

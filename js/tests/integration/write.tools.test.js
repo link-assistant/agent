@@ -1,56 +1,28 @@
 import { test, expect, setDefaultTimeout } from 'bun:test';
-import { $ } from 'bun';
-import { spawn } from 'child_process';
-import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
-import { join } from 'path';
-
-// Ensure tmp directory exists
-const TMP_DIR = join(process.cwd(), 'tmp');
-if (!existsSync(TMP_DIR)) {
-  mkdirSync(TMP_DIR, { recursive: true });
-}
 
 // Increase default timeout to 60 seconds for these tests
 setDefaultTimeout(60000);
+import { $ } from 'bun';
+import { spawn } from 'child_process';
+import { readFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
+import { join } from 'path';
 
-// Helper function to parse JSON output (handles pretty-printed format)
-function parseJSONOutput(stdout) {
-  const trimmed = stdout.trim();
-  const events = [];
-  let currentJson = '';
-  let braceCount = 0;
-
-  for (const line of trimmed.split('\n')) {
-    for (const char of line) {
-      if (char === '{') {
-        braceCount++;
-      }
-      if (char === '}') {
-        braceCount--;
-      }
-      currentJson += char;
-
-      if (braceCount === 0 && currentJson.trim()) {
-        try {
-          events.push(JSON.parse(currentJson.trim()));
-          currentJson = '';
-        } catch (_e) {
-          // Continue accumulating
-        }
-      }
-    }
-    currentJson += '\n';
-  }
-
-  return events;
+// Ensure tmp directory exists
+const tmpDir = join(process.cwd(), 'tmp');
+if (!existsSync(tmpDir)) {
+  mkdirSync(tmpDir, { recursive: true });
 }
 
 // Helper to run agent-cli using spawn
 async function runAgentCli(input) {
   return new Promise((resolve, reject) => {
-    const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+    const proc = spawn(
+      'bun',
+      ['run', join(process.cwd(), 'src/index.js'), '--no-retry-on-rate-limits'],
+      {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      }
+    );
 
     let stdout = '';
     let stderr = '';
@@ -75,8 +47,8 @@ async function runAgentCli(input) {
   });
 }
 
-// Shared assertion function to validate OpenCode-compatible JSON structure for list tool
-function validateListToolOutput(toolEvent, label) {
+// Shared assertion function to validate OpenCode-compatible JSON structure for write tool
+function validateWriteToolOutput(toolEvent, label) {
   console.log(`\n${label} JSON structure:`);
   console.log(JSON.stringify(toolEvent, null, 2));
 
@@ -96,7 +68,7 @@ function validateListToolOutput(toolEvent, label) {
   expect(toolEvent.part.type).toBe('tool');
   expect(typeof toolEvent.part.callID).toBe('string');
   expect(toolEvent.part.callID.startsWith('call_')).toBeTruthy();
-  expect(toolEvent.part.tool).toBe('list');
+  expect(toolEvent.part.tool).toBe('write');
 
   // Validate state structure
   expect(toolEvent.part.state).toBeTruthy();
@@ -105,16 +77,11 @@ function validateListToolOutput(toolEvent, label) {
 
   // Validate input structure
   expect(toolEvent.part.state.input).toBeTruthy();
-  // Path may be in input or may be empty object if default path used
+  expect(typeof toolEvent.part.state.input.filePath).toBe('string');
+  expect(typeof toolEvent.part.state.input.content).toBe('string');
 
-  // Validate output - OpenCode returns formatted text, not JSON
+  // Validate output
   expect(typeof toolEvent.part.state.output).toBe('string');
-  expect(toolEvent.part.state.output.includes('ls-test')).toBeTruthy();
-
-  // Validate metadata structure
-  expect(toolEvent.part.state.metadata).toBeTruthy();
-  expect(typeof toolEvent.part.state.metadata.count).toBe('number');
-  expect(typeof toolEvent.part.state.metadata.truncated).toBe('boolean');
 
   // Validate timing information
   expect(toolEvent.part.state.time).toBeTruthy();
@@ -128,19 +95,14 @@ function validateListToolOutput(toolEvent, label) {
 }
 
 test('Reference test: OpenCode tool produces expected JSON format', async () => {
-  const timestamp = Date.now();
-  const randomId = Math.random().toString(36).substr(2, 9);
-
-  // Create test files with unique names in tmp directory
-  const file1 = join(TMP_DIR, `ls-test1-${timestamp}-${randomId}.txt`);
-  const file2 = join(TMP_DIR, `ls-test2-${timestamp}-${randomId}.txt`);
-
-  writeFileSync(file1, 'content1');
-  writeFileSync(file2, 'content2');
+  const testFileName = join(
+    tmpDir,
+    `test-write-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.txt`
+  );
 
   try {
-    // Test original OpenCode list tool
-    const input = `{"message":"list files","tools":[{"name":"list","params":{"path":"tmp"}}]}`;
+    // Test original OpenCode write tool
+    const input = `{"message":"write file","tools":[{"name":"write","params":{"filePath":"${testFileName}","content":"Hello World\\nThis is a test file"}}]}`;
     const originalResult =
       await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
         .quiet()
@@ -154,17 +116,21 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
 
     // Find tool_use events
     const originalToolEvents = originalEvents.filter(
-      (e) => e.type === 'tool_use' && e.part.tool === 'list'
+      (e) => e.type === 'tool_use' && e.part.tool === 'write'
     );
 
-    // Should have tool_use events
+    // Should have tool_use events for write
     expect(originalToolEvents.length > 0).toBeTruthy();
 
     // Check the structure matches OpenCode format
     const originalTool = originalToolEvents[0];
 
     // Validate using shared assertion function
-    validateListToolOutput(originalTool, 'OpenCode');
+    validateWriteToolOutput(originalTool, 'OpenCode');
+
+    // Verify the file was actually written
+    const finalContent = readFileSync(testFileName, 'utf-8');
+    expect(finalContent).toBe('Hello World\nThis is a test file');
 
     console.log(
       '✅ Reference test passed - OpenCode produces expected JSON format'
@@ -172,8 +138,7 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
   } finally {
     // Clean up
     try {
-      unlinkSync(file1);
-      unlinkSync(file2);
+      unlinkSync(testFileName);
     } catch (_e) {
       // Ignore cleanup errors
     }
@@ -182,19 +147,14 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
 
 console.log('This establishes the baseline behavior for compatibility testing');
 
-test('Agent-cli list tool produces 100% compatible JSON output with OpenCode', async () => {
-  const timestamp = Date.now();
-  const randomId = Math.random().toString(36).substr(2, 9);
-
-  // Create test files with unique names in tmp directory
-  const file1 = join(TMP_DIR, `ls-test1-${timestamp}-${randomId}.txt`);
-  const file2 = join(TMP_DIR, `ls-test2-${timestamp}-${randomId}.txt`);
-
-  writeFileSync(file1, 'content1');
-  writeFileSync(file2, 'content2');
+test('Agent-cli write tool produces 100% compatible JSON output with OpenCode', async () => {
+  const testFileName = join(
+    tmpDir,
+    `test-write-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.txt`
+  );
 
   try {
-    const input = `{"message":"list files in tmp directory","tools":[{"name":"list","params":{"path":"tmp"}}]}`;
+    const input = `{"message":"write file","tools":[{"name":"write","params":{"filePath":"${testFileName}","content":"Hello World\\nThis is a test file"}}]}`;
 
     // Get OpenCode output
     const originalResult =
@@ -208,19 +168,26 @@ test('Agent-cli list tool produces 100% compatible JSON output with OpenCode', a
       .filter((line) => line.trim());
     const originalEvents = originalLines.map((line) => JSON.parse(line));
     const originalTool = originalEvents.find(
-      (e) => e.type === 'tool_use' && e.part.tool === 'list'
+      (e) => e.type === 'tool_use' && e.part.tool === 'write'
     );
 
     // Get agent-cli output
+    // const projectRoot = process.cwd()
+    // const agentResult = await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet().nothrow()
     const agentResult = await runAgentCli(input);
-    const agentEvents = parseJSONOutput(agentResult.stdout);
+    const agentLines = agentResult.stdout
+      .toString()
+      .trim()
+      .split('\n')
+      .filter((line) => line.trim());
+    const agentEvents = agentLines.map((line) => JSON.parse(line));
     const agentTool = agentEvents.find(
-      (e) => e.type === 'tool_use' && e.part.tool === 'list'
+      (e) => e.type === 'tool_use' && e.part.tool === 'write'
     );
 
     // Validate both outputs using shared assertion function
-    validateListToolOutput(originalTool, 'OpenCode');
-    validateListToolOutput(agentTool, 'Agent-cli');
+    validateWriteToolOutput(originalTool, 'OpenCode');
+    validateWriteToolOutput(agentTool, 'Agent-cli');
 
     // Verify structure has same keys at all levels
     expect(Object.keys(agentTool).sort()).toEqual(
@@ -233,17 +200,24 @@ test('Agent-cli list tool produces 100% compatible JSON output with OpenCode', a
       Object.keys(originalTool.part.state).sort()
     );
 
-    // Input may vary - AI can choose to omit default path or include it
-    // Just verify both have input objects
-    expect(typeof agentTool.part.state.input).toBe('object');
-    expect(typeof originalTool.part.state.input).toBe('object');
+    // Input should match
+    expect(agentTool.part.state.input.filePath).toBe(
+      originalTool.part.state.input.filePath
+    );
+    expect(agentTool.part.state.input.content).toBe(
+      originalTool.part.state.input.content
+    );
 
-    // Output should contain similar file listings
-    expect(agentTool.part.state.output).toBeTruthy();
+    // Output should match (both should be empty string for write tool)
+    expect(agentTool.part.state.output).toBe(originalTool.part.state.output);
 
     expect(Object.keys(agentTool.part.state.time).sort()).toEqual(
       Object.keys(originalTool.part.state.time).sort()
     );
+
+    // Verify the file was actually written by both
+    const finalContent = readFileSync(testFileName, 'utf-8');
+    expect(finalContent).toBe('Hello World\nThis is a test file');
 
     console.log(
       '\n✅ Agent-cli produces 100% OpenCode-compatible JSON structure'
@@ -254,8 +228,7 @@ test('Agent-cli list tool produces 100% compatible JSON output with OpenCode', a
   } finally {
     // Clean up
     try {
-      unlinkSync(file1);
-      unlinkSync(file2);
+      unlinkSync(testFileName);
     } catch (_e) {
       // Ignore cleanup errors
     }

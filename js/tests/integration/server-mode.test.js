@@ -38,7 +38,7 @@ function parseJSONOutput(stdout) {
 }
 
 // Helper to run agent-cli with specified options
-async function runAgentCli(input, args = []) {
+async function runAgentCli(input, args = ['--no-retry-on-rate-limits']) {
   return new Promise((resolve, reject) => {
     const proc = spawn(
       'bun',
