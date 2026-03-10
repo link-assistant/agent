@@ -25,19 +25,15 @@ system resources. The processes were spawned by Bun test runner but never exited
 
 ## Root Causes
 
-### 1. No Process Lifetime Guard
+### 1. Event Loop Kept Alive by `setTimeout`/`setInterval` Without `.unref()`
 
-The agent had no maximum lifetime. When the retry mechanism activated (default: 7-day
-timeout via `AGENT_RETRY_TIMEOUT`), processes would stay alive indefinitely. Even after
-the parent test process exited, child processes continued retrying.
+Multiple timers across the codebase prevented the Node.js/Bun event loop from exiting
+naturally when all work was complete:
 
-**Evidence**: Process `PID 1078108` was running for 58+ minutes with the same batch
-test command, stuck in the retry loop.
-
-### 2. Event Loop Kept Alive by `setTimeout` Without `.unref()`
-
-In `continuous-mode.js`, the `waitForPending()` function uses recursive `setTimeout`
-to poll for completion:
+- `continuous-mode.js`: `waitForPending()` uses recursive `setTimeout` without `.unref()`
+- `retry-fetch.ts`: `createIsolatedRateLimitSignal()` creates timers without `.unref()`
+- `session/retry.ts`: `sleep()` function uses `setTimeout` without `.unref()`
+- `util/timeout.ts`: `withTimeout()` utility uses `setTimeout` without `.unref()`
 
 ```javascript
 // BEFORE (bug): setTimeout keeps event loop alive
@@ -50,10 +46,10 @@ const waitForPending = () => {
 };
 ```
 
-Without `.unref()`, this timer prevented the process from exiting naturally even when
+Without `.unref()`, these timers prevented the process from exiting naturally even when
 all other work was done.
 
-### 3. SIGINT Handler Accumulation
+### 2. SIGINT Handler Accumulation
 
 `process.on('SIGINT', ...)` was used instead of `process.once('SIGINT', ...)`. Each
 time the continuous mode was entered, a new SIGINT handler was added without removing
@@ -67,7 +63,7 @@ process.on('SIGINT', () => { ... });
 process.once('SIGINT', sigintHandler);
 ```
 
-### 4. Missing Error Listener Cleanup in `input-queue.js`
+### 3. Missing Error Listener Cleanup in `input-queue.js`
 
 The `stop()` method removed `data` and `end` listeners but forgot the `error` listener:
 
@@ -80,7 +76,7 @@ stop: () => {
 }
 ```
 
-### 5. `Bun.serve()` With `idleTimeout: 0` Keeps Event Loop Alive
+### 4. `Bun.serve()` With `idleTimeout: 0` Keeps Event Loop Alive
 
 The HTTP server created by `Server.listen()` uses `idleTimeout: 0` (infinite), which
 keeps connections open indefinitely. Even after `server.stop()`, active connections may
@@ -88,21 +84,20 @@ not be fully cleaned up, keeping the event loop alive.
 
 ## Fixes Applied
 
-### Fix 1: Process Lifetime Watchdog (`index.js`)
+### Fix 1: `.unref()` on All Timer-Based Sleeps and Waits
 
-Added `AGENT_PROCESS_LIFETIME_TIMEOUT` environment variable that sets a maximum process
-lifetime in seconds. When exceeded, the process force-exits with code 2. The timer uses
-`.unref()` so it doesn't prevent normal exit.
+Added `.unref()` to timers in:
+- `retry-fetch.ts`: sleep(), createIsolatedRateLimitSignal() timers
+- `session/retry.ts`: sleep() timer
+- `util/timeout.ts`: withTimeout() timer
+- `continuous-mode.js`: waitForPending() and checkRunning interval
 
-```bash
-# Usage: Set maximum lifetime to 30 minutes
-AGENT_PROCESS_LIFETIME_TIMEOUT=1800 bun run src/index.js
-```
+This ensures timers don't prevent the event loop from exiting when all work is done.
 
-### Fix 2: `setTimeout.unref()` in `waitForPending` (`continuous-mode.js`)
+### Fix 2: `Bun.serve()` `idleTimeout` Changed from 0 to 255 (`server.ts`)
 
-Added `.unref()` to the recursive `setTimeout` in both `runContinuousServerMode` and
-`runContinuousDirectMode` to prevent keeping the event loop alive.
+Changed from `idleTimeout: 0` (infinite) to `idleTimeout: 255` (default, ~4 minutes)
+to prevent keeping the event loop alive via idle HTTP connections.
 
 ### Fix 3: `process.once('SIGINT')` (`continuous-mode.js`)
 
@@ -113,7 +108,14 @@ handler accumulation. Added `safeResolve` guard against double-resolution.
 
 Named the anonymous error handler so it can be properly removed in `stop()`.
 
-### Fix 5: Exit Logging (`index.js`)
+### Fix 5: ESLint Rules for Leak Prevention
+
+Added `eslint-plugin-promise` with rules:
+- `promise/catch-or-return`: Detects dangling/floating promises
+- `promise/no-nesting`: Warns about nested promise anti-patterns
+- Custom `no-restricted-syntax` rules warning against `process.on('SIGINT'/'SIGTERM')`
+
+### Fix 6: Exit Logging (`index.js`)
 
 Added verbose logging at process exit to track uptime and error state.
 
@@ -132,8 +134,8 @@ See `process-snapshot.txt` for the actual process tree captured during investiga
 
 ## Recommendations
 
-1. **Always set `AGENT_PROCESS_LIFETIME_TIMEOUT`** when running tests to prevent
-   process accumulation. Recommended value: `300` (5 minutes) for tests.
+1. **Always use `.unref()`** on timers that are only needed as a safety net
+   (timeouts, retries, polling). This ensures the event loop can exit naturally.
 
 2. **Consider reducing `AGENT_RETRY_TIMEOUT`** for test environments. The default
    7-day timeout is appropriate for production but too long for CI/CD.
@@ -143,3 +145,5 @@ See `process-snapshot.txt` for the actual process tree captured during investiga
 
 4. **Add `afterAll()` hooks** in test files that spawn child processes to ensure
    cleanup on test failure/timeout.
+
+5. **Use `eslint-plugin-promise`** to detect dangling promises at lint time.

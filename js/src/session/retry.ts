@@ -123,6 +123,8 @@ export namespace SessionRetry {
   export async function sleep(ms: number, signal: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(resolve, ms);
+      // Prevent sleep timer from keeping event loop alive (#213)
+      if (timeout.unref) timeout.unref();
       signal.addEventListener(
         'abort',
         () => {
