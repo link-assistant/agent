@@ -104,7 +104,7 @@ test('Agent-cli processes JSON input "hi" and produces JSON output', async () =>
   const projectRoot = process.cwd();
   const input = '{"message":"hi"}';
   const agentResult = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`
   );
   const agentEvents = parseJSONOutput(agentResult.stdout);
 
@@ -129,7 +129,7 @@ test('Agent-cli produces 100% compatible JSON output with OpenCode', async () =>
   // Get agent-cli output
   const projectRoot = process.cwd();
   const agentResult = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`
   );
   const agentEvents = parseJSONOutput(agentResult.stdout);
 
@@ -183,7 +183,7 @@ test('Agent-cli processes plain text "2+2?" and produces JSON output', async () 
   const projectRoot = process.cwd();
   const input = '2+2?';
   const agentResult = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`
   );
   const agentEvents = parseJSONOutput(agentResult.stdout);
 

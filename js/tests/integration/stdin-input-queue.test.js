@@ -13,7 +13,11 @@ setDefaultTimeout(60000);
 // Helper to run agent-cli using spawn with various options
 async function runAgentCli(input, options = {}) {
   return new Promise((resolve, reject) => {
-    const args = ['run', join(process.cwd(), 'src/index.js')];
+    const args = [
+      'run',
+      join(process.cwd(), 'src/index.js'),
+      '--no-retry-on-rate-limits',
+    ];
 
     // Add CLI flags from options
     if (options.noInteractive) {

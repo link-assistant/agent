@@ -44,9 +44,13 @@ async function runOpenCode(input, tmpDir) {
 // Helper to run agent-cli using spawn
 async function runAgentCli(input) {
   return new Promise((resolve, reject) => {
-    const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+    const proc = spawn(
+      'bun',
+      ['run', join(process.cwd(), 'src/index.js'), '--no-retry-on-rate-limits'],
+      {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      }
+    );
 
     let stdout = '';
     let stderr = '';

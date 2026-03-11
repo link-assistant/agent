@@ -18,7 +18,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('--json-standard claude produces NDJSON format', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const stdout = result.stdout.trim();
 
@@ -37,7 +37,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('--json-standard claude produces compact JSON (not pretty-printed)', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const stdout = result.stdout;
 
@@ -55,7 +55,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('claude format uses claude event types', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const events = parseNDJSON(result.stdout);
 
@@ -74,7 +74,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('claude format has init event at start', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const events = parseNDJSON(result.stdout);
 
@@ -91,7 +91,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('claude format has message event with content array', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const events = parseNDJSON(result.stdout);
 
@@ -109,7 +109,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('claude format has result event at end', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const events = parseNDJSON(result.stdout);
 
@@ -133,7 +133,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('claude format timestamp is ISO 8601 string', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const events = parseNDJSON(result.stdout);
 
@@ -151,7 +151,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('claude format session_id uses snake_case', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const events = parseNDJSON(result.stdout);
 
@@ -169,7 +169,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('claude format message response contains expected content', async () => {
     const input = '{"message":"2+2?"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const events = parseNDJSON(result.stdout);
 
@@ -186,13 +186,13 @@ describe('Claude JSON Standard (experimental)', () => {
 
     // Get opencode output
     const opencodeResult = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard opencode --no-retry-on-rate-limits`
     );
     const opencodeStdout = opencodeResult.stdout;
 
     // Get claude output
     const claudeResult = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const claudeStdout = claudeResult.stdout;
 
@@ -210,7 +210,7 @@ describe('Claude JSON Standard (experimental)', () => {
   test('claude format event sequence: init -> message(s) -> result', async () => {
     const input = '{"message":"hi"}';
     const result = await sh(
-      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude`
+      `echo '${input}' | bun run ${projectRoot}/src/index.js --json-standard claude --no-retry-on-rate-limits`
     );
     const events = parseNDJSON(result.stdout);
 

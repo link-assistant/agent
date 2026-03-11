@@ -1,0 +1,7 @@
+1078106       1    01:28:02 Ss   /bin/sh -c echo '{"message":"run batch","tools":[{"name":"batch","params":{"tool_calls":[{"tool":"bash","parameters":{"command":"echo hello","description":"Echo hello"}},{"tool":"bash","parameters":{"command":"echo world","description":"Echo world"}}]}}]}' | bun run src/index.js 2>&1 | tail -50
+1078108 1078106    01:28:02 Sl   bun run src/index.js
+1130269 1130268       37:47 Sl   bun run /tmp/gh-issue-solver-1773073065743/js/src/index.js --json-standard claude
+1130295       1       37:47 Sl   bun run /tmp/gh-issue-solver-1773073065743/js/src/index.js --format json
+1130268 1083429       37:47 S    /bin/sh -c bun run /tmp/gh-issue-solver-1773073065743/js/src/index.js --json-standard claude
+1137630       1       33:42 Sl   bun run /tmp/gh-issue-solver-1773073065743/js/src/index.js --dry-run --no-always-accept-stdin
+1139545 1083429       32:40 Sl   /home/hive/.bun/bin/bun run /tmp/gh-issue-solver-1773073065743/js/src/index.js

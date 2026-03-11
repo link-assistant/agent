@@ -8,10 +8,14 @@ setDefaultTimeout(60000);
 // Helper to run agent-cli using spawn
 async function runAgentCli(input) {
   return new Promise((resolve, reject) => {
-    const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, AGENT_CLI_COMPACT: '1' },
-    });
+    const proc = spawn(
+      'bun',
+      ['run', join(process.cwd(), 'src/index.js'), '--no-retry-on-rate-limits'],
+      {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env, AGENT_CLI_COMPACT: '1' },
+      }
+    );
 
     let stdout = '';
     let stderr = '';

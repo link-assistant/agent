@@ -1,2 +1,5 @@
 [test]
+# Unit tests only (no real API calls).
+# Integration tests live in tests/integration/ and must be run separately
+# to avoid exhausting API rate limits. See: bun run test:integration
 root = "tests"

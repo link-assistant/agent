@@ -482,3 +482,104 @@ describe('Flag configuration', () => {
     }
   });
 });
+
+/**
+ * Tests for --no-retry-on-rate-limits flag (issue #213)
+ *
+ * When --no-retry-on-rate-limits is set (RETRY_ON_RATE_LIMITS = false),
+ * 429 responses should be returned immediately without retrying.
+ * This is useful in integration tests to avoid waiting for rate limits.
+ *
+ * @see https://github.com/link-assistant/agent/issues/213
+ */
+describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
+  test('returns 429 immediately when RETRY_ON_RATE_LIMITS is false', async () => {
+    const { Flag } = await import('../src/flag/flag');
+
+    const originalValue = Flag.RETRY_ON_RATE_LIMITS;
+    Flag.setRetryOnRateLimits(false);
+
+    try {
+      const mockResponse = new Response('rate limited', {
+        status: 429,
+        headers: { 'retry-after': '3600' }, // 1 hour - would normally be retried
+      });
+      const mockFetch = mock(() => Promise.resolve(mockResponse));
+
+      const retryFetch = RetryFetch.create({
+        baseFetch: mockFetch as unknown as typeof fetch,
+      });
+
+      const result = await retryFetch('https://example.com');
+
+      // Should return 429 immediately without waiting or retrying
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe(429);
+    } finally {
+      Flag.setRetryOnRateLimits(originalValue);
+    }
+  });
+
+  test('still retries 429 when RETRY_ON_RATE_LIMITS is true (default)', async () => {
+    const { Flag } = await import('../src/flag/flag');
+    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+
+    const originalValue = Flag.RETRY_ON_RATE_LIMITS;
+    Flag.setRetryOnRateLimits(true);
+    process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
+    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum for fast test
+
+    try {
+      let callCount = 0;
+      const mockFetch = mock(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve(
+            new Response('rate limited', {
+              status: 429,
+              headers: { 'retry-after': '0' }, // Immediate retry for test
+            })
+          );
+        }
+        return Promise.resolve(new Response('success', { status: 200 }));
+      });
+
+      const retryFetch = RetryFetch.create({
+        baseFetch: mockFetch as unknown as typeof fetch,
+      });
+
+      const result = await retryFetch('https://example.com');
+
+      // Should retry and succeed
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(result.status).toBe(200);
+    } finally {
+      Flag.setRetryOnRateLimits(originalValue);
+      if (originalRetryTimeout !== undefined) {
+        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+      } else {
+        delete process.env['AGENT_RETRY_TIMEOUT'];
+      }
+      if (originalMinInterval !== undefined) {
+        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+      } else {
+        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+      }
+    }
+  });
+
+  test('RETRY_ON_RATE_LIMITS defaults to true', async () => {
+    const { Flag } = await import('../src/flag/flag');
+    const original = Flag.RETRY_ON_RATE_LIMITS;
+
+    // Reset to default
+    Flag.setRetryOnRateLimits(true);
+
+    try {
+      expect(Flag.RETRY_ON_RATE_LIMITS).toBe(true);
+    } finally {
+      Flag.setRetryOnRateLimits(original);
+    }
+  });
+});

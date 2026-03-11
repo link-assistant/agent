@@ -166,6 +166,8 @@ export namespace RetryFetch {
       }
 
       const timeout = setTimeout(resolve, ms);
+      // Prevent sleep timer from keeping event loop alive (#213)
+      if (timeout.unref) timeout.unref();
 
       if (signal) {
         const abortHandler = () => {
@@ -224,6 +226,8 @@ export namespace RetryFetch {
         )
       );
     }, remainingTimeout);
+    // Prevent timer from keeping event loop alive after cleanup (#213)
+    if (globalTimeoutId.unref) globalTimeoutId.unref();
     timers.push(globalTimeoutId);
 
     // Periodically check if user canceled (every 10 seconds)
@@ -244,6 +248,8 @@ export namespace RetryFetch {
       // Check immediately and then every 10 seconds
       checkUserCancellation();
       const intervalId = setInterval(checkUserCancellation, 10_000);
+      // Prevent interval from keeping event loop alive after cleanup (#213)
+      if ((intervalId as any).unref) (intervalId as any).unref();
       timers.push(intervalId as unknown as NodeJS.Timeout);
     }
 
@@ -361,6 +367,16 @@ export namespace RetryFetch {
 
         // Only handle rate limit errors (429)
         if (response.status !== 429) {
+          return response;
+        }
+
+        // If retry on rate limits is disabled, return 429 immediately
+        if (!Flag.RETRY_ON_RATE_LIMITS) {
+          log.info(() => ({
+            message:
+              'rate limit retry disabled (--no-retry-on-rate-limits), returning 429',
+            sessionID,
+          }));
           return response;
         }
 

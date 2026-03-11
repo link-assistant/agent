@@ -60,7 +60,7 @@ test('Model info is included by default in step_finish events', async () => {
 
   // Run without any flags (default behavior includes model info)
   const result = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`
   );
   const events = parseJSONOutput(result.stdout);
 
@@ -84,7 +84,7 @@ test('--no-output-response-model flag disables model info in step_finish events'
 
   // Run with --no-output-response-model flag to disable it
   const result = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js --no-output-response-model`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --no-output-response-model --no-retry-on-rate-limits`
   );
   const events = parseJSONOutput(result.stdout);
 
@@ -106,7 +106,7 @@ test('AGENT_OUTPUT_RESPONSE_MODEL=false env var disables model info output', asy
 
   // Run with environment variable set to false
   const result = await sh(
-    `echo '${input}' | AGENT_OUTPUT_RESPONSE_MODEL=false bun run ${projectRoot}/src/index.js`
+    `echo '${input}' | AGENT_OUTPUT_RESPONSE_MODEL=false bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`
   );
   const events = parseJSONOutput(result.stdout);
 
@@ -127,7 +127,7 @@ test('--summarize-session flag controls session summarization', async () => {
 
   // Run without --summarize-session flag (default: disabled)
   const result = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js 2>&1`
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits 2>&1`
   );
 
   // Check that session summarization is disabled by default

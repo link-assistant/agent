@@ -21,7 +21,7 @@ describe('Provider initialization with multiple env vars', () => {
       cmd: [
         'bun',
         'run',
-        `${projectRoot}/src/index.js`,
+        `${projectRoot}/src/index.js --no-retry-on-rate-limits`,
         '--model',
         'google/gemini-3-pro',
         '--verbose',
@@ -67,7 +67,7 @@ describe('Provider initialization with multiple env vars', () => {
       cmd: [
         'bun',
         'run',
-        `${projectRoot}/src/index.js`,
+        `${projectRoot}/src/index.js --no-retry-on-rate-limits`,
         '--model',
         'google/gemini-3-pro',
         '--verbose',
@@ -107,7 +107,7 @@ describe('Provider initialization with multiple env vars', () => {
       cmd: [
         'bun',
         'run',
-        `${projectRoot}/src/index.js`,
+        `${projectRoot}/src/index.js --no-retry-on-rate-limits`,
         '--model',
         'google/gemini-3-pro',
       ],

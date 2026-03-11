@@ -107,7 +107,7 @@ test('Read tool rejects HTML file with .png extension', async () => {
     const input = `{"message":"read ${fakeImageFile}"}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json --no-retry-on-rate-limits`
         .quiet()
         .nothrow();
 
@@ -157,7 +157,7 @@ test('Read tool successfully reads valid PNG file', async () => {
     const input = `{"message":"read valid image","tools":[{"name":"read","params":{"filePath":"${validPngFile}"}}]}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
 
     const lines = result.stdout
       .toString()
@@ -207,7 +207,7 @@ test('Read tool can be configured to skip validation with env var', async () => 
 
     // Set environment variable to disable validation
     const result =
-      await $`VERIFY_IMAGES_AT_READ_TOOL=false echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+      await $`VERIFY_IMAGES_AT_READ_TOOL=false echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
 
     const lines = result.stdout
       .toString()
@@ -248,7 +248,7 @@ test('Read tool rejects file smaller than minimum image size', async () => {
     const input = `{"message":"read tiny file","tools":[{"name":"read","params":{"filePath":"${tinyFile}"}}]}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json --no-retry-on-rate-limits`
         .quiet()
         .nothrow();
 
@@ -296,7 +296,7 @@ test('Read tool provides helpful error message with hex dump', async () => {
     const input = `{"message":"read ${fakeImageFile}"}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json`
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-always-accept-stdin --json-standard claude --compact-json --no-retry-on-rate-limits`
         .quiet()
         .nothrow();
 
@@ -391,7 +391,7 @@ test('Read tool validates different image formats correctly', async () => {
       const input = `{"message":"read ${testCase.format}","tools":[{"name":"read","params":{"filePath":"${validFile}"}}]}`;
       const projectRoot = process.cwd();
       const result =
-        await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+        await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
 
       const lines = result.stdout
         .toString()
@@ -437,7 +437,7 @@ test('Read tool validates SVG files correctly', async () => {
     const input = `{"message":"read SVG file","tools":[{"name":"read","params":{"filePath":"${svgFile}"}}]}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
 
     const lines = result.stdout
       .toString()
@@ -512,7 +512,7 @@ test('Read tool validates AVIF files correctly', async () => {
     const input = `{"message":"read AVIF file","tools":[{"name":"read","params":{"filePath":"${avifFile}"}}]}`;
     const projectRoot = process.cwd();
     const result =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
 
     const lines = result.stdout
       .toString()

@@ -147,7 +147,7 @@ test('Agent-cli read tool produces 100% compatible JSON output with OpenCode', a
     // Get agent-cli output
     const projectRoot = process.cwd();
     const agentResult =
-      await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+      await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
     const agentLines = agentResult.stdout
       .toString()
       .trim()

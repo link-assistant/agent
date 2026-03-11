@@ -12,59 +12,50 @@ Make sure dependencies are installed:
 bun install
 ```
 
-### Run All Tests
+### Run Unit Tests (Default)
 
-To run the complete test suite:
+Unit tests run quickly without API calls. These are the tests that run with `bun test`:
 
 ```bash
 bun test
 ```
 
-### Run Specific Test Files
+Unit tests are in `js/tests/` (not in `js/tests/integration/`).
 
-You can run individual test files:
+### Integration Tests
+
+> **Important**: Integration tests make real API calls and should be run **one at a time** to avoid exhausting rate limits. Never run all integration tests at once with `bun test` — this is intentionally prevented by the test configuration.
+
+Integration tests live in `js/tests/integration/`. To run a single integration test:
 
 ```bash
-# Run MCP tests
-bun test tests/mcp.test.js
+# Run the basic "hi" integration test (recommended default)
+bun run test:integration
 
-# Run basic tests
-bun test tests/basic.test.js
-
-# Run tool tests
-bun test tests/bash.tools.test.js
-bun test tests/read.tools.test.js
-bun test tests/write.tools.test.js
-bun test tests/edit.tools.test.js
-bun test tests/glob.tools.test.js
-bun test tests/grep.tools.test.js
-bun test tests/list.tools.test.js
-bun test tests/todo.tools.test.js
-bun test tests/task.tools.test.js
-bun test tests/batch.tools.test.js
-bun test tests/websearch.tools.test.js
-bun test tests/codesearch.tools.test.js
-bun test tests/webfetch.tools.test.js
-
-# Run input/message tests
-bun test tests/plaintext.input.test.js
-bun test tests/system-message.test.js
-bun test tests/system-message-file.test.js
-
-# Run server mode tests
-bun test tests/server-mode.test.js
+# Run a specific integration test
+bun test js/tests/integration/basic.test.js
+bun test js/tests/integration/bash.tools.test.js
 ```
 
-### Run Tests with Pattern Matching
+### Why Integration Tests Are Separate
 
-Bun allows you to filter tests by pattern:
+The default AI model (`minimax-m2.5-free`) has strict rate limits. Running multiple integration tests in bulk will exhaust the rate limit quota, causing tests to fail or wait for hours.
+
+All integration tests pass `--no-retry-on-rate-limits` to the agent CLI to fail fast instead of waiting when rate limited.
+
+### Run Specific Test Files
 
 ```bash
-# Run all tool tests
-bun test tests/*.tools.test.js
+# Run unit test files
+bun test js/tests/retry-fetch.test.ts
+bun test js/tests/log-lazy.test.js
+bun test js/tests/json-standard-unit.test.js
 
-# Run all input tests
-bun test tests/*.input.test.js
+# Run a single integration test
+bun test js/tests/integration/basic.test.js
+
+# Run integration MCP tests (these don't use AI API)
+bun test js/tests/integration/mcp.test.js
 ```
 
 ## Continuous Integration
@@ -82,39 +73,65 @@ Tests are configured to run manually via GitHub Actions workflow dispatch.
 The CI workflow will:
 
 1. Install dependencies
-2. Run the full test suite with `bun test`
-3. Execute MCP CLI command tests
+2. Run unit tests with `bun test`
+3. Run the basic integration test
 
 ## Test Structure
 
-### MCP Tests (`tests/mcp.test.js`)
+### Unit Tests (`js/tests/`)
 
-The MCP test suite validates:
+Fast tests with no real API calls:
+- `log-lazy.test.js` - Logger lazy evaluation
+- `json-standard-unit.test.js` - JSON format conversions
+- `model-validation.test.ts` - Model ID validation
+- `session-usage.test.ts` - Session usage tracking
+- `retry-state.test.js` - Retry state machine
+- `retry-fetch.test.ts` - HTTP fetch retry logic (mocked)
+- `safe-json-serialization.test.ts` - Safe JSON serialization
+- `process-name.test.js` - Process name setting
+- `model-not-supported.test.ts` - Model error detection
+- `model-fallback.test.ts` - Model fallback logic
+- `mcp-timeout.test.ts` - MCP timeout handling
+- `verbose-http-logging.test.ts` - Verbose HTTP logging
 
-- CLI command help output
-- Configuration file generation
-- Playwright MCP support
-- Multi-argument command handling
-- Remote server configuration
-- Configuration preservation
+### Integration Tests (`js/tests/integration/`)
 
-**11 tests total** covering all MCP functionality.
+Tests that spawn the agent process and make real API calls. Run **one at a time**:
 
-### Tool Tests
-
-Each tool has a dedicated test file validating:
-
-- Tool execution
-- Output format compatibility with OpenCode
-- JSON structure validation
-- Error handling
-
-### Integration Tests
-
-- `tests/basic.test.js` - Basic agent functionality
-- `tests/server-mode.test.js` - HTTP server mode
-- `tests/plaintext.input.test.js` - Plain text input handling
-- `tests/system-message*.test.js` - System message configuration
+- `basic.test.js` - Basic agent functionality (sends "hi")
+- `bash.tools.test.js` - Bash tool execution
+- `batch.tools.test.js` - Batch operations
+- `codesearch.tools.test.js` - Code search tool
+- `dry-run.test.js` - Dry run mode
+- `edit.tools.test.js` - File edit tool
+- `generate-title.test.js` - Session title generation
+- `glob.tools.test.js` - File glob tool
+- `google-cloudcode.test.js` - Google Cloud Code provider
+- `grep.tools.test.js` - File grep tool
+- `json-standard-claude.test.js` - Claude JSON format
+- `json-standard-opencode.test.js` - OpenCode JSON format
+- `list.tools.test.js` - File list tool
+- `mcp.test.js` - MCP configuration (no AI API calls)
+- `models-cache.test.js` - Model caching
+- `output-response-model.test.js` - Response model output
+- `plaintext.input.test.js` - Plain text input
+- `provider.test.js` - Provider configuration
+- `read-image-validation.tools.test.js` - Image validation
+- `read.tools.test.js` - File read tool
+- `resume.test.js` - Session resume/continue
+- `server-mode.test.js` - HTTP server mode
+- `socket-retry.test.js` - Socket error retry
+- `stdin-input-queue.test.js` - Stdin queue handling
+- `stream-parse-error.test.js` - Stream parse errors
+- `stream-timeout.test.js` - Stream timeouts
+- `system-message-file.test.js` - System message from file
+- `system-message.test.js` - System message override
+- `task.tools.test.js` - Task tool
+- `timeout-retry.test.js` - Timeout and retry
+- `todo.tools.test.js` - Todo tool
+- `webfetch.tools.test.js` - Web fetch tool
+- `websearch.tools.test.js` - Web search tool
+- `write.tools.test.js` - File write tool
 
 ## Troubleshooting
 
@@ -145,3 +162,11 @@ bun install
    ```bash
    bun test --verbose
    ```
+
+### Rate Limit Errors in Integration Tests
+
+Integration tests use `--no-retry-on-rate-limits` to fail fast when rate limited instead of waiting. If you see rate limit errors:
+
+1. Wait for the rate limit window to reset (check `retry-after` header in the error)
+2. Use a different API key or model
+3. Run only one integration test at a time: `bun test js/tests/integration/basic.test.js`

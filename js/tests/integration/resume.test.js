@@ -118,7 +118,7 @@ test('--resume with invalid session ID produces error', async () => {
   // Use Bun's $ instead of sh for better error handling
   const { $ } = await import('bun');
   const result =
-    await $`cd ${projectRoot} && echo ${input} | bun run src/index.js --resume ses_invalidid123 --no-always-accept-stdin 2>&1`
+    await $`cd ${projectRoot} && echo ${input} | bun run src/index.js --resume ses_invalidid123 --no-retry-on-rate-limits --no-always-accept-stdin 2>&1`
       .quiet()
       .nothrow();
 
@@ -140,7 +140,7 @@ test('--continue with no existing sessions produces error', async () => {
     // Set a unique HOME to avoid finding existing sessions
     const input = '{"message":"test"}';
     const result = await sh(
-      `cd ${projectRoot} && HOME=${tempDir} XDG_DATA_HOME=${tempDir}/.local/share echo '${input}' | bun run src/index.js --continue 2>&1 || true`,
+      `cd ${projectRoot} && HOME=${tempDir} XDG_DATA_HOME=${tempDir}/.local/share echo '${input}' | bun run src/index.js --continue --no-retry-on-rate-limits 2>&1 || true`,
       { timeout: 30000 }
     );
 
@@ -161,7 +161,7 @@ test('Session is created with unique ID and can be listed', async () => {
   // Create a session by sending a message
   const input = '{"message":"hello session test"}';
   const result = await sh(
-    `cd ${projectRoot} && echo '${input}' | timeout 30 bun run src/index.js --dry-run --no-always-accept-stdin 2>&1`
+    `cd ${projectRoot} && echo '${input}' | timeout 30 bun run src/index.js --dry-run --no-retry-on-rate-limits --no-always-accept-stdin 2>&1`
   );
 
   const { allEvents } = parseJSONOutputCombined(result);

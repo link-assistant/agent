@@ -1,11 +1,8 @@
-import { test, expect, setDefaultTimeout } from 'bun:test';
+import { test, expect } from 'bun:test';
 import { $ } from 'bun';
 
-// Disable timeouts for these tests
-setDefaultTimeout(0);
-
-// Shared assertion function to validate OpenCode-compatible JSON structure for webfetch tool
-function validateWebfetchToolOutput(toolEvent, label) {
+// Shared assertion function to validate OpenCode-compatible JSON structure
+function validateBashToolOutput(toolEvent, label) {
   console.log(`\n${label} JSON structure:`);
   console.log(JSON.stringify(toolEvent, null, 2));
 
@@ -25,7 +22,7 @@ function validateWebfetchToolOutput(toolEvent, label) {
   expect(toolEvent.part.type).toBe('tool');
   expect(typeof toolEvent.part.callID).toBe('string');
   expect(toolEvent.part.callID.startsWith('call_')).toBeTruthy();
-  expect(toolEvent.part.tool).toBe('webfetch');
+  expect(toolEvent.part.tool).toBe('bash');
 
   // Validate state structure
   expect(toolEvent.part.state).toBeTruthy();
@@ -34,15 +31,16 @@ function validateWebfetchToolOutput(toolEvent, label) {
 
   // Validate input structure
   expect(toolEvent.part.state.input).toBeTruthy();
-  expect(typeof toolEvent.part.state.input.url).toBe('string');
-  expect(typeof toolEvent.part.state.input.format).toBe('string');
+  expect(toolEvent.part.state.input.command).toBe('echo hello world');
 
   // Validate output
   expect(typeof toolEvent.part.state.output).toBe('string');
-  expect(
-    toolEvent.part.state.output.includes('<html>') ||
-      toolEvent.part.state.output.includes('Herman Melville')
-  ).toBeTruthy();
+  expect(toolEvent.part.state.output.includes('hello world')).toBeTruthy();
+
+  // Validate metadata structure
+  expect(toolEvent.part.state.metadata).toBeTruthy();
+  expect(typeof toolEvent.part.state.metadata.output).toBe('string');
+  expect(typeof toolEvent.part.state.metadata.exit).toBe('number');
 
   // Validate timing information
   expect(toolEvent.part.state.time).toBeTruthy();
@@ -57,9 +55,9 @@ function validateWebfetchToolOutput(toolEvent, label) {
 
 test('Reference test: OpenCode tool produces expected JSON format', async () => {
   const input =
-    '{"message":"fetch url","tools":[{"name":"webfetch","params":{"url":"https://httpbin.org/html","format":"html"}}]}';
+    '{"message":"run command","tools":[{"name":"bash","params":{"command":"echo hello world"}}]}';
 
-  // Test original OpenCode webfetch tool
+  // Test original OpenCode bash tool
   const originalResult =
     await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
       .quiet()
@@ -70,20 +68,12 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
     .split('\n')
     .filter((line) => line.trim());
   const originalEvents = originalLines.map((line) => JSON.parse(line));
-
-  // Find tool_use events
-  const originalToolEvents = originalEvents.filter(
-    (e) => e.type === 'tool_use' && e.part.tool === 'webfetch'
+  const originalTool = originalEvents.find(
+    (e) => e.type === 'tool_use' && e.part.tool === 'bash'
   );
 
-  // Should have tool_use events for webfetch
-  expect(originalToolEvents.length > 0).toBeTruthy();
-
-  // Check the structure matches OpenCode format
-  const originalTool = originalToolEvents[0];
-
   // Validate using shared assertion function
-  validateWebfetchToolOutput(originalTool, 'OpenCode');
+  validateBashToolOutput(originalTool, 'OpenCode');
 
   console.log(
     '✅ Reference test passed - OpenCode produces expected JSON format'
@@ -92,9 +82,9 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
 
 console.log('This establishes the baseline behavior for compatibility testing');
 
-test('Agent-cli webfetch tool produces 100% compatible JSON output with OpenCode', async () => {
+test('Agent-cli bash tool produces 100% compatible JSON output with OpenCode', async () => {
   const input =
-    '{"message":"fetch url","tools":[{"name":"webfetch","params":{"url":"https://httpbin.org/html","format":"html"}}]}';
+    '{"message":"run command","tools":[{"name":"bash","params":{"command":"echo hello world"}}]}';
 
   // Get OpenCode output
   const originalResult =
@@ -108,13 +98,13 @@ test('Agent-cli webfetch tool produces 100% compatible JSON output with OpenCode
     .filter((line) => line.trim());
   const originalEvents = originalLines.map((line) => JSON.parse(line));
   const originalTool = originalEvents.find(
-    (e) => e.type === 'tool_use' && e.part.tool === 'webfetch'
+    (e) => e.type === 'tool_use' && e.part.tool === 'bash'
   );
 
   // Get agent-cli output
   const projectRoot = process.cwd();
   const agentResult =
-    await $`echo ${input} | bun run ${projectRoot}/src/index.js`.quiet();
+    await $`echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
   const agentLines = agentResult.stdout
     .toString()
     .trim()
@@ -122,12 +112,12 @@ test('Agent-cli webfetch tool produces 100% compatible JSON output with OpenCode
     .filter((line) => line.trim());
   const agentEvents = agentLines.map((line) => JSON.parse(line));
   const agentTool = agentEvents.find(
-    (e) => e.type === 'tool_use' && e.part.tool === 'webfetch'
+    (e) => e.type === 'tool_use' && e.part.tool === 'bash'
   );
 
   // Validate both outputs using shared assertion function
-  validateWebfetchToolOutput(originalTool, 'OpenCode');
-  validateWebfetchToolOutput(agentTool, 'Agent-cli');
+  validateBashToolOutput(originalTool, 'OpenCode');
+  validateBashToolOutput(agentTool, 'Agent-cli');
 
   // Verify structure has same keys at all levels
   expect(Object.keys(agentTool).sort()).toEqual(
@@ -140,16 +130,14 @@ test('Agent-cli webfetch tool produces 100% compatible JSON output with OpenCode
     Object.keys(originalTool.part.state).sort()
   );
 
-  // Input should match
-  expect(agentTool.part.state.input.url).toBe(
-    originalTool.part.state.input.url
-  );
-  expect(agentTool.part.state.input.format).toBe(
-    originalTool.part.state.input.format
+  // Input may have optional description field added by AI, so we just check required fields are present
+  expect(agentTool.part.state.input.command).toBe(
+    originalTool.part.state.input.command
   );
 
-  // Output should contain similar content
-  expect(agentTool.part.state.output).toBeTruthy();
+  // Metadata may have optional description field, so we check required fields
+  expect(agentTool.part.state.metadata.output).toBeTruthy();
+  expect(typeof agentTool.part.state.metadata.exit).toBe('number');
 
   expect(Object.keys(agentTool.part.state.time).sort()).toEqual(
     Object.keys(originalTool.part.state.time).sort()

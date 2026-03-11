@@ -1,5 +1,5 @@
 import { test, expect, setDefaultTimeout } from 'bun:test';
-// $ removed (unused)
+// $ imported for consistency with other tests
 import { spawn } from 'child_process';
 import { join } from 'path';
 
@@ -44,9 +44,13 @@ async function runOpenCode(input) {
 // Helper to run agent-cli using spawn
 async function runAgentCli(input) {
   return new Promise((resolve, reject) => {
-    const proc = spawn('bun', ['run', join(process.cwd(), 'src/index.js')], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+    const proc = spawn(
+      'bun',
+      ['run', join(process.cwd(), 'src/index.js'), '--no-retry-on-rate-limits'],
+      {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      }
+    );
 
     let stdout = '';
     let stderr = '';
@@ -71,8 +75,8 @@ async function runAgentCli(input) {
   });
 }
 
-// Shared assertion function to validate OpenCode-compatible JSON structure for websearch tool
-function validateWebSearchToolOutput(toolEvent, label) {
+// Shared assertion function to validate OpenCode-compatible JSON structure for codesearch tool
+function validateCodeSearchToolOutput(toolEvent, label) {
   console.log(`\n${label} JSON structure:`);
   console.log(JSON.stringify(toolEvent, null, 2));
 
@@ -92,7 +96,7 @@ function validateWebSearchToolOutput(toolEvent, label) {
   expect(toolEvent.part.type).toBe('tool');
   expect(typeof toolEvent.part.callID).toBe('string');
   expect(toolEvent.part.callID.startsWith('call_')).toBeTruthy();
-  expect(toolEvent.part.tool).toBe('websearch');
+  expect(toolEvent.part.tool).toBe('codesearch');
 
   // Validate state structure
   expect(toolEvent.part.state).toBeTruthy();
@@ -119,10 +123,10 @@ function validateWebSearchToolOutput(toolEvent, label) {
 
 console.log('This establishes the baseline behavior for compatibility testing');
 
-test('Reference test: OpenCode websearch tool produces expected JSON format', async () => {
-  const input = `{"message":"search web","tools":[{"name":"websearch","params":{"query":"TypeScript latest features"}}]}`;
+test('Reference test: OpenCode codesearch tool produces expected JSON format', async () => {
+  const input = `{"message":"search code","tools":[{"name":"codesearch","params":{"query":"React hooks implementation"}}]}`;
 
-  console.log('Starting opencode websearch test...');
+  console.log('Starting opencode codesearch test...');
 
   // Use spawn instead of Bun $ to properly handle the command
   const originalResult = await runOpenCode(input);
@@ -143,26 +147,26 @@ test('Reference test: OpenCode websearch tool produces expected JSON format', as
     originalEvents.map((e) => e.type)
   );
 
-  // Find tool_use events for websearch
+  // Find tool_use events for codesearch
   const searchEvent = originalEvents.find(
-    (e) => e.type === 'tool_use' && e.part.tool === 'websearch'
+    (e) => e.type === 'tool_use' && e.part.tool === 'codesearch'
   );
 
-  console.log('Found websearch event:', !!searchEvent);
+  console.log('Found codesearch event:', !!searchEvent);
 
-  // Should have tool_use event for websearch
+  // Should have tool_use event for codesearch
   expect(searchEvent).toBeTruthy();
 
   // Validate using shared assertion function
-  validateWebSearchToolOutput(searchEvent, 'OpenCode');
+  validateCodeSearchToolOutput(searchEvent, 'OpenCode');
 
   console.log(
     '✅ Reference test passed - OpenCode produces expected JSON format'
   );
 });
 
-test('Agent-cli websearch tool produces 100% compatible JSON output with OpenCode', async () => {
-  const input = `{"message":"search web","tools":[{"name":"websearch","params":{"query":"TypeScript latest features"}}]}`;
+test('Agent-cli codesearch tool produces 100% compatible JSON output with OpenCode', async () => {
+  const input = `{"message":"search code","tools":[{"name":"codesearch","params":{"query":"React hooks implementation"}}]}`;
 
   console.log('Getting OpenCode output...');
   // Get OpenCode output using spawn
@@ -173,11 +177,11 @@ test('Agent-cli websearch tool produces 100% compatible JSON output with OpenCod
     .filter((line) => line.trim());
   const originalEvents = originalLines.map((line) => JSON.parse(line));
   const originalSearch = originalEvents.find(
-    (e) => e.type === 'tool_use' && e.part.tool === 'websearch'
+    (e) => e.type === 'tool_use' && e.part.tool === 'codesearch'
   );
 
   console.log('Getting agent-cli output...');
-  // Get agent-cli output using spawn with OPENCODE_EXPERIMENTAL_EXA flag
+  // Get agent-cli output using spawn without OPENCODE_EXPERIMENTAL_EXA flag
   const agentResult = await runAgentCli(input);
   const agentLines = agentResult.stdout
     .trim()
@@ -185,12 +189,12 @@ test('Agent-cli websearch tool produces 100% compatible JSON output with OpenCod
     .filter((line) => line.trim());
   const agentEvents = agentLines.map((line) => JSON.parse(line));
   const agentSearch = agentEvents.find(
-    (e) => e.type === 'tool_use' && e.part.tool === 'websearch'
+    (e) => e.type === 'tool_use' && e.part.tool === 'codesearch'
   );
 
   // Validate both outputs
-  validateWebSearchToolOutput(originalSearch, 'OpenCode');
-  validateWebSearchToolOutput(agentSearch, 'Agent-cli');
+  validateCodeSearchToolOutput(originalSearch, 'OpenCode');
+  validateCodeSearchToolOutput(agentSearch, 'Agent-cli');
 
   // Verify structure matches
   expect(Object.keys(agentSearch).sort()).toEqual(
@@ -204,7 +208,7 @@ test('Agent-cli websearch tool produces 100% compatible JSON output with OpenCod
   );
 
   console.log(
-    '\n✅ Agent-cli produces 100% OpenCode-compatible JSON structure for websearch tool'
+    '\n✅ Agent-cli produces 100% OpenCode-compatible JSON structure for codesearch tool'
   );
   console.log(
     'All required fields and nested structure match OpenCode output format'

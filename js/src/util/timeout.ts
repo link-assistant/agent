@@ -9,6 +9,8 @@ export function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
       timeout = setTimeout(() => {
         reject(new Error(`Operation timed out after ${ms}ms`));
       }, ms);
+      // Prevent timeout from keeping the event loop alive (#213)
+      timeout.unref();
     }),
   ]);
 }

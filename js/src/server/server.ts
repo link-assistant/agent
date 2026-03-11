@@ -246,7 +246,9 @@ export namespace Server {
     const server = Bun.serve({
       port: opts.port,
       hostname: opts.hostname,
-      idleTimeout: 0,
+      // Use default idle timeout (255s) instead of 0 (infinite) to prevent
+      // keeping the event loop alive after server.stop(). See #213.
+      idleTimeout: 255,
       fetch: App().fetch,
     });
     return server;

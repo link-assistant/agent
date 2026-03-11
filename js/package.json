@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "bun run src/index.js",
-    "test": "bun test",
+    "test": "bun test tests/*.test.js tests/*.test.ts",
+    "test:integration": "bun test tests/integration/basic.test.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -117,6 +118,7 @@
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-promise": "^7.2.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2"
