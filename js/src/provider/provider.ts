@@ -1207,8 +1207,10 @@ export namespace Provider {
       // When verbose is disabled, the wrapper is a no-op passthrough with negligible overhead.
       // See: https://github.com/link-assistant/agent/issues/200
       // See: https://github.com/link-assistant/agent/issues/206
+      // See: https://github.com/link-assistant/agent/issues/215
       {
         const innerFetch = options['fetch'];
+        let verboseWrapperConfirmed = false;
         options['fetch'] = async (
           input: RequestInfo | URL,
           init?: RequestInit
@@ -1216,6 +1218,16 @@ export namespace Provider {
           // Check verbose flag at call time — not at SDK creation time
           if (!Flag.OPENCODE_VERBOSE) {
             return innerFetch(input, init);
+          }
+
+          // Log a one-time confirmation that the verbose wrapper is active for this provider.
+          // This diagnostic breadcrumb confirms the wrapper is in the fetch chain.
+          // See: https://github.com/link-assistant/agent/issues/215
+          if (!verboseWrapperConfirmed) {
+            verboseWrapperConfirmed = true;
+            log.info('verbose HTTP logging active', {
+              providerID: provider.id,
+            });
           }
 
           const url =
@@ -1286,7 +1298,13 @@ export namespace Provider {
 
           const startMs = Date.now();
           try {
-            const response = await innerFetch(input, init);
+            // Pass Bun-specific verbose:true to get detailed connection debugging
+            // (prints request/response headers to stderr on socket errors).
+            // This is a no-op on non-Bun runtimes.
+            // See: https://bun.sh/docs/api/fetch
+            // See: https://github.com/link-assistant/agent/issues/215
+            const verboseInit = { ...init, verbose: true } as RequestInit;
+            const response = await innerFetch(input, verboseInit);
             const durationMs = Date.now() - startMs;
 
             // Use direct (non-lazy) logging to ensure HTTP response details are captured
@@ -1386,7 +1404,9 @@ export namespace Provider {
           } catch (error) {
             const durationMs = Date.now() - startMs;
             // Use direct (non-lazy) logging for error path
+            // Include stack trace and error cause for better debugging of socket errors
             // See: https://github.com/link-assistant/agent/issues/211
+            // See: https://github.com/link-assistant/agent/issues/215
             log.error('HTTP request failed', {
               providerID: provider.id,
               method,
@@ -1394,7 +1414,17 @@ export namespace Provider {
               durationMs,
               error:
                 error instanceof Error
-                  ? { name: error.name, message: error.message }
+                  ? {
+                      name: error.name,
+                      message: error.message,
+                      stack: error.stack,
+                      cause:
+                        error.cause instanceof Error
+                          ? error.cause.message
+                          : error.cause
+                            ? String(error.cause)
+                            : undefined,
+                    }
                   : String(error),
             });
             throw error;
