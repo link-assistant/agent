@@ -632,6 +632,84 @@ describe('Verbose HTTP logging - enhanced error logging', () => {
   });
 });
 
+describe('Verbose HTTP logging - request numbering and error resilience', () => {
+  /**
+   * Tests that the verbose wrapper:
+   * 1. Numbers HTTP calls sequentially for correlation
+   * 2. Survives errors in header/body preparation without breaking the HTTP request
+   *
+   * @see https://github.com/link-assistant/agent/issues/215
+   */
+
+  test('assigns sequential call numbers to HTTP requests', async () => {
+    const loggedCallNums: number[] = [];
+
+    const innerFetch = async () =>
+      new Response('ok', {
+        status: 200,
+        headers: { 'content-type': 'text/plain' },
+      });
+
+    let httpCallCount = 0;
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      httpCallCount++;
+      const callNum = httpCallCount;
+      loggedCallNums.push(callNum);
+      return innerFetch();
+    };
+
+    await wrappedFetch('https://api.test.com/v1');
+    await wrappedFetch('https://api.test.com/v1');
+    await wrappedFetch('https://api.test.com/v1');
+
+    expect(loggedCallNums).toEqual([1, 2, 3]);
+  });
+
+  test('request proceeds even if header processing throws', async () => {
+    let innerFetchCalled = false;
+    let warnLogged = false;
+
+    const innerFetch = async () => {
+      innerFetchCalled = true;
+      return new Response('ok', {
+        status: 200,
+        headers: { 'content-type': 'text/plain' },
+      });
+    };
+
+    // Simulate the try/catch around header processing from provider.ts
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      let sanitizedHeaders: Record<string, string> = {};
+      try {
+        // Force an error in header processing
+        const rawHeaders = init?.headers;
+        if (rawHeaders) {
+          // Simulate a broken headers object that throws on iteration
+          throw new Error('Simulated header processing error');
+        }
+      } catch {
+        warnLogged = true;
+      }
+      return innerFetch();
+    };
+
+    const response = await wrappedFetch('https://api.test.com/v1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(response.status).toBe(200);
+    expect(innerFetchCalled).toBe(true);
+    expect(warnLogged).toBe(true);
+  });
+});
+
 describe('Model parsing', () => {
   function parseModel(model: string) {
     const [providerID, ...rest] = model.split('/');

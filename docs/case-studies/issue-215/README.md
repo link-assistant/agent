@@ -68,25 +68,31 @@ However, if the error occurs at the Bun internal level before `fetch()` returns,
 
 The log shows version 0.16.17 but the actual globally-installed agent binary may have been a different build. The solve.mjs tool installs the agent via npm/bun and uses the globally installed version. If the installation cache was stale, the running binary may not have included the verbose HTTP logging fix from issue #211.
 
-## Proposed Solutions
+## Implemented Solutions
 
-### Solution 1: Add diagnostic log when verbose fetch wrapper is applied
+### Solution 1: Log at SDK creation time (not just first call)
 
-Add a log entry when the verbose fetch wrapper is initialized for a provider, confirming it is in the fetch chain.
+Added a `log.info('verbose HTTP fetch wrapper installed', ...)` entry at SDK creation time that confirms the wrapper is in the fetch chain. This fires regardless of whether verbose is enabled — providing a clear diagnostic breadcrumb.
 
-### Solution 2: Pass Bun's `verbose: true` to fetch when verbose mode is enabled
+### Solution 2: Redundant stderr diagnostic channel
 
-When `Flag.OPENCODE_VERBOSE` is true, pass `verbose: true` in the fetch init options. This enables Bun's built-in connection debugging, which prints HTTP headers and connection details to stderr.
+Added `process.stderr.write()` as a redundant output channel for the "verbose HTTP logging active" breadcrumb. If stdout JSON is being filtered/dropped by an external wrapper (solve.mjs), the stderr message still appears. This bypasses the entire JSON logging pipeline.
 
-Reference: [Bun fetch documentation](https://bun.sh/docs/api/fetch)
+### Solution 3: Try/catch around request preparation
 
-### Solution 3: Log additional error context in the catch block
+Wrapped the header sanitization and body preview preparation in `try/catch` so that any error in logging preparation does NOT break the actual HTTP request. Previously, if header iteration threw, the entire fetch call would fail.
 
-Enhance the error logging in the verbose wrapper to include more context about the failed request, including timing and any partial response data.
+### Solution 4: HTTP call numbering
 
-### Solution 4: Add a startup verification log
+Added sequential `callNum` to each HTTP request/response log entry for correlation. This makes it easy to match request/response pairs in logs even when multiple concurrent calls are in flight.
 
-Log a confirmation that verbose HTTP logging is active during the first API call, providing a clear signal in the logs that the wrapper is functioning.
+### Solution 5: Pass Bun's `verbose: true` to fetch (from previous iteration)
+
+Already implemented: when `Flag.OPENCODE_VERBOSE` is true, passes `verbose: true` in the fetch init options. This enables Bun's built-in connection debugging on socket errors.
+
+### Solution 6: Enhanced error logging (from previous iteration)
+
+Already implemented: includes `error.stack` and `error.cause` in the "HTTP request failed" log entry.
 
 ## Related Issues & References
 
