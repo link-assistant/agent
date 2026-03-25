@@ -15,8 +15,10 @@
 
 import { Log } from '../util/log';
 import { Auth } from '../auth';
+import { createVerboseFetch } from '../util/verbose-fetch';
 
 const log = Log.create({ service: 'google-cloudcode' });
+const verboseFetch = createVerboseFetch(fetch, { caller: 'google-cloudcode' });
 
 // Cloud Code API endpoints (from gemini-cli)
 // Configurable via environment variables for testing or alternative endpoints
@@ -179,7 +181,7 @@ export class CloudCodeClient {
       message: 'refreshing google oauth token for cloud code',
     }));
 
-    const response = await fetch(GOOGLE_TOKEN_URL, {
+    const response = await verboseFetch(GOOGLE_TOKEN_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -223,7 +225,7 @@ export class CloudCodeClient {
     const baseUrl = `${CODE_ASSIST_ENDPOINT}/${CODE_ASSIST_API_VERSION}:${method}`;
     const url = options.stream ? `${baseUrl}?alt=sse` : baseUrl;
 
-    const response = await fetch(url, {
+    const response = await verboseFetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import * as http from 'node:http';
 import * as net from 'node:net';
 import { Auth } from './index';
 import { Log } from '../util/log';
+import { createVerboseFetch } from '../util/verbose-fetch';
 
 /**
  * Auth Plugins Module
@@ -12,6 +13,7 @@ import { Log } from '../util/log';
  */
 
 const log = Log.create({ service: 'auth-plugins' });
+const verboseFetch = createVerboseFetch(fetch, { caller: 'auth-plugins' });
 
 /**
  * OAuth callback result types
@@ -142,7 +144,7 @@ const AnthropicPlugin: AuthPlugin = {
             if (!code) return { type: 'failed' };
 
             const splits = code.split('#');
-            const result = await fetch(
+            const result = await verboseFetch(
               'https://console.anthropic.com/v1/oauth/token',
               {
                 method: 'POST',
@@ -210,7 +212,7 @@ const AnthropicPlugin: AuthPlugin = {
             if (!code) return { type: 'failed' };
 
             const splits = code.split('#');
-            const tokenResult = await fetch(
+            const tokenResult = await verboseFetch(
               'https://console.anthropic.com/v1/oauth/token',
               {
                 method: 'POST',
@@ -240,7 +242,7 @@ const AnthropicPlugin: AuthPlugin = {
             const credentials = await tokenResult.json();
 
             // Create API key using the access token
-            const apiKeyResult = await fetch(
+            const apiKeyResult = await verboseFetch(
               'https://api.anthropic.com/api/oauth/claude_cli/create_api_key',
               {
                 method: 'POST',
@@ -291,7 +293,7 @@ const AnthropicPlugin: AuthPlugin = {
           log.info(() => ({
             message: 'refreshing anthropic oauth token',
           }));
-          const response = await fetch(
+          const response = await verboseFetch(
             'https://console.anthropic.com/v1/oauth/token',
             {
               method: 'POST',
@@ -446,7 +448,7 @@ const GitHubCopilotPlugin: AuthPlugin = {
 
         const urls = getCopilotUrls(domain);
 
-        const deviceResponse = await fetch(urls.DEVICE_CODE_URL, {
+        const deviceResponse = await verboseFetch(urls.DEVICE_CODE_URL, {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -476,7 +478,7 @@ const GitHubCopilotPlugin: AuthPlugin = {
           method: 'auto',
           async callback(): Promise<AuthResult> {
             while (true) {
-              const response = await fetch(urls.ACCESS_TOKEN_URL, {
+              const response = await verboseFetch(urls.ACCESS_TOKEN_URL, {
                 method: 'POST',
                 headers: {
                   Accept: 'application/json',
@@ -571,7 +573,7 @@ const GitHubCopilotPlugin: AuthPlugin = {
           const urls = getCopilotUrls(domain);
 
           log.info(() => ({ message: 'refreshing github copilot token' }));
-          const response = await fetch(urls.COPILOT_API_KEY_URL, {
+          const response = await verboseFetch(urls.COPILOT_API_KEY_URL, {
             headers: {
               Accept: 'application/json',
               Authorization: `Bearer ${currentInfo.refresh}`,
@@ -731,7 +733,7 @@ const OpenAIPlugin: AuthPlugin = {
             }
 
             // Exchange authorization code for tokens
-            const tokenResult = await fetch(OPENAI_TOKEN_URL, {
+            const tokenResult = await verboseFetch(OPENAI_TOKEN_URL, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -797,7 +799,7 @@ const OpenAIPlugin: AuthPlugin = {
         // Refresh token if expired
         if (!currentAuth.access || currentAuth.expires < Date.now()) {
           log.info(() => ({ message: 'refreshing openai oauth token' }));
-          const response = await fetch(OPENAI_TOKEN_URL, {
+          const response = await verboseFetch(OPENAI_TOKEN_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -1091,7 +1093,7 @@ const GooglePlugin: AuthPlugin = {
               const { code } = await authPromise;
 
               // Exchange authorization code for tokens
-              const tokenResult = await fetch(GOOGLE_TOKEN_URL, {
+              const tokenResult = await verboseFetch(GOOGLE_TOKEN_URL, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/x-www-form-urlencoded',
@@ -1187,7 +1189,7 @@ const GooglePlugin: AuthPlugin = {
 
             try {
               // Exchange authorization code for tokens
-              const tokenResult = await fetch(GOOGLE_TOKEN_URL, {
+              const tokenResult = await verboseFetch(GOOGLE_TOKEN_URL, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/x-www-form-urlencoded',
@@ -1348,7 +1350,7 @@ const GooglePlugin: AuthPlugin = {
       // Call loadCodeAssist to discover project and tier
       try {
         const loadUrl = `${CLOUD_CODE_ENDPOINT}/${CLOUD_CODE_API_VERSION}:loadCodeAssist`;
-        const loadRes = await fetch(loadUrl, {
+        const loadRes = await verboseFetch(loadUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1440,7 +1442,7 @@ const GooglePlugin: AuthPlugin = {
                 },
               };
 
-        let lroRes = await fetch(onboardUrl, {
+        let lroRes = await verboseFetch(onboardUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1456,11 +1458,11 @@ const GooglePlugin: AuthPlugin = {
           if (lroRes.name) {
             // Poll operation status
             const opUrl = `${CLOUD_CODE_ENDPOINT}/${CLOUD_CODE_API_VERSION}/${lroRes.name}`;
-            lroRes = await fetch(opUrl, {
+            lroRes = await verboseFetch(opUrl, {
               headers: { Authorization: `Bearer ${accessToken}` },
             }).then((r) => r.json());
           } else {
-            lroRes = await fetch(onboardUrl, {
+            lroRes = await verboseFetch(onboardUrl, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -1924,7 +1926,7 @@ const GooglePlugin: AuthPlugin = {
           // Invalidate project cache when token changes
           cachedProjectContext = null;
 
-          const response = await fetch(GOOGLE_TOKEN_URL, {
+          const response = await verboseFetch(GOOGLE_TOKEN_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -2043,7 +2045,7 @@ const GooglePlugin: AuthPlugin = {
               await new Promise((resolve) => setTimeout(resolve, delay));
             }
 
-            const cloudCodeResponse = await fetch(finalCloudCodeUrl, {
+            const cloudCodeResponse = await verboseFetch(finalCloudCodeUrl, {
               ...init,
               body,
               headers,
@@ -2135,7 +2137,7 @@ const GooglePlugin: AuthPlugin = {
         };
         delete headers['x-goog-api-key'];
 
-        const oauthResponse = await fetch(input, {
+        const oauthResponse = await verboseFetch(input, {
           ...init,
           headers,
         });
@@ -2248,19 +2250,22 @@ const QwenPlugin: AuthPlugin = {
         const codeChallenge = generateCodeChallenge(codeVerifier);
 
         // Request device code
-        const deviceResponse = await fetch(QWEN_OAUTH_DEVICE_CODE_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Accept: 'application/json',
-          },
-          body: new URLSearchParams({
-            client_id: QWEN_OAUTH_CLIENT_ID,
-            scope: QWEN_OAUTH_SCOPE,
-            code_challenge: codeChallenge,
-            code_challenge_method: 'S256',
-          }).toString(),
-        });
+        const deviceResponse = await verboseFetch(
+          QWEN_OAUTH_DEVICE_CODE_ENDPOINT,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json',
+            },
+            body: new URLSearchParams({
+              client_id: QWEN_OAUTH_CLIENT_ID,
+              scope: QWEN_OAUTH_SCOPE,
+              code_challenge: codeChallenge,
+              code_challenge_method: 'S256',
+            }).toString(),
+          }
+        );
 
         if (!deviceResponse.ok) {
           const errorText = await deviceResponse.text();
@@ -2308,19 +2313,22 @@ const QwenPlugin: AuthPlugin = {
           async callback(): Promise<AuthResult> {
             // Poll for authorization completion
             for (let attempt = 0; attempt < maxPollAttempts; attempt++) {
-              const tokenResponse = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                  Accept: 'application/json',
-                },
-                body: new URLSearchParams({
-                  client_id: QWEN_OAUTH_CLIENT_ID,
-                  device_code: deviceData.device_code,
-                  grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-                  code_verifier: codeVerifier,
-                }).toString(),
-              });
+              const tokenResponse = await verboseFetch(
+                QWEN_OAUTH_TOKEN_ENDPOINT,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    Accept: 'application/json',
+                  },
+                  body: new URLSearchParams({
+                    client_id: QWEN_OAUTH_CLIENT_ID,
+                    device_code: deviceData.device_code,
+                    grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+                    code_verifier: codeVerifier,
+                  }).toString(),
+                }
+              );
 
               if (!tokenResponse.ok) {
                 const errorText = await tokenResponse.text();
@@ -2426,7 +2434,7 @@ const QwenPlugin: AuthPlugin = {
               : 'token expiring soon',
           }));
 
-          const response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+          const response = await verboseFetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -2575,7 +2583,7 @@ const AlibabaPlugin: AuthPlugin = {
             message: 'refreshing qwen oauth token (alibaba provider)',
           }));
 
-          const response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+          const response = await verboseFetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -2651,7 +2659,7 @@ const KiloPlugin: AuthPlugin = {
       type: 'oauth',
       async authorize() {
         // Initiate device authorization
-        const initResponse = await fetch(
+        const initResponse = await verboseFetch(
           `${KILO_API_BASE}/api/device-auth/codes`,
           {
             method: 'POST',
@@ -2704,7 +2712,7 @@ const KiloPlugin: AuthPlugin = {
                 setTimeout(resolve, KILO_POLL_INTERVAL_MS)
               );
 
-              const pollResponse = await fetch(
+              const pollResponse = await verboseFetch(
                 `${KILO_API_BASE}/api/device-auth/codes/${authData.code}`
               );
 

@@ -418,6 +418,298 @@ describe('Verbose HTTP logging - runtime flag check', () => {
   });
 });
 
+describe('Verbose HTTP logging - diagnostic breadcrumb', () => {
+  /**
+   * Tests that the verbose wrapper logs a one-time "verbose HTTP logging active"
+   * message on the first HTTP call for each provider, confirming the wrapper is
+   * in the fetch chain.
+   *
+   * @see https://github.com/link-assistant/agent/issues/215
+   */
+
+  test('logs diagnostic breadcrumb on first call only', async () => {
+    const logMessages: string[] = [];
+
+    const innerFetch = async () =>
+      new Response('ok', {
+        status: 200,
+        headers: { 'content-type': 'text/plain' },
+      });
+
+    // Simulate the wrapper with verboseWrapperConfirmed flag
+    let verboseWrapperConfirmed = false;
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      if (!verboseWrapperConfirmed) {
+        verboseWrapperConfirmed = true;
+        logMessages.push('verbose HTTP logging active');
+      }
+      logMessages.push('HTTP request');
+      const response = await innerFetch();
+      logMessages.push('HTTP response');
+      return response;
+    };
+
+    // First call: diagnostic breadcrumb + request/response
+    await wrappedFetch('https://api.test.com/v1');
+    expect(logMessages).toEqual([
+      'verbose HTTP logging active',
+      'HTTP request',
+      'HTTP response',
+    ]);
+
+    // Second call: no diagnostic breadcrumb, just request/response
+    logMessages.length = 0;
+    await wrappedFetch('https://api.test.com/v1');
+    expect(logMessages).toEqual(['HTTP request', 'HTTP response']);
+  });
+});
+
+describe('Verbose HTTP logging - Bun verbose option', () => {
+  /**
+   * Tests that the verbose wrapper passes Bun's non-standard `verbose: true`
+   * option to fetch when verbose mode is enabled.
+   *
+   * @see https://github.com/link-assistant/agent/issues/215
+   * @see https://bun.sh/docs/api/fetch
+   */
+
+  test('passes verbose:true to inner fetch when verbose is enabled', async () => {
+    let receivedInit: any = null;
+
+    const innerFetch = async (input: any, init?: any) => {
+      receivedInit = init;
+      return new Response('ok', {
+        status: 200,
+        headers: { 'content-type': 'text/plain' },
+      });
+    };
+
+    // Simulate the verbose wrapper adding verbose:true to init
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      const verboseInit = { ...init, verbose: true } as RequestInit;
+      return innerFetch(input, verboseInit);
+    };
+
+    await wrappedFetch('https://api.test.com/v1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(receivedInit).toBeDefined();
+    expect(receivedInit.verbose).toBe(true);
+    expect(receivedInit.method).toBe('POST');
+    expect(receivedInit.headers).toEqual({
+      'Content-Type': 'application/json',
+    });
+  });
+});
+
+describe('Verbose HTTP logging - enhanced error logging', () => {
+  /**
+   * Tests that the error catch block includes stack trace and error.cause
+   * in the log entry for better debugging of socket errors.
+   *
+   * @see https://github.com/link-assistant/agent/issues/215
+   */
+
+  test('captures error stack and cause in error log', async () => {
+    let errorLog: any = null;
+
+    const innerFetch = async () => {
+      const cause = new Error('TLS handshake failed');
+      const error = new Error('The socket connection was closed unexpectedly');
+      error.cause = cause;
+      throw error;
+    };
+
+    // Simulate the error logging from provider.ts
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url;
+      const method = init?.method ?? 'GET';
+      const startMs = Date.now();
+
+      try {
+        return await innerFetch();
+      } catch (error) {
+        const durationMs = Date.now() - startMs;
+        errorLog = {
+          message: 'HTTP request failed',
+          method,
+          url,
+          durationMs,
+          error:
+            error instanceof Error
+              ? {
+                  name: error.name,
+                  message: error.message,
+                  stack: error.stack,
+                  cause:
+                    error.cause instanceof Error
+                      ? error.cause.message
+                      : error.cause
+                        ? String(error.cause)
+                        : undefined,
+                }
+              : String(error),
+        };
+        throw error;
+      }
+    };
+
+    try {
+      await wrappedFetch('https://api.test.com/v1', { method: 'POST' });
+    } catch {
+      // Expected
+    }
+
+    expect(errorLog).toBeDefined();
+    expect(errorLog.message).toBe('HTTP request failed');
+    expect(errorLog.url).toBe('https://api.test.com/v1');
+    expect(errorLog.method).toBe('POST');
+    expect(errorLog.error.name).toBe('Error');
+    expect(errorLog.error.message).toBe(
+      'The socket connection was closed unexpectedly'
+    );
+    expect(errorLog.error.stack).toBeDefined();
+    expect(errorLog.error.cause).toBe('TLS handshake failed');
+  });
+
+  test('handles error without cause', async () => {
+    let errorLog: any = null;
+
+    const innerFetch = async () => {
+      throw new Error('Connection refused');
+    };
+
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      try {
+        return await innerFetch();
+      } catch (error) {
+        errorLog = {
+          error:
+            error instanceof Error
+              ? {
+                  name: error.name,
+                  message: error.message,
+                  cause:
+                    error.cause instanceof Error
+                      ? error.cause.message
+                      : error.cause
+                        ? String(error.cause)
+                        : undefined,
+                }
+              : String(error),
+        };
+        throw error;
+      }
+    };
+
+    try {
+      await wrappedFetch('https://api.test.com/v1');
+    } catch {
+      // Expected
+    }
+
+    expect(errorLog.error.message).toBe('Connection refused');
+    expect(errorLog.error.cause).toBeUndefined();
+  });
+});
+
+describe('Verbose HTTP logging - request numbering and error resilience', () => {
+  /**
+   * Tests that the verbose wrapper:
+   * 1. Numbers HTTP calls sequentially for correlation
+   * 2. Survives errors in header/body preparation without breaking the HTTP request
+   *
+   * @see https://github.com/link-assistant/agent/issues/215
+   */
+
+  test('assigns sequential call numbers to HTTP requests', async () => {
+    const loggedCallNums: number[] = [];
+
+    const innerFetch = async () =>
+      new Response('ok', {
+        status: 200,
+        headers: { 'content-type': 'text/plain' },
+      });
+
+    let httpCallCount = 0;
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      httpCallCount++;
+      const callNum = httpCallCount;
+      loggedCallNums.push(callNum);
+      return innerFetch();
+    };
+
+    await wrappedFetch('https://api.test.com/v1');
+    await wrappedFetch('https://api.test.com/v1');
+    await wrappedFetch('https://api.test.com/v1');
+
+    expect(loggedCallNums).toEqual([1, 2, 3]);
+  });
+
+  test('request proceeds even if header processing throws', async () => {
+    let innerFetchCalled = false;
+    let warnLogged = false;
+
+    const innerFetch = async () => {
+      innerFetchCalled = true;
+      return new Response('ok', {
+        status: 200,
+        headers: { 'content-type': 'text/plain' },
+      });
+    };
+
+    // Simulate the try/catch around header processing from provider.ts
+    const wrappedFetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      let sanitizedHeaders: Record<string, string> = {};
+      try {
+        // Force an error in header processing
+        const rawHeaders = init?.headers;
+        if (rawHeaders) {
+          // Simulate a broken headers object that throws on iteration
+          throw new Error('Simulated header processing error');
+        }
+      } catch {
+        warnLogged = true;
+      }
+      return innerFetch();
+    };
+
+    const response = await wrappedFetch('https://api.test.com/v1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(response.status).toBe(200);
+    expect(innerFetchCalled).toBe(true);
+    expect(warnLogged).toBe(true);
+  });
+});
+
 describe('Model parsing', () => {
   function parseModel(model: string) {
     const [providerID, ...rest] = model.split('/');

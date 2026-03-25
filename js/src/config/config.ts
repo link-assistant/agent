@@ -11,6 +11,7 @@ import { lazy } from '../util/lazy';
 import { NamedError } from '../util/error';
 import { Flag } from '../flag/flag';
 import { Auth } from '../auth';
+import { createVerboseFetch } from '../util/verbose-fetch';
 import {
   type ParseError as JsoncParseError,
   parse as parseJsonc,
@@ -21,6 +22,7 @@ import { ConfigMarkdown } from './markdown';
 
 export namespace Config {
   const log = Log.create({ service: 'config' });
+  const verboseFetch = createVerboseFetch(fetch, { caller: 'config' });
 
   /**
    * Automatically migrate .opencode directories to .link-assistant-agent
@@ -163,9 +165,9 @@ export namespace Config {
     for (const [key, value] of Object.entries(auth)) {
       if (value.type === 'wellknown') {
         process.env[value.key] = value.token;
-        const wellknown = (await fetch(`${key}/.well-known/opencode`).then(
-          (x) => x.json()
-        )) as any;
+        const wellknown = (await verboseFetch(
+          `${key}/.well-known/opencode`
+        ).then((x) => x.json())) as any;
         result = mergeDeep(
           result,
           await load(JSON.stringify(wellknown.config ?? {}), process.cwd())

@@ -9,9 +9,11 @@ import { $ } from 'bun';
 
 import { ZipReader, BlobReader, BlobWriter } from '@zip.js/zip.js';
 import { Log } from '../util/log';
+import { createVerboseFetch } from '../util/verbose-fetch';
 
 export namespace Ripgrep {
   const log = Log.create({ service: 'ripgrep' });
+  const verboseFetch = createVerboseFetch(fetch, { caller: 'ripgrep' });
   const Stats = z.object({
     elapsed: z.object({
       secs: z.number(),
@@ -142,7 +144,7 @@ export namespace Ripgrep {
       const filename = `ripgrep-${version}-${config.platform}.${config.extension}`;
       const url = `https://github.com/BurntSushi/ripgrep/releases/download/${version}/${filename}`;
 
-      const response = await fetch(url);
+      const response = await verboseFetch(url);
       if (!response.ok)
         throw new DownloadFailedError({ url, status: response.status });
 

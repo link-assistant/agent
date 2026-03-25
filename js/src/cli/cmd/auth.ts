@@ -9,6 +9,9 @@ import path from 'path';
 import os from 'os';
 import { Global } from '../../global';
 import { map, pipe, sortBy, values } from 'remeda';
+import { createVerboseFetch } from '../../util/verbose-fetch';
+
+const verboseFetch = createVerboseFetch(fetch, { caller: 'auth-cmd' });
 
 /**
  * Auth Command
@@ -86,9 +89,9 @@ export const AuthLoginCommand = cmd({
     // Handle wellknown URL login
     if (args.url) {
       try {
-        const wellknown = await fetch(`${args.url}/.well-known/opencode`).then(
-          (x) => x.json() as any
-        );
+        const wellknown = await verboseFetch(
+          `${args.url}/.well-known/opencode`
+        ).then((x) => x.json() as any);
         prompts.log.info(`Running \`${wellknown.auth.command.join(' ')}\``);
         const proc = Bun.spawn({
           cmd: wellknown.auth.command,

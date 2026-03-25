@@ -1207,8 +1207,22 @@ export namespace Provider {
       // When verbose is disabled, the wrapper is a no-op passthrough with negligible overhead.
       // See: https://github.com/link-assistant/agent/issues/200
       // See: https://github.com/link-assistant/agent/issues/206
+      // See: https://github.com/link-assistant/agent/issues/215
       {
         const innerFetch = options['fetch'];
+        let verboseWrapperConfirmed = false;
+        let httpCallCount = 0;
+
+        // Log at SDK creation time that the fetch wrapper is installed.
+        // This runs once per provider SDK creation (not per request).
+        // If verbose is off at creation time, the per-request check still applies.
+        // See: https://github.com/link-assistant/agent/issues/215
+        log.info('verbose HTTP fetch wrapper installed', {
+          providerID: provider.id,
+          pkg,
+          verboseAtCreation: Flag.OPENCODE_VERBOSE,
+        });
+
         options['fetch'] = async (
           input: RequestInfo | URL,
           init?: RequestInit
@@ -1216,6 +1230,24 @@ export namespace Provider {
           // Check verbose flag at call time — not at SDK creation time
           if (!Flag.OPENCODE_VERBOSE) {
             return innerFetch(input, init);
+          }
+
+          httpCallCount++;
+          const callNum = httpCallCount;
+
+          // Log a one-time confirmation that the verbose wrapper is active for this provider.
+          // This diagnostic breadcrumb confirms the wrapper is in the fetch chain.
+          // Also write to stderr as a redundant channel — stdout JSON may be filtered by wrappers.
+          // See: https://github.com/link-assistant/agent/issues/215
+          if (!verboseWrapperConfirmed) {
+            verboseWrapperConfirmed = true;
+            log.info('verbose HTTP logging active', {
+              providerID: provider.id,
+            });
+            // Redundant stderr confirmation — visible even if stdout is piped/filtered
+            process.stderr.write(
+              `[verbose] HTTP logging active for provider: ${provider.id}\n`
+            );
           }
 
           const url =
@@ -1226,50 +1258,64 @@ export namespace Provider {
                 : input.url;
           const method = init?.method ?? 'GET';
 
-          // Sanitize headers - mask authorization values
-          const sanitizedHeaders: Record<string, string> = {};
-          const rawHeaders = init?.headers;
-          if (rawHeaders) {
-            const entries =
-              rawHeaders instanceof Headers
-                ? Array.from(rawHeaders.entries())
-                : Array.isArray(rawHeaders)
-                  ? rawHeaders
-                  : Object.entries(rawHeaders);
-            for (const [key, value] of entries) {
-              const lower = key.toLowerCase();
-              if (
-                lower === 'authorization' ||
-                lower === 'x-api-key' ||
-                lower === 'api-key'
-              ) {
-                sanitizedHeaders[key] =
-                  typeof value === 'string' && value.length > 8
-                    ? value.slice(0, 4) + '...' + value.slice(-4)
-                    : '[REDACTED]';
-              } else {
-                sanitizedHeaders[key] = String(value);
+          // Wrap all verbose logging in try/catch so it never breaks the actual HTTP request.
+          // If logging fails, the request must still proceed — logging is observability, not control flow.
+          // See: https://github.com/link-assistant/agent/issues/215
+          let sanitizedHeaders: Record<string, string> = {};
+          let bodyPreview: string | undefined;
+          try {
+            // Sanitize headers - mask authorization values
+            const rawHeaders = init?.headers;
+            if (rawHeaders) {
+              const entries =
+                rawHeaders instanceof Headers
+                  ? Array.from(rawHeaders.entries())
+                  : Array.isArray(rawHeaders)
+                    ? rawHeaders
+                    : Object.entries(rawHeaders);
+              for (const [key, value] of entries) {
+                const lower = key.toLowerCase();
+                if (
+                  lower === 'authorization' ||
+                  lower === 'x-api-key' ||
+                  lower === 'api-key'
+                ) {
+                  sanitizedHeaders[key] =
+                    typeof value === 'string' && value.length > 8
+                      ? value.slice(0, 4) + '...' + value.slice(-4)
+                      : '[REDACTED]';
+                } else {
+                  sanitizedHeaders[key] = String(value);
+                }
               }
             }
-          }
 
-          // Log request body preview (truncated)
-          let bodyPreview: string | undefined;
-          if (init?.body) {
-            const bodyStr =
-              typeof init.body === 'string'
-                ? init.body
-                : init.body instanceof ArrayBuffer ||
-                    init.body instanceof Uint8Array
-                  ? `[binary ${(init.body as ArrayBuffer).byteLength ?? (init.body as Uint8Array).length} bytes]`
-                  : undefined;
-            if (bodyStr && typeof bodyStr === 'string') {
-              bodyPreview =
-                bodyStr.length > 2000
-                  ? bodyStr.slice(0, 2000) +
-                    `... [truncated, total ${bodyStr.length} chars]`
-                  : bodyStr;
+            // Log request body preview (truncated)
+            if (init?.body) {
+              const bodyStr =
+                typeof init.body === 'string'
+                  ? init.body
+                  : init.body instanceof ArrayBuffer ||
+                      init.body instanceof Uint8Array
+                    ? `[binary ${(init.body as ArrayBuffer).byteLength ?? (init.body as Uint8Array).length} bytes]`
+                    : undefined;
+              if (bodyStr && typeof bodyStr === 'string') {
+                bodyPreview =
+                  bodyStr.length > 2000
+                    ? bodyStr.slice(0, 2000) +
+                      `... [truncated, total ${bodyStr.length} chars]`
+                    : bodyStr;
+              }
             }
+          } catch (prepError) {
+            // If header/body processing fails, log the error but continue with the request
+            log.warn('verbose logging: failed to prepare request details', {
+              providerID: provider.id,
+              error:
+                prepError instanceof Error
+                  ? prepError.message
+                  : String(prepError),
+            });
           }
 
           // Use direct (non-lazy) logging for HTTP request/response to ensure output
@@ -1277,7 +1323,9 @@ export namespace Provider {
           // The verbose check is already done above, so lazy evaluation is not needed here.
           // See: https://github.com/link-assistant/agent/issues/211
           log.info('HTTP request', {
+            caller: `provider/${provider.id}`,
             providerID: provider.id,
+            callNum,
             method,
             url,
             headers: sanitizedHeaders,
@@ -1286,13 +1334,21 @@ export namespace Provider {
 
           const startMs = Date.now();
           try {
-            const response = await innerFetch(input, init);
+            // Pass Bun-specific verbose:true to get detailed connection debugging
+            // (prints request/response headers to stderr on socket errors).
+            // This is a no-op on non-Bun runtimes.
+            // See: https://bun.sh/docs/api/fetch
+            // See: https://github.com/link-assistant/agent/issues/215
+            const verboseInit = { ...init, verbose: true } as RequestInit;
+            const response = await innerFetch(input, verboseInit);
             const durationMs = Date.now() - startMs;
 
             // Use direct (non-lazy) logging to ensure HTTP response details are captured
             // See: https://github.com/link-assistant/agent/issues/211
             log.info('HTTP response', {
+              caller: `provider/${provider.id}`,
               providerID: provider.id,
+              callNum,
               method,
               url,
               status: response.status,
@@ -1342,7 +1398,9 @@ export namespace Provider {
                     // Use direct (non-lazy) logging for stream body
                     // See: https://github.com/link-assistant/agent/issues/211
                     log.info('HTTP response body (stream)', {
+                      caller: `provider/${provider.id}`,
                       providerID: provider.id,
+                      callNum,
                       url,
                       bodyPreview: truncated
                         ? bodyPreview + `... [truncated]`
@@ -1370,7 +1428,9 @@ export namespace Provider {
                 // Use direct (non-lazy) logging for non-streaming body
                 // See: https://github.com/link-assistant/agent/issues/211
                 log.info('HTTP response body', {
+                  caller: `provider/${provider.id}`,
                   providerID: provider.id,
+                  callNum,
                   url,
                   bodyPreview,
                 });
@@ -1386,15 +1446,29 @@ export namespace Provider {
           } catch (error) {
             const durationMs = Date.now() - startMs;
             // Use direct (non-lazy) logging for error path
+            // Include stack trace and error cause for better debugging of socket errors
             // See: https://github.com/link-assistant/agent/issues/211
+            // See: https://github.com/link-assistant/agent/issues/215
             log.error('HTTP request failed', {
+              caller: `provider/${provider.id}`,
               providerID: provider.id,
+              callNum,
               method,
               url,
               durationMs,
               error:
                 error instanceof Error
-                  ? { name: error.name, message: error.message }
+                  ? {
+                      name: error.name,
+                      message: error.message,
+                      stack: error.stack,
+                      cause:
+                        error.cause instanceof Error
+                          ? error.cause.message
+                          : error.cause
+                            ? String(error.cause)
+                            : undefined,
+                    }
                   : String(error),
             });
             throw error;

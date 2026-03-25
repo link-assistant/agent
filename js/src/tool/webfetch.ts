@@ -2,6 +2,9 @@ import z from 'zod';
 import { Tool } from './tool';
 import TurndownService from 'turndown';
 import DESCRIPTION from './webfetch.txt';
+import { createVerboseFetch } from '../util/verbose-fetch';
+
+const verboseFetch = createVerboseFetch(fetch, { caller: 'webfetch' });
 
 const MAX_RESPONSE_SIZE = 5 * 1024 * 1024; // 5MB
 const DEFAULT_TIMEOUT = 30 * 1000; // 30 seconds
@@ -59,7 +62,7 @@ export const WebFetchTool = Tool.define('webfetch', {
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8';
     }
 
-    const response = await fetch(params.url, {
+    const response = await verboseFetch(params.url, {
       signal: AbortSignal.any([controller.signal, ctx.abort]),
       headers: {
         'User-Agent':

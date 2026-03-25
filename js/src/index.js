@@ -21,6 +21,7 @@ import { McpCommand } from './cli/cmd/mcp.ts';
 import { AuthCommand } from './cli/cmd/auth.ts';
 import { FormatError } from './cli/error.ts';
 import { UI } from './cli/ui.ts';
+import { createVerboseFetch } from './util/verbose-fetch.ts';
 import {
   runContinuousServerMode,
   runContinuousDirectMode,
@@ -427,7 +428,8 @@ async function runServerMode(
       sessionID = resumeInfo.sessionID;
     } else {
       // Create a new session
-      const createRes = await fetch(
+      const localVerboseFetch = createVerboseFetch(fetch, { caller: 'cli' });
+      const createRes = await localVerboseFetch(
         `http://${server.hostname}:${server.port}/session`,
         {
           method: 'POST',

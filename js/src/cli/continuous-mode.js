@@ -12,6 +12,7 @@ import { createEventHandler } from '../json-standard/index.ts';
 import { createContinuousStdinReader } from './input-queue.js';
 import { Log } from '../util/log.ts';
 import { Flag } from '../flag/flag.ts';
+import { createVerboseFetch } from '../util/verbose-fetch.ts';
 import { outputStatus, outputError, outputInput } from './output.ts';
 
 // Shared error tracking
@@ -215,7 +216,10 @@ export async function runContinuousServerMode(
       sessionID = resumeInfo.sessionID;
     } else {
       // Create a new session
-      const createRes = await fetch(
+      const localVerboseFetch = createVerboseFetch(fetch, {
+        caller: 'continuous-mode',
+      });
+      const createRes = await localVerboseFetch(
         `http://${server.hostname}:${server.port}/session`,
         {
           method: 'POST',
