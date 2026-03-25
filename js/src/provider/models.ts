@@ -1,11 +1,13 @@
 import { Global } from '../global';
 import { Log } from '../util/log';
+import { createVerboseFetch } from '../util/verbose-fetch';
 import path from 'path';
 import z from 'zod';
 import { data } from './models-macro';
 
 export namespace ModelsDev {
   const log = Log.create({ service: 'models.dev' });
+  const verboseFetch = createVerboseFetch(fetch, { caller: 'models.dev' });
   const filepath = path.join(Global.Path.cache, 'models.json');
 
   export const Model = z
@@ -145,7 +147,7 @@ export namespace ModelsDev {
   export async function refresh() {
     const file = Bun.file(filepath);
     log.info(() => ({ message: 'refreshing', file }));
-    const result = await fetch('https://models.dev/api.json', {
+    const result = await verboseFetch('https://models.dev/api.json', {
       headers: {
         'User-Agent': 'agent-cli/1.0.0',
       },

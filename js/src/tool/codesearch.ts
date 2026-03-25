@@ -1,6 +1,9 @@
 import z from 'zod';
 import { Tool } from './tool';
 import DESCRIPTION from './codesearch.txt';
+import { createVerboseFetch } from '../util/verbose-fetch';
+
+const verboseFetch = createVerboseFetch(fetch, { caller: 'codesearch' });
 
 const API_CONFIG = {
   BASE_URL: 'https://mcp.exa.ai',
@@ -73,7 +76,7 @@ export const CodeSearchTool = Tool.define('codesearch', {
         'content-type': 'application/json',
       };
 
-      const response = await fetch(
+      const response = await verboseFetch(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CONTEXT}`,
         {
           method: 'POST',

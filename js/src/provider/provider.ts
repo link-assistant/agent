@@ -1323,6 +1323,7 @@ export namespace Provider {
           // The verbose check is already done above, so lazy evaluation is not needed here.
           // See: https://github.com/link-assistant/agent/issues/211
           log.info('HTTP request', {
+            caller: `provider/${provider.id}`,
             providerID: provider.id,
             callNum,
             method,
@@ -1345,6 +1346,7 @@ export namespace Provider {
             // Use direct (non-lazy) logging to ensure HTTP response details are captured
             // See: https://github.com/link-assistant/agent/issues/211
             log.info('HTTP response', {
+              caller: `provider/${provider.id}`,
               providerID: provider.id,
               callNum,
               method,
@@ -1396,6 +1398,7 @@ export namespace Provider {
                     // Use direct (non-lazy) logging for stream body
                     // See: https://github.com/link-assistant/agent/issues/211
                     log.info('HTTP response body (stream)', {
+                      caller: `provider/${provider.id}`,
                       providerID: provider.id,
                       callNum,
                       url,
@@ -1425,6 +1428,7 @@ export namespace Provider {
                 // Use direct (non-lazy) logging for non-streaming body
                 // See: https://github.com/link-assistant/agent/issues/211
                 log.info('HTTP response body', {
+                  caller: `provider/${provider.id}`,
                   providerID: provider.id,
                   callNum,
                   url,
@@ -1446,6 +1450,7 @@ export namespace Provider {
             // See: https://github.com/link-assistant/agent/issues/211
             // See: https://github.com/link-assistant/agent/issues/215
             log.error('HTTP request failed', {
+              caller: `provider/${provider.id}`,
               providerID: provider.id,
               callNum,
               method,

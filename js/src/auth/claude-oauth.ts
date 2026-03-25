@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { Global } from '../global';
 import { Log } from '../util/log';
+import { createVerboseFetch } from '../util/verbose-fetch';
 import z from 'zod';
 
 /**
@@ -24,6 +25,7 @@ import z from 'zod';
  */
 export namespace ClaudeOAuth {
   const log = Log.create({ service: 'claude-oauth' });
+  const verboseFetch = createVerboseFetch(fetch, { caller: 'claude-oauth' });
 
   /**
    * OAuth Configuration
@@ -218,7 +220,7 @@ export namespace ClaudeOAuth {
       message: 'exchanging authorization code for tokens',
     }));
 
-    const response = await fetch(Config.tokenUrl, {
+    const response = await verboseFetch(Config.tokenUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -402,7 +404,7 @@ export namespace ClaudeOAuth {
     log.info(() => ({ message: 'refreshing access token' }));
 
     try {
-      const response = await fetch(Config.tokenUrl, {
+      const response = await verboseFetch(Config.tokenUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -446,7 +448,7 @@ export namespace ClaudeOAuth {
       } else {
         headers.set('anthropic-beta', Config.betaHeader);
       }
-      return fetch(url, { ...init, headers });
+      return verboseFetch(url, { ...init, headers });
     };
   }
 }

@@ -2,6 +2,9 @@ import z from 'zod';
 import { Tool } from './tool';
 import DESCRIPTION from './websearch.txt';
 import { Config } from '../config/config';
+import { createVerboseFetch } from '../util/verbose-fetch';
+
+const verboseFetch = createVerboseFetch(fetch, { caller: 'websearch' });
 
 const API_CONFIG = {
   BASE_URL: 'https://mcp.exa.ai',
@@ -91,7 +94,7 @@ export const WebSearchTool = Tool.define('websearch', {
         'content-type': 'application/json',
       };
 
-      const response = await fetch(
+      const response = await verboseFetch(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEARCH}`,
         {
           method: 'POST',
