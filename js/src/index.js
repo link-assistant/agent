@@ -6,7 +6,7 @@ import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
 import { Log } from './util/log.ts';
 import { parseModelConfig } from './cli/model-config.js';
-import { DEFAULT_MODEL } from './cli/defaults.ts';
+import { buildRunOptions } from './cli/run-options.js';
 // Bus is used via createBusEventSubscription in event-handler.js
 import { Session } from './session/index.ts';
 import { SessionPrompt } from './session/prompt.ts';
@@ -278,7 +278,7 @@ async function runAgentMode(argv, request) {
     fn: async () => {
       // Parse model config inside Instance.provide context
       // This allows parseModelWithResolution to access the provider state
-      const { providerID, modelID } = await parseModelConfig(
+      const { providerID, modelID, compactionModel } = await parseModelConfig(
         argv,
         outputError,
         outputStatus
@@ -293,7 +293,8 @@ async function runAgentMode(argv, request) {
           modelID,
           systemMessage,
           appendSystemMessage,
-          jsonStandard
+          jsonStandard,
+          compactionModel
         );
       } else {
         // DIRECT MODE: Run everything in single process
@@ -304,7 +305,8 @@ async function runAgentMode(argv, request) {
           modelID,
           systemMessage,
           appendSystemMessage,
-          jsonStandard
+          jsonStandard,
+          compactionModel
         );
       }
     },
@@ -363,7 +365,7 @@ async function runContinuousAgentMode(argv) {
     fn: async () => {
       // Parse model config inside Instance.provide context
       // This allows parseModelWithResolution to access the provider state
-      const { providerID, modelID } = await parseModelConfig(
+      const { providerID, modelID, compactionModel } = await parseModelConfig(
         argv,
         outputError,
         outputStatus
@@ -377,7 +379,8 @@ async function runContinuousAgentMode(argv) {
           modelID,
           systemMessage,
           appendSystemMessage,
-          jsonStandard
+          jsonStandard,
+          compactionModel
         );
       } else {
         // DIRECT MODE: Run everything in single process
@@ -387,7 +390,8 @@ async function runContinuousAgentMode(argv) {
           modelID,
           systemMessage,
           appendSystemMessage,
-          jsonStandard
+          jsonStandard,
+          compactionModel
         );
       }
     },
@@ -409,7 +413,8 @@ async function runServerMode(
   modelID,
   systemMessage,
   appendSystemMessage,
-  jsonStandard
+  jsonStandard,
+  compactionModel
 ) {
   const compactJson = argv['compact-json'] === true;
 
@@ -475,6 +480,7 @@ async function runServerMode(
             providerID,
             modelID,
           },
+          compactionModel,
           system: systemMessage,
           appendSystem: appendSystemMessage,
         }),
@@ -508,7 +514,8 @@ async function runDirectMode(
   modelID,
   systemMessage,
   appendSystemMessage,
-  jsonStandard
+  jsonStandard,
+  compactionModel
 ) {
   const compactJson = argv['compact-json'] === true;
 
@@ -558,6 +565,7 @@ async function runDirectMode(
         providerID,
         modelID,
       },
+      compactionModel,
       system: systemMessage,
       appendSystem: appendSystemMessage,
     }).catch((error) => {
@@ -596,147 +604,7 @@ async function main() {
       .command({
         command: '$0',
         describe: 'Run agent in interactive or stdin mode (default)',
-        builder: (yargs) =>
-          yargs
-            .option('model', {
-              type: 'string',
-              description: 'Model to use in format providerID/modelID',
-              default: DEFAULT_MODEL,
-            })
-            .option('json-standard', {
-              type: 'string',
-              description:
-                'JSON output format standard: "opencode" (default) or "claude" (experimental)',
-              default: 'opencode',
-              choices: ['opencode', 'claude'],
-            })
-            .option('system-message', {
-              type: 'string',
-              description: 'Full override of the system message',
-            })
-            .option('system-message-file', {
-              type: 'string',
-              description: 'Full override of the system message from file',
-            })
-            .option('append-system-message', {
-              type: 'string',
-              description: 'Append to the default system message',
-            })
-            .option('append-system-message-file', {
-              type: 'string',
-              description: 'Append to the default system message from file',
-            })
-            .option('server', {
-              type: 'boolean',
-              description: 'Run in server mode (default)',
-              default: true,
-            })
-            .option('verbose', {
-              type: 'boolean',
-              description:
-                'Enable verbose mode to debug API requests (shows system prompt, token counts, etc.)',
-              default: false,
-            })
-            .option('dry-run', {
-              type: 'boolean',
-              description:
-                'Simulate operations without making actual API calls or package installations (useful for testing)',
-              default: false,
-            })
-            .option('use-existing-claude-oauth', {
-              type: 'boolean',
-              description:
-                'Use existing Claude OAuth credentials from ~/.claude/.credentials.json (from Claude Code CLI)',
-              default: false,
-            })
-            .option('prompt', {
-              alias: 'p',
-              type: 'string',
-              description:
-                'Prompt message to send directly (bypasses stdin reading)',
-            })
-            .option('disable-stdin', {
-              type: 'boolean',
-              description:
-                'Disable stdin streaming mode (requires --prompt or shows help)',
-              default: false,
-            })
-            .option('stdin-stream-timeout', {
-              type: 'number',
-              description:
-                'Optional timeout in milliseconds for stdin reading (default: no timeout)',
-            })
-            .option('auto-merge-queued-messages', {
-              type: 'boolean',
-              description:
-                'Enable auto-merging of rapidly arriving input lines into single messages (default: true)',
-              default: true,
-            })
-            .option('interactive', {
-              type: 'boolean',
-              description:
-                'Enable interactive mode to accept manual input as plain text strings (default: true). Use --no-interactive to only accept JSON input.',
-              default: true,
-            })
-            .option('always-accept-stdin', {
-              type: 'boolean',
-              description:
-                'Keep accepting stdin input even after the agent finishes work (default: true). Use --no-always-accept-stdin for single-message mode.',
-              default: true,
-            })
-            .option('compact-json', {
-              type: 'boolean',
-              description:
-                'Output compact JSON (single line) instead of pretty-printed JSON (default: false). Useful for program-to-program communication.',
-              default: false,
-            })
-            .option('resume', {
-              alias: 'r',
-              type: 'string',
-              description:
-                'Resume a specific session by ID. By default, forks the session with a new UUID. Use --no-fork to continue in the same session.',
-            })
-            .option('continue', {
-              alias: 'c',
-              type: 'boolean',
-              description:
-                'Continue the most recent session. By default, forks the session with a new UUID. Use --no-fork to continue in the same session.',
-              default: false,
-            })
-            .option('no-fork', {
-              type: 'boolean',
-              description:
-                'When used with --resume or --continue, continue in the same session without forking to a new UUID.',
-              default: false,
-            })
-            .option('generate-title', {
-              type: 'boolean',
-              description:
-                'Generate session titles using AI (default: false). Disabling saves tokens and prevents rate limit issues.',
-              default: false,
-            })
-            .option('retry-timeout', {
-              type: 'number',
-              description:
-                'Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)',
-            })
-            .option('retry-on-rate-limits', {
-              type: 'boolean',
-              description:
-                'Retry AI completions API requests when rate limited (HTTP 429). Use --no-retry-on-rate-limits in integration tests to fail fast instead of waiting.',
-              default: true,
-            })
-            .option('output-response-model', {
-              type: 'boolean',
-              description: 'Include model info in step_finish output',
-              default: true,
-            })
-            .option('summarize-session', {
-              type: 'boolean',
-              description:
-                'Generate AI session summaries (default: true). Use --no-summarize-session to disable.',
-              default: true,
-            }),
+        builder: buildRunOptions,
         handler: async (argv) => {
           // Check both CLI flag and environment variable for compact JSON mode
           const compactJson =

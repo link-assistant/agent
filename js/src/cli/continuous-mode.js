@@ -193,7 +193,8 @@ export async function runContinuousServerMode(
   modelID,
   systemMessage,
   appendSystemMessage,
-  jsonStandard
+  jsonStandard,
+  compactionModel
 ) {
   // Check both CLI flag and environment variable for compact JSON mode
   const compactJson = argv['compact-json'] === true || Flag.COMPACT_JSON();
@@ -286,6 +287,7 @@ export async function runContinuousServerMode(
           body: JSON.stringify({
             parts,
             model: { providerID, modelID },
+            compactionModel,
             system: systemMessage,
             appendSystem: appendSystemMessage,
           }),
@@ -443,7 +445,8 @@ export async function runContinuousDirectMode(
   modelID,
   systemMessage,
   appendSystemMessage,
-  jsonStandard
+  jsonStandard,
+  compactionModel
 ) {
   // Check both CLI flag and environment variable for compact JSON mode
   const compactJson = argv['compact-json'] === true || Flag.COMPACT_JSON();
@@ -517,6 +520,7 @@ export async function runContinuousDirectMode(
         sessionID,
         parts,
         model: { providerID, modelID },
+        compactionModel,
         system: systemMessage,
         appendSystem: appendSystemMessage,
       }).catch((error) => {

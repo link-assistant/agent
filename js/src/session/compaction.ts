@@ -29,36 +29,101 @@ export namespace SessionCompaction {
   };
 
   /**
-   * Safety margin ratio for compaction trigger.
+   * Default safety margin ratio for compaction trigger.
    * We trigger compaction at 85% of usable context to avoid hitting hard limits.
    * This means we stop 15% before (context - output) tokens.
    * @see https://github.com/link-assistant/agent/issues/217
    */
   export const OVERFLOW_SAFETY_MARGIN = 0.85;
 
+  /**
+   * Compaction model configuration passed from CLI.
+   * @see https://github.com/link-assistant/agent/issues/219
+   */
+  export interface CompactionModelConfig {
+    providerID: string;
+    modelID: string;
+    useSameModel: boolean;
+    compactionSafetyMarginPercent: number;
+  }
+
+  /**
+   * Compute the effective safety margin ratio.
+   *
+   * When the compaction model has a larger context window than the base model,
+   * the entire base model context can be used (ratio = 1.0, i.e. 0% margin),
+   * because the compaction model can ingest all of it.
+   *
+   * When the compaction model has equal or smaller context, the configured
+   * safety margin applies (default 15% → ratio 0.85).
+   *
+   * @see https://github.com/link-assistant/agent/issues/219
+   */
+  export function computeSafetyMarginRatio(input: {
+    baseModelContextLimit: number;
+    compactionModel?: CompactionModelConfig;
+    compactionModelContextLimit?: number;
+  }): number {
+    const compactionModelConfig = input.compactionModel;
+    if (!compactionModelConfig) return OVERFLOW_SAFETY_MARGIN;
+
+    const compactionSafetyMarginPercent =
+      compactionModelConfig.compactionSafetyMarginPercent;
+    const configuredRatio = 1 - compactionSafetyMarginPercent / 100;
+
+    // When using the same model, always apply the configured safety margin
+    if (compactionModelConfig.useSameModel) return configuredRatio;
+
+    // When compaction model has a larger context, no safety margin needed
+    const compactionContextLimit = input.compactionModelContextLimit ?? 0;
+    if (
+      compactionContextLimit > 0 &&
+      compactionContextLimit > input.baseModelContextLimit
+    ) {
+      log.info(() => ({
+        message:
+          'compaction model has larger context — using full base model context',
+        baseModelContextLimit: input.baseModelContextLimit,
+        compactionModelContextLimit: compactionContextLimit,
+      }));
+      return 1.0;
+    }
+
+    return configuredRatio;
+  }
+
   export function isOverflow(input: {
     tokens: MessageV2.Assistant['tokens'];
     model: ModelsDev.Model;
+    compactionModel?: CompactionModelConfig;
+    compactionModelContextLimit?: number;
   }) {
     if (Flag.OPENCODE_DISABLE_AUTOCOMPACT) return false;
-    const context = input.model.limit.context;
-    if (context === 0) return false;
+    const baseModelContextLimit = input.model.limit.context;
+    if (baseModelContextLimit === 0) return false;
     const count =
       input.tokens.input + input.tokens.cache.read + input.tokens.output;
-    const output =
+    const outputTokenLimit =
       Math.min(input.model.limit.output, SessionPrompt.OUTPUT_TOKEN_MAX) ||
       SessionPrompt.OUTPUT_TOKEN_MAX;
-    const usable = context - output;
-    const safeLimit = Math.floor(usable * OVERFLOW_SAFETY_MARGIN);
+    const usableContextWindow = baseModelContextLimit - outputTokenLimit;
+    const safetyMarginRatio = computeSafetyMarginRatio({
+      baseModelContextLimit,
+      compactionModel: input.compactionModel,
+      compactionModelContextLimit: input.compactionModelContextLimit,
+    });
+    const safeLimit = Math.floor(usableContextWindow * safetyMarginRatio);
     const overflow = count > safeLimit;
     log.info(() => ({
       message: 'overflow check',
       modelID: input.model.id,
-      contextLimit: context,
-      outputLimit: output,
-      usableContext: usable,
+      contextLimit: baseModelContextLimit,
+      outputLimit: outputTokenLimit,
+      usableContextWindow,
       safeLimit,
-      safetyMargin: OVERFLOW_SAFETY_MARGIN,
+      safetyMarginRatio,
+      compactionModelID: input.compactionModel?.modelID,
+      compactionModelContextLimit: input.compactionModelContextLimit,
       currentTokens: count,
       tokensBreakdown: {
         input: input.tokens.input,
@@ -79,6 +144,8 @@ export namespace SessionCompaction {
   export function contextDiagnostics(input: {
     tokens: { input: number; output: number; cache: { read: number } };
     model: ModelsDev.Model;
+    compactionModel?: CompactionModelConfig;
+    compactionModelContextLimit?: number;
   }): MessageV2.ContextDiagnostics | undefined {
     const contextLimit = input.model.limit.context;
     if (contextLimit === 0) return undefined;
@@ -86,7 +153,12 @@ export namespace SessionCompaction {
       Math.min(input.model.limit.output, SessionPrompt.OUTPUT_TOKEN_MAX) ||
       SessionPrompt.OUTPUT_TOKEN_MAX;
     const usableContext = contextLimit - outputLimit;
-    const safeLimit = Math.floor(usableContext * OVERFLOW_SAFETY_MARGIN);
+    const safetyMarginRatio = computeSafetyMarginRatio({
+      baseModelContextLimit: contextLimit,
+      compactionModel: input.compactionModel,
+      compactionModelContextLimit: input.compactionModelContextLimit,
+    });
+    const safeLimit = Math.floor(usableContext * safetyMarginRatio);
     const currentTokens =
       input.tokens.input + input.tokens.cache.read + input.tokens.output;
     return {
@@ -94,7 +166,7 @@ export namespace SessionCompaction {
       outputLimit,
       usableContext,
       safeLimit,
-      safetyMargin: OVERFLOW_SAFETY_MARGIN,
+      safetyMargin: safetyMarginRatio,
       currentTokens,
       headroom: safeLimit - currentTokens,
       overflow: currentTokens > safeLimit,
