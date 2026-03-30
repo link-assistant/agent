@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.17.0
+
+### Minor Changes
+
+- 99b34ec: Enable --summarize-session by default and use the same model as --model for session summarization. Add 15% safety margin to compaction overflow detection, context diagnostics to step-finish JSON output, and detailed logging for overflow checks.
+
 ## 0.16.18
 
 ### Patch Changes
