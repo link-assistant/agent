@@ -85,10 +85,10 @@ describe('verbose-fetch - bodyPreview', () => {
   });
 
   test('truncates long body', () => {
-    const longBody = 'x'.repeat(3000);
+    const longBody = 'x'.repeat(250000);
     const result = bodyPreview(longBody);
-    expect(result).toContain('... [truncated, total 3000 chars]');
-    expect(result!.length).toBeLessThan(3000);
+    expect(result).toContain('... [truncated, total 250000 chars]');
+    expect(result!.length).toBeLessThan(250000);
   });
 
   test('respects custom maxChars', () => {

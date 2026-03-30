@@ -64,7 +64,7 @@ export function sanitizeHeaders(
  */
 export function bodyPreview(
   body: BodyInit | null | undefined,
-  maxChars = 2000
+  maxChars = 200000
 ): string | undefined {
   if (!body) return undefined;
 
@@ -89,9 +89,9 @@ export function bodyPreview(
 export interface VerboseFetchOptions {
   /** Identifier for the caller (e.g. 'webfetch', 'auth-plugins', 'config') */
   caller: string;
-  /** Maximum chars for response body preview (default: 4000) */
+  /** Maximum chars for response body preview (default: 200000) */
   responseBodyMaxChars?: number;
-  /** Maximum chars for request body preview (default: 2000) */
+  /** Maximum chars for request body preview (default: 200000) */
   requestBodyMaxChars?: number;
 }
 
@@ -113,8 +113,8 @@ export function createVerboseFetch(
 ): typeof fetch {
   const {
     caller,
-    responseBodyMaxChars = 4000,
-    requestBodyMaxChars = 2000,
+    responseBodyMaxChars = 200000,
+    requestBodyMaxChars = 200000,
   } = options;
 
   return async (
