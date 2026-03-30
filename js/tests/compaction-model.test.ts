@@ -257,27 +257,24 @@ describe('CLI defaults', () => {
   });
 
   test('default compaction safety margin is 15%', async () => {
-    const { DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT } = await import(
-      '../src/cli/defaults'
-    );
+    const { DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT } =
+      await import('../src/cli/defaults');
     expect(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT).toBe(15);
   });
 });
 
 describe('argv parsing', () => {
   test('getCompactionModelFromProcessArgv returns null when not set', async () => {
-    const { getCompactionModelFromProcessArgv } = await import(
-      '../src/cli/argv'
-    );
+    const { getCompactionModelFromProcessArgv } =
+      await import('../src/cli/argv');
     // No --compaction-model in process.argv
     const result = getCompactionModelFromProcessArgv();
     expect(result).toBe(null);
   });
 
   test('getCompactionSafetyMarginFromProcessArgv returns null when not set', async () => {
-    const { getCompactionSafetyMarginFromProcessArgv } = await import(
-      '../src/cli/argv'
-    );
+    const { getCompactionSafetyMarginFromProcessArgv } =
+      await import('../src/cli/argv');
     const result = getCompactionSafetyMarginFromProcessArgv();
     expect(result).toBe(null);
   });

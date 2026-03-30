@@ -407,10 +407,7 @@ export namespace SessionPrompt {
       // Resolve compaction model context limit for overflow detection (#219)
       let compactionModelContextLimit: number | undefined;
       const compactionModelConfig = lastUser.compactionModel;
-      if (
-        compactionModelConfig &&
-        !compactionModelConfig.useSameModel
-      ) {
+      if (compactionModelConfig && !compactionModelConfig.useSameModel) {
         try {
           const compactionModelResolved = await Provider.getModel(
             compactionModelConfig.providerID,
