@@ -96,7 +96,10 @@ export namespace SessionSummary {
     // Use the same model as the main session (--model) instead of a small model
     // This ensures consistent behavior and uses the model the user explicitly requested
     // See: https://github.com/link-assistant/agent/issues/217
-    const model = await Provider.getModel(assistantMsg.providerID, assistantMsg.modelID).catch(() => null);
+    const model = await Provider.getModel(
+      assistantMsg.providerID,
+      assistantMsg.modelID
+    ).catch(() => null);
     if (!model) {
       log.info(() => ({
         message: 'could not load session model for summarization, skipping',
