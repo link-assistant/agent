@@ -28,6 +28,14 @@ export namespace SessionCompaction {
     ),
   };
 
+  /**
+   * Safety margin ratio for compaction trigger.
+   * We trigger compaction at 85% of usable context to avoid hitting hard limits.
+   * This means we stop 15% before (context - output) tokens.
+   * @see https://github.com/link-assistant/agent/issues/217
+   */
+  export const OVERFLOW_SAFETY_MARGIN = 0.85;
+
   export function isOverflow(input: {
     tokens: MessageV2.Assistant['tokens'];
     model: ModelsDev.Model;
@@ -41,7 +49,56 @@ export namespace SessionCompaction {
       Math.min(input.model.limit.output, SessionPrompt.OUTPUT_TOKEN_MAX) ||
       SessionPrompt.OUTPUT_TOKEN_MAX;
     const usable = context - output;
-    return count > usable;
+    const safeLimit = Math.floor(usable * OVERFLOW_SAFETY_MARGIN);
+    const overflow = count > safeLimit;
+    log.info(() => ({
+      message: 'overflow check',
+      modelID: input.model.id,
+      contextLimit: context,
+      outputLimit: output,
+      usableContext: usable,
+      safeLimit,
+      safetyMargin: OVERFLOW_SAFETY_MARGIN,
+      currentTokens: count,
+      tokensBreakdown: {
+        input: input.tokens.input,
+        cacheRead: input.tokens.cache.read,
+        output: input.tokens.output,
+      },
+      overflow,
+      headroom: safeLimit - count,
+    }));
+    return overflow;
+  }
+
+  /**
+   * Compute context diagnostics for a given model and token usage.
+   * Used in step-finish parts to show context usage in JSON output.
+   * @see https://github.com/link-assistant/agent/issues/217
+   */
+  export function contextDiagnostics(input: {
+    tokens: { input: number; output: number; cache: { read: number } };
+    model: ModelsDev.Model;
+  }): MessageV2.ContextDiagnostics | undefined {
+    const contextLimit = input.model.limit.context;
+    if (contextLimit === 0) return undefined;
+    const outputLimit =
+      Math.min(input.model.limit.output, SessionPrompt.OUTPUT_TOKEN_MAX) ||
+      SessionPrompt.OUTPUT_TOKEN_MAX;
+    const usableContext = contextLimit - outputLimit;
+    const safeLimit = Math.floor(usableContext * OVERFLOW_SAFETY_MARGIN);
+    const currentTokens =
+      input.tokens.input + input.tokens.cache.read + input.tokens.output;
+    return {
+      contextLimit,
+      outputLimit,
+      usableContext,
+      safeLimit,
+      safetyMargin: OVERFLOW_SAFETY_MARGIN,
+      currentTokens,
+      headroom: safeLimit - currentTokens,
+      overflow: currentTokens > safeLimit,
+    };
   }
 
   export const PRUNE_MINIMUM = 20_000;
@@ -100,10 +157,27 @@ export namespace SessionCompaction {
     };
     abort: AbortSignal;
   }) {
+    log.info(() => ({
+      message: 'compaction process starting',
+      providerID: input.model.providerID,
+      modelID: input.model.modelID,
+      messageCount: input.messages.length,
+      sessionID: input.sessionID,
+    }));
     const model = await Provider.getModel(
       input.model.providerID,
       input.model.modelID
     );
+    if (Flag.OPENCODE_VERBOSE) {
+      log.info(() => ({
+        message: 'compaction model loaded',
+        providerID: model.providerID,
+        modelID: model.modelID,
+        npm: model.npm,
+        contextLimit: model.info.limit.context,
+        outputLimit: model.info.limit.output,
+      }));
+    }
     const system = [...SystemPrompt.summarize(model.providerID)];
     const msg = (await Session.updateMessage({
       id: Identifier.ascending('message'),
@@ -156,6 +230,19 @@ export namespace SessionCompaction {
     );
     // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
     const safeModelMessages = Array.isArray(modelMessages) ? modelMessages : [];
+
+    if (Flag.OPENCODE_VERBOSE) {
+      log.info(() => ({
+        message: 'compaction streamText call',
+        providerID: model.providerID,
+        modelID: model.modelID,
+        systemPromptCount: system.length,
+        modelMessageCount: safeModelMessages.length,
+        filteredMessageCount: input.messages.length - safeModelMessages.length,
+        toolCall: model.info.tool_call,
+      }));
+    }
+
     const result = await processor.process(() =>
       streamText({
         onError(error) {

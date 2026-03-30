@@ -14,6 +14,7 @@ import { Instance } from '../project/instance';
 import { Storage } from '../storage/storage';
 import { Bus } from '../bus';
 import { Flag } from '../flag/flag';
+import { Token } from '../util/token';
 
 export namespace SessionSummary {
   const log = Log.create({ service: 'session.summary' });
@@ -80,34 +81,89 @@ export namespace SessionSummary {
     };
     await Session.updateMessage(userMsg);
 
-    // Skip AI-powered summarization if disabled (default)
-    // See: https://github.com/link-assistant/agent/issues/179
+    // Skip AI-powered summarization if disabled
+    // See: https://github.com/link-assistant/agent/issues/217
     if (!Flag.SUMMARIZE_SESSION) {
       log.info(() => ({
         message: 'session summarization disabled',
-        hint: 'Enable with --summarize-session flag or AGENT_SUMMARIZE_SESSION=true',
+        hint: 'Enable with --summarize-session flag (enabled by default) or AGENT_SUMMARIZE_SESSION=true',
       }));
       return;
     }
 
     const assistantMsg = messages.find((m) => m.info.role === 'assistant')!
       .info as MessageV2.Assistant;
-    const small = await Provider.getSmallModel(assistantMsg.providerID);
-    if (!small) return;
+
+    // Use the same model as the main session (--model) instead of a small model
+    // This ensures consistent behavior and uses the model the user explicitly requested
+    // See: https://github.com/link-assistant/agent/issues/217
+    log.info(() => ({
+      message: 'loading model for summarization',
+      providerID: assistantMsg.providerID,
+      modelID: assistantMsg.modelID,
+      hint: 'Using same model as --model (not a small model)',
+    }));
+    const model = await Provider.getModel(
+      assistantMsg.providerID,
+      assistantMsg.modelID
+    ).catch(() => null);
+    if (!model) {
+      log.info(() => ({
+        message: 'could not load session model for summarization, skipping',
+        providerID: assistantMsg.providerID,
+        modelID: assistantMsg.modelID,
+      }));
+      return;
+    }
+
+    if (Flag.OPENCODE_VERBOSE) {
+      log.info(() => ({
+        message: 'summarization model loaded',
+        providerID: model.providerID,
+        modelID: model.modelID,
+        npm: model.npm,
+        contextLimit: model.info.limit.context,
+        outputLimit: model.info.limit.output,
+        reasoning: model.info.reasoning,
+        toolCall: model.info.tool_call,
+      }));
+    }
 
     const textPart = msgWithParts.parts.find(
       (p) => p.type === 'text' && !p.synthetic
     ) as MessageV2.TextPart;
     if (textPart && !userMsg.summary?.title) {
+      const titleMaxTokens = model.info.reasoning ? 1500 : 20;
+      const systemPrompts = SystemPrompt.title(model.providerID);
+      const userContent = `
+              The following is the text to summarize:
+              <text>
+              ${textPart?.text ?? ''}
+              </text>
+            `;
+
+      if (Flag.OPENCODE_VERBOSE) {
+        log.info(() => ({
+          message: 'generating title via API',
+          providerID: model.providerID,
+          modelID: model.modelID,
+          maxOutputTokens: titleMaxTokens,
+          systemPromptCount: systemPrompts.length,
+          userContentLength: userContent.length,
+          userContentTokenEstimate: Token.estimate(userContent),
+          userContentPreview: userContent.substring(0, 500),
+        }));
+      }
+
       const result = await generateText({
-        maxOutputTokens: small.info.reasoning ? 1500 : 20,
+        maxOutputTokens: titleMaxTokens,
         providerOptions: ProviderTransform.providerOptions(
-          small.npm,
-          small.providerID,
+          model.npm,
+          model.providerID,
           {}
         ),
         messages: [
-          ...SystemPrompt.title(small.providerID).map(
+          ...systemPrompts.map(
             (x): ModelMessage => ({
               role: 'system',
               content: x,
@@ -115,17 +171,22 @@ export namespace SessionSummary {
           ),
           {
             role: 'user' as const,
-            content: `
-              The following is the text to summarize:
-              <text>
-              ${textPart?.text ?? ''}
-              </text>
-            `,
+            content: userContent,
           },
         ],
-        headers: small.info.headers,
-        model: small.language,
+        headers: model.info.headers,
+        model: model.language,
       });
+
+      if (Flag.OPENCODE_VERBOSE) {
+        log.info(() => ({
+          message: 'title API response received',
+          providerID: model.providerID,
+          modelID: model.modelID,
+          titleLength: result.text.length,
+          usage: result.usage,
+        }));
+      }
       log.info(() => ({ message: 'title', title: result.text }));
       userMsg.summary.title = result.text;
       await Session.updateMessage(userMsg);
@@ -146,8 +207,24 @@ export namespace SessionSummary {
       if (!summary || diffs.length > 0) {
         // Pre-convert messages to ModelMessage format (async in AI SDK 6.0+)
         const modelMessages = await MessageV2.toModelMessage(messages);
+        const conversationContent = JSON.stringify(modelMessages);
+
+        if (Flag.OPENCODE_VERBOSE) {
+          log.info(() => ({
+            message: 'generating body summary via API',
+            providerID: model.providerID,
+            modelID: model.modelID,
+            maxOutputTokens: 100,
+            conversationLength: conversationContent.length,
+            conversationTokenEstimate: Token.estimate(conversationContent),
+            messageCount: modelMessages.length,
+            diffsCount: diffs.length,
+            hasPriorSummary: !!summary,
+          }));
+        }
+
         const result = await generateText({
-          model: small.language,
+          model: model.language,
           maxOutputTokens: 100,
           messages: [
             {
@@ -155,14 +232,36 @@ export namespace SessionSummary {
               content: `
             Summarize the following conversation into 2 sentences MAX explaining what the assistant did and why. Do not explain the user's input. Do not speak in the third person about the assistant.
             <conversation>
-            ${JSON.stringify(modelMessages)}
+            ${conversationContent}
             </conversation>
             `,
             },
           ],
-          headers: small.info.headers,
-        }).catch(() => {});
-        if (result) summary = result.text;
+          headers: model.info.headers,
+        }).catch((err) => {
+          if (Flag.OPENCODE_VERBOSE) {
+            log.warn(() => ({
+              message: 'body summary API call failed',
+              providerID: model.providerID,
+              modelID: model.modelID,
+              error: err instanceof Error ? err.message : String(err),
+              stack: err instanceof Error ? err.stack : undefined,
+            }));
+          }
+          return undefined;
+        });
+        if (result) {
+          if (Flag.OPENCODE_VERBOSE) {
+            log.info(() => ({
+              message: 'body summary API response received',
+              providerID: model.providerID,
+              modelID: model.modelID,
+              summaryLength: result.text.length,
+              usage: result.usage,
+            }));
+          }
+          summary = result.text;
+        }
       }
       userMsg.summary.body = summary;
       log.info(() => ({ message: 'body', body: summary }));

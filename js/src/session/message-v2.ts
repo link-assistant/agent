@@ -240,6 +240,27 @@ export namespace MessageV2 {
     });
   export type ModelInfo = z.infer<typeof ModelInfo>;
 
+  /**
+   * Context diagnostic info for step-finish parts.
+   * Shows model context limits and current usage to help debug compaction decisions.
+   * @see https://github.com/link-assistant/agent/issues/217
+   */
+  export const ContextDiagnostics = z
+    .object({
+      contextLimit: z.number(),
+      outputLimit: z.number(),
+      usableContext: z.number(),
+      safeLimit: z.number(),
+      safetyMargin: z.number(),
+      currentTokens: z.number(),
+      headroom: z.number(),
+      overflow: z.boolean(),
+    })
+    .meta({
+      ref: 'ContextDiagnostics',
+    });
+  export type ContextDiagnostics = z.infer<typeof ContextDiagnostics>;
+
   export const StepFinishPart = PartBase.extend({
     type: z.literal('step-finish'),
     reason: z.string(),
@@ -257,6 +278,9 @@ export namespace MessageV2 {
     // Model info included when --output-response-model is enabled
     // @see https://github.com/link-assistant/agent/issues/179
     model: ModelInfo.optional(),
+    // Context diagnostics for debugging compaction decisions
+    // @see https://github.com/link-assistant/agent/issues/217
+    context: ContextDiagnostics.optional(),
   }).meta({
     ref: 'StepFinishPart',
   });

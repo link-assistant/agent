@@ -1201,25 +1201,23 @@ export namespace Provider {
         sessionID: provider.id,
       });
 
-      // Wrap fetch with verbose HTTP logging for debugging provider issues.
-      // IMPORTANT: The verbose check is done at call time (not SDK creation time)
-      // because the SDK is cached and Flag.OPENCODE_VERBOSE may change after creation.
-      // When verbose is disabled, the wrapper is a no-op passthrough with negligible overhead.
-      // See: https://github.com/link-assistant/agent/issues/200
-      // See: https://github.com/link-assistant/agent/issues/206
+      // Verbose HTTP logging is handled by the global fetch monkey-patch
+      // (installed in CLI middleware in index.js). The global patch catches ALL
+      // HTTP calls reliably, regardless of how the AI SDK passes fetch internally.
+      // This provider-level wrapper is kept as a fallback for environments where
+      // the global patch may not be installed (e.g., programmatic use).
+      // See: https://github.com/link-assistant/agent/issues/217
       // See: https://github.com/link-assistant/agent/issues/215
       {
         const innerFetch = options['fetch'];
         let verboseWrapperConfirmed = false;
         let httpCallCount = 0;
 
-        // Log at SDK creation time that the fetch wrapper is installed.
-        // This runs once per provider SDK creation (not per request).
-        // If verbose is off at creation time, the per-request check still applies.
-        // See: https://github.com/link-assistant/agent/issues/215
-        log.info('verbose HTTP fetch wrapper installed', {
+        log.info('provider SDK fetch chain configured', {
           providerID: provider.id,
           pkg,
+          globalVerboseFetchInstalled:
+            !!globalThis.__agentVerboseFetchInstalled,
           verboseAtCreation: Flag.OPENCODE_VERBOSE,
         });
 
@@ -1227,8 +1225,15 @@ export namespace Provider {
           input: RequestInfo | URL,
           init?: RequestInit
         ): Promise<Response> => {
-          // Check verbose flag at call time — not at SDK creation time
-          if (!Flag.OPENCODE_VERBOSE) {
+          // Check verbose flag at call time — not at SDK creation time.
+          // When the global fetch monkey-patch is installed, it handles verbose
+          // logging for all calls. The provider wrapper is a fallback for
+          // environments without the global patch.
+          // See: https://github.com/link-assistant/agent/issues/217
+          if (
+            !Flag.OPENCODE_VERBOSE ||
+            globalThis.__agentVerboseFetchInstalled
+          ) {
             return innerFetch(input, init);
           }
 
@@ -1301,8 +1306,8 @@ export namespace Provider {
                     : undefined;
               if (bodyStr && typeof bodyStr === 'string') {
                 bodyPreview =
-                  bodyStr.length > 2000
-                    ? bodyStr.slice(0, 2000) +
+                  bodyStr.length > 200000
+                    ? bodyStr.slice(0, 200000) +
                       `... [truncated, total ${bodyStr.length} chars]`
                     : bodyStr;
               }
@@ -1362,7 +1367,7 @@ export namespace Provider {
             // still receives the full stream while we asynchronously log a preview.
             // For non-streaming responses, buffer the body and reconstruct the Response.
             // See: https://github.com/link-assistant/agent/issues/204
-            const responseBodyMaxChars = 4000;
+            const responseBodyMaxChars = 200000;
             const contentType = response.headers.get('content-type') ?? '';
             const isStreaming =
               contentType.includes('event-stream') ||
