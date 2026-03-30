@@ -157,10 +157,27 @@ export namespace SessionCompaction {
     };
     abort: AbortSignal;
   }) {
+    log.info(() => ({
+      message: 'compaction process starting',
+      providerID: input.model.providerID,
+      modelID: input.model.modelID,
+      messageCount: input.messages.length,
+      sessionID: input.sessionID,
+    }));
     const model = await Provider.getModel(
       input.model.providerID,
       input.model.modelID
     );
+    if (Flag.OPENCODE_VERBOSE) {
+      log.info(() => ({
+        message: 'compaction model loaded',
+        providerID: model.providerID,
+        modelID: model.modelID,
+        npm: model.npm,
+        contextLimit: model.info.limit.context,
+        outputLimit: model.info.limit.output,
+      }));
+    }
     const system = [...SystemPrompt.summarize(model.providerID)];
     const msg = (await Session.updateMessage({
       id: Identifier.ascending('message'),
@@ -213,6 +230,19 @@ export namespace SessionCompaction {
     );
     // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
     const safeModelMessages = Array.isArray(modelMessages) ? modelMessages : [];
+
+    if (Flag.OPENCODE_VERBOSE) {
+      log.info(() => ({
+        message: 'compaction streamText call',
+        providerID: model.providerID,
+        modelID: model.modelID,
+        systemPromptCount: system.length,
+        modelMessageCount: safeModelMessages.length,
+        filteredMessageCount: input.messages.length - safeModelMessages.length,
+        toolCall: model.info.tool_call,
+      }));
+    }
+
     const result = await processor.process(() =>
       streamText({
         onError(error) {

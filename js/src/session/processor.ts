@@ -374,6 +374,15 @@ export namespace SessionProcessor {
                     model: input.model,
                   });
 
+                  if (Flag.OPENCODE_VERBOSE && contextDiag) {
+                    log.info(() => ({
+                      message: 'step-finish context diagnostics',
+                      providerID: input.providerID,
+                      modelID: input.model.id,
+                      ...contextDiag,
+                    }));
+                  }
+
                   await Session.updatePart({
                     id: Identifier.ascending('part'),
                     reason: finishReason,
