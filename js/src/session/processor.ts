@@ -17,6 +17,7 @@ import { Bus } from '../bus';
 import { SessionRetry } from './retry';
 import { SessionStatus } from './status';
 import { Flag } from '../flag/flag';
+import { SessionCompaction } from './compaction';
 
 export namespace SessionProcessor {
   const DOOM_LOOP_THRESHOLD = 3;
@@ -366,6 +367,13 @@ export namespace SessionProcessor {
                         }
                       : undefined;
 
+                  // Compute context diagnostics for JSON output
+                  // @see https://github.com/link-assistant/agent/issues/217
+                  const contextDiag = SessionCompaction.contextDiagnostics({
+                    tokens: usage.tokens,
+                    model: input.model,
+                  });
+
                   await Session.updatePart({
                     id: Identifier.ascending('part'),
                     reason: finishReason,
@@ -376,6 +384,7 @@ export namespace SessionProcessor {
                     tokens: usage.tokens,
                     cost: usage.cost,
                     model: modelInfo,
+                    context: contextDiag,
                   });
                   await Session.updateMessage(input.assistantMessage);
                   if (snapshot) {

@@ -103,13 +103,19 @@ export namespace Flag {
   }
 
   // Session summarization configuration
-  // When disabled, session summaries will not be generated
-  // This saves tokens and prevents rate limit issues with free tier models
-  // See: https://github.com/link-assistant/agent/issues/179
-  export let SUMMARIZE_SESSION = truthyCompat(
-    'LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION',
-    'AGENT_SUMMARIZE_SESSION'
-  );
+  // Enabled by default - generates AI-powered session summaries using the same model
+  // Can be disabled with --no-summarize-session or AGENT_SUMMARIZE_SESSION=false
+  // See: https://github.com/link-assistant/agent/issues/217
+  export let SUMMARIZE_SESSION = (() => {
+    const value = (
+      getEnv(
+        'LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION',
+        'AGENT_SUMMARIZE_SESSION'
+      ) ?? ''
+    ).toLowerCase();
+    if (value === 'false' || value === '0') return false;
+    return true; // Default to true
+  })();
 
   // Allow setting summarize-session mode programmatically (e.g., from CLI --summarize-session flag)
   export function setSummarizeSession(value: boolean) {

@@ -733,8 +733,9 @@ async function main() {
             })
             .option('summarize-session', {
               type: 'boolean',
-              description: 'Generate AI session summaries',
-              default: false,
+              description:
+                'Generate AI session summaries (default: true). Use --no-summarize-session to disable.',
+              default: true,
             }),
         handler: async (argv) => {
           // Check both CLI flag and environment variable for compact JSON mode
@@ -917,7 +918,10 @@ async function main() {
         if (argv['output-response-model'] === false) {
           Flag.setOutputResponseModel(false);
         }
-        if (argv['summarize-session'] === true) {
+        // summarize-session is enabled by default, only set if explicitly disabled
+        if (argv['summarize-session'] === false) {
+          Flag.setSummarizeSession(false);
+        } else {
           Flag.setSummarizeSession(true);
         }
         // retry-on-rate-limits is enabled by default, only set if explicitly disabled

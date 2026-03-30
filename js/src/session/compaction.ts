@@ -28,6 +28,14 @@ export namespace SessionCompaction {
     ),
   };
 
+  /**
+   * Safety margin ratio for compaction trigger.
+   * We trigger compaction at 85% of usable context to avoid hitting hard limits.
+   * This means we stop 15% before (context - output) tokens.
+   * @see https://github.com/link-assistant/agent/issues/217
+   */
+  export const OVERFLOW_SAFETY_MARGIN = 0.85;
+
   export function isOverflow(input: {
     tokens: MessageV2.Assistant['tokens'];
     model: ModelsDev.Model;
@@ -41,7 +49,56 @@ export namespace SessionCompaction {
       Math.min(input.model.limit.output, SessionPrompt.OUTPUT_TOKEN_MAX) ||
       SessionPrompt.OUTPUT_TOKEN_MAX;
     const usable = context - output;
-    return count > usable;
+    const safeLimit = Math.floor(usable * OVERFLOW_SAFETY_MARGIN);
+    const overflow = count > safeLimit;
+    log.info(() => ({
+      message: 'overflow check',
+      modelID: input.model.id,
+      contextLimit: context,
+      outputLimit: output,
+      usableContext: usable,
+      safeLimit,
+      safetyMargin: OVERFLOW_SAFETY_MARGIN,
+      currentTokens: count,
+      tokensBreakdown: {
+        input: input.tokens.input,
+        cacheRead: input.tokens.cache.read,
+        output: input.tokens.output,
+      },
+      overflow,
+      headroom: safeLimit - count,
+    }));
+    return overflow;
+  }
+
+  /**
+   * Compute context diagnostics for a given model and token usage.
+   * Used in step-finish parts to show context usage in JSON output.
+   * @see https://github.com/link-assistant/agent/issues/217
+   */
+  export function contextDiagnostics(input: {
+    tokens: { input: number; output: number; cache: { read: number } };
+    model: ModelsDev.Model;
+  }): MessageV2.ContextDiagnostics | undefined {
+    const contextLimit = input.model.limit.context;
+    if (contextLimit === 0) return undefined;
+    const outputLimit =
+      Math.min(input.model.limit.output, SessionPrompt.OUTPUT_TOKEN_MAX) ||
+      SessionPrompt.OUTPUT_TOKEN_MAX;
+    const usableContext = contextLimit - outputLimit;
+    const safeLimit = Math.floor(usableContext * OVERFLOW_SAFETY_MARGIN);
+    const currentTokens =
+      input.tokens.input + input.tokens.cache.read + input.tokens.output;
+    return {
+      contextLimit,
+      outputLimit,
+      usableContext,
+      safeLimit,
+      safetyMargin: OVERFLOW_SAFETY_MARGIN,
+      currentTokens,
+      headroom: safeLimit - currentTokens,
+      overflow: currentTokens > safeLimit,
+    };
   }
 
   export const PRUNE_MINIMUM = 20_000;

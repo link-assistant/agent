@@ -80,34 +80,45 @@ export namespace SessionSummary {
     };
     await Session.updateMessage(userMsg);
 
-    // Skip AI-powered summarization if disabled (default)
-    // See: https://github.com/link-assistant/agent/issues/179
+    // Skip AI-powered summarization if disabled
+    // See: https://github.com/link-assistant/agent/issues/217
     if (!Flag.SUMMARIZE_SESSION) {
       log.info(() => ({
         message: 'session summarization disabled',
-        hint: 'Enable with --summarize-session flag or AGENT_SUMMARIZE_SESSION=true',
+        hint: 'Enable with --summarize-session flag (enabled by default) or AGENT_SUMMARIZE_SESSION=true',
       }));
       return;
     }
 
     const assistantMsg = messages.find((m) => m.info.role === 'assistant')!
       .info as MessageV2.Assistant;
-    const small = await Provider.getSmallModel(assistantMsg.providerID);
-    if (!small) return;
+
+    // Use the same model as the main session (--model) instead of a small model
+    // This ensures consistent behavior and uses the model the user explicitly requested
+    // See: https://github.com/link-assistant/agent/issues/217
+    const model = await Provider.getModel(assistantMsg.providerID, assistantMsg.modelID).catch(() => null);
+    if (!model) {
+      log.info(() => ({
+        message: 'could not load session model for summarization, skipping',
+        providerID: assistantMsg.providerID,
+        modelID: assistantMsg.modelID,
+      }));
+      return;
+    }
 
     const textPart = msgWithParts.parts.find(
       (p) => p.type === 'text' && !p.synthetic
     ) as MessageV2.TextPart;
     if (textPart && !userMsg.summary?.title) {
       const result = await generateText({
-        maxOutputTokens: small.info.reasoning ? 1500 : 20,
+        maxOutputTokens: model.info.reasoning ? 1500 : 20,
         providerOptions: ProviderTransform.providerOptions(
-          small.npm,
-          small.providerID,
+          model.npm,
+          model.providerID,
           {}
         ),
         messages: [
-          ...SystemPrompt.title(small.providerID).map(
+          ...SystemPrompt.title(model.providerID).map(
             (x): ModelMessage => ({
               role: 'system',
               content: x,
@@ -123,8 +134,8 @@ export namespace SessionSummary {
             `,
           },
         ],
-        headers: small.info.headers,
-        model: small.language,
+        headers: model.info.headers,
+        model: model.language,
       });
       log.info(() => ({ message: 'title', title: result.text }));
       userMsg.summary.title = result.text;
@@ -147,7 +158,7 @@ export namespace SessionSummary {
         // Pre-convert messages to ModelMessage format (async in AI SDK 6.0+)
         const modelMessages = await MessageV2.toModelMessage(messages);
         const result = await generateText({
-          model: small.language,
+          model: model.language,
           maxOutputTokens: 100,
           messages: [
             {
@@ -160,7 +171,7 @@ export namespace SessionSummary {
             `,
             },
           ],
-          headers: small.info.headers,
+          headers: model.info.headers,
         }).catch(() => {});
         if (result) summary = result.text;
       }
