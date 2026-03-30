@@ -934,15 +934,10 @@ async function main() {
           compactJson: isCompact,
         });
 
-        // Monkey-patch globalThis.fetch with verbose logging when --verbose is enabled.
-        // This is the most reliable way to capture ALL raw HTTP requests/responses,
-        // regardless of how AI SDK providers pass the fetch function internally.
-        // The verbose check is done at call time inside createVerboseFetch, so
-        // patching once at startup is safe — it's a no-op when verbose is off.
-        // See: https://github.com/link-assistant/agent/issues/217
+        // Monkey-patch globalThis.fetch for raw HTTP logging in --verbose mode.
+        // Catches ALL HTTP calls regardless of AI SDK fetch passthrough. (#217)
         if (!globalThis.__agentVerboseFetchInstalled) {
-          const originalFetch = globalThis.fetch;
-          globalThis.fetch = createVerboseFetch(originalFetch, {
+          globalThis.fetch = createVerboseFetch(globalThis.fetch, {
             caller: 'global',
           });
           globalThis.__agentVerboseFetchInstalled = true;
