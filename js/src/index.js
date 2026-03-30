@@ -6,7 +6,11 @@ import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
 import { Log } from './util/log.ts';
 import { parseModelConfig } from './cli/model-config.js';
-import { DEFAULT_MODEL } from './cli/defaults.ts';
+import {
+  DEFAULT_MODEL,
+  DEFAULT_COMPACTION_MODEL,
+  DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
+} from './cli/defaults.ts';
 // Bus is used via createBusEventSubscription in event-handler.js
 import { Session } from './session/index.ts';
 import { SessionPrompt } from './session/prompt.ts';
@@ -278,7 +282,7 @@ async function runAgentMode(argv, request) {
     fn: async () => {
       // Parse model config inside Instance.provide context
       // This allows parseModelWithResolution to access the provider state
-      const { providerID, modelID } = await parseModelConfig(
+      const { providerID, modelID, compactionModel } = await parseModelConfig(
         argv,
         outputError,
         outputStatus
@@ -293,7 +297,8 @@ async function runAgentMode(argv, request) {
           modelID,
           systemMessage,
           appendSystemMessage,
-          jsonStandard
+          jsonStandard,
+          compactionModel
         );
       } else {
         // DIRECT MODE: Run everything in single process
@@ -304,7 +309,8 @@ async function runAgentMode(argv, request) {
           modelID,
           systemMessage,
           appendSystemMessage,
-          jsonStandard
+          jsonStandard,
+          compactionModel
         );
       }
     },
@@ -363,7 +369,7 @@ async function runContinuousAgentMode(argv) {
     fn: async () => {
       // Parse model config inside Instance.provide context
       // This allows parseModelWithResolution to access the provider state
-      const { providerID, modelID } = await parseModelConfig(
+      const { providerID, modelID, compactionModel } = await parseModelConfig(
         argv,
         outputError,
         outputStatus
@@ -377,7 +383,8 @@ async function runContinuousAgentMode(argv) {
           modelID,
           systemMessage,
           appendSystemMessage,
-          jsonStandard
+          jsonStandard,
+          compactionModel
         );
       } else {
         // DIRECT MODE: Run everything in single process
@@ -387,7 +394,8 @@ async function runContinuousAgentMode(argv) {
           modelID,
           systemMessage,
           appendSystemMessage,
-          jsonStandard
+          jsonStandard,
+          compactionModel
         );
       }
     },
@@ -409,7 +417,8 @@ async function runServerMode(
   modelID,
   systemMessage,
   appendSystemMessage,
-  jsonStandard
+  jsonStandard,
+  compactionModel
 ) {
   const compactJson = argv['compact-json'] === true;
 
@@ -475,6 +484,7 @@ async function runServerMode(
             providerID,
             modelID,
           },
+          compactionModel,
           system: systemMessage,
           appendSystem: appendSystemMessage,
         }),
@@ -508,7 +518,8 @@ async function runDirectMode(
   modelID,
   systemMessage,
   appendSystemMessage,
-  jsonStandard
+  jsonStandard,
+  compactionModel
 ) {
   const compactJson = argv['compact-json'] === true;
 
@@ -558,6 +569,7 @@ async function runDirectMode(
         providerID,
         modelID,
       },
+      compactionModel,
       system: systemMessage,
       appendSystem: appendSystemMessage,
     }).catch((error) => {
@@ -736,6 +748,18 @@ async function main() {
               description:
                 'Generate AI session summaries (default: true). Use --no-summarize-session to disable.',
               default: true,
+            })
+            .option('compaction-model', {
+              type: 'string',
+              description:
+                'Model to use for context compaction in format providerID/modelID. Use "same" to use the base model. Default: opencode/gpt-5-nano (free, 400K context).',
+              default: DEFAULT_COMPACTION_MODEL,
+            })
+            .option('compaction-safety-margin', {
+              type: 'number',
+              description:
+                'Safety margin (%) of usable context window before triggering compaction. Only applies when the compaction model has equal or smaller context than the base model. Default: 15.',
+              default: DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
             }),
         handler: async (argv) => {
           // Check both CLI flag and environment variable for compact JSON mode

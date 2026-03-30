@@ -392,6 +392,14 @@ export namespace MessageV2 {
       providerID: z.string(),
       modelID: z.string(),
     }),
+    compactionModel: z
+      .object({
+        providerID: z.string(),
+        modelID: z.string(),
+        useSameModel: z.boolean(),
+        compactionSafetyMarginPercent: z.number(),
+      })
+      .optional(),
     system: z.string().optional(),
     appendSystem: z.string().optional(),
     tools: z.record(z.string(), z.boolean()).optional(),

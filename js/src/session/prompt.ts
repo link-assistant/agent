@@ -89,6 +89,14 @@ export namespace SessionPrompt {
         modelID: z.string(),
       })
       .optional(),
+    compactionModel: z
+      .object({
+        providerID: z.string(),
+        modelID: z.string(),
+        useSameModel: z.boolean(),
+        compactionSafetyMarginPercent: z.number(),
+      })
+      .optional(),
     agent: z.string().optional(),
     noReply: z.boolean().optional(),
     system: z.string().optional(),
@@ -396,6 +404,31 @@ export namespace SessionPrompt {
         // Re-throw the error so it can be handled by the caller
         throw error;
       }
+      // Resolve compaction model context limit for overflow detection (#219)
+      let compactionModelContextLimit: number | undefined;
+      const compactionModelConfig = lastUser.compactionModel;
+      if (
+        compactionModelConfig &&
+        !compactionModelConfig.useSameModel
+      ) {
+        try {
+          const compactionModelResolved = await Provider.getModel(
+            compactionModelConfig.providerID,
+            compactionModelConfig.modelID
+          );
+          compactionModelContextLimit =
+            compactionModelResolved.info?.limit?.context;
+        } catch {
+          // If compaction model can't be resolved, fall back to default safety margin
+          log.info(() => ({
+            message:
+              'could not resolve compaction model for context limit — using default safety margin',
+            compactionProviderID: compactionModelConfig.providerID,
+            compactionModelID: compactionModelConfig.modelID,
+          }));
+        }
+      }
+
       const task = tasks.pop();
 
       // pending subtask
@@ -512,13 +545,23 @@ export namespace SessionPrompt {
 
       // pending compaction
       if (task?.type === 'compaction') {
+        // Use compaction model if configured, otherwise fall back to base model
+        const compactionModelConfig = lastUser.compactionModel;
+        const compactionProviderID =
+          compactionModelConfig && !compactionModelConfig.useSameModel
+            ? compactionModelConfig.providerID
+            : model.providerID;
+        const compactionModelID =
+          compactionModelConfig && !compactionModelConfig.useSameModel
+            ? compactionModelConfig.modelID
+            : model.modelID;
         const result = await SessionCompaction.process({
           messages: msgs,
           parentID: lastUser.id,
           abort,
           model: {
-            providerID: model.providerID,
-            modelID: model.modelID,
+            providerID: compactionProviderID,
+            modelID: compactionModelID,
           },
           sessionID,
         });
@@ -533,6 +576,8 @@ export namespace SessionPrompt {
         SessionCompaction.isOverflow({
           tokens: lastFinished.tokens,
           model: model.info ?? { id: model.modelID },
+          compactionModel: lastUser.compactionModel,
+          compactionModelContextLimit,
         })
       ) {
         await SessionCompaction.create({
@@ -1053,6 +1098,7 @@ export namespace SessionPrompt {
         model: input.model,
         agent,
       }),
+      compactionModel: input.compactionModel,
     };
 
     const parts = await Promise.all(

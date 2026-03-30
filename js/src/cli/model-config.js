@@ -1,6 +1,15 @@
-import { getModelFromProcessArgv } from './argv.ts';
+import {
+  getModelFromProcessArgv,
+  getCompactionModelFromProcessArgv,
+  getCompactionSafetyMarginFromProcessArgv,
+} from './argv.ts';
 import { Log } from '../util/log.ts';
-import { DEFAULT_PROVIDER_ID, DEFAULT_MODEL_ID } from './defaults.ts';
+import {
+  DEFAULT_PROVIDER_ID,
+  DEFAULT_MODEL_ID,
+  DEFAULT_COMPACTION_MODEL,
+  DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
+} from './defaults.ts';
 
 /**
  * Parse model config from argv. Supports "provider/model" or short "model" format.
@@ -101,6 +110,13 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     }));
   }
 
+  // Parse compaction model (#219)
+  const compactionModelResult = await parseCompactionModelConfig(
+    argv,
+    providerID,
+    modelID
+  );
+
   // Handle --use-existing-claude-oauth option
   // This reads OAuth credentials from ~/.claude/.credentials.json (Claude Code CLI)
   // For new authentication, use: agent auth login (select Anthropic > Claude Pro/Max)
@@ -144,5 +160,73 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     }
   }
 
-  return { providerID, modelID };
+  return { providerID, modelID, compactionModel: compactionModelResult };
+}
+
+/**
+ * Parse compaction model config from argv.
+ * Resolves --compaction-model and --compaction-safety-margin CLI arguments.
+ * The special value "same" means use the base model for compaction.
+ * @see https://github.com/link-assistant/agent/issues/219
+ */
+async function parseCompactionModelConfig(argv, baseProviderID, baseModelID) {
+  // Get compaction model from CLI (safeguard against yargs caching)
+  const cliCompactionModelArg = getCompactionModelFromProcessArgv();
+  const compactionModelArg =
+    cliCompactionModelArg ??
+    argv['compaction-model'] ??
+    DEFAULT_COMPACTION_MODEL;
+
+  // Get safety margin from CLI
+  const cliSafetyMarginArg = getCompactionSafetyMarginFromProcessArgv();
+  const compactionSafetyMarginPercent = cliSafetyMarginArg
+    ? parseInt(cliSafetyMarginArg, 10)
+    : (argv['compaction-safety-margin'] ??
+      DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT);
+
+  // Special "same" alias — use the base model for compaction
+  const useSameModel = compactionModelArg.toLowerCase() === 'same';
+
+  let compactionProviderID;
+  let compactionModelID;
+
+  if (useSameModel) {
+    compactionProviderID = baseProviderID;
+    compactionModelID = baseModelID;
+    Log.Default.info(() => ({
+      message:
+        'compaction model set to "same" — using base model for compaction',
+      compactionProviderID,
+      compactionModelID,
+    }));
+  } else if (compactionModelArg.includes('/')) {
+    const parts = compactionModelArg.split('/');
+    compactionProviderID = parts[0];
+    compactionModelID = parts.slice(1).join('/');
+    Log.Default.info(() => ({
+      message: 'using explicit compaction model',
+      compactionProviderID,
+      compactionModelID,
+    }));
+  } else {
+    // Short name resolution
+    const { Provider } = await import('../provider/provider.ts');
+    const resolved =
+      await Provider.parseModelWithResolution(compactionModelArg);
+    compactionProviderID = resolved.providerID;
+    compactionModelID = resolved.modelID;
+    Log.Default.info(() => ({
+      message: 'resolved short compaction model name',
+      input: compactionModelArg,
+      compactionProviderID,
+      compactionModelID,
+    }));
+  }
+
+  return {
+    providerID: compactionProviderID,
+    modelID: compactionModelID,
+    useSameModel,
+    compactionSafetyMarginPercent,
+  };
 }
