@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.18.3
+
+### Patch Changes
+
+- b3989c2: fix: use compaction model (--compaction-model) for summarization to avoid doubling rate-limit pressure on free-tier main models (#223)
+
 ## 0.18.1
 
 ### Patch Changes
