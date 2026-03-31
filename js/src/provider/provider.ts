@@ -1202,11 +1202,11 @@ export namespace Provider {
       });
 
       // Verbose HTTP logging for provider API calls.
-      // This provider-level wrapper is the primary mechanism for logging
-      // HTTP requests/responses to LLM providers when --verbose is enabled.
-      // The global fetch monkey-patch approach was removed (#221) because
-      // the AI SDK may capture/resolve fetch references before the global
-      // patch is installed, causing HTTP logging to silently fail.
+      // This provider-level wrapper logs HTTP requests/responses independently
+      // of the global fetch monkey-patch. Both mechanisms are kept active to
+      // maximize HTTP observability — the global patch may miss calls if the
+      // AI SDK captures/resolves fetch references before it is installed,
+      // while this wrapper is injected directly into the SDK's fetch option.
       // See: https://github.com/link-assistant/agent/issues/221
       // See: https://github.com/link-assistant/agent/issues/217
       // See: https://github.com/link-assistant/agent/issues/215
@@ -1218,6 +1218,8 @@ export namespace Provider {
         log.info('provider SDK fetch chain configured', {
           providerID: provider.id,
           pkg,
+          globalVerboseFetchInstalled:
+            !!globalThis.__agentVerboseFetchInstalled,
           verboseAtCreation: Flag.OPENCODE_VERBOSE,
         });
 

@@ -5,9 +5,9 @@ import { Flag } from '../src/flag/flag';
  * Tests that provider-level verbose HTTP logging works correctly.
  *
  * Issue #221: HTTP requests/responses were not being logged in --verbose mode
- * because the global fetch monkey-patch could be bypassed by AI SDK internals.
- * The fix removes the global monkey-patch and relies solely on the provider-level
- * verbose wrapper that is injected into each SDK's fetch option.
+ * because the provider wrapper was skipping when the global fetch monkey-patch
+ * was installed. The fix removes the skip condition so both the global patch
+ * and the provider-level wrapper log independently — maximizing HTTP observability.
  *
  * @see https://github.com/link-assistant/agent/issues/221
  */

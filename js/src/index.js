@@ -802,12 +802,20 @@ async function main() {
           compactJson: isCompact,
         });
 
-        // NOTE: Global fetch monkey-patching was removed (#221).
-        // HTTP logging for provider API calls is handled by the provider-level
-        // verbose wrapper in provider.ts getSDK(). Non-provider HTTP calls
-        // (auth, tools, config) use their own createVerboseFetch instances.
-        // The global monkey-patch was unreliable because the AI SDK may
-        // capture/resolve fetch references before the patch is installed.
+        // Global fetch monkey-patch for verbose HTTP logging (#221).
+        // This catches any HTTP calls that go through globalThis.fetch directly,
+        // including non-provider calls (auth, config, tools) that may not have
+        // their own createVerboseFetch wrapper. The provider-level wrapper in
+        // provider.ts getSDK() also logs independently — both mechanisms are
+        // kept active to maximize HTTP observability in --verbose mode.
+        // See: https://github.com/link-assistant/agent/issues/221
+        // See: https://github.com/link-assistant/agent/issues/217
+        if (!globalThis.__agentVerboseFetchInstalled) {
+          globalThis.fetch = createVerboseFetch(globalThis.fetch, {
+            caller: 'global',
+          });
+          globalThis.__agentVerboseFetchInstalled = true;
+        }
       })
       .fail((msg, err, yargs) => {
         // Handle errors from command handlers
