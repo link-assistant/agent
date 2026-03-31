@@ -802,14 +802,12 @@ async function main() {
           compactJson: isCompact,
         });
 
-        // Monkey-patch globalThis.fetch for raw HTTP logging in --verbose mode.
-        // Catches ALL HTTP calls regardless of AI SDK fetch passthrough. (#217)
-        if (!globalThis.__agentVerboseFetchInstalled) {
-          globalThis.fetch = createVerboseFetch(globalThis.fetch, {
-            caller: 'global',
-          });
-          globalThis.__agentVerboseFetchInstalled = true;
-        }
+        // NOTE: Global fetch monkey-patching was removed (#221).
+        // HTTP logging for provider API calls is handled by the provider-level
+        // verbose wrapper in provider.ts getSDK(). Non-provider HTTP calls
+        // (auth, tools, config) use their own createVerboseFetch instances.
+        // The global monkey-patch was unreliable because the AI SDK may
+        // capture/resolve fetch references before the patch is installed.
       })
       .fail((msg, err, yargs) => {
         // Handle errors from command handlers

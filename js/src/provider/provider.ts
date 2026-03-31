@@ -1201,11 +1201,13 @@ export namespace Provider {
         sessionID: provider.id,
       });
 
-      // Verbose HTTP logging is handled by the global fetch monkey-patch
-      // (installed in CLI middleware in index.js). The global patch catches ALL
-      // HTTP calls reliably, regardless of how the AI SDK passes fetch internally.
-      // This provider-level wrapper is kept as a fallback for environments where
-      // the global patch may not be installed (e.g., programmatic use).
+      // Verbose HTTP logging for provider API calls.
+      // This provider-level wrapper is the primary mechanism for logging
+      // HTTP requests/responses to LLM providers when --verbose is enabled.
+      // The global fetch monkey-patch approach was removed (#221) because
+      // the AI SDK may capture/resolve fetch references before the global
+      // patch is installed, causing HTTP logging to silently fail.
+      // See: https://github.com/link-assistant/agent/issues/221
       // See: https://github.com/link-assistant/agent/issues/217
       // See: https://github.com/link-assistant/agent/issues/215
       {
@@ -1216,8 +1218,6 @@ export namespace Provider {
         log.info('provider SDK fetch chain configured', {
           providerID: provider.id,
           pkg,
-          globalVerboseFetchInstalled:
-            !!globalThis.__agentVerboseFetchInstalled,
           verboseAtCreation: Flag.OPENCODE_VERBOSE,
         });
 
@@ -1226,14 +1226,9 @@ export namespace Provider {
           init?: RequestInit
         ): Promise<Response> => {
           // Check verbose flag at call time — not at SDK creation time.
-          // When the global fetch monkey-patch is installed, it handles verbose
-          // logging for all calls. The provider wrapper is a fallback for
-          // environments without the global patch.
-          // See: https://github.com/link-assistant/agent/issues/217
-          if (
-            !Flag.OPENCODE_VERBOSE ||
-            globalThis.__agentVerboseFetchInstalled
-          ) {
+          // This ensures --verbose works even when the flag is set after SDK creation.
+          // See: https://github.com/link-assistant/agent/issues/206
+          if (!Flag.OPENCODE_VERBOSE) {
             return innerFetch(input, init);
           }
 
