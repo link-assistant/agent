@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.18.1
+
+### Patch Changes
+
+- e66584f: fix: enable dual HTTP logging (global fetch patch + provider-level wrapper) for complete verbose mode coverage (#221)
+
 ## 0.18.0
 
 ### Minor Changes
