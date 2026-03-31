@@ -415,6 +415,108 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
   });
 });
 
+/**
+ * Tests for long retry-after behavior (issue #223)
+ *
+ * When free-tier models return long retry-after values (e.g., 17 hours for
+ * daily quota resets), the system should respect those values and wait.
+ * The agent should not stop — it should wait for the limit to reset and retry.
+ *
+ * @see https://github.com/link-assistant/agent/issues/223
+ */
+describe('Long retry-after values are respected (issue #223)', () => {
+  test('accepts long retry-after and waits (does not cap)', async () => {
+    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+
+    // Set a short global timeout so the system gives up quickly
+    // but long enough that a short retry-after (1s) would succeed
+    process.env['AGENT_RETRY_TIMEOUT'] = '2'; // 2 seconds
+    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0';
+
+    try {
+      const mockFetch = mock(() =>
+        Promise.resolve(
+          new Response('rate limited', {
+            status: 429,
+            headers: {
+              // Server says wait 17 hours — exceeds our 2s global timeout
+              // Without capping, this should be rejected as "exceeds remaining timeout"
+              'retry-after': '62288',
+            },
+          })
+        )
+      );
+
+      const retryFetch = RetryFetch.create({
+        baseFetch: mockFetch as unknown as typeof fetch,
+      });
+
+      const result = await retryFetch('https://example.com');
+
+      // Should return 429 because retry-after (17h) exceeds global timeout (2s)
+      // This proves the system does NOT cap the value — it uses the full retry-after
+      // and correctly determines it won't fit within the global timeout
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe(429);
+    } finally {
+      if (originalRetryTimeout !== undefined) {
+        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+      } else {
+        delete process.env['AGENT_RETRY_TIMEOUT'];
+      }
+      if (originalMinInterval !== undefined) {
+        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+      } else {
+        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+      }
+    }
+  });
+
+  test('returns 429 when retry-after exceeds global timeout', async () => {
+    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+
+    // Set global timeout shorter than the retry-after
+    process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
+    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0';
+
+    try {
+      const mockFetch = mock(() =>
+        Promise.resolve(
+          new Response('rate limited', {
+            status: 429,
+            headers: {
+              'retry-after': '62288', // ~17.3 hours (exceeds 1 hour timeout)
+            },
+          })
+        )
+      );
+
+      const retryFetch = RetryFetch.create({
+        baseFetch: mockFetch as unknown as typeof fetch,
+      });
+
+      const result = await retryFetch('https://example.com');
+
+      // Should return 429 immediately because retry-after exceeds global timeout
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe(429);
+    } finally {
+      if (originalRetryTimeout !== undefined) {
+        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+      } else {
+        delete process.env['AGENT_RETRY_TIMEOUT'];
+      }
+      if (originalMinInterval !== undefined) {
+        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+      } else {
+        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+      }
+    }
+  });
+});
+
 describe('Flag configuration', () => {
   test('MIN_RETRY_INTERVAL defaults to 30 seconds', async () => {
     const { Flag } = await import('../src/flag/flag');

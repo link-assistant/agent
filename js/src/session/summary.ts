@@ -94,22 +94,47 @@ export namespace SessionSummary {
     const assistantMsg = messages.find((m) => m.info.role === 'assistant')!
       .info as MessageV2.Assistant;
 
-    // Use the same model as the main session (--model) instead of a small model
-    // This ensures consistent behavior and uses the model the user explicitly requested
-    // See: https://github.com/link-assistant/agent/issues/217
-    log.info(() => ({
-      message: 'loading model for summarization',
-      providerID: assistantMsg.providerID,
-      modelID: assistantMsg.modelID,
-      hint: 'Using same model as --model (not a small model)',
-    }));
-    const model = await Provider.getModel(
-      assistantMsg.providerID,
-      assistantMsg.modelID
-    ).catch(() => null);
+    // Use the compaction model (--compaction-model, e.g. gpt-5-nano) for summarization
+    // to avoid doubling rate-limit pressure on the main model.
+    // If the compaction model is unavailable, fall back to the main model.
+    // See: https://github.com/link-assistant/agent/issues/223
+    const compactionModel = userMsg.compactionModel;
+    let model: Awaited<ReturnType<typeof Provider.getModel>> | null = null;
+
+    if (compactionModel && !compactionModel.useSameModel) {
+      model = await Provider.getModel(
+        compactionModel.providerID,
+        compactionModel.modelID
+      ).catch(() => null);
+      if (model) {
+        log.info(() => ({
+          message: 'loading model for summarization',
+          providerID: model!.providerID,
+          modelID: model!.modelID,
+          hint: 'Using compaction model to reduce rate-limit pressure on main model',
+          mainModelID: assistantMsg.modelID,
+        }));
+      }
+    }
+
+    if (!model) {
+      // Fall back to the main model if compaction model is not configured or unavailable
+      log.info(() => ({
+        message: 'loading model for summarization',
+        providerID: assistantMsg.providerID,
+        modelID: assistantMsg.modelID,
+        hint: compactionModel
+          ? 'Compaction model unavailable, falling back to main model'
+          : 'Using same model as --model (no compaction model configured)',
+      }));
+      model = await Provider.getModel(
+        assistantMsg.providerID,
+        assistantMsg.modelID
+      ).catch(() => null);
+    }
     if (!model) {
       log.info(() => ({
-        message: 'could not load session model for summarization, skipping',
+        message: 'could not load model for summarization, skipping',
         providerID: assistantMsg.providerID,
         modelID: assistantMsg.modelID,
       }));
