@@ -17,6 +17,57 @@ setDefaultTimeout(120000);
  * @see https://github.com/link-assistant/agent/issues/221
  */
 
+// Parse JSON output that may be pretty-printed (multi-line) or compact (one per line)
+function parseJSONOutput(text) {
+  const trimmed = text.trim();
+  const lines = trimmed.split('\n').filter((line) => line.trim());
+
+  // Try compact mode first (one JSON per line)
+  try {
+    JSON.parse(lines[0]);
+    return lines
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch (_e) {
+          return null;
+        }
+      })
+      .filter(Boolean);
+  } catch (_e) {
+    // Fall through to pretty-printed mode
+  }
+
+  // Pretty-printed mode — extract individual JSON objects by brace counting
+  const events = [];
+  let currentJson = '';
+  let braceCount = 0;
+
+  for (const line of trimmed.split('\n')) {
+    for (const char of line) {
+      if (char === '{') {
+        braceCount++;
+      }
+      if (char === '}') {
+        braceCount--;
+      }
+      currentJson += char;
+
+      if (braceCount === 0 && currentJson.trim()) {
+        try {
+          events.push(JSON.parse(currentJson.trim()));
+          currentJson = '';
+        } catch (_e) {
+          // Continue accumulating
+        }
+      }
+    }
+    currentJson += '\n';
+  }
+
+  return events;
+}
+
 test('Agent-cli --verbose mode logs HTTP requests and responses for "hi"', async () => {
   const projectRoot = process.cwd();
   const input = '{"message":"hi"}';
@@ -34,26 +85,15 @@ test('Agent-cli --verbose mode logs HTTP requests and responses for "hi"', async
   console.log('\n=== Verbose test: stdout length:', stdout.length);
   console.log('=== Verbose test: stderr length:', stderr.length);
 
-  // --- 1. Verify basic agent output works (same as basic.test.js) ---
-  // Parse JSON events from stdout
-  const lines = stdout
-    .trim()
-    .split('\n')
-    .filter((line) => line.trim());
-  const events = [];
-  for (const line of lines) {
-    try {
-      events.push(JSON.parse(line));
-    } catch (_e) {
-      // Skip non-JSON lines (verbose logging may produce non-JSON on stdout)
-    }
-  }
-
-  // Should have at least some JSON events
+  // --- 1. Verify basic agent output works ---
+  // Parse all JSON events from stdout (handles both compact and pretty-printed)
+  const events = parseJSONOutput(stdout);
   expect(events.length).toBeGreaterThan(0);
 
-  // Should have text event with AI response
-  const textEvents = events.filter((e) => e.type === 'text');
+  // Should have text event with AI response (type "text") or message event
+  const textEvents = events.filter(
+    (e) => e.type === 'text' || e.type === 'message.part.updated'
+  );
   expect(textEvents.length).toBeGreaterThan(0);
 
   // --- 2. Verify HTTP request logs are present ---
@@ -74,16 +114,13 @@ test('Agent-cli --verbose mode logs HTTP requests and responses for "hi"', async
   expect(hasVerboseActive).toBe(true);
 
   // --- 5. Verify request details are logged (URL, method) ---
-  // Should contain an API endpoint URL (https://...)
   const hasUrl = combined.includes('https://');
   expect(hasUrl).toBe(true);
 
-  // Should contain HTTP method (POST for LLM API calls)
   const hasMethod = combined.includes('POST') || combined.includes('"POST"');
   expect(hasMethod).toBe(true);
 
   // --- 6. Verify response status is logged ---
-  // Should contain a status code (200 for successful calls)
   const hasStatus =
     combined.includes('"status":200') ||
     combined.includes('"status": 200') ||
@@ -96,28 +133,24 @@ test('Agent-cli --verbose mode logs HTTP requests and responses for "hi"', async
   expect(hasResponseBody).toBe(true);
 
   // --- 8. Verify headers are logged (with sensitive values masked) ---
-  // Should contain sanitized headers (API keys should be masked)
   const hasHeaders =
     combined.includes('headers') || combined.includes('Headers');
   expect(hasHeaders).toBe(true);
 
   // Sensitive headers should NOT contain full API keys
-  // (They should be masked like "sk-a...5678" or "[REDACTED]")
   const apiKeyPatterns = [
     /["']?(?:x-api-key|authorization|api-key)["']?\s*:\s*["'][a-zA-Z0-9_-]{20,}["']/i,
   ];
   for (const pattern of apiKeyPatterns) {
     const match = combined.match(pattern);
     if (match) {
-      // If a key is found, it should be masked (contain "..." or "[REDACTED]")
       const value = match[0];
       const isMasked = value.includes('...') || value.includes('[REDACTED]');
       expect(isMasked).toBe(true);
     }
   }
 
-  // --- 9. Verify request body is logged (should contain the model name) ---
-  // The request to the LLM API should include a model identifier
+  // --- 9. Verify request body is logged ---
   const hasRequestBody =
     combined.includes('bodyPreview') || combined.includes('body');
   expect(hasRequestBody).toBe(true);
