@@ -94,32 +94,38 @@ export namespace SessionSummary {
     const assistantMsg = messages.find((m) => m.info.role === 'assistant')!
       .info as MessageV2.Assistant;
 
-    // Try to use a different (smaller) model for summarization to avoid
-    // doubling rate-limit pressure on the main model, especially for
-    // free-tier models with strict daily quotas.
-    // Falls back to the main model if no alternative is available.
-    // See: https://github.com/link-assistant/agent/issues/217
+    // Use the compaction model (--compaction-model, e.g. gpt-5-nano) for summarization
+    // to avoid doubling rate-limit pressure on the main model.
+    // If the compaction model is unavailable, fall back to the main model.
     // See: https://github.com/link-assistant/agent/issues/223
-    let model = await Provider.getSmallModel(
-      assistantMsg.providerID,
-      assistantMsg.modelID
-    ).catch(() => null);
+    const compactionModel = userMsg.compactionModel;
+    let model: Awaited<ReturnType<typeof Provider.getModel>> | null = null;
 
-    if (model) {
-      log.info(() => ({
-        message: 'loading model for summarization',
-        providerID: model!.providerID,
-        modelID: model!.modelID,
-        hint: 'Using different model to reduce rate-limit pressure on main model',
-        mainModelID: assistantMsg.modelID,
-      }));
-    } else {
-      // Fall back to the main model if no alternative is available
+    if (compactionModel && !compactionModel.useSameModel) {
+      model = await Provider.getModel(
+        compactionModel.providerID,
+        compactionModel.modelID
+      ).catch(() => null);
+      if (model) {
+        log.info(() => ({
+          message: 'loading model for summarization',
+          providerID: model!.providerID,
+          modelID: model!.modelID,
+          hint: 'Using compaction model to reduce rate-limit pressure on main model',
+          mainModelID: assistantMsg.modelID,
+        }));
+      }
+    }
+
+    if (!model) {
+      // Fall back to the main model if compaction model is not configured or unavailable
       log.info(() => ({
         message: 'loading model for summarization',
         providerID: assistantMsg.providerID,
         modelID: assistantMsg.modelID,
-        hint: 'Using same model as --model (no alternative available)',
+        hint: compactionModel
+          ? 'Compaction model unavailable, falling back to main model'
+          : 'Using same model as --model (no compaction model configured)',
       }));
       model = await Provider.getModel(
         assistantMsg.providerID,

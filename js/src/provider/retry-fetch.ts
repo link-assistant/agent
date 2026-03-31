@@ -125,29 +125,11 @@ export namespace RetryFetch {
         return null;
       }
 
-      // Cap retry-after at maxBackoffDelay to prevent extremely long waits
-      // (e.g., free-tier daily quota resets returning 17-hour retry-after values).
-      // The system will retry sooner and may still get 429s, but this prevents
-      // a single retry attempt from blocking for hours.
-      // See: https://github.com/link-assistant/agent/issues/223
-      const cappedRetryAfterMs = Math.min(retryAfterMs, maxBackoffDelay);
-      if (cappedRetryAfterMs < retryAfterMs) {
-        log.info(() => ({
-          message: 'capping retry-after at max retry delay',
-          originalRetryAfterMs: retryAfterMs,
-          originalRetryAfterHours: (retryAfterMs / 1000 / 3600).toFixed(2),
-          cappedRetryAfterMs,
-          cappedRetryAfterMinutes: (cappedRetryAfterMs / 1000 / 60).toFixed(2),
-          maxBackoffDelayMs: maxBackoffDelay,
-        }));
-      }
-
-      // Use capped retry-after time, but ensure minimum interval
-      const delay = Math.max(cappedRetryAfterMs, minInterval);
+      // Use exact retry-after time, but ensure minimum interval
+      const delay = Math.max(retryAfterMs, minInterval);
       log.info(() => ({
         message: 'using retry-after value',
         retryAfterMs,
-        cappedRetryAfterMs,
         delayMs: delay,
         minIntervalMs: minInterval,
       }));
