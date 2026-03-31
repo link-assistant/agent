@@ -1706,17 +1706,26 @@ export namespace Provider {
    *
    * @see https://github.com/link-assistant/agent/issues/179
    */
-  export async function getSmallModel(providerID: string) {
+  export async function getSmallModel(providerID: string, excludeModelID?: string) {
     const cfg = await Config.get();
 
     if (cfg.small_model) {
       const parsed = parseModel(cfg.small_model);
-      log.info(() => ({
-        message: 'using configured small_model for auxiliary task',
-        modelID: parsed.modelID,
-        providerID: parsed.providerID,
-      }));
-      return getModel(parsed.providerID, parsed.modelID);
+      // Skip configured small_model if it matches the excluded model
+      if (excludeModelID && parsed.modelID === excludeModelID) {
+        log.info(() => ({
+          message: 'configured small_model matches excluded model, falling back to priority list',
+          modelID: parsed.modelID,
+          excludeModelID,
+        }));
+      } else {
+        log.info(() => ({
+          message: 'using configured small_model for auxiliary task',
+          modelID: parsed.modelID,
+          providerID: parsed.providerID,
+        }));
+        return getModel(parsed.providerID, parsed.modelID);
+      }
     }
 
     const provider = await state().then((state) => state.providers[providerID]);
@@ -1746,8 +1755,14 @@ export namespace Provider {
       ];
     }
     for (const item of priority) {
+      // Skip candidates that match the excluded model to avoid
+      // using the same rate-limited model for auxiliary tasks
+      // See: https://github.com/link-assistant/agent/issues/223
+      if (excludeModelID && item === excludeModelID) continue;
       for (const model of Object.keys(provider.info.models)) {
         if (model.includes(item)) {
+          // Skip if this exact model matches the excluded model
+          if (excludeModelID && model === excludeModelID) continue;
           log.info(() => ({
             message: 'selected small model for auxiliary task',
             modelID: model,

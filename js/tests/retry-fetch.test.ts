@@ -415,6 +415,80 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
   });
 });
 
+/**
+ * Tests for retry-after capping at MAX_RETRY_DELAY (issue #223)
+ *
+ * When free-tier models return extremely long retry-after values (e.g., 17 hours
+ * for daily quota resets), the system should cap the wait at MAX_RETRY_DELAY
+ * instead of sleeping for hours.
+ *
+ * @see https://github.com/link-assistant/agent/issues/223
+ */
+describe('Retry-after capping at MAX_RETRY_DELAY (issue #223)', () => {
+  test('caps retry-after at MAX_RETRY_DELAY when header exceeds it', async () => {
+    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const originalMaxDelay = process.env['AGENT_MAX_RETRY_DELAY'];
+
+    // Set config: long global timeout, short max delay, no min interval
+    process.env['AGENT_RETRY_TIMEOUT'] = '604800'; // 7 days
+    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0';
+    process.env['AGENT_MAX_RETRY_DELAY'] = '1'; // 1 second max delay (1000ms)
+
+    try {
+      let callCount = 0;
+      const startTime = Date.now();
+      const mockFetch = mock(() => {
+        callCount++;
+        if (callCount === 1) {
+          // Server says wait 17 hours (like MiniMax free tier daily quota reset)
+          return Promise.resolve(
+            new Response('rate limited', {
+              status: 429,
+              headers: {
+                'retry-after': '62288', // ~17.3 hours
+              },
+            })
+          );
+        }
+        return Promise.resolve(new Response('success', { status: 200 }));
+      });
+
+      const retryFetch = RetryFetch.create({
+        baseFetch: mockFetch as unknown as typeof fetch,
+      });
+
+      const result = await retryFetch('https://example.com');
+      const elapsed = Date.now() - startTime;
+
+      // Should succeed after retry
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(result.status).toBe(200);
+
+      // The actual wait should be close to MAX_RETRY_DELAY (1s + jitter),
+      // NOT the 17-hour retry-after value
+      // Allow up to 3 seconds for jitter and test overhead
+      expect(elapsed).toBeLessThan(3000);
+    } finally {
+      if (originalRetryTimeout !== undefined) {
+        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+      } else {
+        delete process.env['AGENT_RETRY_TIMEOUT'];
+      }
+      if (originalMinInterval !== undefined) {
+        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+      } else {
+        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+      }
+      if (originalMaxDelay !== undefined) {
+        process.env['AGENT_MAX_RETRY_DELAY'] = originalMaxDelay;
+      } else {
+        delete process.env['AGENT_MAX_RETRY_DELAY'];
+      }
+    }
+  });
+});
+
 describe('Flag configuration', () => {
   test('MIN_RETRY_INTERVAL defaults to 30 seconds', async () => {
     const { Flag } = await import('../src/flag/flag');

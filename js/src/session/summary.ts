@@ -94,22 +94,41 @@ export namespace SessionSummary {
     const assistantMsg = messages.find((m) => m.info.role === 'assistant')!
       .info as MessageV2.Assistant;
 
-    // Use the same model as the main session (--model) instead of a small model
-    // This ensures consistent behavior and uses the model the user explicitly requested
+    // Try to use a different (smaller) model for summarization to avoid
+    // doubling rate-limit pressure on the main model, especially for
+    // free-tier models with strict daily quotas.
+    // Falls back to the main model if no alternative is available.
     // See: https://github.com/link-assistant/agent/issues/217
-    log.info(() => ({
-      message: 'loading model for summarization',
-      providerID: assistantMsg.providerID,
-      modelID: assistantMsg.modelID,
-      hint: 'Using same model as --model (not a small model)',
-    }));
-    const model = await Provider.getModel(
+    // See: https://github.com/link-assistant/agent/issues/223
+    let model = await Provider.getSmallModel(
       assistantMsg.providerID,
       assistantMsg.modelID
     ).catch(() => null);
+
+    if (model) {
+      log.info(() => ({
+        message: 'loading model for summarization',
+        providerID: model!.providerID,
+        modelID: model!.modelID,
+        hint: 'Using different model to reduce rate-limit pressure on main model',
+        mainModelID: assistantMsg.modelID,
+      }));
+    } else {
+      // Fall back to the main model if no alternative is available
+      log.info(() => ({
+        message: 'loading model for summarization',
+        providerID: assistantMsg.providerID,
+        modelID: assistantMsg.modelID,
+        hint: 'Using same model as --model (no alternative available)',
+      }));
+      model = await Provider.getModel(
+        assistantMsg.providerID,
+        assistantMsg.modelID
+      ).catch(() => null);
+    }
     if (!model) {
       log.info(() => ({
-        message: 'could not load session model for summarization, skipping',
+        message: 'could not load model for summarization, skipping',
         providerID: assistantMsg.providerID,
         modelID: assistantMsg.modelID,
       }));
