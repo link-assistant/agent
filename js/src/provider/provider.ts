@@ -1706,7 +1706,10 @@ export namespace Provider {
    *
    * @see https://github.com/link-assistant/agent/issues/179
    */
-  export async function getSmallModel(providerID: string, excludeModelID?: string) {
+  export async function getSmallModel(
+    providerID: string,
+    excludeModelID?: string
+  ) {
     const cfg = await Config.get();
 
     if (cfg.small_model) {
@@ -1714,7 +1717,8 @@ export namespace Provider {
       // Skip configured small_model if it matches the excluded model
       if (excludeModelID && parsed.modelID === excludeModelID) {
         log.info(() => ({
-          message: 'configured small_model matches excluded model, falling back to priority list',
+          message:
+            'configured small_model matches excluded model, falling back to priority list',
           modelID: parsed.modelID,
           excludeModelID,
         }));
