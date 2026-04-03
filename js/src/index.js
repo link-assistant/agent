@@ -797,8 +797,8 @@ async function main() {
           Flag.setRetryOnRateLimits(false);
         }
         await Log.init({
-          print: Flag.OPENCODE_VERBOSE,
-          level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
+          print: Flag.isVerbose(),
+          level: Flag.isVerbose() ? 'DEBUG' : 'INFO',
           compactJson: isCompact,
         });
 

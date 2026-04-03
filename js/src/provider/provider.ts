@@ -1220,7 +1220,7 @@ export namespace Provider {
           pkg,
           globalVerboseFetchInstalled:
             !!globalThis.__agentVerboseFetchInstalled,
-          verboseAtCreation: Flag.OPENCODE_VERBOSE,
+          verboseAtCreation: Flag.isVerbose(),
         });
 
         options['fetch'] = async (
@@ -1228,9 +1228,11 @@ export namespace Provider {
           init?: RequestInit
         ): Promise<Response> => {
           // Check verbose flag at call time — not at SDK creation time.
-          // This ensures --verbose works even when the flag is set after SDK creation.
+          // Uses Flag.isVerbose() with env var fallback for resilience against
+          // flag state loss in subprocess/module-reload scenarios.
           // See: https://github.com/link-assistant/agent/issues/206
-          if (!Flag.OPENCODE_VERBOSE) {
+          // See: https://github.com/link-assistant/agent/issues/227
+          if (!Flag.isVerbose()) {
             return innerFetch(input, init);
           }
 

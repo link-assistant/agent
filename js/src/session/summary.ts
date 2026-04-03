@@ -141,7 +141,7 @@ export namespace SessionSummary {
       return;
     }
 
-    if (Flag.OPENCODE_VERBOSE) {
+    if (Flag.isVerbose()) {
       log.info(() => ({
         message: 'summarization model loaded',
         providerID: model.providerID,
@@ -167,7 +167,7 @@ export namespace SessionSummary {
               </text>
             `;
 
-      if (Flag.OPENCODE_VERBOSE) {
+      if (Flag.isVerbose()) {
         log.info(() => ({
           message: 'generating title via API',
           providerID: model.providerID,
@@ -203,7 +203,7 @@ export namespace SessionSummary {
         model: model.language,
       });
 
-      if (Flag.OPENCODE_VERBOSE) {
+      if (Flag.isVerbose()) {
         log.info(() => ({
           message: 'title API response received',
           providerID: model.providerID,
@@ -234,7 +234,7 @@ export namespace SessionSummary {
         const modelMessages = await MessageV2.toModelMessage(messages);
         const conversationContent = JSON.stringify(modelMessages);
 
-        if (Flag.OPENCODE_VERBOSE) {
+        if (Flag.isVerbose()) {
           log.info(() => ({
             message: 'generating body summary via API',
             providerID: model.providerID,
@@ -264,7 +264,7 @@ export namespace SessionSummary {
           ],
           headers: model.info.headers,
         }).catch((err) => {
-          if (Flag.OPENCODE_VERBOSE) {
+          if (Flag.isVerbose()) {
             log.warn(() => ({
               message: 'body summary API call failed',
               providerID: model.providerID,
@@ -276,7 +276,7 @@ export namespace SessionSummary {
           return undefined;
         });
         if (result) {
-          if (Flag.OPENCODE_VERBOSE) {
+          if (Flag.isVerbose()) {
             log.info(() => ({
               message: 'body summary API response received',
               providerID: model.providerID,

@@ -374,7 +374,7 @@ export namespace SessionProcessor {
                     model: input.model,
                   });
 
-                  if (Flag.OPENCODE_VERBOSE && contextDiag) {
+                  if (Flag.isVerbose() && contextDiag) {
                     log.info(() => ({
                       message: 'step-finish context diagnostics',
                       providerID: input.providerID,

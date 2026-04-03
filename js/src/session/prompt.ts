@@ -684,7 +684,7 @@ export namespace SessionPrompt {
         : [];
 
       // Verbose logging: output request details for debugging
-      if (Flag.OPENCODE_VERBOSE) {
+      if (Flag.isVerbose()) {
         const systemTokens = system.reduce(
           (acc, s) => acc + Token.estimate(s),
           0

@@ -109,8 +109,9 @@ export namespace Log {
     // Always use JSON output format for logs
     jsonOutput = true;
 
-    // Configure lazy logging level based on verbose flag
-    if (Flag.OPENCODE_VERBOSE || options.print) {
+    // Configure lazy logging level based on verbose flag (with env var fallback)
+    // See: https://github.com/link-assistant/agent/issues/227
+    if (Flag.isVerbose() || options.print) {
       // Enable all levels for lazy logging when verbose
       lazyLogInstance = makeLog({
         level: levels.debug | levels.info | levels.warn | levels.error,
@@ -374,7 +375,7 @@ export namespace Log {
    * Call after Flag.setVerbose() to update lazy logging state
    */
   export function syncWithVerboseFlag(): void {
-    if (Flag.OPENCODE_VERBOSE) {
+    if (Flag.isVerbose()) {
       jsonOutput = true;
       // Use stdout for verbose output (following Unix conventions)
       write = (msg: any) => process.stdout.write(msg);

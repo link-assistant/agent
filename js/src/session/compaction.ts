@@ -240,7 +240,7 @@ export namespace SessionCompaction {
       input.model.providerID,
       input.model.modelID
     );
-    if (Flag.OPENCODE_VERBOSE) {
+    if (Flag.isVerbose()) {
       log.info(() => ({
         message: 'compaction model loaded',
         providerID: model.providerID,
@@ -303,7 +303,7 @@ export namespace SessionCompaction {
     // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
     const safeModelMessages = Array.isArray(modelMessages) ? modelMessages : [];
 
-    if (Flag.OPENCODE_VERBOSE) {
+    if (Flag.isVerbose()) {
       log.info(() => ({
         message: 'compaction streamText call',
         providerID: model.providerID,

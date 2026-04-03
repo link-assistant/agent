@@ -158,7 +158,7 @@ export function createLazyLogger(
   initialTags?: Record<string, unknown>
 ): LazyLogger {
   // Determine initial log level based on verbose flag
-  const initialLevel = Flag.OPENCODE_VERBOSE ? LEVEL_VERBOSE : LEVEL_DISABLED;
+  const initialLevel = Flag.isVerbose() ? LEVEL_VERBOSE : LEVEL_DISABLED;
 
   // Create base log-lazy instance
   const baseLog = makeLog({ level: initialLevel });
@@ -281,7 +281,7 @@ export function createLazyLogger(
 
   // Configuration
   Object.defineProperty(wrappedLog, 'enabled', {
-    get: () => Flag.OPENCODE_VERBOSE,
+    get: () => Flag.isVerbose(),
     enumerable: true,
   });
 
@@ -299,7 +299,7 @@ export const lazyLog = createLazyLogger({ service: 'agent' });
  * Call this after Flag.setVerbose() to sync the logger state
  */
 export function syncLoggerWithVerboseFlag(): void {
-  if (Flag.OPENCODE_VERBOSE) {
+  if (Flag.isVerbose()) {
     lazyLog.setLevel('verbose');
   } else {
     lazyLog.setLevel('disabled');

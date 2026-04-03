@@ -187,8 +187,30 @@ export namespace Flag {
   }
 
   // Allow setting verbose mode programmatically (e.g., from CLI --verbose flag)
+  // Also sets the environment variable so the flag survives across module re-evaluations
+  // and is inherited by child processes. This is critical for --verbose to work reliably
+  // when the agent CLI is spawned by external tools (e.g., command-stream, solve).
+  // See: https://github.com/link-assistant/agent/issues/227
   export function setVerbose(value: boolean) {
     OPENCODE_VERBOSE = value;
+    if (value) {
+      process.env.LINK_ASSISTANT_AGENT_VERBOSE = 'true';
+    } else {
+      delete process.env.LINK_ASSISTANT_AGENT_VERBOSE;
+    }
+  }
+
+  /**
+   * Check if verbose mode is active, with env var fallback.
+   * This function checks both the in-memory flag AND the environment variable,
+   * providing resilience against module re-evaluation or flag state loss.
+   * See: https://github.com/link-assistant/agent/issues/227
+   */
+  export function isVerbose(): boolean {
+    return OPENCODE_VERBOSE || truthyCompat(
+      'LINK_ASSISTANT_AGENT_VERBOSE',
+      'OPENCODE_VERBOSE'
+    );
   }
 
   // Allow setting dry run mode programmatically (e.g., from CLI --dry-run flag)
