@@ -207,9 +207,9 @@ export namespace Flag {
    * See: https://github.com/link-assistant/agent/issues/227
    */
   export function isVerbose(): boolean {
-    return OPENCODE_VERBOSE || truthyCompat(
-      'LINK_ASSISTANT_AGENT_VERBOSE',
-      'OPENCODE_VERBOSE'
+    return (
+      OPENCODE_VERBOSE ||
+      truthyCompat('LINK_ASSISTANT_AGENT_VERBOSE', 'OPENCODE_VERBOSE')
     );
   }
 
