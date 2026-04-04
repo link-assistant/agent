@@ -211,8 +211,10 @@ export class Agent {
       ...data,
     };
     // Pretty-print JSON for human readability, compact for programmatic use
-    // Use AGENT_CLI_COMPACT=1 for compact output (tests, automation)
-    const compact = process.env.AGENT_CLI_COMPACT === '1';
+    // Use LINK_ASSISTANT_AGENT_COMPACT_JSON=1 for compact output (tests, automation)
+    const compact =
+      process.env.LINK_ASSISTANT_AGENT_COMPACT_JSON === 'true' ||
+      process.env.LINK_ASSISTANT_AGENT_COMPACT_JSON === '1';
     process.stdout.write(
       `${compact ? JSON.stringify(event) : JSON.stringify(event, null, 2)}\n`
     );

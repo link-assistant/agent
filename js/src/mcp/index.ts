@@ -90,11 +90,19 @@ export namespace MCP {
       const timeoutConfigs: Record<string, TimeoutConfig> = {};
 
       // Determine global timeout defaults from config and environment variables
-      const envDefaultTimeout = process.env.MCP_DEFAULT_TOOL_CALL_TIMEOUT
-        ? parseInt(process.env.MCP_DEFAULT_TOOL_CALL_TIMEOUT, 10)
+      const envDefaultTimeout = process.env
+        .LINK_ASSISTANT_AGENT_MCP_DEFAULT_TOOL_CALL_TIMEOUT
+        ? parseInt(
+            process.env.LINK_ASSISTANT_AGENT_MCP_DEFAULT_TOOL_CALL_TIMEOUT,
+            10
+          )
         : undefined;
-      const envMaxTimeout = process.env.MCP_MAX_TOOL_CALL_TIMEOUT
-        ? parseInt(process.env.MCP_MAX_TOOL_CALL_TIMEOUT, 10)
+      const envMaxTimeout = process.env
+        .LINK_ASSISTANT_AGENT_MCP_MAX_TOOL_CALL_TIMEOUT
+        ? parseInt(
+            process.env.LINK_ASSISTANT_AGENT_MCP_MAX_TOOL_CALL_TIMEOUT,
+            10
+          )
         : undefined;
 
       const globalDefaults: GlobalTimeoutDefaults = {

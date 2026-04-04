@@ -38,7 +38,7 @@ async function runAgentCli(input, options = {}) {
 
     const proc = spawn('bun', args, {
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, AGENT_CLI_COMPACT: '1' },
+      env: { ...process.env, LINK_ASSISTANT_AGENT_COMPACT_JSON: '1' },
     });
 
     let stdout = '';

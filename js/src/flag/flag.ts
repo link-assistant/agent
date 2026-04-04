@@ -121,16 +121,13 @@ export namespace Flag {
   }
 
   // Compact JSON mode - output JSON on single lines (NDJSON format)
-  // Enabled by AGENT_CLI_COMPACT env var or --compact-json flag
+  // Enabled by LINK_ASSISTANT_AGENT_COMPACT_JSON env var or --compact-json flag
   // Uses getter to check env var at runtime for tests
   let _compactJson: boolean | null = null;
 
   export function COMPACT_JSON(): boolean {
     if (_compactJson !== null) return _compactJson;
-    return (
-      truthy('AGENT_CLI_COMPACT') ||
-      truthyEnv('LINK_ASSISTANT_AGENT_COMPACT_JSON')
-    );
+    return truthyEnv('LINK_ASSISTANT_AGENT_COMPACT_JSON');
   }
 
   // Allow setting verbose mode programmatically (e.g., from CLI --verbose flag)

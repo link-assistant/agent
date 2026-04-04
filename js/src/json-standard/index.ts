@@ -6,7 +6,7 @@
  * - claude: Claude CLI stream-json format - NDJSON (newline-delimited JSON)
  *
  * Output goes to stdout for normal messages, stderr for errors.
- * Use AGENT_CLI_COMPACT env var or --compact-json flag for NDJSON output.
+ * Use LINK_ASSISTANT_AGENT_COMPACT_JSON env var or --compact-json flag for NDJSON output.
  */
 
 import { EOL } from 'os';
@@ -50,7 +50,7 @@ export interface ClaudeEvent {
 
 /**
  * Serialize JSON output based on the selected standard
- * Respects AGENT_CLI_COMPACT env var for OpenCode format
+ * Respects LINK_ASSISTANT_AGENT_COMPACT_JSON env var for OpenCode format
  */
 export function serializeOutput(
   event: OpenCodeEvent | ClaudeEvent,
@@ -60,7 +60,7 @@ export function serializeOutput(
     // NDJSON format - always compact, one line
     return JSON.stringify(event) + EOL;
   }
-  // OpenCode format - compact if AGENT_CLI_COMPACT is set
+  // OpenCode format - compact if LINK_ASSISTANT_AGENT_COMPACT_JSON is set
   if (Flag.COMPACT_JSON()) {
     return JSON.stringify(event) + EOL;
   }

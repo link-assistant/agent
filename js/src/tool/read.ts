@@ -71,7 +71,8 @@ export const ReadTool = Tool.define('read', {
     })();
     if (isImage) {
       // Image format validation (can be disabled via environment variable)
-      const verifyImages = process.env.VERIFY_IMAGES_AT_READ_TOOL !== 'false';
+      const verifyImages =
+        process.env.LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL !== 'false';
       if (verifyImages && !supportsImages) {
         throw new Error(
           `Failed to read image: ${filepath}, model may not be able to read images`
@@ -90,7 +91,7 @@ export const ReadTool = Tool.define('read', {
               )
                 .map((b) => b.toString(16).padStart(2, '0'))
                 .join(' ')}\n` +
-              `To disable image validation, set environment variable: VERIFY_IMAGES_AT_READ_TOOL=false`
+              `To disable image validation, set environment variable: LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL=false`
           );
         }
       }

@@ -547,7 +547,7 @@ export namespace SessionProcessor {
                       ? SessionRetry.timeoutDelay(attempt)
                       : SessionRetry.delay(error, attempt);
               } catch (delayError) {
-                // If retry-after exceeds AGENT_RETRY_TIMEOUT, fail immediately
+                // If retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT, fail immediately
                 if (
                   delayError instanceof SessionRetry.RetryTimeoutExceededError
                 ) {

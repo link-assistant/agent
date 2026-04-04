@@ -40,7 +40,7 @@ export interface OutputMessage {
 
 /**
  * Global compact JSON setting (can be set once at startup)
- * Initialized lazily from Flag.COMPACT_JSON() which checks AGENT_CLI_COMPACT env var
+ * Initialized lazily from Flag.COMPACT_JSON() which checks LINK_ASSISTANT_AGENT_COMPACT_JSON env var
  */
 let globalCompactJson: boolean | null = null;
 

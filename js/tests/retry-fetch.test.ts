@@ -48,11 +48,13 @@ describe('RetryFetch', () => {
 
     test('returns 429 response when retry timeout is exceeded', async () => {
       // Save original env values
-      const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-      const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+      const originalRetryTimeout =
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+      const originalMinInterval =
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
       // Set very short timeout for testing
-      process.env['AGENT_RETRY_TIMEOUT'] = '0'; // 0 seconds = immediate timeout
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '0'; // 0 seconds = immediate timeout
 
       try {
         const mockResponse = new Response('rate limited', {
@@ -75,26 +77,30 @@ describe('RetryFetch', () => {
       } finally {
         // Restore original env values
         if (originalRetryTimeout !== undefined) {
-          process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+          process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+            originalRetryTimeout;
         } else {
-          delete process.env['AGENT_RETRY_TIMEOUT'];
+          delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
         }
         if (originalMinInterval !== undefined) {
-          process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+          process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+            originalMinInterval;
         } else {
-          delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+          delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
         }
       }
     });
 
     test('retries on 429 and succeeds on second attempt', async () => {
       // Save original env values
-      const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-      const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+      const originalRetryTimeout =
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+      const originalMinInterval =
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
       // Set longer timeout but short min interval for fast test
-      process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
-      process.env['AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
+      process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum
 
       try {
         let callCount = 0;
@@ -124,14 +130,16 @@ describe('RetryFetch', () => {
       } finally {
         // Restore original env values
         if (originalRetryTimeout !== undefined) {
-          process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+          process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+            originalRetryTimeout;
         } else {
-          delete process.env['AGENT_RETRY_TIMEOUT'];
+          delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
         }
         if (originalMinInterval !== undefined) {
-          process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+          process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+            originalMinInterval;
         } else {
-          delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+          delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
         }
       }
     });
@@ -193,12 +201,14 @@ describe('RetryFetch', () => {
 describe('Isolated signal for rate limit waits (issue #183)', () => {
   test('rate limit wait is not aborted by short provider timeout', async () => {
     // Save original env values
-    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const originalRetryTimeout =
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval =
+      process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
     // Set long global timeout (1 hour) but we'll use a short provider timeout
-    process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
-    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum
+    process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
+    process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum
 
     try {
       let callCount = 0;
@@ -236,26 +246,30 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
     } finally {
       // Restore original env values
       if (originalRetryTimeout !== undefined) {
-        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+          originalRetryTimeout;
       } else {
-        delete process.env['AGENT_RETRY_TIMEOUT'];
+        delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       }
       if (originalMinInterval !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+          originalMinInterval;
       } else {
-        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+        delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
     }
   });
 
   test('rate limit wait respects global AGENT_RETRY_TIMEOUT', async () => {
     // Save original env values
-    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const originalRetryTimeout =
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval =
+      process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
     // Set very short global timeout (immediate)
-    process.env['AGENT_RETRY_TIMEOUT'] = '0'; // 0 seconds = immediate timeout
-    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0';
+    process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '0'; // 0 seconds = immediate timeout
+    process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
 
     try {
       const mockResponse = new Response('rate limited', {
@@ -278,26 +292,30 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
     } finally {
       // Restore original env values
       if (originalRetryTimeout !== undefined) {
-        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+          originalRetryTimeout;
       } else {
-        delete process.env['AGENT_RETRY_TIMEOUT'];
+        delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       }
       if (originalMinInterval !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+          originalMinInterval;
       } else {
-        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+        delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
     }
   });
 
   test('user cancellation works during rate limit wait', async () => {
     // Save original env values
-    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const originalRetryTimeout =
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval =
+      process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
     // Set long timeout so we can test cancellation
-    process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
-    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0';
+    process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
+    process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
 
     try {
       const mockFetch = mock(() =>
@@ -333,14 +351,16 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
     } finally {
       // Restore original env values
       if (originalRetryTimeout !== undefined) {
-        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+          originalRetryTimeout;
       } else {
-        delete process.env['AGENT_RETRY_TIMEOUT'];
+        delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       }
       if (originalMinInterval !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+          originalMinInterval;
       } else {
-        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+        delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
     }
   });
@@ -352,12 +372,14 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
     // - The rate limit wait should NOT be aborted by the provider timeout
 
     // Save original env values
-    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const originalRetryTimeout =
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval =
+      process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
     // Set timeout to accommodate long waits
-    process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour (enough for test)
-    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0';
+    process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour (enough for test)
+    process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
 
     try {
       let callCount = 0;
@@ -402,14 +424,16 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
     } finally {
       // Restore original env values
       if (originalRetryTimeout !== undefined) {
-        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+          originalRetryTimeout;
       } else {
-        delete process.env['AGENT_RETRY_TIMEOUT'];
+        delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       }
       if (originalMinInterval !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+          originalMinInterval;
       } else {
-        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+        delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
     }
   });
@@ -426,13 +450,15 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
  */
 describe('Long retry-after values are respected (issue #223)', () => {
   test('accepts long retry-after and waits (does not cap)', async () => {
-    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const originalRetryTimeout =
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval =
+      process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
     // Set a short global timeout so the system gives up quickly
     // but long enough that a short retry-after (1s) would succeed
-    process.env['AGENT_RETRY_TIMEOUT'] = '2'; // 2 seconds
-    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0';
+    process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '2'; // 2 seconds
+    process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
 
     try {
       const mockFetch = mock(() =>
@@ -461,25 +487,29 @@ describe('Long retry-after values are respected (issue #223)', () => {
       expect(result.status).toBe(429);
     } finally {
       if (originalRetryTimeout !== undefined) {
-        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+          originalRetryTimeout;
       } else {
-        delete process.env['AGENT_RETRY_TIMEOUT'];
+        delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       }
       if (originalMinInterval !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+          originalMinInterval;
       } else {
-        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+        delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
     }
   });
 
   test('returns 429 when retry-after exceeds global timeout', async () => {
-    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const originalRetryTimeout =
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval =
+      process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
     // Set global timeout shorter than the retry-after
-    process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
-    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0';
+    process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
+    process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
 
     try {
       const mockFetch = mock(() =>
@@ -504,14 +534,16 @@ describe('Long retry-after values are respected (issue #223)', () => {
       expect(result.status).toBe(429);
     } finally {
       if (originalRetryTimeout !== undefined) {
-        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+          originalRetryTimeout;
       } else {
-        delete process.env['AGENT_RETRY_TIMEOUT'];
+        delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       }
       if (originalMinInterval !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+          originalMinInterval;
       } else {
-        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+        delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
     }
   });
@@ -522,15 +554,15 @@ describe('Flag configuration', () => {
     const { Flag } = await import('../src/flag/flag');
 
     // Clear env var to test default
-    const original = process.env['AGENT_MIN_RETRY_INTERVAL'];
-    delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const original = process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
     delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
     try {
       expect(Flag.MIN_RETRY_INTERVAL()).toBe(30000);
     } finally {
       if (original !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = original;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = original;
       }
     }
   });
@@ -538,16 +570,16 @@ describe('Flag configuration', () => {
   test('MIN_RETRY_INTERVAL can be configured via env var', async () => {
     const { Flag } = await import('../src/flag/flag');
 
-    const original = process.env['AGENT_MIN_RETRY_INTERVAL'];
-    process.env['AGENT_MIN_RETRY_INTERVAL'] = '60'; // 60 seconds
+    const original = process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '60'; // 60 seconds
 
     try {
       expect(Flag.MIN_RETRY_INTERVAL()).toBe(60000);
     } finally {
       if (original !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = original;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = original;
       } else {
-        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+        delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
     }
   });
@@ -555,15 +587,15 @@ describe('Flag configuration', () => {
   test('RETRY_TIMEOUT defaults to 7 days', async () => {
     const { Flag } = await import('../src/flag/flag');
 
-    const original = process.env['AGENT_RETRY_TIMEOUT'];
-    delete process.env['AGENT_RETRY_TIMEOUT'];
+    const original = process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
 
     try {
       expect(Flag.RETRY_TIMEOUT()).toBe(604800); // 7 days in seconds
     } finally {
       if (original !== undefined) {
-        process.env['AGENT_RETRY_TIMEOUT'] = original;
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = original;
       }
     }
   });
@@ -571,15 +603,15 @@ describe('Flag configuration', () => {
   test('MAX_RETRY_DELAY defaults to 20 minutes', async () => {
     const { Flag } = await import('../src/flag/flag');
 
-    const original = process.env['AGENT_MAX_RETRY_DELAY'];
-    delete process.env['AGENT_MAX_RETRY_DELAY'];
+    const original = process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'];
+    delete process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'];
     delete process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'];
 
     try {
       expect(Flag.MAX_RETRY_DELAY()).toBe(1200000); // 20 minutes in ms
     } finally {
       if (original !== undefined) {
-        process.env['AGENT_MAX_RETRY_DELAY'] = original;
+        process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'] = original;
       }
     }
   });
@@ -624,13 +656,15 @@ describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
 
   test('still retries 429 when RETRY_ON_RATE_LIMITS is true (default)', async () => {
     const { Flag } = await import('../src/flag/flag');
-    const originalRetryTimeout = process.env['AGENT_RETRY_TIMEOUT'];
-    const originalMinInterval = process.env['AGENT_MIN_RETRY_INTERVAL'];
+    const originalRetryTimeout =
+      process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    const originalMinInterval =
+      process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
     const originalValue = Flag.RETRY_ON_RATE_LIMITS;
     Flag.setRetryOnRateLimits(true);
-    process.env['AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
-    process.env['AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum for fast test
+    process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
+    process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum for fast test
 
     try {
       let callCount = 0;
@@ -659,14 +693,16 @@ describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
     } finally {
       Flag.setRetryOnRateLimits(originalValue);
       if (originalRetryTimeout !== undefined) {
-        process.env['AGENT_RETRY_TIMEOUT'] = originalRetryTimeout;
+        process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
+          originalRetryTimeout;
       } else {
-        delete process.env['AGENT_RETRY_TIMEOUT'];
+        delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       }
       if (originalMinInterval !== undefined) {
-        process.env['AGENT_MIN_RETRY_INTERVAL'] = originalMinInterval;
+        process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] =
+          originalMinInterval;
       } else {
-        delete process.env['AGENT_MIN_RETRY_INTERVAL'];
+        delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
     }
   });

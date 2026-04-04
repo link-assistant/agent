@@ -22,7 +22,7 @@ export namespace SessionRetry {
   }
 
   /**
-   * Error thrown when retry-after exceeds AGENT_RETRY_TIMEOUT
+   * Error thrown when retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT
    * This indicates the wait time is too long and we should fail immediately
    */
   export class RetryTimeoutExceededError extends Error {
@@ -34,7 +34,7 @@ export namespace SessionRetry {
       const maxTimeoutHours = (maxTimeoutMs / 1000 / 3600).toFixed(2);
       super(
         `API returned retry-after of ${retryAfterHours} hours, which exceeds the maximum retry timeout of ${maxTimeoutHours} hours. ` +
-          `Failing immediately instead of waiting. You can adjust AGENT_RETRY_TIMEOUT env var to increase the limit.`
+          `Failing immediately instead of waiting. You can adjust LINK_ASSISTANT_AGENT_RETRY_TIMEOUT env var to increase the limit.`
       );
       this.name = 'RetryTimeoutExceededError';
       this.retryAfterMs = retryAfterMs;
@@ -198,15 +198,15 @@ export namespace SessionRetry {
    *
    * RETRY LOGIC (per issue #157 requirements):
    * 1. If retry-after header is available:
-   *    - If retry-after <= AGENT_RETRY_TIMEOUT: use it directly (exact time)
-   *    - If retry-after > AGENT_RETRY_TIMEOUT: throw RetryTimeoutExceededError (fail immediately)
+   *    - If retry-after <= LINK_ASSISTANT_AGENT_RETRY_TIMEOUT: use it directly (exact time)
+   *    - If retry-after > LINK_ASSISTANT_AGENT_RETRY_TIMEOUT: throw RetryTimeoutExceededError (fail immediately)
    * 2. If no retry-after header:
    *    - Use exponential backoff up to AGENT_MAX_RETRY_DELAY
    *
    * Adds jitter to prevent thundering herd when multiple requests retry.
    * See: https://github.com/link-assistant/agent/issues/157
    *
-   * @throws {RetryTimeoutExceededError} When retry-after exceeds AGENT_RETRY_TIMEOUT
+   * @throws {RetryTimeoutExceededError} When retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT
    */
   export function delay(error: MessageV2.APIError, attempt: number): number {
     const maxRetryTimeout = getRetryTimeout();

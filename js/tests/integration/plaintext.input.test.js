@@ -13,7 +13,7 @@ async function runAgentCli(input) {
       ['run', join(process.cwd(), 'src/index.js'), '--no-retry-on-rate-limits'],
       {
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, AGENT_CLI_COMPACT: '1' },
+        env: { ...process.env, LINK_ASSISTANT_AGENT_COMPACT_JSON: '1' },
       }
     );
 
