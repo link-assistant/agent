@@ -1,18 +1,21 @@
 /**
- * Centralized agent configuration using lino-arguments.
+ * Centralized agent configuration using makeConfig from lino-arguments.
  *
- * All environment variables are resolved in a single place using getenv()
- * from lino-arguments, which handles case-insensitive env var lookups,
- * .lenv file support, and type-preserving defaults.
+ * All configuration is resolved in a single place using makeConfig(),
+ * where yargs options and getenv() defaults are defined together.
+ * This ensures CLI args, env vars, and .lenv files are merged
+ * with a clear priority chain:
  *
- * The configuration is initialized once at startup after yargs parsing,
- * merging CLI args (from yargs) and env vars (from getenv) in one place.
+ * 1. CLI arguments (--verbose, --dry-run, etc.)
+ * 2. Environment variables (LINK_ASSISTANT_AGENT_VERBOSE, etc.)
+ * 3. .lenv file values
+ * 4. Code defaults
  *
  * This module is the single source of truth for all agent configuration.
  * See: https://github.com/link-foundation/lino-arguments
  * See: https://github.com/link-assistant/agent/issues/227
  */
-import { getenv } from 'lino-arguments';
+import { makeConfig, getenv } from 'lino-arguments';
 
 /**
  * Resolved agent configuration.
@@ -48,40 +51,131 @@ export interface AgentConfig {
 }
 
 /**
- * Initialize the centralized agent configuration from CLI args and env vars.
+ * Build the yargs options for makeConfig.
+ * This is the single place where CLI options and env var defaults are defined together.
+ * Options defined here are used for both CLI parsing and env var resolution.
  *
- * Uses getenv() from lino-arguments for env var resolution, which provides:
- * - Case-insensitive lookups (tries UPPER_CASE, camelCase, kebab-case, etc.)
- * - Type-preserving defaults (boolean, number, string)
- * - .lenv file support (loaded automatically)
- *
- * CLI args (from yargs) take priority over env vars.
- *
- * @param argv - Parsed yargs argv object. Pass undefined to use env-only defaults.
+ * @param yargs - Yargs instance from makeConfig
+ * @param getenv - getenv helper from makeConfig (case-insensitive, type-preserving)
  */
-export function initAgentConfig(argv?: Record<string, unknown>): AgentConfig {
-  // Resolve all config values from env vars using getenv (lino-arguments).
-  // CLI args from yargs override env var defaults when provided.
+function buildAgentConfigOptions({
+  yargs,
+  getenv,
+}: {
+  yargs: any;
+  getenv: (key: string, defaultValue: any) => any;
+}) {
+  return yargs
+    .option('verbose', {
+      type: 'boolean',
+      description: 'Enable verbose mode to debug API requests',
+      default: getenv('LINK_ASSISTANT_AGENT_VERBOSE', false),
+    })
+    .option('dry-run', {
+      type: 'boolean',
+      description: 'Simulate operations without making actual API calls',
+      default: getenv('LINK_ASSISTANT_AGENT_DRY_RUN', false),
+    })
+    .option('generate-title', {
+      type: 'boolean',
+      description: 'Generate session titles using AI',
+      default: getenv('LINK_ASSISTANT_AGENT_GENERATE_TITLE', false),
+    })
+    .option('output-response-model', {
+      type: 'boolean',
+      description: 'Include model info in step_finish output',
+      default: getenv('LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL', true),
+    })
+    .option('summarize-session', {
+      type: 'boolean',
+      description: 'Generate AI session summaries',
+      default: getenv('LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION', true),
+    })
+    .option('retry-on-rate-limits', {
+      type: 'boolean',
+      description: 'Retry API requests when rate limited (HTTP 429)',
+      default: true,
+    })
+    .option('compact-json', {
+      type: 'boolean',
+      description:
+        'Output compact JSON (single line) instead of pretty-printed',
+      default: getenv('LINK_ASSISTANT_AGENT_COMPACT_JSON', false),
+    })
+    .option('retry-timeout', {
+      type: 'number',
+      description: 'Maximum total retry time in seconds for rate limit errors',
+      default: getenv('LINK_ASSISTANT_AGENT_RETRY_TIMEOUT', 604800),
+    })
+    .option('max-retry-delay', {
+      type: 'number',
+      description: 'Maximum delay between retries in seconds',
+      default: getenv('LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY', 1200),
+    })
+    .option('min-retry-interval', {
+      type: 'number',
+      description: 'Minimum interval between retries in seconds',
+      default: getenv('LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL', 30),
+    })
+    .option('stream-chunk-timeout-ms', {
+      type: 'number',
+      description: 'Timeout for individual stream chunks in milliseconds',
+      default: getenv('LINK_ASSISTANT_AGENT_STREAM_CHUNK_TIMEOUT_MS', 120000),
+    })
+    .option('stream-step-timeout-ms', {
+      type: 'number',
+      description: 'Timeout for stream steps in milliseconds',
+      default: getenv('LINK_ASSISTANT_AGENT_STREAM_STEP_TIMEOUT_MS', 600000),
+    })
+    .option('mcp-default-tool-call-timeout', {
+      type: 'number',
+      description: 'Default MCP tool call timeout in milliseconds',
+      default: getenv(
+        'LINK_ASSISTANT_AGENT_MCP_DEFAULT_TOOL_CALL_TIMEOUT',
+        120000
+      ),
+    })
+    .option('mcp-max-tool-call-timeout', {
+      type: 'number',
+      description: 'Maximum MCP tool call timeout in milliseconds',
+      default: getenv('LINK_ASSISTANT_AGENT_MCP_MAX_TOOL_CALL_TIMEOUT', 600000),
+    })
+    .option('verify-images-at-read-tool', {
+      type: 'boolean',
+      description: 'Verify images when using the read tool',
+      default: getenv('LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL', true),
+    });
+}
+
+/**
+ * Initialize the centralized agent configuration using makeConfig from lino-arguments.
+ *
+ * Uses makeConfig() which combines yargs and getenv in a single place:
+ * - CLI args from process.argv have highest priority
+ * - getenv() resolves env vars with case-insensitive lookup
+ * - .lenv file values are loaded automatically
+ * - Code defaults are used as fallback
+ *
+ * @param argv - Optional custom argv array to parse (default: process.argv)
+ */
+export function initAgentConfig(argv?: string[]): AgentConfig {
+  // Use makeConfig to resolve all config from CLI args + env vars + .lenv + defaults.
+  // The yargs callback defines options with getenv defaults — all in one place.
+  const parsed = makeConfig({
+    yargs: buildAgentConfigOptions,
+    lenv: { enabled: true },
+    ...(argv ? { argv } : {}),
+  });
+
+  // Resolve env-only options (not exposed as CLI flags) via getenv directly.
   resolvedConfig = {
-    verbose:
-      (argv?.verbose as boolean) ??
-      getenv('LINK_ASSISTANT_AGENT_VERBOSE', false),
-    dryRun:
-      (argv?.['dry-run'] as boolean) ??
-      getenv('LINK_ASSISTANT_AGENT_DRY_RUN', false),
-    generateTitle:
-      (argv?.['generate-title'] as boolean) ??
-      getenv('LINK_ASSISTANT_AGENT_GENERATE_TITLE', false),
-    outputResponseModel:
-      (argv?.['output-response-model'] as boolean) ??
-      getenv('LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL', true),
-    summarizeSession:
-      (argv?.['summarize-session'] as boolean) ??
-      getenv('LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION', true),
-    retryOnRateLimits: (argv?.['retry-on-rate-limits'] as boolean) ?? true,
-    compactJson:
-      (argv?.['compact-json'] as boolean) ??
-      getenv('LINK_ASSISTANT_AGENT_COMPACT_JSON', false),
+    verbose: parsed.verbose ?? false,
+    dryRun: parsed.dryRun ?? false,
+    generateTitle: parsed.generateTitle ?? false,
+    outputResponseModel: parsed.outputResponseModel ?? true,
+    summarizeSession: parsed.summarizeSession ?? true,
+    retryOnRateLimits: parsed.retryOnRateLimits ?? true,
+    compactJson: parsed.compactJson ?? false,
     // Env-only options (not exposed as CLI flags)
     config: getenv('LINK_ASSISTANT_AGENT_CONFIG', ''),
     configDir: getenv('LINK_ASSISTANT_AGENT_CONFIG_DIR', ''),
@@ -100,29 +194,14 @@ export function initAgentConfig(argv?: Record<string, unknown>): AgentConfig {
     experimentalWatcher:
       getenv('LINK_ASSISTANT_AGENT_EXPERIMENTAL', false) ||
       getenv('LINK_ASSISTANT_AGENT_EXPERIMENTAL_WATCHER', false),
-    retryTimeout: getenv('LINK_ASSISTANT_AGENT_RETRY_TIMEOUT', 604800),
-    maxRetryDelay: getenv('LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY', 1200),
-    minRetryInterval: getenv('LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL', 30),
-    streamChunkTimeoutMs: getenv(
-      'LINK_ASSISTANT_AGENT_STREAM_CHUNK_TIMEOUT_MS',
-      120000
-    ),
-    streamStepTimeoutMs: getenv(
-      'LINK_ASSISTANT_AGENT_STREAM_STEP_TIMEOUT_MS',
-      600000
-    ),
-    mcpDefaultToolCallTimeout: getenv(
-      'LINK_ASSISTANT_AGENT_MCP_DEFAULT_TOOL_CALL_TIMEOUT',
-      120000
-    ),
-    mcpMaxToolCallTimeout: getenv(
-      'LINK_ASSISTANT_AGENT_MCP_MAX_TOOL_CALL_TIMEOUT',
-      600000
-    ),
-    verifyImagesAtReadTool: getenv(
-      'LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL',
-      true
-    ),
+    retryTimeout: parsed.retryTimeout ?? 604800,
+    maxRetryDelay: parsed.maxRetryDelay ?? 1200,
+    minRetryInterval: parsed.minRetryInterval ?? 30,
+    streamChunkTimeoutMs: parsed.streamChunkTimeoutMs ?? 120000,
+    streamStepTimeoutMs: parsed.streamStepTimeoutMs ?? 600000,
+    mcpDefaultToolCallTimeout: parsed.mcpDefaultToolCallTimeout ?? 120000,
+    mcpMaxToolCallTimeout: parsed.mcpMaxToolCallTimeout ?? 600000,
+    verifyImagesAtReadTool: parsed.verifyImagesAtReadTool ?? true,
   };
 
   // Propagate verbose to env var for subprocess resilience.

@@ -777,9 +777,11 @@ async function main() {
       // See: https://github.com/link-foundation/lino-arguments
       // See: https://github.com/link-assistant/agent/issues/227
       .middleware(async (argv) => {
-        // Initialize centralized AgentConfig from parsed yargs argv + env vars.
-        // This is the single source of truth for all agent configuration.
-        const agentConfig = initAgentConfig(argv);
+        // Initialize centralized AgentConfig using makeConfig from lino-arguments.
+        // makeConfig resolves CLI args + env vars + .lenv files in one place,
+        // with yargs options and getenv defaults defined together.
+        // See: https://github.com/link-foundation/lino-arguments
+        const agentConfig = initAgentConfig();
 
         // Sync mutable Flag values from the resolved config.
         const isCompact =
