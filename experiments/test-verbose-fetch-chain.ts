@@ -11,14 +11,18 @@
  * Tests whether HTTP requests get logged through the chain.
  */
 
-import { Flag } from '../js/src/flag/flag';
-import { createVerboseFetch, resetHttpCallCount, getHttpCallCount } from '../js/src/util/verbose-fetch';
-import { Log } from '../js/src/util/log';
+import { Flag } from "../js/src/flag/flag";
+import {
+  createVerboseFetch,
+  resetHttpCallCount,
+  getHttpCallCount,
+} from "../js/src/util/verbose-fetch";
+import { Log } from "../js/src/util/log";
 
 // Initialize the log system
 await Log.init({
   print: true,
-  level: 'DEBUG',
+  level: "DEBUG",
   compactJson: false,
 });
 
@@ -29,56 +33,71 @@ Flag.setVerbose(true);
 const originalGlobalFetch = globalThis.fetch;
 if (!(globalThis as any).__agentVerboseFetchInstalled) {
   globalThis.fetch = createVerboseFetch(globalThis.fetch, {
-    caller: 'global',
+    caller: "global",
   });
   (globalThis as any).__agentVerboseFetchInstalled = true;
 }
 
-console.log('\n=== Setup Complete ===');
-console.log('Flag.VERBOSE:', Flag.VERBOSE);
-console.log('__agentVerboseFetchInstalled:', !!(globalThis as any).__agentVerboseFetchInstalled);
+console.log("\n=== Setup Complete ===");
+console.log("Flag.VERBOSE:", Flag.VERBOSE);
+console.log(
+  "__agentVerboseFetchInstalled:",
+  !!(globalThis as any).__agentVerboseFetchInstalled,
+);
 
 // Step 2: Simulate getSDK for opencode provider (no custom fetch)
-const options: Record<string, any> = { apiKey: 'public' };
+const options: Record<string, any> = { apiKey: "public" };
 
 // Line 1199: const existingFetch = options['fetch'] ?? fetch;
-const existingFetch = options['fetch'] ?? fetch;
-console.log('\nexistingFetch === globalThis.fetch:', existingFetch === globalThis.fetch);
+const existingFetch = options["fetch"] ?? fetch;
+console.log(
+  "\nexistingFetch === globalThis.fetch:",
+  existingFetch === globalThis.fetch,
+);
 
 // Line 1200: options['fetch'] = RetryFetch.wrap(existingFetch, { sessionID: 'opencode' });
 // Simplified retry wrapper (just passes through)
-const retryWrappedFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+const retryWrappedFetch = async (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => {
   return existingFetch(input, init);
 };
-options['fetch'] = retryWrappedFetch;
+options["fetch"] = retryWrappedFetch;
 
 // Line 1224-1237: Provider-level verbose wrapper
-const innerFetch = options['fetch'];
-const providerWrappedFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+const innerFetch = options["fetch"];
+const providerWrappedFetch = async (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> => {
   // This is the exact check from provider.ts line 1233-1237
   if (!Flag.VERBOSE || (globalThis as any).__agentVerboseFetchInstalled) {
     return innerFetch(input, init);
   }
-  console.log('[PROVIDER] verbose logging would happen here');
+  console.log("[PROVIDER] verbose logging would happen here");
   return innerFetch(input, init);
 };
-options['fetch'] = providerWrappedFetch;
+options["fetch"] = providerWrappedFetch;
 
 // Step 3: Simulate what the SDK does
-console.log('\n=== Making test HTTP call ===');
+console.log("\n=== Making test HTTP call ===");
 resetHttpCallCount();
 
 try {
-  const response = await options['fetch']('https://httpbin.org/post', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const response = await options["fetch"]("https://httpbin.org/post", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ test: true }),
   });
-  console.log('\nResponse status:', response.status);
-  console.log('HTTP call count (should be 1 if verbose logging worked):', getHttpCallCount());
+  console.log("\nResponse status:", response.status);
+  console.log(
+    "HTTP call count (should be 1 if verbose logging worked):",
+    getHttpCallCount(),
+  );
 } catch (e: any) {
-  console.log('\nFetch error:', e.message);
-  console.log('HTTP call count:', getHttpCallCount());
+  console.log("\nFetch error:", e.message);
+  console.log("HTTP call count:", getHttpCallCount());
 }
 
 // Cleanup

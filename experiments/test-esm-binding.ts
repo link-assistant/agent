@@ -1,5 +1,5 @@
 // Test: Verify ESM live bindings work with Flag.VERBOSE
-import { Flag } from '../js/src/flag/flag.ts';
+import { Flag } from "../js/src/flag/flag.ts";
 
 console.log("Initial VERBOSE:", Flag.VERBOSE);
 
