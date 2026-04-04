@@ -9,7 +9,7 @@
  * 4. The global patch should catch the HTTP call
  */
 
-import { config, setVerbose } from '../src/flag/agent-config';
+import { config, setVerbose } from '../src/config/agent-config';
 import { Log } from '../src/util/log';
 import { createVerboseFetch } from '../src/util/verbose-fetch';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';

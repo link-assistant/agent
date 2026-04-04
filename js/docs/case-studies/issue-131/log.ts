@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import { Global } from '../global';
 import z from 'zod';
 import makeLog, { levels } from 'log-lazy';
-import { config, isVerbose } from '../flag/agent-config';
+import { config, isVerbose } from '../config/agent-config';
 
 /**
  * Logging module with JSON output and lazy evaluation support.

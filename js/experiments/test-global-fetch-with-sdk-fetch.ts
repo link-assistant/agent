@@ -3,7 +3,7 @@
  * This simulates the case where the provider passes a custom fetch (e.g., OAuth fetch).
  */
 
-import { config, setVerbose } from '../src/flag/agent-config';
+import { config, setVerbose } from '../src/config/agent-config';
 import { Log } from '../src/util/log';
 import { createVerboseFetch } from '../src/util/verbose-fetch';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';

@@ -59,7 +59,7 @@ function parseJSONOutput(stdout) {
  */
 describe('Dry-run mode', () => {
   test('config.dryRun can be set', async () => {
-    const { config } = await import('../../src/flag/agent-config.ts');
+    const { config } = await import('../../src/config/agent-config.ts');
 
     // Save original value
     const original = config.dryRun;
@@ -80,14 +80,14 @@ describe('Dry-run mode', () => {
 
   test('LINK_ASSISTANT_AGENT_DRY_RUN environment variable is respected', async () => {
     // This test verifies that the env var is properly read
-    const { config } = await import('../../src/flag/agent-config.ts');
+    const { config } = await import('../../src/config/agent-config.ts');
 
     // The flag should be false by default (unless env var is set)
     expect(typeof config.dryRun).toBe('boolean');
   });
 
   test('dry-run mode can be enabled programmatically', async () => {
-    const { config } = await import('../../src/flag/agent-config.ts');
+    const { config } = await import('../../src/config/agent-config.ts');
 
     // Save original value
     const original = config.dryRun;
@@ -112,7 +112,7 @@ describe('Dry-run mode', () => {
 
   test('Verbose mode flag can be set', async () => {
     const { config, setVerbose } =
-      await import('../../src/flag/agent-config.ts');
+      await import('../../src/config/agent-config.ts');
 
     // Save original value
     const original = config.verbose;

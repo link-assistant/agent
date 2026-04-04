@@ -11,7 +11,7 @@ import { SessionPrompt } from '../session/prompt.ts';
 import { createEventHandler } from '../json-standard/index.ts';
 import { createContinuousStdinReader } from './input-queue.js';
 import { Log } from '../util/log.ts';
-import { config } from '../flag/agent-config.ts';
+import { config } from '../config/agent-config.ts';
 import { createVerboseFetch } from '../util/verbose-fetch.ts';
 import { outputStatus, outputError, outputInput } from './output.ts';
 

@@ -86,7 +86,7 @@ All verbose checks across the codebase use `Flag.isVerbose()` instead of directl
 
 | File                           | Change                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------- |
-| `js/src/flag/flag.ts`          | Renamed exports, removed OPENCODE\_\* env vars, added `isVerbose()` and env var propagation |
+| `js/src/config/agent-config.ts`| Centralized config with makeConfig(), removed Flag module, env var propagation               |
 | `js/src/util/verbose-fetch.ts` | Use `Flag.isVerbose()`                                                                      |
 | `js/src/provider/provider.ts`  | Use `Flag.DRY_RUN`, `Flag.ENABLE_EXPERIMENTAL_MODELS`                                       |
 | `js/src/config/config.ts`      | Use `Flag.CONFIG`, `Flag.CONFIG_DIR`, `Flag.CONFIG_CONTENT`                                 |
@@ -202,8 +202,7 @@ Adopted [lino-arguments](https://github.com/link-foundation/lino-arguments) to c
 
 | File                          | Role                                                 |
 | ----------------------------- | ---------------------------------------------------- |
-| `js/src/flag/agent-config.ts` | Centralized config with getenv() from lino-arguments |
-| `js/src/flag/flag.ts`         | Thin wrapper, reads from AgentConfig or env vars     |
+| `js/src/config/agent-config.ts` | Centralized config with getenv() from lino-arguments |
 | `js/src/index.js`             | Calls initAgentConfig(argv) in middleware            |
 | `js/src/mcp/index.ts`         | Uses Flag.MCP\_\*() instead of direct process.env    |
 | `js/src/tool/read.ts`         | Uses Flag.VERIFY_IMAGES_AT_READ_TOOL()               |

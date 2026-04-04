@@ -1,6 +1,6 @@
 import z from 'zod';
 import { Bus } from '../bus';
-import { config } from '../flag/agent-config';
+import { config } from '../config/agent-config';
 import { Instance } from '../project/instance';
 import { Log } from '../util/log';
 import { FileIgnore } from './ignore';

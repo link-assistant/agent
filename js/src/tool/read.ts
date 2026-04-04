@@ -4,7 +4,7 @@ import * as path from 'path';
 import { Tool } from './tool';
 import { FileTime } from '../file/time';
 import DESCRIPTION from './read.txt';
-import { config } from '../flag/agent-config';
+import { config } from '../config/agent-config';
 import { Filesystem } from '../util/filesystem';
 import { Instance } from '../project/instance';
 import { Provider } from '../provider/provider';

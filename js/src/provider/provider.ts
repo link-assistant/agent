@@ -12,7 +12,7 @@ import { ClaudeOAuth } from '../auth/claude-oauth';
 import { AuthPlugins } from '../auth/plugins';
 import { Instance } from '../project/instance';
 import { Global } from '../global';
-import { config, isVerbose } from '../flag/agent-config';
+import { config, isVerbose } from '../config/agent-config';
 import { iife } from '../util/iife';
 import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';

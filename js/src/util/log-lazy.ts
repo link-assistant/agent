@@ -1,5 +1,5 @@
 import makeLog, { levels, LogLevel } from 'log-lazy';
-import { config, isVerbose } from '../flag/agent-config';
+import { config, isVerbose } from '../config/agent-config';
 
 /**
  * JSON Lazy Logger

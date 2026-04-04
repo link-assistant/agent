@@ -13,7 +13,7 @@
  *
  * Usage:
  * ```
- * import { config } from './flag/agent-config';
+ * import { config } from './config/agent-config';
  * if (config.verbose) { ... }
  * ```
  *

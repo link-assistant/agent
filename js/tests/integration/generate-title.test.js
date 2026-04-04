@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'bun:test';
-import { config } from '../../src/flag/agent-config.ts';
+import { config } from '../../src/config/agent-config.ts';
 
 describe('Generate Title Flag', () => {
   test('GENERATE_TITLE is false by default', () => {

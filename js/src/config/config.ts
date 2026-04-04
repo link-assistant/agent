@@ -9,7 +9,7 @@ import { Global } from '../global';
 import fs from 'fs/promises';
 import { lazy } from '../util/lazy';
 import { NamedError } from '../util/error';
-import { config } from '../flag/agent-config';
+import { config } from './agent-config';
 import { Auth } from '../auth';
 import { createVerboseFetch } from '../util/verbose-fetch';
 import {

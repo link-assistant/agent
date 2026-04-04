@@ -10,7 +10,7 @@
  */
 
 import { EOL } from 'os';
-import { config, updateConfig } from '../flag/agent-config';
+import { config, updateConfig } from '../config/agent-config';
 
 /**
  * Output types for JSON messages

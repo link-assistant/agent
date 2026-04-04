@@ -1,17 +1,17 @@
-// Test: Verify ESM live bindings work with Flag.VERBOSE
-import { Flag } from "../js/src/flag/flag.ts";
+// Test: Verify ESM live bindings work with config.verbose
+import { config, setVerbose } from "../js/src/config/agent-config.ts";
 
-console.log("Initial VERBOSE:", Flag.VERBOSE);
+console.log("Initial VERBOSE:", config.verbose);
 
-Flag.setVerbose(true);
-console.log("After setVerbose(true):", Flag.VERBOSE);
+setVerbose(true);
+console.log("After setVerbose(true):", config.verbose);
 
-Flag.setVerbose(false);
-console.log("After setVerbose(false):", Flag.VERBOSE);
+setVerbose(false);
+console.log("After setVerbose(false):", config.verbose);
 
 // Test the exact pattern used in provider.ts
 const check = () => {
-  if (!Flag.VERBOSE) {
+  if (!config.verbose) {
     console.log("  -> Would SKIP verbose logging");
   } else {
     console.log("  -> Would DO verbose logging");
@@ -19,9 +19,9 @@ const check = () => {
 };
 
 console.log("\nWith verbose=false:");
-Flag.setVerbose(false);
+setVerbose(false);
 check();
 
 console.log("With verbose=true:");
-Flag.setVerbose(true);
+setVerbose(true);
 check();

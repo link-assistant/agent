@@ -11,7 +11,7 @@
  * Tests whether HTTP requests get logged through the chain.
  */
 
-import { Flag } from "../js/src/flag/flag";
+import { config, setVerbose } from "../js/src/config/agent-config";
 import {
   createVerboseFetch,
   resetHttpCallCount,
@@ -27,7 +27,7 @@ await Log.init({
 });
 
 // Enable verbose
-Flag.setVerbose(true);
+setVerbose(true);
 
 // Step 1: Install global fetch monkey-patch (like index.js line 808)
 const originalGlobalFetch = globalThis.fetch;
@@ -39,7 +39,7 @@ if (!(globalThis as any).__agentVerboseFetchInstalled) {
 }
 
 console.log("\n=== Setup Complete ===");
-console.log("Flag.VERBOSE:", Flag.VERBOSE);
+console.log("config.verbose:", config.verbose);
 console.log(
   "__agentVerboseFetchInstalled:",
   !!(globalThis as any).__agentVerboseFetchInstalled,
@@ -72,7 +72,7 @@ const providerWrappedFetch = async (
   init?: RequestInit,
 ): Promise<Response> => {
   // This is the exact check from provider.ts line 1233-1237
-  if (!Flag.VERBOSE || (globalThis as any).__agentVerboseFetchInstalled) {
+  if (!config.verbose || (globalThis as any).__agentVerboseFetchInstalled) {
     return innerFetch(input, init);
   }
   console.log("[PROVIDER] verbose logging would happen here");

@@ -9,7 +9,7 @@ import { Bus } from '../bus';
 import z from 'zod';
 import type { ModelsDev } from '../provider/models';
 import { SessionPrompt } from './prompt';
-import { config, isVerbose } from '../flag/agent-config';
+import { config, isVerbose } from '../config/agent-config';
 import { Token } from '../util/token';
 import { Log } from '../util/log';
 import { ProviderTransform } from '../provider/transform';

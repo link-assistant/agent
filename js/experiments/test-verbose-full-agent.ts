@@ -4,7 +4,7 @@
  * Related to: https://github.com/link-assistant/agent/issues/215
  */
 
-import { config, setVerbose } from '../src/flag/agent-config';
+import { config, setVerbose } from '../src/config/agent-config';
 import { Log } from '../src/util/log';
 import { Instance } from '../src/project/instance';
 import { Provider } from '../src/provider/provider';

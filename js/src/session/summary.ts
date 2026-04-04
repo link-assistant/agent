@@ -13,7 +13,7 @@ import path from 'path';
 import { Instance } from '../project/instance';
 import { Storage } from '../storage/storage';
 import { Bus } from '../bus';
-import { config, isVerbose } from '../flag/agent-config';
+import { config, isVerbose } from '../config/agent-config';
 import { Token } from '../util/token';
 
 export namespace SessionSummary {

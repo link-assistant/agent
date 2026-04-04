@@ -4,7 +4,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { Config } from '../config/config';
-import { config } from '../flag/agent-config';
+import { config } from '../config/agent-config';
 import { Log } from '../util/log';
 import { NamedError } from '../util/error';
 import z from 'zod/v4';

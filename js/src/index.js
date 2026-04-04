@@ -5,7 +5,7 @@ import {
   isVerbose,
   setVerbose,
   getConfigSnapshot,
-} from './flag/agent-config.ts';
+} from './config/agent-config.ts';
 import { setProcessName } from './cli/process-name.ts';
 setProcessName('agent');
 import { Server } from './server/server.ts';

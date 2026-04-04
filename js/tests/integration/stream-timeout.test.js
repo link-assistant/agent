@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'bun:test';
-import { config, resetConfig } from '../../src/flag/agent-config.ts';
+import { config, resetConfig } from '../../src/config/agent-config.ts';
 
 describe('Stream timeout configuration', () => {
   describe('STREAM_CHUNK_TIMEOUT_MS', () => {

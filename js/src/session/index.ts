@@ -3,7 +3,7 @@ import z from 'zod';
 import { type LanguageModelUsage, type ProviderMetadata } from 'ai';
 import { Bus } from '../bus';
 import { Config } from '../config/config';
-import { isVerbose } from '../flag/agent-config';
+import { isVerbose } from '../config/agent-config';
 import { Identifier } from '../id/id';
 import type { ModelsDev } from '../provider/models';
 import { Storage } from '../storage/storage';

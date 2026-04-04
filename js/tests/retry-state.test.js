@@ -1,6 +1,6 @@
 import { test, expect, describe, beforeEach } from 'bun:test';
 import { SessionRetry } from '../src/session/retry.ts';
-import { config } from '../src/flag/agent-config.ts';
+import { config } from '../src/config/agent-config.ts';
 
 describe('SessionRetry State Management', () => {
   beforeEach(() => {

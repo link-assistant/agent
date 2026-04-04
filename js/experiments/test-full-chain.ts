@@ -10,7 +10,7 @@
  */
 
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { config, setVerbose } from '../src/flag/agent-config';
+import { config, setVerbose } from '../src/config/agent-config';
 import {
   createVerboseFetch,
   resetHttpCallCount,

@@ -1,5 +1,5 @@
 import { test, expect, describe, beforeEach, afterEach } from 'bun:test';
-import { config, setVerbose } from '../src/flag/agent-config';
+import { config, setVerbose } from '../src/config/agent-config';
 
 /**
  * Tests that provider-level verbose HTTP logging works correctly.

@@ -3,7 +3,7 @@
  * Related to: https://github.com/link-assistant/agent/issues/215
  */
 
-import { Flag } from "../js/src/flag/flag";
+import { config, setVerbose } from "../js/src/config/agent-config";
 import { Log } from "../js/src/util/log";
 
 // Create logger BEFORE Log.init() (simulates provider.ts module-level creation)
@@ -15,12 +15,12 @@ log.info("HTTP request BEFORE init", { method: "POST" });
 console.error("[TEST] (nothing should appear above from log.info)");
 
 // Now enable verbose and init (like middleware does)
-Flag.setVerbose(true);
+setVerbose(true);
 await Log.init({
-  print: Flag.VERBOSE,
+  print: config.verbose,
   level: "DEBUG",
 });
-console.error("[TEST] Log.init() complete, Flag.VERBOSE =", Flag.VERBOSE);
+console.error("[TEST] Log.init() complete, config.verbose =", config.verbose);
 
 // Now test if the SAME logger works after init
 console.error("[TEST] Calling log.info AFTER init...");

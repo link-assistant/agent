@@ -24,7 +24,7 @@ import { Instance } from '../project/instance';
 import { Bus } from '../bus';
 import { ProviderTransform } from '../provider/transform';
 import { SystemPrompt } from './system';
-import { config, isVerbose } from '../flag/agent-config';
+import { config, isVerbose } from '../config/agent-config';
 import { Token } from '../util/token';
 
 import PROMPT_PLAN from '../session/prompt/plan.txt';

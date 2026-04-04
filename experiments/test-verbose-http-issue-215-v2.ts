@@ -3,17 +3,17 @@
  * Related to: https://github.com/link-assistant/agent/issues/215
  */
 
-import { Flag } from "../js/src/flag/flag";
+import { config, setVerbose } from "../js/src/config/agent-config";
 import { Log } from "../js/src/util/log";
 
 // Enable verbose mode
-Flag.setVerbose(true);
-console.error("[TEST] Flag.VERBOSE =", Flag.VERBOSE);
+setVerbose(true);
+console.error("[TEST] config.verbose =", config.verbose);
 
 // Initialize logging (like the middleware does)
 await Log.init({
-  print: Flag.VERBOSE,
-  level: Flag.VERBOSE ? "DEBUG" : "INFO",
+  print: config.verbose,
+  level: config.verbose ? "DEBUG" : "INFO",
 });
 console.error("[TEST] Log.init() complete");
 

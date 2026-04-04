@@ -15,7 +15,7 @@ import {
 } from './json-standard/index.ts';
 import { McpCommand } from './cli/cmd/mcp.ts';
 import { AuthCommand } from './cli/cmd/auth.ts';
-import { config, setVerbose, updateConfig } from './flag/agent-config.ts';
+import { config, setVerbose, updateConfig } from './config/agent-config.ts';
 import { FormatError } from './cli/error.ts';
 import { UI } from './cli/ui.ts';
 import {
