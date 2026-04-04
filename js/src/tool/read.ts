@@ -4,6 +4,7 @@ import * as path from 'path';
 import { Tool } from './tool';
 import { FileTime } from '../file/time';
 import DESCRIPTION from './read.txt';
+import { Flag } from '../flag/flag';
 import { Filesystem } from '../util/filesystem';
 import { Instance } from '../project/instance';
 import { Provider } from '../provider/provider';
@@ -70,9 +71,8 @@ export const ReadTool = Tool.define('read', {
       return model.info.modalities?.input?.includes('image') ?? false;
     })();
     if (isImage) {
-      // Image format validation (can be disabled via environment variable)
-      const verifyImages =
-        process.env.LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL !== 'false';
+      // Image format validation (can be disabled via LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL)
+      const verifyImages = Flag.VERIFY_IMAGES_AT_READ_TOOL();
       if (verifyImages && !supportsImages) {
         throw new Error(
           `Failed to read image: ${filepath}, model may not be able to read images`

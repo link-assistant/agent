@@ -1,5 +1,9 @@
 #!/usr/bin/env bun
 import { Flag } from './flag/flag.ts';
+import {
+  initAgentConfig,
+  getAgentConfigSnapshot,
+} from './flag/agent-config.ts';
 import { setProcessName } from './cli/process-name.ts';
 setProcessName('agent');
 import { Server } from './server/server.ts';
@@ -767,49 +771,62 @@ async function main() {
           await runAgentMode(argv, request);
         },
       })
-      // Initialize logging and flags early for all CLI commands
+      // Initialize centralized config and flags from CLI args + env vars + .lenv.
+      // Uses lino-arguments getenv() for env var resolution (case-insensitive,
+      // type-preserving, .lenv support).
+      // See: https://github.com/link-foundation/lino-arguments
+      // See: https://github.com/link-assistant/agent/issues/227
       .middleware(async (argv) => {
-        const isCompact = argv['compact-json'] === true || Flag.COMPACT_JSON();
+        // Initialize centralized AgentConfig from parsed yargs argv + env vars.
+        // This is the single source of truth for all agent configuration.
+        const agentConfig = initAgentConfig(argv);
+
+        // Sync mutable Flag values from the resolved config.
+        const isCompact =
+          argv['compact-json'] === true || agentConfig.compactJson;
         if (isCompact) {
+          Flag.setCompactJson(true);
           setCompactJson(true);
         }
-        if (argv.verbose) {
+        if (agentConfig.verbose) {
           Flag.setVerbose(true);
         }
-        if (argv['dry-run']) {
+        if (agentConfig.dryRun) {
           Flag.setDryRun(true);
         }
-        if (argv['generate-title'] === true) {
+        if (agentConfig.generateTitle) {
           Flag.setGenerateTitle(true);
         }
-        // output-response-model is enabled by default, only set if explicitly disabled
-        if (argv['output-response-model'] === false) {
+        if (!agentConfig.outputResponseModel) {
           Flag.setOutputResponseModel(false);
         }
-        // summarize-session is enabled by default, only set if explicitly disabled
-        if (argv['summarize-session'] === false) {
+        if (!agentConfig.summarizeSession) {
           Flag.setSummarizeSession(false);
         } else {
           Flag.setSummarizeSession(true);
         }
-        // retry-on-rate-limits is enabled by default, only set if explicitly disabled
-        if (argv['retry-on-rate-limits'] === false) {
+        if (!agentConfig.retryOnRateLimits) {
           Flag.setRetryOnRateLimits(false);
         }
+
+        // Initialize logging.
         await Log.init({
           print: Flag.isVerbose(),
           level: Flag.isVerbose() ? 'DEBUG' : 'INFO',
           compactJson: isCompact,
         });
 
+        // Always log the resolved configuration as JSON.
+        // This is critical for debugging — shows exactly what config was resolved
+        // from CLI args, env vars, and .lenv files combined.
+        Log.Default.info(() => ({
+          type: 'config',
+          message: 'Agent configuration resolved',
+          source: 'lino-arguments (CLI args > env vars > .lenv > defaults)',
+          config: getAgentConfigSnapshot(),
+        }));
+
         // Global fetch monkey-patch for verbose HTTP logging (#221).
-        // This catches any HTTP calls that go through globalThis.fetch directly,
-        // including non-provider calls (auth, config, tools) that may not have
-        // their own createVerboseFetch wrapper. The provider-level wrapper in
-        // provider.ts getSDK() also logs independently — both mechanisms are
-        // kept active to maximize HTTP observability in --verbose mode.
-        // See: https://github.com/link-assistant/agent/issues/221
-        // See: https://github.com/link-assistant/agent/issues/217
         if (!globalThis.__agentVerboseFetchInstalled) {
           globalThis.fetch = createVerboseFetch(globalThis.fetch, {
             caller: 'global',

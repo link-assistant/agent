@@ -4,6 +4,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { Config } from '../config/config';
+import { Flag } from '../flag/flag';
 import { Log } from '../util/log';
 import { NamedError } from '../util/error';
 import z from 'zod/v4';
@@ -89,31 +90,15 @@ export namespace MCP {
       const status: Record<string, Status> = {};
       const timeoutConfigs: Record<string, TimeoutConfig> = {};
 
-      // Determine global timeout defaults from config and environment variables
-      const envDefaultTimeout = process.env
-        .LINK_ASSISTANT_AGENT_MCP_DEFAULT_TOOL_CALL_TIMEOUT
-        ? parseInt(
-            process.env.LINK_ASSISTANT_AGENT_MCP_DEFAULT_TOOL_CALL_TIMEOUT,
-            10
-          )
-        : undefined;
-      const envMaxTimeout = process.env
-        .LINK_ASSISTANT_AGENT_MCP_MAX_TOOL_CALL_TIMEOUT
-        ? parseInt(
-            process.env.LINK_ASSISTANT_AGENT_MCP_MAX_TOOL_CALL_TIMEOUT,
-            10
-          )
-        : undefined;
-
+      // Determine global timeout defaults from config and environment variables.
+      // Uses Flag.MCP_*() which reads from centralized AgentConfig (lino-arguments).
       const globalDefaults: GlobalTimeoutDefaults = {
         defaultTimeout:
           cfg.mcp_defaults?.tool_call_timeout ??
-          envDefaultTimeout ??
-          BUILTIN_DEFAULT_TOOL_CALL_TIMEOUT,
+          Flag.MCP_DEFAULT_TOOL_CALL_TIMEOUT(),
         maxTimeout:
           cfg.mcp_defaults?.max_tool_call_timeout ??
-          envMaxTimeout ??
-          BUILTIN_MAX_TOOL_CALL_TIMEOUT,
+          Flag.MCP_MAX_TOOL_CALL_TIMEOUT(),
       };
 
       await Promise.all(

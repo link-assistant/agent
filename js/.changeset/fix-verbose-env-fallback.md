@@ -1,10 +1,13 @@
 ---
-'@link-assistant/agent': patch
+'@link-assistant/agent': minor
 ---
 
-fix: remove legacy OPENCODE\_\* env vars, rename Flag exports, add env var fallback for verbose flag (#227)
+feat: centralize agent config with lino-arguments, always log resolved config (#227)
 
-- Removed all `OPENCODE_*` environment variable support; use `LINK_ASSISTANT_AGENT_*` exclusively
-- Renamed `Flag.OPENCODE_*` exports to clean names (e.g., `Flag.VERBOSE`, `Flag.DRY_RUN`, `Flag.CONFIG`)
-- Added env var propagation in `setVerbose()` to prevent silent HTTP logging loss in subprocess scenarios
-- Added `Flag.isVerbose()` with env var fallback for resilience
+- Added `lino-arguments` for unified env var resolution (case-insensitive, .lenv support)
+- Created centralized `AgentConfig` module as single source of truth for all configuration
+- All env vars resolved via `getenv()` from lino-arguments (CLI args > env vars > .lenv > defaults)
+- Always log resolved configuration as JSON at startup for debugging
+- Moved all direct `process.env` reads (MCP, read tool) into centralized Flag module
+- `--verbose` is now the most reliable flag: triple-checked via in-memory, AgentConfig, and env var
+- Removed all `OPENCODE_*` env var support; use `LINK_ASSISTANT_AGENT_*` exclusively

@@ -165,6 +165,49 @@ As part of this fix, all project-owned environment variables have been standardi
 
 **Note:** Third-party env vars (`CLAUDE_CODE_OAUTH_TOKEN`, `AWS_*`, `GOOGLE_CLOUD_*`, `GEMINI_API_KEY`, etc.) are kept as-is since they are external interfaces defined by other tools/platforms.
 
+## Architectural Improvement: Centralized Config with lino-arguments
+
+### Problem
+
+Before this fix, environment variables were read in multiple scattered locations:
+
+- `flag.ts` — 15+ direct `process.env` reads with manual `truthyEnv()` helpers
+- `mcp/index.ts` — 2 direct `process.env` reads for MCP timeouts
+- `tool/read.ts` — 1 direct `process.env` read for image verification
+- `index.js` — yargs middleware manually syncing CLI args to Flag module
+
+This fragmentation made it hard to:
+
+1. Know what configuration was resolved at startup
+2. Debug configuration issues (no central log)
+3. Support `.lenv` files or case-insensitive env vars
+
+### Solution: lino-arguments
+
+Adopted [lino-arguments](https://github.com/link-foundation/lino-arguments) to centralize env var resolution:
+
+1. **`agent-config.ts`** — Single source of truth for all configuration. Uses `getenv()` from lino-arguments which provides case-insensitive lookups, type-preserving defaults, and `.lenv` file support.
+2. **`flag.ts`** — Thin wrapper that reads from AgentConfig when initialized, falls back to env vars for backward compatibility.
+3. **`index.js` middleware** — Calls `initAgentConfig(argv)` once after yargs parsing, merging CLI args and env vars in one place.
+4. **Configuration logging** — Always logs the full resolved config as JSON at `info` level, critical for debugging.
+
+### Configuration priority (highest to lowest)
+
+1. CLI arguments (`--verbose`, `--dry-run`, etc.)
+2. Environment variables (`LINK_ASSISTANT_AGENT_VERBOSE=true`)
+3. `.lenv` file values (via lino-arguments)
+4. Code defaults
+
+### Key files
+
+| File                          | Role                                                 |
+| ----------------------------- | ---------------------------------------------------- |
+| `js/src/flag/agent-config.ts` | Centralized config with getenv() from lino-arguments |
+| `js/src/flag/flag.ts`         | Thin wrapper, reads from AgentConfig or env vars     |
+| `js/src/index.js`             | Calls initAgentConfig(argv) in middleware            |
+| `js/src/mcp/index.ts`         | Uses Flag.MCP\_\*() instead of direct process.env    |
+| `js/src/tool/read.ts`         | Uses Flag.VERIFY_IMAGES_AT_READ_TOOL()               |
+
 ## Related Issues
 
 - #229 — HTTP request/response logs missing when using `--verbose` CLI flag (env var works)
