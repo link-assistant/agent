@@ -5,7 +5,7 @@ import path from 'path';
 import z from 'zod';
 
 import * as Formatter from './formatter';
-import { Config } from '../config/config';
+import { Config } from '../config/file-config';
 import { mergeDeep } from 'remeda';
 import { Instance } from '../project/instance';
 

@@ -15,7 +15,7 @@ import {
 } from './json-standard/index.ts';
 import { McpCommand } from './cli/cmd/mcp.ts';
 import { AuthCommand } from './cli/cmd/auth.ts';
-import { Flag } from './flag/flag.ts';
+import { config, setVerbose, updateConfig } from './config/agent-config.ts';
 import { FormatError } from './cli/error.ts';
 import { UI } from './cli/ui.ts';
 import {
@@ -240,7 +240,7 @@ async function runAgentMode(argv, request) {
     workingDirectory: process.cwd(),
     scriptPath: import.meta.path,
   }));
-  if (Flag.OPENCODE_DRY_RUN) {
+  if (config.dryRun) {
     Log.Default.info(() => ({
       message: 'Dry run mode enabled',
       mode: 'dry-run',
@@ -313,7 +313,7 @@ async function runContinuousAgentMode(argv) {
     workingDirectory: process.cwd(),
     scriptPath: import.meta.path,
   }));
-  if (Flag.OPENCODE_DRY_RUN) {
+  if (config.dryRun) {
     Log.Default.info(() => ({
       message: 'Dry run mode enabled',
       mode: 'dry-run',
@@ -678,7 +678,7 @@ async function main() {
         handler: async (argv) => {
           // Check both CLI flag and environment variable for compact JSON mode
           const compactJson =
-            argv['compact-json'] === true || Flag.COMPACT_JSON();
+            argv['compact-json'] === true || config.compactJson;
 
           // Check if --prompt flag was provided
           if (argv.prompt) {
@@ -841,19 +841,19 @@ async function main() {
       // This prevents debug output from appearing in CLI unless --verbose is used
       .middleware(async (argv) => {
         // Set global compact JSON setting (CLI flag or environment variable)
-        const isCompact = argv['compact-json'] === true || Flag.COMPACT_JSON();
+        const isCompact = argv['compact-json'] === true || config.compactJson;
         if (isCompact) {
           setCompactJson(true);
         }
 
         // Set verbose flag if requested
         if (argv.verbose) {
-          Flag.setVerbose(true);
+          setVerbose(true);
         }
 
         // Set dry-run flag if requested
         if (argv['dry-run']) {
-          Flag.setDryRun(true);
+          updateConfig({ dryRun: true });
         }
 
         // Initialize logging system
@@ -861,7 +861,7 @@ async function main() {
         // - Use verbose flag to enable DEBUG level logging
         await Log.init({
           print: true, // Output logs to stdout by default for JSON consistency
-          level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
+          level: config.verbose ? 'DEBUG' : 'INFO',
           compactJson: isCompact,
         });
       })

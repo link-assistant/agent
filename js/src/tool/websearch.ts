@@ -1,7 +1,7 @@
 import z from 'zod';
 import { Tool } from './tool';
 import DESCRIPTION from './websearch.txt';
-import { Config } from '../config/config';
+import { Config } from '../config/file-config';
 import { createVerboseFetch } from '../util/verbose-fetch';
 
 const verboseFetch = createVerboseFetch(fetch, { caller: 'websearch' });

@@ -1,5 +1,5 @@
 /**
- * Experiment: Test if the verbose HTTP logging wrapper is applied when Flag.OPENCODE_VERBOSE is true.
+ * Experiment: Test if the verbose HTTP logging wrapper is applied when Flag.VERBOSE is true.
  *
  * This simulates what happens in getSDK() to verify the fetch wrapping chain works.
  * Run with: cd js && bun run experiments/test-verbose-fetch-wrapper.ts

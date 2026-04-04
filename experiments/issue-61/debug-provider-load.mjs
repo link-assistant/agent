@@ -57,5 +57,5 @@ console.log('  - status:', gemini3Pro.status);
 // Would it be filtered out?
 const wouldBeFiltered =
   (gemini3Pro.experimental || gemini3Pro.status === 'alpha') &&
-  !process.env.OPENCODE_ENABLE_EXPERIMENTAL_MODELS;
+  !process.env.LINK_ASSISTANT_AGENT_ENABLE_EXPERIMENTAL_MODELS;
 console.log('  - would be filtered:', wouldBeFiltered);

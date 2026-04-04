@@ -1,10 +1,10 @@
 import z from 'zod';
 import { Bus } from '../bus';
-import { Flag } from '../flag/flag';
+import { config } from '../config/config';
 import { Instance } from '../project/instance';
 import { Log } from '../util/log';
 import { FileIgnore } from './ignore';
-import { Config } from '../config/config';
+import { Config } from '../config/file-config';
 // @ts-ignore
 import { createWrapper } from '@parcel/watcher/wrapper';
 import { lazy } from '../util/lazy';
@@ -83,7 +83,7 @@ export namespace FileWatcher {
   );
 
   export function init() {
-    if (!Flag.OPENCODE_EXPERIMENTAL_WATCHER) return;
+    if (!config.experimentalWatcher) return;
     state();
   }
 }

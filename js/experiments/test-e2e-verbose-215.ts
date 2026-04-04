@@ -5,11 +5,11 @@
  * Issue: https://github.com/link-assistant/agent/issues/215
  */
 
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/config/config';
 import { Log } from '../src/util/log';
 
 // Set verbose mode BEFORE anything else (like middleware does)
-Flag.setVerbose(true);
+setVerbose(true);
 
 // Initialize logging (like middleware does)
 await Log.init({
@@ -17,7 +17,7 @@ await Log.init({
   level: 'DEBUG',
 });
 
-console.log(`Flag.OPENCODE_VERBOSE = ${Flag.OPENCODE_VERBOSE}`);
+console.log(`config.verbose = ${config.verbose}`);
 
 // Now simulate what getSDK does
 import { createAnthropic } from '@ai-sdk/anthropic';
@@ -46,7 +46,7 @@ options['fetch'] = async (input: any, init?: any) => {
     init?: RequestInit
   ): Promise<Response> => {
     // Check verbose flag at call time
-    if (!Flag.OPENCODE_VERBOSE) {
+    if (!config.verbose) {
       console.log('[VerboseWrapper] Flag is FALSE, skipping');
       return innerFetch(input, init);
     }

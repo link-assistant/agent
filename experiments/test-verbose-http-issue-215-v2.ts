@@ -3,37 +3,37 @@
  * Related to: https://github.com/link-assistant/agent/issues/215
  */
 
-import { Flag } from '../js/src/flag/flag';
-import { Log } from '../js/src/util/log';
+import { config, setVerbose } from "../js/src/config/config";
+import { Log } from "../js/src/util/log";
 
 // Enable verbose mode
-Flag.setVerbose(true);
-console.error('[TEST] Flag.OPENCODE_VERBOSE =', Flag.OPENCODE_VERBOSE);
+setVerbose(true);
+console.error("[TEST] config.verbose =", config.verbose);
 
 // Initialize logging (like the middleware does)
 await Log.init({
-  print: Flag.OPENCODE_VERBOSE,
-  level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
+  print: config.verbose,
+  level: config.verbose ? "DEBUG" : "INFO",
 });
-console.error('[TEST] Log.init() complete');
+console.error("[TEST] Log.init() complete");
 
 // Create logger (like provider.ts does)
-const log = Log.create({ service: 'test-provider' });
+const log = Log.create({ service: "test-provider" });
 
 // Test direct log.info call (non-lazy)
-console.error('[TEST] Calling log.info with string message + extra...');
-log.info('HTTP request', {
-  method: 'POST',
-  url: 'https://api.test.com/v1/messages',
+console.error("[TEST] Calling log.info with string message + extra...");
+log.info("HTTP request", {
+  method: "POST",
+  url: "https://api.test.com/v1/messages",
 });
-console.error('[TEST] Done with log.info');
+console.error("[TEST] Done with log.info");
 
 // Test lazy log.info call
-console.error('[TEST] Calling lazy log.info...');
+console.error("[TEST] Calling lazy log.info...");
 log.info(() => ({
-  message: 'lazy HTTP test',
-  method: 'GET',
+  message: "lazy HTTP test",
+  method: "GET",
 }));
-console.error('[TEST] Done with lazy log.info');
+console.error("[TEST] Done with lazy log.info");
 
-console.error('\n[TEST] === DONE ===');
+console.error("\n[TEST] === DONE ===");

@@ -13,10 +13,9 @@ import { InvalidTool } from './invalid';
 import type { Agent } from '../agent/agent';
 import { Tool } from './tool';
 import { Instance } from '../project/instance';
-import { Config } from '../config/config';
+import { Config } from '../config/file-config';
 import { WebSearchTool } from './websearch';
 import { CodeSearchTool } from './codesearch';
-import { Flag } from '../flag/flag';
 
 export namespace ToolRegistry {
   export const state = Instance.state(async () => {

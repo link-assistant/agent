@@ -1,25 +1,25 @@
 /**
- * Experiment: Test if Flag.OPENCODE_VERBOSE is true when getSDK() runs
+ * Experiment: Test if Flag.VERBOSE is true when getSDK() runs
  *
  * This simulates the exact call sequence:
  * 1. Flag starts as false (no env var)
  * 2. Middleware sets Flag.setVerbose(true)
- * 3. getSDK() runs and checks Flag.OPENCODE_VERBOSE
+ * 3. getSDK() runs and checks Flag.VERBOSE
  *
  * Run with: bun run experiments/test-verbose-flag-timing.ts
  */
 
-import { Flag } from '../src/flag/flag.ts';
+import { config, setVerbose } from '../src/config/config.ts';
 
-console.log('=== Test Flag.OPENCODE_VERBOSE Timing ===\n');
-console.log(`Initial OPENCODE_VERBOSE: ${Flag.OPENCODE_VERBOSE}`);
+console.log('=== Test config.verbose Timing ===\n');
+console.log(`Initial verbose: ${config.verbose}`);
 
 // Simulate what the middleware does
-Flag.setVerbose(true);
-console.log(`After setVerbose(true): ${Flag.OPENCODE_VERBOSE}`);
+setVerbose(true);
+console.log(`After setVerbose(true): ${config.verbose}`);
 
 // Simulate what getSDK() does
-const shouldWrapFetch = Flag.OPENCODE_VERBOSE;
+const shouldWrapFetch = config.verbose;
 console.log(`Should wrap fetch (in getSDK): ${shouldWrapFetch}`);
 
 if (shouldWrapFetch) {
@@ -32,21 +32,21 @@ if (shouldWrapFetch) {
 
 // Additional test: check the exported let behavior
 console.log('\n=== Test exported let behavior ===');
-console.log(`Direct Flag.OPENCODE_VERBOSE: ${Flag.OPENCODE_VERBOSE}`);
+console.log(`Direct config.verbose: ${config.verbose}`);
 
-// Test if Flag module re-evaluation changes the value
-const { OPENCODE_VERBOSE } = await import('../src/flag/flag.ts');
-console.log(`Destructured import: ${OPENCODE_VERBOSE}`);
-console.log(`Match: ${OPENCODE_VERBOSE === Flag.OPENCODE_VERBOSE}`);
+// Test if dynamic import re-evaluation changes the value
+const { config: dynamicConfig } = await import('../src/config/config.ts');
+console.log(`Dynamic import config.verbose: ${dynamicConfig.verbose}`);
+console.log(`Match: ${dynamicConfig.verbose === config.verbose}`);
 
-if (OPENCODE_VERBOSE !== Flag.OPENCODE_VERBOSE) {
+if (dynamicConfig.verbose !== config.verbose) {
   console.log(
-    '\n❌ BUG FOUND: Destructured import does NOT reflect setVerbose() change!'
+    '\n❌ BUG FOUND: Dynamic import does NOT reflect setVerbose() change!'
   );
   console.log(
-    'The issue is that "import { OPENCODE_VERBOSE }" captures the value at import time,'
+    'The issue is that dynamic import captures the value at import time,'
   );
-  console.log('while Flag.OPENCODE_VERBOSE uses the live binding.');
+  console.log('while config.verbose uses the live binding.');
 } else {
   console.log('\n✅ Both access paths return the same value');
 }

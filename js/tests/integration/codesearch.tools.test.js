@@ -14,7 +14,7 @@ async function runOpenCode(input) {
       ['run', '--format', 'json', '--model', 'opencode/kimi-k2.5-free'],
       {
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, OPENCODE_EXPERIMENTAL_EXA: 'true' },
+        env: { ...process.env, LINK_ASSISTANT_AGENT_EXPERIMENTAL_EXA: 'true' },
       }
     );
 
@@ -181,7 +181,7 @@ test('Agent-cli codesearch tool produces 100% compatible JSON output with OpenCo
   );
 
   console.log('Getting agent-cli output...');
-  // Get agent-cli output using spawn without OPENCODE_EXPERIMENTAL_EXA flag
+  // Get agent-cli output using spawn without LINK_ASSISTANT_AGENT_EXPERIMENTAL_EXA flag
   const agentResult = await runAgentCli(input);
   const agentLines = agentResult.stdout
     .trim()

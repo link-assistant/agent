@@ -207,7 +207,7 @@ test('Read tool can be configured to skip validation with env var', async () => 
 
     // Set environment variable to disable validation
     const result =
-      await $`VERIFY_IMAGES_AT_READ_TOOL=false echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
+      await $`LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL=false echo ${input} | bun run ${projectRoot}/src/index.js --no-retry-on-rate-limits`.quiet();
 
     const lines = result.stdout
       .toString()
@@ -327,7 +327,9 @@ test('Read tool provides helpful error message with hex dump', async () => {
     expect(errorMessage).toContain('bytes:');
 
     // 3. Instructions on how to disable validation
-    expect(errorMessage).toContain('VERIFY_IMAGES_AT_READ_TOOL=false');
+    expect(errorMessage).toContain(
+      'LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL=false'
+    );
 
     console.log('Error message:', errorMessage);
     console.log('✅ Error message includes hex dump and helpful instructions');

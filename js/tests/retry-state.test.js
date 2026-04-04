@@ -1,6 +1,6 @@
 import { test, expect, describe, beforeEach } from 'bun:test';
 import { SessionRetry } from '../src/session/retry.ts';
-import { Flag } from '../src/flag/flag.ts';
+import { config } from '../src/config/config.ts';
 
 describe('SessionRetry State Management', () => {
   beforeEach(() => {
@@ -54,7 +54,7 @@ describe('RetryTimeoutExceededError', () => {
     expect(error.maxTimeoutMs).toBe(maxTimeoutMs);
     expect(error.message).toContain('10.00 hours');
     expect(error.message).toContain('7.00 hours');
-    expect(error.message).toContain('AGENT_RETRY_TIMEOUT');
+    expect(error.message).toContain('LINK_ASSISTANT_AGENT_RETRY_TIMEOUT');
   });
 });
 
@@ -99,7 +99,7 @@ describe('SessionRetry Delay Calculation', () => {
 
   test('uses exact retry-after for longer waits within timeout limit', () => {
     // Test that we now use exact retry-after value (e.g., 1 hour)
-    // as long as it's within AGENT_RETRY_TIMEOUT (default: 7 days)
+    // as long as it's within LINK_ASSISTANT_AGENT_RETRY_TIMEOUT (default: 7 days)
     const oneHourInSeconds = 3600;
     const error = createAPIError('Rate limit exceeded', 429, {
       'retry-after': String(oneHourInSeconds),
@@ -112,8 +112,8 @@ describe('SessionRetry Delay Calculation', () => {
     expect(delay).toBeLessThanOrEqual(oneHourInSeconds * 1000 * 1.1); // 10% jitter max
   });
 
-  test('throws RetryTimeoutExceededError when retry-after exceeds AGENT_RETRY_TIMEOUT', () => {
-    const retryTimeout = Flag.RETRY_TIMEOUT(); // Default: 604800 seconds (7 days)
+  test('throws RetryTimeoutExceededError when retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT', () => {
+    const retryTimeout = config.retryTimeout; // Default: 604800 seconds (7 days)
     // Create a retry-after that exceeds the timeout (8 days)
     const eightDaysInSeconds = 8 * 24 * 60 * 60;
 
@@ -153,7 +153,7 @@ describe('SessionRetry Delay Calculation', () => {
   });
 
   test('caps exponential backoff at MAX_RETRY_DELAY when headers present but no retry-after', () => {
-    const maxDelay = Flag.MAX_RETRY_DELAY(); // Default: 20 minutes (1200000ms)
+    const maxDelay = config.maxRetryDelay * 1000; // Default: 20 minutes (1200000ms)
 
     // Headers present but no retry-after
     const error = createAPIError('Rate limit exceeded', 429, {
@@ -201,7 +201,7 @@ describe('SessionRetry Configuration', () => {
   });
 
   test('RETRY_TIMEOUT has expected default (seconds)', () => {
-    const timeout = Flag.RETRY_TIMEOUT();
+    const timeout = config.retryTimeout;
     // Default: 7 days in seconds
     expect(timeout).toBe(604800);
   });

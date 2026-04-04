@@ -1,6 +1,6 @@
 // Test: Simulate the exact flow from Log.create + Log.init + verbose fetch logging
 import { Log } from '../js/src/util/log.ts';
-import { Flag } from '../js/src/flag/flag.ts';
+import { config, setVerbose } from '../js/src/config/config.ts';
 
 // Step 1: Create a logger BEFORE init (like provider.ts does at module level)
 const log = Log.create({ service: 'provider-test' });
@@ -17,7 +17,7 @@ console.log("--- After lazy log before init (should be silent) ---");
 
 // Step 3: Enable verbose and init
 console.log("\n=== Step 3: Enabling verbose + Log.init ===");
-Flag.setVerbose(true);
+setVerbose(true);
 await Log.init({
   print: true,
   level: 'DEBUG',

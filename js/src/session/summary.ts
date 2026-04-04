@@ -13,7 +13,7 @@ import path from 'path';
 import { Instance } from '../project/instance';
 import { Storage } from '../storage/storage';
 import { Bus } from '../bus';
-import { Flag } from '../flag/flag';
+import { config, isVerbose } from '../config/config';
 import { Token } from '../util/token';
 
 export namespace SessionSummary {
@@ -83,7 +83,7 @@ export namespace SessionSummary {
 
     // Skip AI-powered summarization if disabled
     // See: https://github.com/link-assistant/agent/issues/217
-    if (!Flag.SUMMARIZE_SESSION) {
+    if (!config.summarizeSession) {
       log.info(() => ({
         message: 'session summarization disabled',
         hint: 'Enable with --summarize-session flag (enabled by default) or AGENT_SUMMARIZE_SESSION=true',
@@ -141,7 +141,7 @@ export namespace SessionSummary {
       return;
     }
 
-    if (Flag.OPENCODE_VERBOSE) {
+    if (isVerbose()) {
       log.info(() => ({
         message: 'summarization model loaded',
         providerID: model.providerID,
@@ -167,7 +167,7 @@ export namespace SessionSummary {
               </text>
             `;
 
-      if (Flag.OPENCODE_VERBOSE) {
+      if (isVerbose()) {
         log.info(() => ({
           message: 'generating title via API',
           providerID: model.providerID,
@@ -203,7 +203,7 @@ export namespace SessionSummary {
         model: model.language,
       });
 
-      if (Flag.OPENCODE_VERBOSE) {
+      if (isVerbose()) {
         log.info(() => ({
           message: 'title API response received',
           providerID: model.providerID,
@@ -234,7 +234,7 @@ export namespace SessionSummary {
         const modelMessages = await MessageV2.toModelMessage(messages);
         const conversationContent = JSON.stringify(modelMessages);
 
-        if (Flag.OPENCODE_VERBOSE) {
+        if (isVerbose()) {
           log.info(() => ({
             message: 'generating body summary via API',
             providerID: model.providerID,
@@ -264,7 +264,7 @@ export namespace SessionSummary {
           ],
           headers: model.info.headers,
         }).catch((err) => {
-          if (Flag.OPENCODE_VERBOSE) {
+          if (isVerbose()) {
             log.warn(() => ({
               message: 'body summary API call failed',
               providerID: model.providerID,
@@ -276,7 +276,7 @@ export namespace SessionSummary {
           return undefined;
         });
         if (result) {
-          if (Flag.OPENCODE_VERBOSE) {
+          if (isVerbose()) {
             log.info(() => ({
               message: 'body summary API response received',
               providerID: model.providerID,

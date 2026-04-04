@@ -1,5 +1,5 @@
 import { Log } from '../util/log';
-import { Flag } from '../flag/flag';
+import { config } from '../config/config';
 
 /**
  * Custom fetch wrapper that handles rate limits (HTTP 429) using time-based retry logic.
@@ -8,8 +8,8 @@ import { Flag } from '../flag/flag';
  * retry mechanism can interfere. It respects:
  * - retry-after headers (both seconds and HTTP date formats)
  * - retry-after-ms header for millisecond precision
- * - AGENT_RETRY_TIMEOUT for global time-based retry limit
- * - AGENT_MAX_RETRY_DELAY for maximum single retry wait time
+ * - LINK_ASSISTANT_AGENT_RETRY_TIMEOUT for global time-based retry limit
+ * - LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY for maximum single retry wait time
  *
  * Problem solved:
  * The AI SDK's internal retry uses a fixed count (default 3 attempts) and ignores
@@ -40,7 +40,7 @@ export namespace RetryFetch {
   // Minimum retry interval to prevent rapid retries (default: 30 seconds)
   // Can be configured via AGENT_MIN_RETRY_INTERVAL env var
   function getMinRetryInterval(): number {
-    return Flag.MIN_RETRY_INTERVAL();
+    return config.minRetryInterval * 1000;
   }
 
   /**
@@ -194,7 +194,7 @@ export namespace RetryFetch {
    *
    * This controller is NOT connected to the request's AbortSignal, so it won't be
    * affected by provider timeouts (default 5 minutes) or stream timeouts.
-   * It only respects the global AGENT_RETRY_TIMEOUT.
+   * It only respects the global LINK_ASSISTANT_AGENT_RETRY_TIMEOUT.
    *
    * However, it DOES check the user's abort signal periodically (every 10 seconds)
    * to allow user cancellation during long rate limit waits.
@@ -217,7 +217,7 @@ export namespace RetryFetch {
     const controller = new AbortController();
     const timers: NodeJS.Timeout[] = [];
 
-    // Set a timeout based on the global AGENT_RETRY_TIMEOUT (not provider timeout)
+    // Set a timeout based on the global LINK_ASSISTANT_AGENT_RETRY_TIMEOUT (not provider timeout)
     const globalTimeoutId = setTimeout(() => {
       controller.abort(
         new DOMException(
@@ -306,7 +306,7 @@ export namespace RetryFetch {
    * 3. Waits for the specified duration (respecting global timeout)
    * 4. Retries the request
    *
-   * If retry-after exceeds AGENT_RETRY_TIMEOUT, the original 429 response is returned
+   * If retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT, the original 429 response is returned
    * to let higher-level error handling take over.
    *
    * @param options Configuration options
@@ -322,8 +322,8 @@ export namespace RetryFetch {
     ): Promise<Response> {
       let attempt = 0;
       const startTime = Date.now();
-      const maxRetryTimeout = Flag.RETRY_TIMEOUT() * 1000;
-      const maxBackoffDelay = Flag.MAX_RETRY_DELAY();
+      const maxRetryTimeout = config.retryTimeout * 1000;
+      const maxBackoffDelay = config.maxRetryDelay * 1000;
 
       while (true) {
         attempt++;
@@ -371,7 +371,7 @@ export namespace RetryFetch {
         }
 
         // If retry on rate limits is disabled, return 429 immediately
-        if (!Flag.RETRY_ON_RATE_LIMITS) {
+        if (!config.retryOnRateLimits) {
           log.info(() => ({
             message:
               'rate limit retry disabled (--no-retry-on-rate-limits), returning 429',
@@ -442,7 +442,7 @@ export namespace RetryFetch {
         // Wait before retrying using ISOLATED signal
         // This is critical for issue #183: Rate limit waits can be hours long (e.g., 15 hours),
         // but provider timeouts are typically 5 minutes. By using an isolated AbortController
-        // that only respects AGENT_RETRY_TIMEOUT, we prevent the provider timeout from
+        // that only respects LINK_ASSISTANT_AGENT_RETRY_TIMEOUT, we prevent the provider timeout from
         // aborting long rate limit waits.
         //
         // The isolated signal periodically checks the user's abort signal (every 10 seconds)

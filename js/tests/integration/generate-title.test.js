@@ -1,46 +1,46 @@
 import { test, expect, describe } from 'bun:test';
-import { Flag } from '../src/flag/flag.ts';
+import { config } from '../../src/config/config.ts';
 
 describe('Generate Title Flag', () => {
   test('GENERATE_TITLE is false by default', () => {
     // Should be false by default to save tokens
-    expect(Flag.GENERATE_TITLE).toBe(false);
+    expect(config.generateTitle).toBe(false);
   });
 
   test('setGenerateTitle enables title generation', () => {
     // Save original value
-    const original = Flag.GENERATE_TITLE;
+    const original = config.generateTitle;
 
     // Enable
-    Flag.setGenerateTitle(true);
-    expect(Flag.GENERATE_TITLE).toBe(true);
+    config.generateTitle = true;
+    expect(config.generateTitle).toBe(true);
 
     // Restore
-    Flag.setGenerateTitle(original);
+    config.generateTitle = original;
   });
 
   test('setGenerateTitle disables title generation', () => {
     // Save original value
-    const original = Flag.GENERATE_TITLE;
+    const original = config.generateTitle;
 
     // Enable then disable
-    Flag.setGenerateTitle(true);
-    Flag.setGenerateTitle(false);
-    expect(Flag.GENERATE_TITLE).toBe(false);
+    config.generateTitle = true;
+    config.generateTitle = false;
+    expect(config.generateTitle).toBe(false);
 
     // Restore
-    Flag.setGenerateTitle(original);
+    config.generateTitle = original;
   });
 });
 
 describe('Retry Timeout Flag', () => {
   test('RETRY_TIMEOUT returns default value (7 days)', () => {
-    const timeout = Flag.RETRY_TIMEOUT();
+    const timeout = config.retryTimeout;
     expect(timeout).toBe(604800); // 7 days in seconds
   });
 
   test('MAX_RETRY_DELAY returns default value (20 minutes)', () => {
-    const maxDelay = Flag.MAX_RETRY_DELAY();
+    const maxDelay = config.maxRetryDelay * 1000;
     expect(maxDelay).toBe(1200000); // 20 minutes in ms
   });
 });

@@ -10,7 +10,7 @@
  */
 
 import { EOL } from 'os';
-import { Flag } from '../flag/flag';
+import { config } from '../config/config';
 
 /**
  * Output types for JSON messages
@@ -40,7 +40,7 @@ export interface OutputMessage {
 
 /**
  * Global compact JSON setting (can be set once at startup)
- * Initialized lazily from Flag.COMPACT_JSON() which checks AGENT_CLI_COMPACT env var
+ * Initialized lazily from config.compactJson which checks LINK_ASSISTANT_AGENT_COMPACT_JSON env var
  */
 let globalCompactJson: boolean | null = null;
 
@@ -49,8 +49,8 @@ let globalCompactJson: boolean | null = null;
  */
 export function setCompactJson(compact: boolean): void {
   globalCompactJson = compact;
-  // Also update the Flag so other modules stay in sync
-  Flag.setCompactJson(compact);
+  // Also update the config so other modules stay in sync
+  config.compactJson = compact;
 }
 
 /**
@@ -58,7 +58,7 @@ export function setCompactJson(compact: boolean): void {
  */
 export function isCompactJson(): boolean {
   if (globalCompactJson !== null) return globalCompactJson;
-  return Flag.COMPACT_JSON();
+  return config.compactJson;
 }
 
 /**

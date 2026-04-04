@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import { Global } from '../global';
 import z from 'zod';
 import makeLog, { levels } from 'log-lazy';
-import { Flag } from '../flag/flag';
+import { config, isVerbose } from '../config/agent-config';
 
 /**
  * Logging module with JSON output and lazy evaluation support.
@@ -32,7 +32,7 @@ export namespace Log {
 
   let level: Level = 'INFO';
   let jsonOutput = false; // Whether to output JSON format (enabled in verbose mode)
-  let compactJsonOutput = Flag.COMPACT_JSON(); // Whether to use compact JSON (single line)
+  let compactJsonOutput = config.compactJson; // Whether to use compact JSON (single line)
 
   function shouldLog(input: Level): boolean {
     return levelPriority[input] >= levelPriority[level];
@@ -110,7 +110,7 @@ export namespace Log {
     jsonOutput = true;
 
     // Configure lazy logging level based on verbose flag
-    if (Flag.OPENCODE_VERBOSE || options.print) {
+    if (config.verbose || options.print) {
       // Enable all levels for lazy logging when verbose
       lazyLogInstance = makeLog({
         level: levels.debug | levels.info | levels.warn | levels.error,
@@ -206,8 +206,8 @@ export namespace Log {
     }
 
     // Use compact or pretty format based on configuration
-    // Check both local setting and global Flag
-    const useCompact = compactJsonOutput || Flag.COMPACT_JSON();
+    // Check both local setting and global config
+    const useCompact = compactJsonOutput || config.compactJson;
     return useCompact
       ? JSON.stringify(logEntry)
       : JSON.stringify(logEntry, null, 2);
@@ -369,10 +369,10 @@ export namespace Log {
 
   /**
    * Sync lazy logging with verbose flag at runtime
-   * Call after Flag.setVerbose() to update lazy logging state
+   * Call after setVerbose() to update lazy logging state
    */
   export function syncWithVerboseFlag(): void {
-    if (Flag.OPENCODE_VERBOSE) {
+    if (config.verbose) {
       jsonOutput = true;
       // Use stdout for verbose output (following Unix conventions)
       write = (msg: any) => process.stdout.write(msg);

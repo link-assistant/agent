@@ -514,7 +514,7 @@ The interactive prompt will guide you through configuring local or remote MCP se
 
 ### No Configuration Required
 
-- **WebSearch/CodeSearch**: Work without `LINK_ASSISTANT_AGENT_EXPERIMENTAL_EXA` environment variable (legacy `OPENCODE_EXPERIMENTAL_EXA` still supported)
+- **WebSearch/CodeSearch**: Work without `LINK_ASSISTANT_AGENT_EXPERIMENTAL_EXA` environment variable
 - **Batch Tool**: Always enabled, no experimental flag needed
 - **All Tools**: No config files, API keys handled automatically
 

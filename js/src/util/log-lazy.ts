@@ -1,5 +1,5 @@
 import makeLog, { levels, LogLevel } from 'log-lazy';
-import { Flag } from '../flag/flag';
+import { config, isVerbose } from '../config/config';
 
 /**
  * JSON Lazy Logger
@@ -53,10 +53,8 @@ const LEVEL_PRESETS = {
 
 type LevelPreset = keyof typeof LEVEL_PRESETS;
 
-import { Flag } from '../flag/flag';
-
-// Compact JSON mode (can be set at runtime, initialized from Flag)
-let compactJsonMode = Flag.COMPACT_JSON();
+// Compact JSON mode (can be set at runtime, initialized from config)
+let compactJsonMode = false; // Deferred to avoid circular init; config.compactJson checked at runtime
 
 /**
  * Set compact JSON output mode
@@ -99,8 +97,8 @@ function formatLogEntry(
     logEntry.message = String(data);
   }
 
-  // Check both local setting and global Flag
-  const useCompact = compactJsonMode || Flag.COMPACT_JSON();
+  // Check both local setting and global config
+  const useCompact = compactJsonMode || config.compactJson;
   return useCompact
     ? JSON.stringify(logEntry)
     : JSON.stringify(logEntry, null, 2);
@@ -158,7 +156,7 @@ export function createLazyLogger(
   initialTags?: Record<string, unknown>
 ): LazyLogger {
   // Determine initial log level based on verbose flag
-  const initialLevel = Flag.OPENCODE_VERBOSE ? LEVEL_VERBOSE : LEVEL_DISABLED;
+  const initialLevel = isVerbose() ? LEVEL_VERBOSE : LEVEL_DISABLED;
 
   // Create base log-lazy instance
   const baseLog = makeLog({ level: initialLevel });
@@ -281,7 +279,7 @@ export function createLazyLogger(
 
   // Configuration
   Object.defineProperty(wrappedLog, 'enabled', {
-    get: () => Flag.OPENCODE_VERBOSE,
+    get: () => isVerbose(),
     enumerable: true,
   });
 
@@ -296,10 +294,10 @@ export const lazyLog = createLazyLogger({ service: 'agent' });
 
 /**
  * Utility to update the global logger level at runtime
- * Call this after Flag.setVerbose() to sync the logger state
+ * Call this after setVerbose() to sync the logger state
  */
 export function syncLoggerWithVerboseFlag(): void {
-  if (Flag.OPENCODE_VERBOSE) {
+  if (isVerbose()) {
     lazyLog.setLevel('verbose');
   } else {
     lazyLog.setLevel('disabled');

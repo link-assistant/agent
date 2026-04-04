@@ -1,5 +1,5 @@
 import { test, expect, describe, beforeEach, afterEach } from 'bun:test';
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/config/config';
 
 /**
  * Tests that provider-level verbose HTTP logging works correctly.
@@ -13,14 +13,14 @@ import { Flag } from '../src/flag/flag';
  */
 
 describe('Provider verbose logging - skip condition', () => {
-  const originalVerbose = Flag.OPENCODE_VERBOSE;
+  const originalVerbose = config.verbose;
 
   afterEach(() => {
-    Flag.setVerbose(originalVerbose);
+    setVerbose(originalVerbose);
   });
 
   test('provider wrapper logs when verbose is enabled (no global patch dependency)', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
 
     let loggedRequest = false;
     let loggedResponse = false;
@@ -38,7 +38,7 @@ describe('Provider verbose logging - skip condition', () => {
       input: RequestInfo | URL,
       init?: RequestInit
     ) => {
-      if (!Flag.OPENCODE_VERBOSE) {
+      if (!config.verbose) {
         return innerFetch(input, init);
       }
       // Log request
@@ -58,7 +58,7 @@ describe('Provider verbose logging - skip condition', () => {
   });
 
   test('provider wrapper does not log when verbose is disabled', async () => {
-    Flag.setVerbose(false);
+    setVerbose(false);
 
     let loggedRequest = false;
 
@@ -72,7 +72,7 @@ describe('Provider verbose logging - skip condition', () => {
       input: RequestInfo | URL,
       init?: RequestInit
     ) => {
-      if (!Flag.OPENCODE_VERBOSE) {
+      if (!config.verbose) {
         return innerFetch();
       }
       loggedRequest = true;
@@ -85,7 +85,7 @@ describe('Provider verbose logging - skip condition', () => {
 
   test('provider wrapper checks verbose at call time, not creation time', async () => {
     // Create wrapper when verbose is OFF
-    Flag.setVerbose(false);
+    setVerbose(false);
 
     let loggedCount = 0;
     const innerFetch = async () =>
@@ -98,7 +98,7 @@ describe('Provider verbose logging - skip condition', () => {
       input: RequestInfo | URL,
       init?: RequestInit
     ) => {
-      if (!Flag.OPENCODE_VERBOSE) {
+      if (!config.verbose) {
         return innerFetch();
       }
       loggedCount++;
@@ -110,7 +110,7 @@ describe('Provider verbose logging - skip condition', () => {
     expect(loggedCount).toBe(0);
 
     // Enable verbose AFTER wrapper creation
-    Flag.setVerbose(true);
+    setVerbose(true);
 
     // Call 2: verbose ON - should log
     await wrappedFetch('https://api.example.com/v1');
@@ -118,7 +118,7 @@ describe('Provider verbose logging - skip condition', () => {
   });
 
   test('provider wrapper does NOT depend on global fetch monkey-patch', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
 
     // Simulate the OLD buggy behavior: skip if global patch is installed
     // This test verifies the old behavior was wrong
@@ -134,7 +134,7 @@ describe('Provider verbose logging - skip condition', () => {
 
     // OLD (buggy) wrapper: skips when global patch is installed
     const oldWrapper = async (input: RequestInfo | URL) => {
-      if (!Flag.OPENCODE_VERBOSE || globalPatchInstalled) {
+      if (!config.verbose || globalPatchInstalled) {
         return innerFetch();
       }
       loggedWithOldLogic = true;
@@ -143,7 +143,7 @@ describe('Provider verbose logging - skip condition', () => {
 
     // NEW (fixed) wrapper: only checks verbose flag
     const newWrapper = async (input: RequestInfo | URL) => {
-      if (!Flag.OPENCODE_VERBOSE) {
+      if (!config.verbose) {
         return innerFetch();
       }
       loggedWithNewLogic = true;

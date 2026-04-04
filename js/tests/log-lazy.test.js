@@ -165,14 +165,14 @@ describe('Lazy Logger Behavior', () => {
     let callbackExecuted = false;
     const logger = createLazyLogger();
 
-    // Logger starts disabled by default (based on Flag.OPENCODE_VERBOSE)
+    // Logger starts disabled by default (based on Flag.VERBOSE)
     logger.info(() => {
       callbackExecuted = true;
       return { message: 'test' };
     });
 
     // Since verbose is not enabled, callback should not have been executed
-    // Note: This depends on the Flag.OPENCODE_VERBOSE state which defaults to false
+    // Note: This depends on the Flag.VERBOSE state which defaults to false
     expect(callbackExecuted).toBe(false);
   });
 

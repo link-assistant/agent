@@ -1,5 +1,5 @@
 import { MessageV2 } from './message-v2';
-import { Flag } from '../flag/flag';
+import { config } from '../config/config';
 import { Log } from '../util/log';
 
 export namespace SessionRetry {
@@ -13,16 +13,16 @@ export namespace SessionRetry {
   // This caps exponential backoff when headers are not available
   // Can be configured via AGENT_MAX_RETRY_DELAY env var
   export function getMaxRetryDelay(): number {
-    return Flag.MAX_RETRY_DELAY();
+    return config.maxRetryDelay * 1000;
   }
 
   // Get retry timeout in milliseconds
   export function getRetryTimeout(): number {
-    return Flag.RETRY_TIMEOUT() * 1000;
+    return config.retryTimeout * 1000;
   }
 
   /**
-   * Error thrown when retry-after exceeds AGENT_RETRY_TIMEOUT
+   * Error thrown when retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT
    * This indicates the wait time is too long and we should fail immediately
    */
   export class RetryTimeoutExceededError extends Error {
@@ -34,7 +34,7 @@ export namespace SessionRetry {
       const maxTimeoutHours = (maxTimeoutMs / 1000 / 3600).toFixed(2);
       super(
         `API returned retry-after of ${retryAfterHours} hours, which exceeds the maximum retry timeout of ${maxTimeoutHours} hours. ` +
-          `Failing immediately instead of waiting. You can adjust AGENT_RETRY_TIMEOUT env var to increase the limit.`
+          `Failing immediately instead of waiting. You can adjust LINK_ASSISTANT_AGENT_RETRY_TIMEOUT env var to increase the limit.`
       );
       this.name = 'RetryTimeoutExceededError';
       this.retryAfterMs = retryAfterMs;
@@ -75,7 +75,7 @@ export namespace SessionRetry {
     sessionID: string,
     errorType: string
   ): { shouldRetry: boolean; elapsedTime: number; maxTime: number } {
-    const maxTime = Flag.RETRY_TIMEOUT() * 1000; // Convert to ms
+    const maxTime = config.retryTimeout * 1000; // Convert to ms
     const state = retryStates.get(sessionID);
 
     if (!state || state.errorType !== errorType) {
@@ -198,15 +198,15 @@ export namespace SessionRetry {
    *
    * RETRY LOGIC (per issue #157 requirements):
    * 1. If retry-after header is available:
-   *    - If retry-after <= AGENT_RETRY_TIMEOUT: use it directly (exact time)
-   *    - If retry-after > AGENT_RETRY_TIMEOUT: throw RetryTimeoutExceededError (fail immediately)
+   *    - If retry-after <= LINK_ASSISTANT_AGENT_RETRY_TIMEOUT: use it directly (exact time)
+   *    - If retry-after > LINK_ASSISTANT_AGENT_RETRY_TIMEOUT: throw RetryTimeoutExceededError (fail immediately)
    * 2. If no retry-after header:
    *    - Use exponential backoff up to AGENT_MAX_RETRY_DELAY
    *
    * Adds jitter to prevent thundering herd when multiple requests retry.
    * See: https://github.com/link-assistant/agent/issues/157
    *
-   * @throws {RetryTimeoutExceededError} When retry-after exceeds AGENT_RETRY_TIMEOUT
+   * @throws {RetryTimeoutExceededError} When retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT
    */
   export function delay(error: MessageV2.APIError, attempt: number): number {
     const maxRetryTimeout = getRetryTimeout();

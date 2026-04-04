@@ -1,7 +1,6 @@
 import { Format } from '../format';
 import { FileWatcher } from '../file/watcher';
 import { File } from '../file';
-import { Flag } from '../flag/flag';
 import { Project } from './project';
 import { Bus } from '../bus';
 import { Command } from '../command';

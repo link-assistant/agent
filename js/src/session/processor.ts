@@ -16,7 +16,7 @@ import { SessionSummary } from './summary';
 import { Bus } from '../bus';
 import { SessionRetry } from './retry';
 import { SessionStatus } from './status';
-import { Flag } from '../flag/flag';
+import { config, isVerbose } from '../config/config';
 import { SessionCompaction } from './compaction';
 
 export namespace SessionProcessor {
@@ -356,7 +356,7 @@ export namespace SessionProcessor {
                   // Build model info if --output-response-model flag is enabled
                   // @see https://github.com/link-assistant/agent/issues/179
                   const modelInfo: MessageV2.ModelInfo | undefined =
-                    Flag.OUTPUT_RESPONSE_MODEL
+                    config.outputResponseModel
                       ? {
                           providerID: input.providerID,
                           requestedModelID: input.model.id,
@@ -374,7 +374,7 @@ export namespace SessionProcessor {
                     model: input.model,
                   });
 
-                  if (Flag.OPENCODE_VERBOSE && contextDiag) {
+                  if (isVerbose() && contextDiag) {
                     log.info(() => ({
                       message: 'step-finish context diagnostics',
                       providerID: input.providerID,
@@ -547,7 +547,7 @@ export namespace SessionProcessor {
                       ? SessionRetry.timeoutDelay(attempt)
                       : SessionRetry.delay(error, attempt);
               } catch (delayError) {
-                // If retry-after exceeds AGENT_RETRY_TIMEOUT, fail immediately
+                // If retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT, fail immediately
                 if (
                   delayError instanceof SessionRetry.RetryTimeoutExceededError
                 ) {

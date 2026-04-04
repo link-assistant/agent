@@ -5,7 +5,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import * as prompts from '@clack/prompts';
 import { UI } from '../ui';
 import { Global } from '../../global';
-import { Config } from '../../config/config';
+import { Config } from '../../config/file-config';
 import path from 'path';
 import fs from 'fs/promises';
 

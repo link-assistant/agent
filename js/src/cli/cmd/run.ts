@@ -2,7 +2,6 @@ import type { Argv } from 'yargs';
 import path from 'path';
 import { UI } from '../ui';
 import { cmd } from './cmd';
-import { Flag } from '../../flag/flag';
 import { Log } from '../../util/log';
 import { bootstrap } from '../bootstrap';
 import { Command } from '../../command';
@@ -110,7 +109,7 @@ export const RunCommand = cmd({
   },
   handler: async (args) => {
     // Note: verbose flag and logging are now initialized in middleware
-    // See src/index.js main() function for the middleware that sets up Flag and Log.init()
+    // See src/index.js main() function for the middleware that sets up config and Log.init()
     let message = args.message.join(' ');
 
     const fileParts: any[] = [];

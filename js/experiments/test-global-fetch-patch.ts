@@ -9,14 +9,14 @@
  * 4. The global patch should catch the HTTP call
  */
 
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/config/config';
 import { Log } from '../src/util/log';
 import { createVerboseFetch } from '../src/util/verbose-fetch';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateText } from 'ai';
 
 // Step 1: Enable verbose mode and init logging
-Flag.setVerbose(true);
+setVerbose(true);
 await Log.init({
   print: true,
   level: 'DEBUG',

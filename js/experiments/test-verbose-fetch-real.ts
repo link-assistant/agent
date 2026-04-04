@@ -3,14 +3,14 @@
  * Related to: https://github.com/link-assistant/agent/issues/215
  */
 
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/config/config';
 import { Log } from '../src/util/log';
 import { Instance } from '../src/project/instance';
 import { Provider } from '../src/provider/provider';
 import { generateText } from 'ai';
 
 // Enable verbose
-Flag.setVerbose(true);
+setVerbose(true);
 
 // Init logging
 await Log.init({

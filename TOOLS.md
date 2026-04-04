@@ -134,7 +134,7 @@ Each tool test verifies:
 ### No Configuration Required
 
 - All tools work without environment variables or configuration files
-- WebSearch and CodeSearch work without `OPENCODE_EXPERIMENTAL_EXA`
+- WebSearch and CodeSearch work without `LINK_ASSISTANT_AGENT_EXPERIMENTAL_EXA`
 - Batch tool is always enabled, no experimental flag needed
 
 ### OpenCode Compatible
