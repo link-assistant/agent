@@ -13,7 +13,7 @@ import { Flag } from '../src/flag/flag';
  */
 
 describe('Provider verbose logging - skip condition', () => {
-  const originalVerbose = Flag.OPENCODE_VERBOSE;
+  const originalVerbose = Flag.VERBOSE;
 
   afterEach(() => {
     Flag.setVerbose(originalVerbose);
@@ -38,7 +38,7 @@ describe('Provider verbose logging - skip condition', () => {
       input: RequestInfo | URL,
       init?: RequestInit
     ) => {
-      if (!Flag.OPENCODE_VERBOSE) {
+      if (!Flag.VERBOSE) {
         return innerFetch(input, init);
       }
       // Log request
@@ -72,7 +72,7 @@ describe('Provider verbose logging - skip condition', () => {
       input: RequestInfo | URL,
       init?: RequestInit
     ) => {
-      if (!Flag.OPENCODE_VERBOSE) {
+      if (!Flag.VERBOSE) {
         return innerFetch();
       }
       loggedRequest = true;
@@ -98,7 +98,7 @@ describe('Provider verbose logging - skip condition', () => {
       input: RequestInfo | URL,
       init?: RequestInit
     ) => {
-      if (!Flag.OPENCODE_VERBOSE) {
+      if (!Flag.VERBOSE) {
         return innerFetch();
       }
       loggedCount++;
@@ -134,7 +134,7 @@ describe('Provider verbose logging - skip condition', () => {
 
     // OLD (buggy) wrapper: skips when global patch is installed
     const oldWrapper = async (input: RequestInfo | URL) => {
-      if (!Flag.OPENCODE_VERBOSE || globalPatchInstalled) {
+      if (!Flag.VERBOSE || globalPatchInstalled) {
         return innerFetch();
       }
       loggedWithOldLogic = true;
@@ -143,7 +143,7 @@ describe('Provider verbose logging - skip condition', () => {
 
     // NEW (fixed) wrapper: only checks verbose flag
     const newWrapper = async (input: RequestInfo | URL) => {
-      if (!Flag.OPENCODE_VERBOSE) {
+      if (!Flag.VERBOSE) {
         return innerFetch();
       }
       loggedWithNewLogic = true;

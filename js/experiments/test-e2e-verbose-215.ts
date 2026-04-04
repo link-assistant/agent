@@ -17,7 +17,7 @@ await Log.init({
   level: 'DEBUG',
 });
 
-console.log(`Flag.OPENCODE_VERBOSE = ${Flag.OPENCODE_VERBOSE}`);
+console.log(`Flag.VERBOSE = ${Flag.VERBOSE}`);
 
 // Now simulate what getSDK does
 import { createAnthropic } from '@ai-sdk/anthropic';
@@ -46,7 +46,7 @@ options['fetch'] = async (input: any, init?: any) => {
     init?: RequestInit
   ): Promise<Response> => {
     // Check verbose flag at call time
-    if (!Flag.OPENCODE_VERBOSE) {
+    if (!Flag.VERBOSE) {
       console.log('[VerboseWrapper] Flag is FALSE, skipping');
       return innerFetch(input, init);
     }

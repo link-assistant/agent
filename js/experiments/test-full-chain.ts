@@ -35,7 +35,7 @@ globalThis.fetch = createVerboseFetch(globalThis.fetch, { caller: 'global' });
 resetHttpCallCount();
 
 console.log('\n=== Setup ===');
-console.log('Flag.OPENCODE_VERBOSE:', Flag.OPENCODE_VERBOSE);
+console.log('Flag.VERBOSE:', Flag.VERBOSE);
 console.log(
   '__agentVerboseFetchInstalled:',
   (globalThis as any).__agentVerboseFetchInstalled
@@ -60,14 +60,14 @@ console.log(
   'globalVerboseFetchInstalled:',
   !!(globalThis as any).__agentVerboseFetchInstalled
 );
-console.log('verboseAtCreation:', Flag.OPENCODE_VERBOSE);
+console.log('verboseAtCreation:', Flag.VERBOSE);
 
 // Line 1224-1481: Provider-level verbose wrapper
 const innerFetch = options['fetch'];
 options['fetch'] = async (input: any, init?: any) => {
   // Line 1233-1237: Skip if verbose is off OR global patch is installed
   if (
-    !Flag.OPENCODE_VERBOSE ||
+    !Flag.VERBOSE ||
     (globalThis as any).__agentVerboseFetchInstalled
   ) {
     return innerFetch(input, init);

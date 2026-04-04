@@ -136,11 +136,11 @@ export namespace Config {
     let result = await global();
 
     // Override with custom config if provided
-    if (Flag.OPENCODE_CONFIG) {
-      result = mergeDeep(result, await loadFile(Flag.OPENCODE_CONFIG));
+    if (Flag.CONFIG) {
+      result = mergeDeep(result, await loadFile(Flag.CONFIG));
       log.debug(() => ({
         message: 'loaded custom config',
-        path: Flag.OPENCODE_CONFIG,
+        path: Flag.CONFIG,
       }));
     }
 
@@ -155,10 +155,11 @@ export namespace Config {
       }
     }
 
-    if (Flag.OPENCODE_CONFIG_CONTENT) {
-      result = mergeDeep(result, JSON.parse(Flag.OPENCODE_CONFIG_CONTENT));
+    if (Flag.CONFIG_CONTENT) {
+      result = mergeDeep(result, JSON.parse(Flag.CONFIG_CONTENT));
       log.debug(() => ({
-        message: 'loaded custom config from OPENCODE_CONFIG_CONTENT',
+        message:
+          'loaded custom config from LINK_ASSISTANT_AGENT_CONFIG_CONTENT',
       }));
     }
 
@@ -211,11 +212,11 @@ export namespace Config {
 
     const directories = [Global.Path.config, ...filteredDirs];
 
-    if (Flag.OPENCODE_CONFIG_DIR) {
-      directories.push(Flag.OPENCODE_CONFIG_DIR);
+    if (Flag.CONFIG_DIR) {
+      directories.push(Flag.CONFIG_DIR);
       log.debug(() => ({
         message: 'loading config from LINK_ASSISTANT_AGENT_CONFIG_DIR',
-        path: Flag.OPENCODE_CONFIG_DIR,
+        path: Flag.CONFIG_DIR,
       }));
     }
 
@@ -226,7 +227,7 @@ export namespace Config {
       if (
         dir.endsWith('.link-assistant-agent') ||
         dir.endsWith('.opencode') ||
-        dir === Flag.OPENCODE_CONFIG_DIR
+        dir === Flag.CONFIG_DIR
       ) {
         for (const file of ['opencode.jsonc', 'opencode.json']) {
           log.debug(() => ({

@@ -22,7 +22,7 @@ await Log.init({
 });
 
 console.error('[TEST] Verbose mode enabled');
-console.error('[TEST] Flag.OPENCODE_VERBOSE =', Flag.OPENCODE_VERBOSE);
+console.error('[TEST] Flag.VERBOSE =', Flag.VERBOSE);
 
 await Instance.provide({
   directory: process.cwd(),

@@ -17,10 +17,10 @@ console.error('[TEST] (nothing should appear above from log.info)');
 // Now enable verbose and init (like middleware does)
 Flag.setVerbose(true);
 await Log.init({
-  print: Flag.OPENCODE_VERBOSE,
+  print: Flag.VERBOSE,
   level: 'DEBUG',
 });
-console.error('[TEST] Log.init() complete, Flag.OPENCODE_VERBOSE =', Flag.OPENCODE_VERBOSE);
+console.error('[TEST] Log.init() complete, Flag.VERBOSE =', Flag.VERBOSE);
 
 // Now test if the SAME logger works after init
 console.error('[TEST] Calling log.info AFTER init...');

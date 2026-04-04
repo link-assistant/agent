@@ -129,7 +129,7 @@ describe('verbose-fetch - bodyPreview', () => {
 });
 
 describe('verbose-fetch - createVerboseFetch', () => {
-  const originalVerbose = Flag.OPENCODE_VERBOSE;
+  const originalVerbose = Flag.VERBOSE;
 
   beforeEach(() => {
     resetHttpCallCount();

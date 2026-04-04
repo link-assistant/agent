@@ -3,7 +3,7 @@
  * Related to: https://github.com/link-assistant/agent/issues/215
  *
  * This experiment directly tests the verbose HTTP logging wrapper
- * to verify if it produces log output when Flag.OPENCODE_VERBOSE is true.
+ * to verify if it produces log output when Flag.VERBOSE is true.
  */
 
 import { Flag } from '../js/src/flag/flag';
@@ -11,7 +11,7 @@ import { Log } from '../js/src/util/log';
 
 // Enable verbose mode FIRST (before any logging)
 Flag.setVerbose(true);
-console.log('[TEST] Flag.OPENCODE_VERBOSE =', Flag.OPENCODE_VERBOSE);
+console.log('[TEST] Flag.VERBOSE =', Flag.VERBOSE);
 
 // Test 1: Check if log.info outputs anything with direct (non-lazy) call
 const log = Log.create({ service: 'test-verbose' });
@@ -50,10 +50,10 @@ const mockFetch = async (input: any, init?: any): Promise<Response> => {
 
 // Replicate the verbose wrapper from provider.ts
 const wrappedFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-  console.log('[TEST][wrapper] Flag.OPENCODE_VERBOSE =', Flag.OPENCODE_VERBOSE);
+  console.log('[TEST][wrapper] Flag.VERBOSE =', Flag.VERBOSE);
 
   // Check verbose flag at call time — not at SDK creation time
-  if (!Flag.OPENCODE_VERBOSE) {
+  if (!Flag.VERBOSE) {
     console.log('[TEST][wrapper] VERBOSE IS FALSE - bypassing verbose logging');
     return mockFetch(input, init);
   }

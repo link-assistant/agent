@@ -35,7 +35,7 @@ if (!(globalThis as any).__agentVerboseFetchInstalled) {
 }
 
 console.log('\n=== Setup Complete ===');
-console.log('Flag.OPENCODE_VERBOSE:', Flag.OPENCODE_VERBOSE);
+console.log('Flag.VERBOSE:', Flag.VERBOSE);
 console.log('__agentVerboseFetchInstalled:', !!(globalThis as any).__agentVerboseFetchInstalled);
 
 // Step 2: Simulate getSDK for opencode provider (no custom fetch)
@@ -56,7 +56,7 @@ options['fetch'] = retryWrappedFetch;
 const innerFetch = options['fetch'];
 const providerWrappedFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
   // This is the exact check from provider.ts line 1233-1237
-  if (!Flag.OPENCODE_VERBOSE || (globalThis as any).__agentVerboseFetchInstalled) {
+  if (!Flag.VERBOSE || (globalThis as any).__agentVerboseFetchInstalled) {
     return innerFetch(input, init);
   }
   console.log('[PROVIDER] verbose logging would happen here');

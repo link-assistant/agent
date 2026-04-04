@@ -34,13 +34,13 @@ When the agent CLI is used directly with `--verbose`, HTTP request/response logs
 1. **Solve command** spawns agent CLI as child process via command-stream
 2. **Agent CLI starts** — yargs parses arguments, `--verbose` is recognized
 3. **Middleware runs** — `Flag.setVerbose(true)` is called, `globalThis.fetch` is monkey-patched
-4. **BUT** — `Flag.OPENCODE_VERBOSE` is still `false` at the time HTTP calls are made
-5. **Verbose-fetch wrapper** checks `Flag.OPENCODE_VERBOSE` → finds it `false` → skips logging
+4. **BUT** — `Flag.VERBOSE` is still `false` at the time HTTP calls are made
+5. **Verbose-fetch wrapper** checks `Flag.VERBOSE` → finds it `false` → skips logging
 6. **All HTTP logs are silently discarded**
 
 ## Root Cause Analysis
 
-The `Flag.OPENCODE_VERBOSE` flag is stored as an in-memory `export let` variable in the `flag.ts` module. When `setVerbose(true)` is called in the yargs middleware, it sets this variable to `true`. However, there's evidence that this value can be lost or not propagated correctly in certain runtime environments:
+The `Flag.VERBOSE` flag is stored as an in-memory `export let` variable in the `flag.ts` module. When `setVerbose(true)` is called in the yargs middleware, it sets this variable to `true`. However, there's evidence that this value can be lost or not propagated correctly in certain runtime environments:
 
 1. **Module re-evaluation:** Bun may re-evaluate modules in some circumstances, resetting the flag to its initial value (`false` from env var check)
 2. **Runtime timing:** The flag may be checked before the middleware has fully completed in some environments
@@ -54,33 +54,45 @@ The evidence strongly supports this diagnosis:
 
 ## Solution
 
-### 1. Environment Variable Propagation (Primary Fix)
+### 1. Remove Legacy OPENCODE_* Environment Variables
+
+All `OPENCODE_*` environment variable support has been removed from the codebase. The codebase now uses exclusively `LINK_ASSISTANT_AGENT_*` prefixed environment variables. This is a clean break from the legacy naming.
+
+### 2. Clean Flag Names
+
+All `Flag.OPENCODE_*` export names have been renamed to clean names without the `OPENCODE_` prefix (e.g., `Flag.VERBOSE`, `Flag.DRY_RUN`, `Flag.CONFIG`), since they are already namespaced under `Flag`.
+
+### 3. Environment Variable Propagation (Verbose Fix)
 
 When `Flag.setVerbose(true)` is called, the environment variable `LINK_ASSISTANT_AGENT_VERBOSE=true` is now also set. This provides:
 - **Persistence across module re-evaluations** — env vars survive module reloads
 - **Child process inheritance** — subprocesses automatically inherit the flag
 - **Redundancy** — two independent sources of truth
 
-### 2. `Flag.isVerbose()` Method with Fallback (Resilience Fix)
+### 4. `Flag.isVerbose()` Method with Fallback (Resilience Fix)
 
-A new `Flag.isVerbose()` method checks both:
-- The in-memory `OPENCODE_VERBOSE` flag (fast path)
-- The environment variables `LINK_ASSISTANT_AGENT_VERBOSE` / `OPENCODE_VERBOSE` (fallback)
+A `Flag.isVerbose()` method checks both:
+- The in-memory `VERBOSE` flag (fast path)
+- The environment variable `LINK_ASSISTANT_AGENT_VERBOSE` (fallback)
 
-All verbose checks across the codebase now use `Flag.isVerbose()` instead of directly reading `Flag.OPENCODE_VERBOSE`.
+All verbose checks across the codebase use `Flag.isVerbose()` instead of directly reading `Flag.VERBOSE`.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `js/src/flag/flag.ts` | Added `isVerbose()` method and env var propagation in `setVerbose()` |
-| `js/src/util/verbose-fetch.ts` | Use `Flag.isVerbose()` instead of `Flag.OPENCODE_VERBOSE` |
-| `js/src/provider/provider.ts` | Use `Flag.isVerbose()` |
-| `js/src/util/log.ts` | Use `Flag.isVerbose()` in `init()` and `syncWithVerboseFlag()` |
+| `js/src/flag/flag.ts` | Renamed exports, removed OPENCODE_* env vars, added `isVerbose()` and env var propagation |
+| `js/src/util/verbose-fetch.ts` | Use `Flag.isVerbose()` |
+| `js/src/provider/provider.ts` | Use `Flag.DRY_RUN`, `Flag.ENABLE_EXPERIMENTAL_MODELS` |
+| `js/src/config/config.ts` | Use `Flag.CONFIG`, `Flag.CONFIG_DIR`, `Flag.CONFIG_CONTENT` |
+| `js/src/bun/index.ts` | Use `Flag.DRY_RUN` |
+| `js/src/file/watcher.ts` | Use `Flag.EXPERIMENTAL_WATCHER` |
+| `js/src/session/compaction.ts` | Use `Flag.DISABLE_AUTOCOMPACT`, `Flag.DISABLE_PRUNE` |
+| `js/src/util/log.ts` | Use `Flag.isVerbose()` |
 | `js/src/util/log-lazy.ts` | Use `Flag.isVerbose()` |
-| `js/src/index.js` | Use `Flag.isVerbose()` in middleware |
-| `js/src/session/*.ts` | Use `Flag.isVerbose()` across session modules |
-| `js/tests/integration/verbose-env-fallback.test.js` | New test for env var fallback |
+| `js/src/index.js` | Use `Flag.DRY_RUN`, `Flag.isVerbose()` |
+| `js/src/session/*.ts` | Use `Flag.isVerbose()` |
+| `js/tests/` | Updated all tests to use new flag names and env var names |
 
 ## Testing
 
@@ -92,6 +104,7 @@ All verbose checks across the codebase now use `Flag.isVerbose()` instead of dir
 
 ### Existing Tests
 - `verbose-hi.test.js` — continues to pass (no regression)
+- All dry-run, provider, and verbose logging tests updated and passing
 
 ## Related Issues
 - #215 — Verbose HTTP logging infrastructure

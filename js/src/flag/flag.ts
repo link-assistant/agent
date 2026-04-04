@@ -1,7 +1,7 @@
 export namespace Flag {
-  // Helper to check env vars with new prefix first, then fall back to old prefix for backwards compatibility
-  function getEnv(newKey: string, oldKey: string): string | undefined {
-    return process.env[newKey] ?? process.env[oldKey];
+  // Helper to read env vars with LINK_ASSISTANT_AGENT_ prefix
+  function getEnv(key: string): string | undefined {
+    return process.env[key];
   }
 
   function truthy(key: string) {
@@ -9,73 +9,41 @@ export namespace Flag {
     return value === 'true' || value === '1';
   }
 
-  function truthyCompat(newKey: string, oldKey: string): boolean {
-    const value = (getEnv(newKey, oldKey) ?? '').toLowerCase();
+  function truthyEnv(key: string): boolean {
+    const value = (getEnv(key) ?? '').toLowerCase();
     return value === 'true' || value === '1';
   }
 
-  // LINK_ASSISTANT_AGENT_AUTO_SHARE removed - no sharing support
-  export const OPENCODE_CONFIG = getEnv(
-    'LINK_ASSISTANT_AGENT_CONFIG',
-    'OPENCODE_CONFIG'
+  export const CONFIG = getEnv('LINK_ASSISTANT_AGENT_CONFIG');
+  export const CONFIG_DIR = getEnv('LINK_ASSISTANT_AGENT_CONFIG_DIR');
+  export const CONFIG_CONTENT = getEnv('LINK_ASSISTANT_AGENT_CONFIG_CONTENT');
+  export const DISABLE_AUTOUPDATE = truthyEnv(
+    'LINK_ASSISTANT_AGENT_DISABLE_AUTOUPDATE'
   );
-  export const OPENCODE_CONFIG_DIR = getEnv(
-    'LINK_ASSISTANT_AGENT_CONFIG_DIR',
-    'OPENCODE_CONFIG_DIR'
+  export const DISABLE_PRUNE = truthyEnv('LINK_ASSISTANT_AGENT_DISABLE_PRUNE');
+  export const ENABLE_EXPERIMENTAL_MODELS = truthyEnv(
+    'LINK_ASSISTANT_AGENT_ENABLE_EXPERIMENTAL_MODELS'
   );
-  export const OPENCODE_CONFIG_CONTENT = getEnv(
-    'LINK_ASSISTANT_AGENT_CONFIG_CONTENT',
-    'OPENCODE_CONFIG_CONTENT'
-  );
-  export const OPENCODE_DISABLE_AUTOUPDATE = truthyCompat(
-    'LINK_ASSISTANT_AGENT_DISABLE_AUTOUPDATE',
-    'OPENCODE_DISABLE_AUTOUPDATE'
-  );
-  export const OPENCODE_DISABLE_PRUNE = truthyCompat(
-    'LINK_ASSISTANT_AGENT_DISABLE_PRUNE',
-    'OPENCODE_DISABLE_PRUNE'
-  );
-  export const OPENCODE_ENABLE_EXPERIMENTAL_MODELS = truthyCompat(
-    'LINK_ASSISTANT_AGENT_ENABLE_EXPERIMENTAL_MODELS',
-    'OPENCODE_ENABLE_EXPERIMENTAL_MODELS'
-  );
-  export const OPENCODE_DISABLE_AUTOCOMPACT = truthyCompat(
-    'LINK_ASSISTANT_AGENT_DISABLE_AUTOCOMPACT',
-    'OPENCODE_DISABLE_AUTOCOMPACT'
+  export const DISABLE_AUTOCOMPACT = truthyEnv(
+    'LINK_ASSISTANT_AGENT_DISABLE_AUTOCOMPACT'
   );
 
   // Experimental
-  export const OPENCODE_EXPERIMENTAL = truthyCompat(
-    'LINK_ASSISTANT_AGENT_EXPERIMENTAL',
-    'OPENCODE_EXPERIMENTAL'
-  );
-  export const OPENCODE_EXPERIMENTAL_WATCHER =
-    OPENCODE_EXPERIMENTAL ||
-    truthyCompat(
-      'LINK_ASSISTANT_AGENT_EXPERIMENTAL_WATCHER',
-      'OPENCODE_EXPERIMENTAL_WATCHER'
-    );
+  export const EXPERIMENTAL = truthyEnv('LINK_ASSISTANT_AGENT_EXPERIMENTAL');
+  export const EXPERIMENTAL_WATCHER =
+    EXPERIMENTAL || truthyEnv('LINK_ASSISTANT_AGENT_EXPERIMENTAL_WATCHER');
 
   // Verbose mode - enables detailed logging of API requests
-  export let OPENCODE_VERBOSE = truthyCompat(
-    'LINK_ASSISTANT_AGENT_VERBOSE',
-    'OPENCODE_VERBOSE'
-  );
+  export let VERBOSE = truthyEnv('LINK_ASSISTANT_AGENT_VERBOSE');
 
   // Dry run mode - simulate operations without making actual API calls or changes
-  export let OPENCODE_DRY_RUN = truthyCompat(
-    'LINK_ASSISTANT_AGENT_DRY_RUN',
-    'OPENCODE_DRY_RUN'
-  );
+  export let DRY_RUN = truthyEnv('LINK_ASSISTANT_AGENT_DRY_RUN');
 
   // Title generation configuration
   // When disabled, sessions will use default "New session - {timestamp}" titles
   // This saves tokens and prevents rate limit issues with free tier models
   // See: https://github.com/link-assistant/agent/issues/157
-  export let GENERATE_TITLE = truthyCompat(
-    'LINK_ASSISTANT_AGENT_GENERATE_TITLE',
-    'AGENT_GENERATE_TITLE'
-  );
+  export let GENERATE_TITLE = truthyEnv('LINK_ASSISTANT_AGENT_GENERATE_TITLE');
 
   // Allow setting title generation mode programmatically (e.g., from CLI --generate-title flag)
   export function setGenerateTitle(value: boolean) {
@@ -84,14 +52,11 @@ export namespace Flag {
 
   // Output response model information in step-finish parts
   // Enabled by default - includes model info (providerID, requestedModelID, respondedModelID) in output
-  // Can be disabled with AGENT_OUTPUT_RESPONSE_MODEL=false
+  // Can be disabled with LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL=false
   // See: https://github.com/link-assistant/agent/issues/179
   export let OUTPUT_RESPONSE_MODEL = (() => {
     const value = (
-      getEnv(
-        'LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL',
-        'AGENT_OUTPUT_RESPONSE_MODEL'
-      ) ?? ''
+      getEnv('LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL') ?? ''
     ).toLowerCase();
     if (value === 'false' || value === '0') return false;
     return true; // Default to true
@@ -104,14 +69,11 @@ export namespace Flag {
 
   // Session summarization configuration
   // Enabled by default - generates AI-powered session summaries using the same model
-  // Can be disabled with --no-summarize-session or AGENT_SUMMARIZE_SESSION=false
+  // Can be disabled with --no-summarize-session or LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION=false
   // See: https://github.com/link-assistant/agent/issues/217
   export let SUMMARIZE_SESSION = (() => {
     const value = (
-      getEnv(
-        'LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION',
-        'AGENT_SUMMARIZE_SESSION'
-      ) ?? ''
+      getEnv('LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION') ?? ''
     ).toLowerCase();
     if (value === 'false' || value === '0') return false;
     return true; // Default to true
@@ -127,19 +89,13 @@ export namespace Flag {
   // For different error types, the timer resets
   // See: https://github.com/link-assistant/agent/issues/157
   export function RETRY_TIMEOUT(): number {
-    const val = getEnv(
-      'LINK_ASSISTANT_AGENT_RETRY_TIMEOUT',
-      'AGENT_RETRY_TIMEOUT'
-    );
+    const val = getEnv('LINK_ASSISTANT_AGENT_RETRY_TIMEOUT');
     return val ? parseInt(val, 10) : 604800; // 7 days in seconds
   }
 
   // Maximum delay for a single retry attempt (default: 20 minutes in milliseconds)
   export function MAX_RETRY_DELAY(): number {
-    const val = getEnv(
-      'LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY',
-      'AGENT_MAX_RETRY_DELAY'
-    );
+    const val = getEnv('LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY');
     return val ? parseInt(val, 10) * 1000 : 1200000; // 20 minutes in ms
   }
 
@@ -147,10 +103,7 @@ export namespace Flag {
   // This ensures we don't hammer the API with rapid retry attempts
   // See: https://github.com/link-assistant/agent/issues/167
   export function MIN_RETRY_INTERVAL(): number {
-    const val = getEnv(
-      'LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL',
-      'AGENT_MIN_RETRY_INTERVAL'
-    );
+    const val = getEnv('LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL');
     return val ? parseInt(val, 10) * 1000 : 30000; // 30 seconds in ms
   }
 
@@ -158,18 +111,12 @@ export namespace Flag {
   // chunkMs: timeout between stream chunks - detects stalled streams (default: 2 minutes)
   // stepMs: timeout for each individual LLM step (default: 10 minutes)
   export function STREAM_CHUNK_TIMEOUT_MS(): number {
-    const val = getEnv(
-      'LINK_ASSISTANT_AGENT_STREAM_CHUNK_TIMEOUT_MS',
-      'AGENT_STREAM_CHUNK_TIMEOUT_MS'
-    );
+    const val = getEnv('LINK_ASSISTANT_AGENT_STREAM_CHUNK_TIMEOUT_MS');
     return val ? parseInt(val, 10) : 120_000;
   }
 
   export function STREAM_STEP_TIMEOUT_MS(): number {
-    const val = getEnv(
-      'LINK_ASSISTANT_AGENT_STREAM_STEP_TIMEOUT_MS',
-      'AGENT_STREAM_STEP_TIMEOUT_MS'
-    );
+    const val = getEnv('LINK_ASSISTANT_AGENT_STREAM_STEP_TIMEOUT_MS');
     return val ? parseInt(val, 10) : 600_000;
   }
 
@@ -182,7 +129,7 @@ export namespace Flag {
     if (_compactJson !== null) return _compactJson;
     return (
       truthy('AGENT_CLI_COMPACT') ||
-      truthyCompat('LINK_ASSISTANT_AGENT_COMPACT_JSON', 'OPENCODE_COMPACT_JSON')
+      truthyEnv('LINK_ASSISTANT_AGENT_COMPACT_JSON')
     );
   }
 
@@ -192,7 +139,7 @@ export namespace Flag {
   // when the agent CLI is spawned by external tools (e.g., command-stream, solve).
   // See: https://github.com/link-assistant/agent/issues/227
   export function setVerbose(value: boolean) {
-    OPENCODE_VERBOSE = value;
+    VERBOSE = value;
     if (value) {
       process.env.LINK_ASSISTANT_AGENT_VERBOSE = 'true';
     } else {
@@ -207,15 +154,12 @@ export namespace Flag {
    * See: https://github.com/link-assistant/agent/issues/227
    */
   export function isVerbose(): boolean {
-    return (
-      OPENCODE_VERBOSE ||
-      truthyCompat('LINK_ASSISTANT_AGENT_VERBOSE', 'OPENCODE_VERBOSE')
-    );
+    return VERBOSE || truthyEnv('LINK_ASSISTANT_AGENT_VERBOSE');
   }
 
   // Allow setting dry run mode programmatically (e.g., from CLI --dry-run flag)
   export function setDryRun(value: boolean) {
-    OPENCODE_DRY_RUN = value;
+    DRY_RUN = value;
   }
 
   // Allow setting compact JSON mode programmatically (e.g., from CLI --compact-json flag)

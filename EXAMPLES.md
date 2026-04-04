@@ -208,7 +208,7 @@ echo '{"message":"search web","tools":[{"name":"websearch","params":{"query":"Ty
 echo '{"message":"search web","tools":[{"name":"websearch","params":{"query":"React hooks best practices"}}]}' | agent
 ```
 
-**opencode (requires OPENCODE_EXPERIMENTAL_EXA=true):**
+**opencode (requires LINK_ASSISTANT_AGENT_EXPERIMENTAL_EXA=true):**
 
 ```bash
 echo '{"message":"search web","tools":[{"name":"websearch","params":{"query":"TypeScript latest features"}}]}' | opencode run --format json --model opencode/big-pickle
@@ -226,7 +226,7 @@ echo '{"message":"search code","tools":[{"name":"codesearch","params":{"query":"
 echo '{"message":"search code","tools":[{"name":"codesearch","params":{"query":"async/await patterns"}}]}' | agent
 ```
 
-**opencode (requires OPENCODE_EXPERIMENTAL_EXA=true):**
+**opencode (requires LINK_ASSISTANT_AGENT_EXPERIMENTAL_EXA=true):**
 
 ```bash
 echo '{"message":"search code","tools":[{"name":"codesearch","params":{"query":"React hooks implementation"}}]}' | opencode run --format json --model opencode/big-pickle

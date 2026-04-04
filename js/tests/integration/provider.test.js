@@ -33,7 +33,7 @@ describe('Provider initialization with multiple env vars', () => {
         ...process.env,
         GEMINI_API_KEY: 'test-fake-key',
         GOOGLE_GENERATIVE_AI_API_KEY: '', // Explicitly unset
-        OPENCODE_VERBOSE: '1',
+        LINK_ASSISTANT_AGENT_VERBOSE: '1',
       },
     });
 
@@ -79,7 +79,7 @@ describe('Provider initialization with multiple env vars', () => {
         ...process.env,
         GOOGLE_GENERATIVE_AI_API_KEY: 'test-fake-key',
         GEMINI_API_KEY: '', // Explicitly unset
-        OPENCODE_VERBOSE: '1',
+        LINK_ASSISTANT_AGENT_VERBOSE: '1',
       },
     });
 

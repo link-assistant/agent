@@ -195,7 +195,7 @@ export namespace BunProc {
     }
 
     // Check for dry-run mode
-    if (Flag.OPENCODE_DRY_RUN) {
+    if (Flag.DRY_RUN) {
       log.info(() => ({
         message:
           '[DRY RUN] Would install package (skipping actual installation)',

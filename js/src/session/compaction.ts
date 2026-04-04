@@ -98,7 +98,7 @@ export namespace SessionCompaction {
     compactionModel?: CompactionModelConfig;
     compactionModelContextLimit?: number;
   }) {
-    if (Flag.OPENCODE_DISABLE_AUTOCOMPACT) return false;
+    if (Flag.DISABLE_AUTOCOMPACT) return false;
     const baseModelContextLimit = input.model.limit.context;
     if (baseModelContextLimit === 0) return false;
     const count =
@@ -180,7 +180,7 @@ export namespace SessionCompaction {
   // calls. then erases output of previous tool calls. idea is to throw away old
   // tool calls that are no longer relevant.
   export async function prune(input: { sessionID: string }) {
-    if (Flag.OPENCODE_DISABLE_PRUNE) return;
+    if (Flag.DISABLE_PRUNE) return;
     log.info(() => ({ message: 'pruning' }));
     const msgs = await Session.messages({ sessionID: input.sessionID });
     let total = 0;

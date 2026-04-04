@@ -249,7 +249,7 @@ async function runAgentMode(argv, request) {
     workingDirectory: process.cwd(),
     scriptPath: import.meta.path,
   }));
-  if (Flag.OPENCODE_DRY_RUN) {
+  if (Flag.DRY_RUN) {
     Log.Default.info(() => ({
       message: 'Dry run mode enabled',
       mode: 'dry-run',
@@ -336,7 +336,7 @@ async function runContinuousAgentMode(argv) {
     workingDirectory: process.cwd(),
     scriptPath: import.meta.path,
   }));
-  if (Flag.OPENCODE_DRY_RUN) {
+  if (Flag.DRY_RUN) {
     Log.Default.info(() => ({
       message: 'Dry run mode enabled',
       mode: 'dry-run',

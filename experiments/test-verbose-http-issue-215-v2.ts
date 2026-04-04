@@ -8,12 +8,12 @@ import { Log } from '../js/src/util/log';
 
 // Enable verbose mode
 Flag.setVerbose(true);
-console.error('[TEST] Flag.OPENCODE_VERBOSE =', Flag.OPENCODE_VERBOSE);
+console.error('[TEST] Flag.VERBOSE =', Flag.VERBOSE);
 
 // Initialize logging (like the middleware does)
 await Log.init({
-  print: Flag.OPENCODE_VERBOSE,
-  level: Flag.OPENCODE_VERBOSE ? 'DEBUG' : 'INFO',
+  print: Flag.VERBOSE,
+  level: Flag.VERBOSE ? 'DEBUG' : 'INFO',
 });
 console.error('[TEST] Log.init() complete');
 

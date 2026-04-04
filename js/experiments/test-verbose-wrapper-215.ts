@@ -27,8 +27,8 @@ const wrappedFetch = async (
   init?: RequestInit
 ): Promise<Response> => {
   // Check verbose flag at call time
-  if (!Flag.OPENCODE_VERBOSE) {
-    console.error('[TEST] Flag.OPENCODE_VERBOSE is false — wrapper is no-op');
+  if (!Flag.VERBOSE) {
+    console.error('[TEST] Flag.VERBOSE is false — wrapper is no-op');
     return fetch(input, init);
   }
 
@@ -61,7 +61,7 @@ const wrappedFetch = async (
 };
 
 console.log('\n=== Testing verbose HTTP wrapper log output ===');
-console.log(`Flag.OPENCODE_VERBOSE = ${Flag.OPENCODE_VERBOSE}`);
+console.log(`Flag.VERBOSE = ${Flag.VERBOSE}`);
 console.log('Calling wrappedFetch...\n');
 
 await wrappedFetch('https://api.example.com/test', { method: 'POST' });

@@ -647,7 +647,7 @@ export namespace Provider {
     'link-assistant': async () => {
       // Echo provider is always available - no external dependencies needed
       return {
-        autoload: Flag.OPENCODE_DRY_RUN, // Auto-load only in dry-run mode
+        autoload: Flag.DRY_RUN, // Auto-load only in dry-run mode
         async getModel(_sdk: any, modelID: string) {
           // Return our custom echo model that implements LanguageModelV1
           return createEchoModel(modelID);
@@ -1124,7 +1124,7 @@ export namespace Provider {
           .filter(
             ([, model]) =>
               ((!model.experimental && model.status !== 'alpha') ||
-                Flag.OPENCODE_ENABLE_EXPERIMENTAL_MODELS) &&
+                Flag.ENABLE_EXPERIMENTAL_MODELS) &&
               model.status !== 'deprecated'
           )
       );
@@ -1789,7 +1789,7 @@ export namespace Provider {
     // In dry-run mode, use the echo provider by default
     // This allows testing round-trips and multi-turn conversations without API costs
     // @see https://github.com/link-assistant/agent/issues/89
-    if (Flag.OPENCODE_DRY_RUN) {
+    if (Flag.DRY_RUN) {
       log.info('dry-run mode enabled, using echo provider as default');
       return {
         providerID: 'link-assistant',

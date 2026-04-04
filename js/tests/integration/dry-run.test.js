@@ -58,52 +58,52 @@ function parseJSONOutput(stdout) {
  * @see https://github.com/link-assistant/agent/issues/89
  */
 describe('Dry-run mode', () => {
-  test('Flag.setDryRun sets OPENCODE_DRY_RUN', async () => {
+  test('Flag.setDryRun sets DRY_RUN', async () => {
     const { Flag } = await import('../src/flag/flag.ts');
 
     // Save original value
-    const original = Flag.OPENCODE_DRY_RUN;
+    const original = Flag.DRY_RUN;
 
     try {
       // Test setting to true
       Flag.setDryRun(true);
-      expect(Flag.OPENCODE_DRY_RUN).toBe(true);
+      expect(Flag.DRY_RUN).toBe(true);
 
       // Test setting to false
       Flag.setDryRun(false);
-      expect(Flag.OPENCODE_DRY_RUN).toBe(false);
+      expect(Flag.DRY_RUN).toBe(false);
     } finally {
       // Restore original value
       Flag.setDryRun(original);
     }
   });
 
-  test('OPENCODE_DRY_RUN environment variable is respected', async () => {
+  test('LINK_ASSISTANT_AGENT_DRY_RUN environment variable is respected', async () => {
     // This test verifies that the env var is properly read
     const { Flag } = await import('../src/flag/flag.ts');
 
     // The flag should be false by default (unless env var is set)
-    expect(typeof Flag.OPENCODE_DRY_RUN).toBe('boolean');
+    expect(typeof Flag.DRY_RUN).toBe('boolean');
   });
 
   test('dry-run mode can be enabled programmatically', async () => {
     const { Flag } = await import('../src/flag/flag.ts');
 
     // Save original value
-    const original = Flag.OPENCODE_DRY_RUN;
+    const original = Flag.DRY_RUN;
 
     try {
       // Enable dry-run mode
       Flag.setDryRun(true);
 
       // Verify it's enabled
-      expect(Flag.OPENCODE_DRY_RUN).toBe(true);
+      expect(Flag.DRY_RUN).toBe(true);
 
       // Disable dry-run mode
       Flag.setDryRun(false);
 
       // Verify it's disabled
-      expect(Flag.OPENCODE_DRY_RUN).toBe(false);
+      expect(Flag.DRY_RUN).toBe(false);
     } finally {
       // Restore original value
       Flag.setDryRun(original);
@@ -114,16 +114,16 @@ describe('Dry-run mode', () => {
     const { Flag } = await import('../src/flag/flag.ts');
 
     // Save original value
-    const original = Flag.OPENCODE_VERBOSE;
+    const original = Flag.VERBOSE;
 
     try {
       // Test setting to true
       Flag.setVerbose(true);
-      expect(Flag.OPENCODE_VERBOSE).toBe(true);
+      expect(Flag.VERBOSE).toBe(true);
 
       // Test setting to false
       Flag.setVerbose(false);
-      expect(Flag.OPENCODE_VERBOSE).toBe(false);
+      expect(Flag.VERBOSE).toBe(false);
     } finally {
       // Restore original value
       Flag.setVerbose(original);

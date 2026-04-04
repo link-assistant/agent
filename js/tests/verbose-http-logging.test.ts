@@ -307,7 +307,7 @@ describe('Verbose HTTP logging - response body streaming', () => {
 
 describe('Verbose HTTP logging - runtime flag check', () => {
   /**
-   * Tests that the verbose fetch wrapper checks Flag.OPENCODE_VERBOSE at call time,
+   * Tests that the verbose fetch wrapper checks Flag.VERBOSE at call time,
    * not at SDK creation time. This is critical because the SDK is cached and the
    * verbose flag may be set after the SDK is created (e.g., when --verbose is a CLI
    * flag processed by middleware after module initialization).
@@ -380,7 +380,7 @@ describe('Verbose HTTP logging - runtime flag check', () => {
   });
 
   test('verbose flag can change between SDK creation and fetch call', async () => {
-    let verboseFlag = false; // Simulates Flag.OPENCODE_VERBOSE
+    let verboseFlag = false; // Simulates Flag.VERBOSE
     const logMessages: string[] = [];
 
     const innerFetch = async () =>

@@ -19,7 +19,7 @@ await Log.init({
 });
 
 console.error('[TEST] Verbose mode enabled, Log initialized');
-console.error('[TEST] Flag.OPENCODE_VERBOSE =', Flag.OPENCODE_VERBOSE);
+console.error('[TEST] Flag.VERBOSE =', Flag.VERBOSE);
 
 // Create instance
 await Instance.provide({
