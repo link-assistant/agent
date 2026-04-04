@@ -4,7 +4,7 @@ import { Log } from '../util/log';
 import path from 'path';
 import { NamedError } from '../util/error';
 import { readableStreamToText } from 'bun';
-import { config } from '../config/agent-config';
+import { config } from '../config/config';
 import { Lock } from '../util/lock';
 
 export namespace BunProc {

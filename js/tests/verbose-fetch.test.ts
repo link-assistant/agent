@@ -6,7 +6,7 @@ import {
   getHttpCallCount,
   resetHttpCallCount,
 } from '../src/util/verbose-fetch';
-import { config, setVerbose } from '../src/config/agent-config';
+import { config, setVerbose } from '../src/config/config';
 
 /**
  * Unit tests for the shared verbose HTTP fetch wrapper.

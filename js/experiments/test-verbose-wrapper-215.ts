@@ -5,7 +5,7 @@
  * Issue: https://github.com/link-assistant/agent/issues/215
  */
 
-import { config, setVerbose } from '../src/config/agent-config';
+import { config, setVerbose } from '../src/config/config';
 import { Log } from '../src/util/log';
 
 // Set verbose mode

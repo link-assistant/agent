@@ -1,5 +1,5 @@
 import { Log } from '../util/log';
-import { config } from '../config/agent-config';
+import { config } from '../config/config';
 
 /**
  * Custom fetch wrapper that handles rate limits (HTTP 429) using time-based retry logic.

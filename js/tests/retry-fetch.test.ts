@@ -1,6 +1,6 @@
 import { test, expect, describe, beforeEach, mock } from 'bun:test';
 import { RetryFetch } from '../src/provider/retry-fetch';
-import { config } from '../src/config/agent-config';
+import { config } from '../src/config/config';
 
 /**
  * Tests for the RetryFetch wrapper.
@@ -600,7 +600,7 @@ describe('Long retry-after values are respected (issue #223)', () => {
 
 describe('Flag configuration', () => {
   test('MIN_RETRY_INTERVAL defaults to 30 seconds', async () => {
-    const { config, resetConfig } = await import('../src/config/agent-config');
+    const { config, resetConfig } = await import('../src/config/config');
 
     // Clear env var to test default
     const original = process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
@@ -619,7 +619,7 @@ describe('Flag configuration', () => {
   });
 
   test('MIN_RETRY_INTERVAL can be configured via env var', async () => {
-    const { config, resetConfig } = await import('../src/config/agent-config');
+    const { config, resetConfig } = await import('../src/config/config');
 
     const original = process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '60'; // 60 seconds
@@ -638,7 +638,7 @@ describe('Flag configuration', () => {
   });
 
   test('RETRY_TIMEOUT defaults to 7 days', async () => {
-    const { config, resetConfig } = await import('../src/config/agent-config');
+    const { config, resetConfig } = await import('../src/config/config');
 
     const original = process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
@@ -656,7 +656,7 @@ describe('Flag configuration', () => {
   });
 
   test('MAX_RETRY_DELAY defaults to 20 minutes', async () => {
-    const { config, resetConfig } = await import('../src/config/agent-config');
+    const { config, resetConfig } = await import('../src/config/config');
 
     const original = process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'];
     delete process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'];
@@ -685,7 +685,7 @@ describe('Flag configuration', () => {
  */
 describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
   test('returns 429 immediately when RETRY_ON_RATE_LIMITS is false', async () => {
-    const { config } = await import('../src/config/agent-config');
+    const { config } = await import('../src/config/config');
 
     const originalValue = config.retryOnRateLimits;
     config.retryOnRateLimits = false;
@@ -712,7 +712,7 @@ describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
   });
 
   test('still retries 429 when RETRY_ON_RATE_LIMITS is true (default)', async () => {
-    const { config } = await import('../src/config/agent-config');
+    const { config } = await import('../src/config/config');
     const originalRetryTimeout =
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     const originalMinInterval =
@@ -771,7 +771,7 @@ describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
   });
 
   test('RETRY_ON_RATE_LIMITS defaults to true', async () => {
-    const { config } = await import('../src/config/agent-config');
+    const { config } = await import('../src/config/config');
     const original = config.retryOnRateLimits;
 
     // Reset to default

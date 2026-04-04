@@ -11,7 +11,7 @@
  * Tests whether HTTP requests get logged through the chain.
  */
 
-import { config, setVerbose } from "../js/src/config/agent-config";
+import { config, setVerbose } from "../js/src/config/config";
 import {
   createVerboseFetch,
   resetHttpCallCount,

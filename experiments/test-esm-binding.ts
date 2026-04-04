@@ -1,5 +1,5 @@
 // Test: Verify ESM live bindings work with config.verbose
-import { config, setVerbose } from "../js/src/config/agent-config.ts";
+import { config, setVerbose } from "../js/src/config/config.ts";
 
 console.log("Initial VERBOSE:", config.verbose);
 

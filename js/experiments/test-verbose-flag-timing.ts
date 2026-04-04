@@ -9,7 +9,7 @@
  * Run with: bun run experiments/test-verbose-flag-timing.ts
  */
 
-import { config, setVerbose } from '../src/config/agent-config.ts';
+import { config, setVerbose } from '../src/config/config.ts';
 
 console.log('=== Test config.verbose Timing ===\n');
 console.log(`Initial verbose: ${config.verbose}`);
@@ -35,7 +35,7 @@ console.log('\n=== Test exported let behavior ===');
 console.log(`Direct config.verbose: ${config.verbose}`);
 
 // Test if dynamic import re-evaluation changes the value
-const { config: dynamicConfig } = await import('../src/config/agent-config.ts');
+const { config: dynamicConfig } = await import('../src/config/config.ts');
 console.log(`Dynamic import config.verbose: ${dynamicConfig.verbose}`);
 console.log(`Match: ${dynamicConfig.verbose === config.verbose}`);
 

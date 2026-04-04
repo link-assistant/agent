@@ -1,5 +1,5 @@
 import makeLog, { levels, LogLevel } from 'log-lazy';
-import { config, isVerbose } from '../config/agent-config';
+import { config, isVerbose } from '../config/config';
 
 /**
  * JSON Lazy Logger
@@ -54,7 +54,7 @@ const LEVEL_PRESETS = {
 type LevelPreset = keyof typeof LEVEL_PRESETS;
 
 // Compact JSON mode (can be set at runtime, initialized from config)
-let compactJsonMode = config.compactJson;
+let compactJsonMode = false; // Deferred to avoid circular init; config.compactJson checked at runtime
 
 /**
  * Set compact JSON output mode

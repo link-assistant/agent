@@ -1,5 +1,5 @@
 import { Log } from './log';
-import { isVerbose } from '../config/agent-config';
+import { isVerbose } from '../config/config';
 
 /**
  * Shared verbose HTTP fetch wrapper.

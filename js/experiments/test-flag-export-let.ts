@@ -3,7 +3,7 @@
  * properly propagates changes across module boundaries in Bun.
  */
 
-import { config, setVerbose } from '../src/config/agent-config';
+import { config, setVerbose } from '../src/config/config';
 
 console.log('Initial config.verbose:', config.verbose);
 

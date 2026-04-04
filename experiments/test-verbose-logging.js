@@ -1,6 +1,6 @@
 // Test: Simulate the exact flow from Log.create + Log.init + verbose fetch logging
 import { Log } from '../js/src/util/log.ts';
-import { config, setVerbose } from '../js/src/config/agent-config.ts';
+import { config, setVerbose } from '../js/src/config/config.ts';
 
 // Step 1: Create a logger BEFORE init (like provider.ts does at module level)
 const log = Log.create({ service: 'provider-test' });

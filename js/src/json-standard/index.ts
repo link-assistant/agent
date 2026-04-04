@@ -10,7 +10,7 @@
  */
 
 import { EOL } from 'os';
-import { config } from '../config/agent-config';
+import { config } from '../config/config';
 
 export type JsonStandard = 'opencode' | 'claude';
 

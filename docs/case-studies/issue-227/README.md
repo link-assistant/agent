@@ -86,7 +86,7 @@ All verbose checks across the codebase use `Flag.isVerbose()` instead of directl
 
 | File                           | Change                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------- |
-| `js/src/config/agent-config.ts`| Centralized config with makeConfig(), removed Flag module, env var propagation               |
+| `js/src/config/config.ts`| Centralized config with makeConfig(), removed Flag module, env var propagation               |
 | `js/src/util/verbose-fetch.ts` | Use `Flag.isVerbose()`                                                                      |
 | `js/src/provider/provider.ts`  | Use `Flag.DRY_RUN`, `Flag.ENABLE_EXPERIMENTAL_MODELS`                                       |
 | `js/src/config/config.ts`      | Use `Flag.CONFIG`, `Flag.CONFIG_DIR`, `Flag.CONFIG_CONTENT`                                 |
@@ -186,7 +186,7 @@ This fragmentation made it hard to:
 
 Adopted [lino-arguments](https://github.com/link-foundation/lino-arguments) to centralize env var resolution:
 
-1. **`agent-config.ts`** — Single source of truth for all configuration. Uses `getenv()` from lino-arguments which provides case-insensitive lookups, type-preserving defaults, and `.lenv` file support.
+1. **`config.ts`** — Single source of truth for all configuration. Uses `getenv()` from lino-arguments which provides case-insensitive lookups, type-preserving defaults, and `.lenv` file support.
 2. **`flag.ts`** — Thin wrapper that reads from AgentConfig when initialized, falls back to env vars for backward compatibility.
 3. **`index.js` middleware** — Calls `initAgentConfig(argv)` once after yargs parsing, merging CLI args and env vars in one place.
 4. **Configuration logging** — Always logs the full resolved config as JSON at `info` level, critical for debugging.
@@ -202,7 +202,7 @@ Adopted [lino-arguments](https://github.com/link-foundation/lino-arguments) to c
 
 | File                          | Role                                                 |
 | ----------------------------- | ---------------------------------------------------- |
-| `js/src/config/agent-config.ts` | Centralized config with getenv() from lino-arguments |
+| `js/src/config/config.ts` | Centralized config with getenv() from lino-arguments |
 | `js/src/index.js`             | Calls initAgentConfig(argv) in middleware            |
 | `js/src/mcp/index.ts`         | Uses Flag.MCP\_\*() instead of direct process.env    |
 | `js/src/tool/read.ts`         | Uses Flag.VERIFY_IMAGES_AT_READ_TOOL()               |

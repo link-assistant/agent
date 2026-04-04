@@ -1,5 +1,5 @@
 import { MessageV2 } from './message-v2';
-import { config } from '../config/agent-config';
+import { config } from '../config/config';
 import { Log } from '../util/log';
 
 export namespace SessionRetry {

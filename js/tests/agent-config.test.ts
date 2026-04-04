@@ -9,7 +9,7 @@ import {
   getConfigSnapshot,
   isConfigInitialized,
   type AgentConfig,
-} from '../src/config/agent-config';
+} from '../src/config/config';
 
 describe('agent-config', () => {
   const savedEnv: Record<string, string | undefined> = {};

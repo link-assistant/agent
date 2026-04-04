@@ -1,6 +1,6 @@
 import z from 'zod';
 import path from 'path';
-import { Config } from '../config/config';
+import { Config } from '../config/file-config';
 import { mergeDeep, sortBy } from 'remeda';
 import { NoSuchModelError, type LanguageModel, type Provider as SDK } from 'ai';
 import { Log } from '../util/log';
@@ -12,7 +12,7 @@ import { ClaudeOAuth } from '../auth/claude-oauth';
 import { AuthPlugins } from '../auth/plugins';
 import { Instance } from '../project/instance';
 import { Global } from '../global';
-import { config, isVerbose } from '../config/agent-config';
+import { config, isVerbose } from '../config/config';
 import { iife } from '../util/iife';
 import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';

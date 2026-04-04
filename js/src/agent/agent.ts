@@ -1,4 +1,4 @@
-import { Config } from '../config/config';
+import { Config } from '../config/file-config';
 import z from 'zod';
 import { Provider } from '../provider/provider';
 import { generateObject, type ModelMessage } from 'ai';

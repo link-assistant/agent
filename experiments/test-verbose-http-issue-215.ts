@@ -6,7 +6,7 @@
  * to verify if it produces log output when config.verbose is true.
  */
 
-import { config, setVerbose } from "../js/src/config/agent-config";
+import { config, setVerbose } from "../js/src/config/config";
 import { Log } from "../js/src/util/log";
 
 // Enable verbose mode FIRST (before any logging)

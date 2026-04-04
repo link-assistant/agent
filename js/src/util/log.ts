@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import { Global } from '../global';
 import z from 'zod';
 import makeLog, { levels } from 'log-lazy';
-import { config, isVerbose } from '../config/agent-config';
+import { config, isVerbose } from '../config/config';
 
 /**
  * Logging module with JSON output and lazy evaluation support.
@@ -32,7 +32,7 @@ export namespace Log {
 
   let level: Level = 'INFO';
   let jsonOutput = false; // Whether to output JSON format (enabled in verbose mode)
-  let compactJsonOutput = config.compactJson; // Whether to use compact JSON (single line)
+  let compactJsonOutput = false; // Whether to use compact JSON (single line); deferred to avoid circular init
 
   function shouldLog(input: Level): boolean {
     return levelPriority[input] >= levelPriority[level];

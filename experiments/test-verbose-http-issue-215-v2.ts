@@ -3,7 +3,7 @@
  * Related to: https://github.com/link-assistant/agent/issues/215
  */
 
-import { config, setVerbose } from "../js/src/config/agent-config";
+import { config, setVerbose } from "../js/src/config/config";
 import { Log } from "../js/src/util/log";
 
 // Enable verbose mode

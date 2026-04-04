@@ -16,7 +16,7 @@ import { SessionSummary } from './summary';
 import { Bus } from '../bus';
 import { SessionRetry } from './retry';
 import { SessionStatus } from './status';
-import { config, isVerbose } from '../config/agent-config';
+import { config, isVerbose } from '../config/config';
 import { SessionCompaction } from './compaction';
 
 export namespace SessionProcessor {
