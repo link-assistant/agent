@@ -66,10 +66,7 @@ console.log('verboseAtCreation:', Flag.VERBOSE);
 const innerFetch = options['fetch'];
 options['fetch'] = async (input: any, init?: any) => {
   // Line 1233-1237: Skip if verbose is off OR global patch is installed
-  if (
-    !Flag.VERBOSE ||
-    (globalThis as any).__agentVerboseFetchInstalled
-  ) {
+  if (!Flag.VERBOSE || (globalThis as any).__agentVerboseFetchInstalled) {
     return innerFetch(input, init);
   }
   console.log(
