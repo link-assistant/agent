@@ -4,7 +4,6 @@ import path from 'path';
 import { $ } from 'bun';
 import { Storage } from '../storage/storage';
 import { Log } from '../util/log';
-import { Flag } from '../flag/flag';
 
 export namespace Project {
   const log = Log.create({ service: 'project' });

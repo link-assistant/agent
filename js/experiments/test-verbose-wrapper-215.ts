@@ -5,11 +5,11 @@
  * Issue: https://github.com/link-assistant/agent/issues/215
  */
 
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/flag/agent-config';
 import { Log } from '../src/util/log';
 
 // Set verbose mode
-Flag.setVerbose(true);
+setVerbose(true);
 
 // Initialize logging
 await Log.init({
@@ -27,7 +27,7 @@ const wrappedFetch = async (
   init?: RequestInit
 ): Promise<Response> => {
   // Check verbose flag at call time
-  if (!Flag.VERBOSE) {
+  if (!config.verbose) {
     console.error('[TEST] Flag.VERBOSE is false — wrapper is no-op');
     return fetch(input, init);
   }
@@ -61,7 +61,7 @@ const wrappedFetch = async (
 };
 
 console.log('\n=== Testing verbose HTTP wrapper log output ===');
-console.log(`Flag.VERBOSE = ${Flag.VERBOSE}`);
+console.log(`config.verbose = ${config.verbose}`);
 console.log('Calling wrappedFetch...\n');
 
 await wrappedFetch('https://api.example.com/test', { method: 'POST' });

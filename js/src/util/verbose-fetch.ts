@@ -1,5 +1,5 @@
 import { Log } from './log';
-import { Flag } from '../flag/flag';
+import { isVerbose } from '../flag/agent-config';
 
 /**
  * Shared verbose HTTP fetch wrapper.
@@ -14,7 +14,7 @@ import { Flag } from '../flag/flag';
  * - Logs HTTP errors: stack trace, error cause chain
  * - Sequential call numbering for correlation
  * - Error-resilient: logging failures never break the actual HTTP request
- * - Runtime verbose check: respects Flag.isVerbose() at call time (with env var fallback)
+ * - Runtime verbose check: respects isVerbose() at call time (with env var fallback)
  *
  * @see https://github.com/link-assistant/agent/issues/215
  */
@@ -98,7 +98,7 @@ export interface VerboseFetchOptions {
 /**
  * Wrap a fetch function with verbose HTTP logging.
  *
- * When Flag.isVerbose() returns true, logs all HTTP requests and responses
+ * When isVerbose() returns true, logs all HTTP requests and responses
  * as JSON objects. When verbose is false, returns a no-op passthrough.
  *
  * All logging is wrapped in try/catch so it never breaks the actual HTTP request.
@@ -122,10 +122,10 @@ export function createVerboseFetch(
     init?: RequestInit
   ): Promise<Response> => {
     // Check verbose flag at call time, with env var fallback for resilience.
-    // Uses Flag.isVerbose() which checks both the in-memory flag and environment
+    // Uses isVerbose() which checks both the in-memory flag and environment
     // variables, preventing silent logging loss when the flag state is disrupted.
     // See: https://github.com/link-assistant/agent/issues/227
-    if (!Flag.isVerbose()) {
+    if (!isVerbose()) {
       return innerFetch(input, init);
     }
 

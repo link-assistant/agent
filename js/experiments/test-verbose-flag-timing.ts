@@ -9,17 +9,17 @@
  * Run with: bun run experiments/test-verbose-flag-timing.ts
  */
 
-import { Flag } from '../src/flag/flag.ts';
+import { config, setVerbose } from '../src/flag/agent-config.ts';
 
-console.log('=== Test Flag.VERBOSE Timing ===\n');
-console.log(`Initial VERBOSE: ${Flag.VERBOSE}`);
+console.log('=== Test config.verbose Timing ===\n');
+console.log(`Initial verbose: ${config.verbose}`);
 
 // Simulate what the middleware does
-Flag.setVerbose(true);
-console.log(`After setVerbose(true): ${Flag.VERBOSE}`);
+setVerbose(true);
+console.log(`After setVerbose(true): ${config.verbose}`);
 
 // Simulate what getSDK() does
-const shouldWrapFetch = Flag.VERBOSE;
+const shouldWrapFetch = config.verbose;
 console.log(`Should wrap fetch (in getSDK): ${shouldWrapFetch}`);
 
 if (shouldWrapFetch) {
@@ -32,21 +32,21 @@ if (shouldWrapFetch) {
 
 // Additional test: check the exported let behavior
 console.log('\n=== Test exported let behavior ===');
-console.log(`Direct Flag.VERBOSE: ${Flag.VERBOSE}`);
+console.log(`Direct config.verbose: ${config.verbose}`);
 
-// Test if Flag module re-evaluation changes the value
-const { VERBOSE } = await import('../src/flag/flag.ts');
-console.log(`Destructured import: ${VERBOSE}`);
-console.log(`Match: ${VERBOSE === Flag.VERBOSE}`);
+// Test if dynamic import re-evaluation changes the value
+const { config: dynamicConfig } = await import('../src/flag/agent-config.ts');
+console.log(`Dynamic import config.verbose: ${dynamicConfig.verbose}`);
+console.log(`Match: ${dynamicConfig.verbose === config.verbose}`);
 
-if (VERBOSE !== Flag.VERBOSE) {
+if (dynamicConfig.verbose !== config.verbose) {
   console.log(
-    '\n❌ BUG FOUND: Destructured import does NOT reflect setVerbose() change!'
+    '\n❌ BUG FOUND: Dynamic import does NOT reflect setVerbose() change!'
   );
   console.log(
-    'The issue is that "import { VERBOSE }" captures the value at import time,'
+    'The issue is that dynamic import captures the value at import time,'
   );
-  console.log('while Flag.VERBOSE uses the live binding.');
+  console.log('while config.verbose uses the live binding.');
 } else {
   console.log('\n✅ Both access paths return the same value');
 }

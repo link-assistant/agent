@@ -3,13 +3,13 @@
  * This simulates the case where the provider passes a custom fetch (e.g., OAuth fetch).
  */
 
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/flag/agent-config';
 import { Log } from '../src/util/log';
 import { createVerboseFetch } from '../src/util/verbose-fetch';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateText } from 'ai';
 
-Flag.setVerbose(true);
+setVerbose(true);
 await Log.init({ print: true, level: 'DEBUG' });
 
 // Install global patch with mock

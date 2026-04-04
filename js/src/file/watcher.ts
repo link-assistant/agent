@@ -1,6 +1,6 @@
 import z from 'zod';
 import { Bus } from '../bus';
-import { Flag } from '../flag/flag';
+import { config } from '../flag/agent-config';
 import { Instance } from '../project/instance';
 import { Log } from '../util/log';
 import { FileIgnore } from './ignore';
@@ -83,7 +83,7 @@ export namespace FileWatcher {
   );
 
   export function init() {
-    if (!Flag.EXPERIMENTAL_WATCHER) return;
+    if (!config.experimentalWatcher) return;
     state();
   }
 }

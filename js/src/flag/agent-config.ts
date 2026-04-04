@@ -1,9 +1,9 @@
 /**
  * Centralized agent configuration using makeConfig from lino-arguments.
  *
- * All configuration is resolved in a single place using makeConfig(),
- * where yargs options and getenv() defaults are defined together.
- * This ensures CLI args, env vars, and .lenv files are merged
+ * This module is the single source of truth for all agent configuration.
+ * The globally available `config` variable holds the resolved configuration
+ * from makeConfig(), which merges CLI args, env vars, and .lenv files
  * with a clear priority chain:
  *
  * 1. CLI arguments (--verbose, --dry-run, etc.)
@@ -11,18 +11,20 @@
  * 3. .lenv file values
  * 4. Code defaults
  *
- * This module is the single source of truth for all agent configuration.
+ * Usage:
+ * ```
+ * import { config } from './flag/agent-config';
+ * if (config.verbose) { ... }
+ * ```
+ *
  * See: https://github.com/link-foundation/lino-arguments
  * See: https://github.com/link-assistant/agent/issues/227
  */
 import { makeConfig, getenv } from 'lino-arguments';
 
 /**
- * Resolved agent configuration.
- * null until init() is called.
+ * Resolved agent configuration interface.
  */
-let resolvedConfig: AgentConfig | null = null;
-
 export interface AgentConfig {
   verbose: boolean;
   dryRun: boolean;
@@ -50,13 +52,105 @@ export interface AgentConfig {
   verifyImagesAtReadTool: boolean;
 }
 
+// Fallback helpers for when config is not yet initialized (early imports/tests)
+function truthyEnv(key: string): boolean {
+  const value = (process.env[key] ?? '').toLowerCase();
+  return value === 'true' || value === '1';
+}
+
+function getEnvStr(key: string): string | undefined {
+  return process.env[key];
+}
+
+/**
+ * Default configuration values, used before initConfig() is called.
+ * Falls back to direct env var reads for early-import and test scenarios.
+ */
+function defaultConfig(): AgentConfig {
+  return {
+    verbose: truthyEnv('LINK_ASSISTANT_AGENT_VERBOSE'),
+    dryRun: truthyEnv('LINK_ASSISTANT_AGENT_DRY_RUN'),
+    generateTitle: truthyEnv('LINK_ASSISTANT_AGENT_GENERATE_TITLE'),
+    outputResponseModel: (() => {
+      const v = (
+        getEnvStr('LINK_ASSISTANT_AGENT_OUTPUT_RESPONSE_MODEL') ?? ''
+      ).toLowerCase();
+      if (v === 'false' || v === '0') return false;
+      return true;
+    })(),
+    summarizeSession: (() => {
+      const v = (
+        getEnvStr('LINK_ASSISTANT_AGENT_SUMMARIZE_SESSION') ?? ''
+      ).toLowerCase();
+      if (v === 'false' || v === '0') return false;
+      return true;
+    })(),
+    retryOnRateLimits: true,
+    compactJson: truthyEnv('LINK_ASSISTANT_AGENT_COMPACT_JSON'),
+    config: getEnvStr('LINK_ASSISTANT_AGENT_CONFIG') ?? '',
+    configDir: getEnvStr('LINK_ASSISTANT_AGENT_CONFIG_DIR') ?? '',
+    configContent: getEnvStr('LINK_ASSISTANT_AGENT_CONFIG_CONTENT') ?? '',
+    disableAutoupdate: truthyEnv('LINK_ASSISTANT_AGENT_DISABLE_AUTOUPDATE'),
+    disablePrune: truthyEnv('LINK_ASSISTANT_AGENT_DISABLE_PRUNE'),
+    enableExperimentalModels: truthyEnv(
+      'LINK_ASSISTANT_AGENT_ENABLE_EXPERIMENTAL_MODELS'
+    ),
+    disableAutocompact: truthyEnv('LINK_ASSISTANT_AGENT_DISABLE_AUTOCOMPACT'),
+    experimental: truthyEnv('LINK_ASSISTANT_AGENT_EXPERIMENTAL'),
+    experimentalWatcher:
+      truthyEnv('LINK_ASSISTANT_AGENT_EXPERIMENTAL') ||
+      truthyEnv('LINK_ASSISTANT_AGENT_EXPERIMENTAL_WATCHER'),
+    retryTimeout: (() => {
+      const v = getEnvStr('LINK_ASSISTANT_AGENT_RETRY_TIMEOUT');
+      return v ? parseInt(v, 10) : 604800;
+    })(),
+    maxRetryDelay: (() => {
+      const v = getEnvStr('LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY');
+      return v ? parseInt(v, 10) : 1200;
+    })(),
+    minRetryInterval: (() => {
+      const v = getEnvStr('LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL');
+      return v ? parseInt(v, 10) : 30;
+    })(),
+    streamChunkTimeoutMs: (() => {
+      const v = getEnvStr('LINK_ASSISTANT_AGENT_STREAM_CHUNK_TIMEOUT_MS');
+      return v ? parseInt(v, 10) : 120000;
+    })(),
+    streamStepTimeoutMs: (() => {
+      const v = getEnvStr('LINK_ASSISTANT_AGENT_STREAM_STEP_TIMEOUT_MS');
+      return v ? parseInt(v, 10) : 600000;
+    })(),
+    mcpDefaultToolCallTimeout: (() => {
+      const v = getEnvStr('LINK_ASSISTANT_AGENT_MCP_DEFAULT_TOOL_CALL_TIMEOUT');
+      return v ? parseInt(v, 10) : 120000;
+    })(),
+    mcpMaxToolCallTimeout: (() => {
+      const v = getEnvStr('LINK_ASSISTANT_AGENT_MCP_MAX_TOOL_CALL_TIMEOUT');
+      return v ? parseInt(v, 10) : 600000;
+    })(),
+    verifyImagesAtReadTool:
+      getEnvStr('LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL') !== 'false',
+  };
+}
+
+/**
+ * Globally available agent configuration.
+ *
+ * Before initConfig() is called, holds env-var-based defaults.
+ * After initConfig(), holds the fully resolved config from makeConfig().
+ *
+ * Access directly: `config.verbose`, `config.dryRun`, etc.
+ */
+export let config: AgentConfig = defaultConfig();
+
+/**
+ * Whether initConfig() has been called.
+ */
+let initialized = false;
+
 /**
  * Build the yargs options for makeConfig.
  * This is the single place where CLI options and env var defaults are defined together.
- * Options defined here are used for both CLI parsing and env var resolution.
- *
- * @param yargs - Yargs instance from makeConfig
- * @param getenv - getenv helper from makeConfig (case-insensitive, type-preserving)
  */
 function buildAgentConfigOptions({
   yargs,
@@ -148,27 +242,22 @@ function buildAgentConfigOptions({
 }
 
 /**
- * Initialize the centralized agent configuration using makeConfig from lino-arguments.
+ * Initialize the global config using makeConfig from lino-arguments.
  *
- * Uses makeConfig() which combines yargs and getenv in a single place:
- * - CLI args from process.argv have highest priority
- * - getenv() resolves env vars with case-insensitive lookup
- * - .lenv file values are loaded automatically
- * - Code defaults are used as fallback
+ * Resolves all configuration from CLI args + env vars + .lenv + defaults.
+ * After this call, the global `config` variable holds the fully resolved values.
  *
  * @param argv - Optional custom argv array to parse (default: process.argv)
  */
-export function initAgentConfig(argv?: string[]): AgentConfig {
-  // Use makeConfig to resolve all config from CLI args + env vars + .lenv + defaults.
-  // The yargs callback defines options with getenv defaults — all in one place.
+export function initConfig(argv?: string[]): AgentConfig {
   const parsed = makeConfig({
     yargs: buildAgentConfigOptions,
     lenv: { enabled: true },
     ...(argv ? { argv } : {}),
   });
 
-  // Resolve env-only options (not exposed as CLI flags) via getenv directly.
-  resolvedConfig = {
+  // Mutate in-place so destructured references stay valid.
+  Object.assign(config, {
     verbose: parsed.verbose ?? false,
     dryRun: parsed.dryRun ?? false,
     generateTitle: parsed.generateTitle ?? false,
@@ -176,7 +265,6 @@ export function initAgentConfig(argv?: string[]): AgentConfig {
     summarizeSession: parsed.summarizeSession ?? true,
     retryOnRateLimits: parsed.retryOnRateLimits ?? true,
     compactJson: parsed.compactJson ?? false,
-    // Env-only options (not exposed as CLI flags)
     config: getenv('LINK_ASSISTANT_AGENT_CONFIG', ''),
     configDir: getenv('LINK_ASSISTANT_AGENT_CONFIG_DIR', ''),
     configContent: getenv('LINK_ASSISTANT_AGENT_CONFIG_CONTENT', ''),
@@ -202,49 +290,51 @@ export function initAgentConfig(argv?: string[]): AgentConfig {
     mcpDefaultToolCallTimeout: parsed.mcpDefaultToolCallTimeout ?? 120000,
     mcpMaxToolCallTimeout: parsed.mcpMaxToolCallTimeout ?? 600000,
     verifyImagesAtReadTool: parsed.verifyImagesAtReadTool ?? true,
-  };
+  });
 
-  // Propagate verbose to env var for subprocess resilience.
-  // This is the critical fix for issue #227: ensures --verbose survives
-  // across subprocess spawning and module re-evaluation.
-  if (resolvedConfig.verbose) {
+  // Propagate verbose to env var for subprocess resilience (issue #227).
+  if (config.verbose) {
     process.env.LINK_ASSISTANT_AGENT_VERBOSE = 'true';
   }
 
-  return resolvedConfig;
+  initialized = true;
+  return config;
 }
 
 /**
- * Get the resolved agent configuration.
- * Throws if init() has not been called yet.
+ * Check if config has been initialized via initConfig().
  */
-export function getAgentConfig(): AgentConfig {
-  if (!resolvedConfig) {
-    throw new Error(
-      'AgentConfig not initialized. Call initAgentConfig() first.'
-    );
+export function isConfigInitialized(): boolean {
+  return initialized;
+}
+
+/**
+ * Check if verbose mode is active.
+ * Checks: config.verbose AND env var for maximum subprocess resilience.
+ */
+export function isVerbose(): boolean {
+  if (config.verbose) return true;
+  return truthyEnv('LINK_ASSISTANT_AGENT_VERBOSE');
+}
+
+/**
+ * Set verbose mode. Syncs to config, env var for subprocess resilience.
+ * This is the critical fix for issue #227.
+ */
+export function setVerbose(value: boolean): void {
+  config.verbose = value;
+  if (value) {
+    process.env.LINK_ASSISTANT_AGENT_VERBOSE = 'true';
+  } else {
+    delete process.env.LINK_ASSISTANT_AGENT_VERBOSE;
   }
-  return resolvedConfig;
 }
 
 /**
- * Check if agent config has been initialized.
+ * Update specific config values at runtime.
  */
-export function isAgentConfigInitialized(): boolean {
-  return resolvedConfig !== null;
-}
-
-/**
- * Update a specific config value at runtime.
- * Used by Flag setters (e.g., setVerbose) that need to change config after init.
- */
-export function updateAgentConfig(updates: Partial<AgentConfig>): AgentConfig {
-  if (!resolvedConfig) {
-    throw new Error(
-      'AgentConfig not initialized. Call initAgentConfig() first.'
-    );
-  }
-  Object.assign(resolvedConfig, updates);
+export function updateConfig(updates: Partial<AgentConfig>): AgentConfig {
+  Object.assign(config, updates);
 
   // Sync verbose to env var when updated
   if ('verbose' in updates) {
@@ -255,27 +345,25 @@ export function updateAgentConfig(updates: Partial<AgentConfig>): AgentConfig {
     }
   }
 
-  return resolvedConfig;
+  return config;
 }
 
 /**
- * Reset config (for testing only).
+ * Reset config to env-var-based defaults (for testing only).
+ * Mutates the existing config object in-place so destructured references stay valid.
  */
-export function resetAgentConfig(): void {
-  resolvedConfig = null;
+export function resetConfig(): void {
+  Object.assign(config, defaultConfig());
+  initialized = false;
 }
 
 /**
  * Get a plain JSON-serializable snapshot of the resolved config.
  * Used for logging the configuration at startup.
  */
-export function getAgentConfigSnapshot(): Record<string, unknown> {
-  if (!resolvedConfig) {
-    return { initialized: false };
-  }
-  // Return a clean copy, omitting empty strings for readability
+export function getConfigSnapshot(): Record<string, unknown> {
   const snapshot: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(resolvedConfig)) {
+  for (const [key, value] of Object.entries(config)) {
     if (value !== '' && value !== undefined) {
       snapshot[key] = value;
     }

@@ -4,7 +4,7 @@ import { Log } from '../util/log';
 import path from 'path';
 import { NamedError } from '../util/error';
 import { readableStreamToText } from 'bun';
-import { Flag } from '../flag/flag';
+import { config } from '../flag/agent-config';
 import { Lock } from '../util/lock';
 
 export namespace BunProc {
@@ -195,7 +195,7 @@ export namespace BunProc {
     }
 
     // Check for dry-run mode
-    if (Flag.DRY_RUN) {
+    if (config.dryRun) {
       log.info(() => ({
         message:
           '[DRY RUN] Would install package (skipping actual installation)',

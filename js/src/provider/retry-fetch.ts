@@ -1,5 +1,5 @@
 import { Log } from '../util/log';
-import { Flag } from '../flag/flag';
+import { config } from '../flag/agent-config';
 
 /**
  * Custom fetch wrapper that handles rate limits (HTTP 429) using time-based retry logic.
@@ -40,7 +40,7 @@ export namespace RetryFetch {
   // Minimum retry interval to prevent rapid retries (default: 30 seconds)
   // Can be configured via AGENT_MIN_RETRY_INTERVAL env var
   function getMinRetryInterval(): number {
-    return Flag.MIN_RETRY_INTERVAL();
+    return config.minRetryInterval * 1000;
   }
 
   /**
@@ -322,8 +322,8 @@ export namespace RetryFetch {
     ): Promise<Response> {
       let attempt = 0;
       const startTime = Date.now();
-      const maxRetryTimeout = Flag.RETRY_TIMEOUT() * 1000;
-      const maxBackoffDelay = Flag.MAX_RETRY_DELAY();
+      const maxRetryTimeout = config.retryTimeout * 1000;
+      const maxBackoffDelay = config.maxRetryDelay * 1000;
 
       while (true) {
         attempt++;
@@ -371,7 +371,7 @@ export namespace RetryFetch {
         }
 
         // If retry on rate limits is disabled, return 429 immediately
-        if (!Flag.RETRY_ON_RATE_LIMITS) {
+        if (!config.retryOnRateLimits) {
           log.info(() => ({
             message:
               'rate limit retry disabled (--no-retry-on-rate-limits), returning 429',

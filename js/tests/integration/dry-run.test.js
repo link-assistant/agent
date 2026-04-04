@@ -58,75 +58,76 @@ function parseJSONOutput(stdout) {
  * @see https://github.com/link-assistant/agent/issues/89
  */
 describe('Dry-run mode', () => {
-  test('Flag.setDryRun sets DRY_RUN', async () => {
-    const { Flag } = await import('../src/flag/flag.ts');
+  test('config.dryRun can be set', async () => {
+    const { config } = await import('../../src/flag/agent-config.ts');
 
     // Save original value
-    const original = Flag.DRY_RUN;
+    const original = config.dryRun;
 
     try {
       // Test setting to true
-      Flag.setDryRun(true);
-      expect(Flag.DRY_RUN).toBe(true);
+      config.dryRun = true;
+      expect(config.dryRun).toBe(true);
 
       // Test setting to false
-      Flag.setDryRun(false);
-      expect(Flag.DRY_RUN).toBe(false);
+      config.dryRun = false;
+      expect(config.dryRun).toBe(false);
     } finally {
       // Restore original value
-      Flag.setDryRun(original);
+      config.dryRun = original;
     }
   });
 
   test('LINK_ASSISTANT_AGENT_DRY_RUN environment variable is respected', async () => {
     // This test verifies that the env var is properly read
-    const { Flag } = await import('../src/flag/flag.ts');
+    const { config } = await import('../../src/flag/agent-config.ts');
 
     // The flag should be false by default (unless env var is set)
-    expect(typeof Flag.DRY_RUN).toBe('boolean');
+    expect(typeof config.dryRun).toBe('boolean');
   });
 
   test('dry-run mode can be enabled programmatically', async () => {
-    const { Flag } = await import('../src/flag/flag.ts');
+    const { config } = await import('../../src/flag/agent-config.ts');
 
     // Save original value
-    const original = Flag.DRY_RUN;
+    const original = config.dryRun;
 
     try {
       // Enable dry-run mode
-      Flag.setDryRun(true);
+      config.dryRun = true;
 
       // Verify it's enabled
-      expect(Flag.DRY_RUN).toBe(true);
+      expect(config.dryRun).toBe(true);
 
       // Disable dry-run mode
-      Flag.setDryRun(false);
+      config.dryRun = false;
 
       // Verify it's disabled
-      expect(Flag.DRY_RUN).toBe(false);
+      expect(config.dryRun).toBe(false);
     } finally {
       // Restore original value
-      Flag.setDryRun(original);
+      config.dryRun = original;
     }
   });
 
   test('Verbose mode flag can be set', async () => {
-    const { Flag } = await import('../src/flag/flag.ts');
+    const { config, setVerbose } =
+      await import('../../src/flag/agent-config.ts');
 
     // Save original value
-    const original = Flag.VERBOSE;
+    const original = config.verbose;
 
     try {
       // Test setting to true
-      Flag.setVerbose(true);
-      expect(Flag.VERBOSE).toBe(true);
+      setVerbose(true);
+      expect(config.verbose).toBe(true);
 
       // Test setting to false
-      Flag.setVerbose(false);
-      expect(Flag.VERBOSE).toBe(false);
+      setVerbose(false);
+      expect(config.verbose).toBe(false);
     } finally {
       // Restore original value
-      Flag.setVerbose(original);
+      setVerbose(original);
     }
   });
 });

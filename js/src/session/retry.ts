@@ -1,5 +1,5 @@
 import { MessageV2 } from './message-v2';
-import { Flag } from '../flag/flag';
+import { config } from '../flag/agent-config';
 import { Log } from '../util/log';
 
 export namespace SessionRetry {
@@ -13,12 +13,12 @@ export namespace SessionRetry {
   // This caps exponential backoff when headers are not available
   // Can be configured via AGENT_MAX_RETRY_DELAY env var
   export function getMaxRetryDelay(): number {
-    return Flag.MAX_RETRY_DELAY();
+    return config.maxRetryDelay * 1000;
   }
 
   // Get retry timeout in milliseconds
   export function getRetryTimeout(): number {
-    return Flag.RETRY_TIMEOUT() * 1000;
+    return config.retryTimeout * 1000;
   }
 
   /**
@@ -75,7 +75,7 @@ export namespace SessionRetry {
     sessionID: string,
     errorType: string
   ): { shouldRetry: boolean; elapsedTime: number; maxTime: number } {
-    const maxTime = Flag.RETRY_TIMEOUT() * 1000; // Convert to ms
+    const maxTime = config.retryTimeout * 1000; // Convert to ms
     const state = retryStates.get(sessionID);
 
     if (!state || state.errorType !== errorType) {

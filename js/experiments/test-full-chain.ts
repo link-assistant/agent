@@ -10,7 +10,7 @@
  */
 
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/flag/agent-config';
 import {
   createVerboseFetch,
   resetHttpCallCount,
@@ -19,7 +19,7 @@ import {
 import { Log } from '../src/util/log';
 
 // Step 1: Set verbose (like middleware line 777)
-Flag.setVerbose(true);
+setVerbose(true);
 
 // Step 2: Init logging (like middleware line 799)
 await Log.init({
@@ -35,7 +35,7 @@ globalThis.fetch = createVerboseFetch(globalThis.fetch, { caller: 'global' });
 resetHttpCallCount();
 
 console.log('\n=== Setup ===');
-console.log('Flag.VERBOSE:', Flag.VERBOSE);
+console.log('config.verbose:', config.verbose);
 console.log(
   '__agentVerboseFetchInstalled:',
   (globalThis as any).__agentVerboseFetchInstalled
@@ -60,13 +60,13 @@ console.log(
   'globalVerboseFetchInstalled:',
   !!(globalThis as any).__agentVerboseFetchInstalled
 );
-console.log('verboseAtCreation:', Flag.VERBOSE);
+console.log('verboseAtCreation:', config.verbose);
 
 // Line 1224-1481: Provider-level verbose wrapper
 const innerFetch = options['fetch'];
 options['fetch'] = async (input: any, init?: any) => {
   // Line 1233-1237: Skip if verbose is off OR global patch is installed
-  if (!Flag.VERBOSE || (globalThis as any).__agentVerboseFetchInstalled) {
+  if (!config.verbose || (globalThis as any).__agentVerboseFetchInstalled) {
     return innerFetch(input, init);
   }
   console.log(

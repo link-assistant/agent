@@ -12,7 +12,7 @@ import { ClaudeOAuth } from '../auth/claude-oauth';
 import { AuthPlugins } from '../auth/plugins';
 import { Instance } from '../project/instance';
 import { Global } from '../global';
-import { Flag } from '../flag/flag';
+import { config, isVerbose } from '../flag/agent-config';
 import { iife } from '../util/iife';
 import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';
@@ -647,7 +647,7 @@ export namespace Provider {
     'link-assistant': async () => {
       // Echo provider is always available - no external dependencies needed
       return {
-        autoload: Flag.DRY_RUN, // Auto-load only in dry-run mode
+        autoload: config.dryRun, // Auto-load only in dry-run mode
         async getModel(_sdk: any, modelID: string) {
           // Return our custom echo model that implements LanguageModelV1
           return createEchoModel(modelID);
@@ -1124,7 +1124,7 @@ export namespace Provider {
           .filter(
             ([, model]) =>
               ((!model.experimental && model.status !== 'alpha') ||
-                Flag.ENABLE_EXPERIMENTAL_MODELS) &&
+                config.enableExperimentalModels) &&
               model.status !== 'deprecated'
           )
       );
@@ -1220,7 +1220,7 @@ export namespace Provider {
           pkg,
           globalVerboseFetchInstalled:
             !!globalThis.__agentVerboseFetchInstalled,
-          verboseAtCreation: Flag.isVerbose(),
+          verboseAtCreation: isVerbose(),
         });
 
         options['fetch'] = async (
@@ -1228,11 +1228,11 @@ export namespace Provider {
           init?: RequestInit
         ): Promise<Response> => {
           // Check verbose flag at call time — not at SDK creation time.
-          // Uses Flag.isVerbose() with env var fallback for resilience against
+          // Uses isVerbose() with env var fallback for resilience against
           // flag state loss in subprocess/module-reload scenarios.
           // See: https://github.com/link-assistant/agent/issues/206
           // See: https://github.com/link-assistant/agent/issues/227
-          if (!Flag.isVerbose()) {
+          if (!isVerbose()) {
             return innerFetch(input, init);
           }
 
@@ -1789,7 +1789,7 @@ export namespace Provider {
     // In dry-run mode, use the echo provider by default
     // This allows testing round-trips and multi-turn conversations without API costs
     // @see https://github.com/link-assistant/agent/issues/89
-    if (Flag.DRY_RUN) {
+    if (config.dryRun) {
       log.info('dry-run mode enabled, using echo provider as default');
       return {
         providerID: 'link-assistant',

@@ -4,7 +4,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { Config } from '../config/config';
-import { Flag } from '../flag/flag';
+import { config } from '../flag/agent-config';
 import { Log } from '../util/log';
 import { NamedError } from '../util/error';
 import z from 'zod/v4';
@@ -91,14 +91,14 @@ export namespace MCP {
       const timeoutConfigs: Record<string, TimeoutConfig> = {};
 
       // Determine global timeout defaults from config and environment variables.
-      // Uses Flag.MCP_*() which reads from centralized AgentConfig (lino-arguments).
+      // Uses config.mcp*() which reads from centralized AgentConfig (lino-arguments).
       const globalDefaults: GlobalTimeoutDefaults = {
         defaultTimeout:
           cfg.mcp_defaults?.tool_call_timeout ??
-          Flag.MCP_DEFAULT_TOOL_CALL_TIMEOUT(),
+          config.mcpDefaultToolCallTimeout,
         maxTimeout:
           cfg.mcp_defaults?.max_tool_call_timeout ??
-          Flag.MCP_MAX_TOOL_CALL_TIMEOUT(),
+          config.mcpMaxToolCallTimeout,
       };
 
       await Promise.all(

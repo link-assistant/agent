@@ -6,7 +6,7 @@ import {
   getHttpCallCount,
   resetHttpCallCount,
 } from '../src/util/verbose-fetch';
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/flag/agent-config';
 
 /**
  * Unit tests for the shared verbose HTTP fetch wrapper.
@@ -129,18 +129,18 @@ describe('verbose-fetch - bodyPreview', () => {
 });
 
 describe('verbose-fetch - createVerboseFetch', () => {
-  const originalVerbose = Flag.VERBOSE;
+  const originalVerbose = config.verbose;
 
   beforeEach(() => {
     resetHttpCallCount();
   });
 
   afterEach(() => {
-    Flag.setVerbose(originalVerbose);
+    setVerbose(originalVerbose);
   });
 
   test('passes through when verbose is disabled', async () => {
-    Flag.setVerbose(false);
+    setVerbose(false);
     let called = false;
     const mockFetch = async (input: any, init?: any) => {
       called = true;
@@ -157,7 +157,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('increments call count when verbose is enabled', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     const mockFetch = async (input: any, init?: any) => {
       return new Response('ok', { status: 200 });
     };
@@ -170,7 +170,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('logs request and response when verbose is enabled', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     const mockFetch = async (input: any, init?: any) => {
       return new Response('response body', {
         status: 200,
@@ -193,7 +193,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('handles streaming responses', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     const stream = new ReadableStream({
       start(controller) {
         controller.enqueue(new TextEncoder().encode('data: chunk1\n'));
@@ -218,7 +218,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('logs errors and rethrows', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     const mockFetch = async () => {
       throw new Error('Connection refused');
     };
@@ -231,7 +231,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('error logging includes cause chain', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     const mockFetch = async () => {
       const cause = new Error('DNS resolution failed');
       throw new Error('Connection failed', { cause });
@@ -245,7 +245,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('request proceeds even if header processing throws', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     // Create a headers-like object that throws during iteration
     const badHeaders = {
       get entries() {
@@ -266,7 +266,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('uses caller field in log entries for uniform output', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     // We can't easily capture log output, but we can verify the wrapper
     // runs without error and the caller is accepted
     const mockFetch = async () => new Response('ok', { status: 200 });
@@ -282,7 +282,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('handles response with no body', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     const mockFetch = async () =>
       new Response(null, { status: 204, statusText: 'No Content' });
     const vf = createVerboseFetch(mockFetch as typeof fetch, {
@@ -295,7 +295,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('preserves response headers after body logging', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     const mockFetch = async () =>
       new Response('body', {
         status: 200,
@@ -313,7 +313,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
   });
 
   test('sequential call numbers are unique across multiple wrappers', async () => {
-    Flag.setVerbose(true);
+    setVerbose(true);
     const mockFetch = async () => new Response('ok', { status: 200 });
     const vf1 = createVerboseFetch(mockFetch as typeof fetch, {
       caller: 'wrapper-1',
@@ -330,7 +330,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
 
   test('verbose check happens at call time not creation time', async () => {
     // Create wrapper while verbose is OFF
-    Flag.setVerbose(false);
+    setVerbose(false);
     const mockFetch = async () => new Response('ok', { status: 200 });
     const vf = createVerboseFetch(mockFetch as typeof fetch, {
       caller: 'test-timing',
@@ -341,7 +341,7 @@ describe('verbose-fetch - createVerboseFetch', () => {
     expect(getHttpCallCount()).toBe(0);
 
     // Enable verbose AFTER wrapper creation
-    Flag.setVerbose(true);
+    setVerbose(true);
 
     // Call while verbose is ON - should increment counter
     await vf('https://example.com/2');

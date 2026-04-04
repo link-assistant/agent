@@ -16,7 +16,6 @@ import { Instance } from '../project/instance';
 import { Config } from '../config/config';
 import { WebSearchTool } from './websearch';
 import { CodeSearchTool } from './codesearch';
-import { Flag } from '../flag/flag';
 
 export namespace ToolRegistry {
   export const state = Instance.state(async () => {

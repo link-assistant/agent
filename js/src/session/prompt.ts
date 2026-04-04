@@ -24,7 +24,7 @@ import { Instance } from '../project/instance';
 import { Bus } from '../bus';
 import { ProviderTransform } from '../provider/transform';
 import { SystemPrompt } from './system';
-import { Flag } from '../flag/flag';
+import { config, isVerbose } from '../flag/agent-config';
 import { Token } from '../util/token';
 
 import PROMPT_PLAN from '../session/prompt/plan.txt';
@@ -684,7 +684,7 @@ export namespace SessionPrompt {
         : [];
 
       // Verbose logging: output request details for debugging
-      if (Flag.isVerbose()) {
+      if (isVerbose()) {
         const systemTokens = system.reduce(
           (acc, s) => acc + Token.estimate(s),
           0
@@ -766,8 +766,8 @@ export namespace SessionPrompt {
       const result = await processor.process(() =>
         streamText({
           timeout: {
-            chunkMs: Flag.STREAM_CHUNK_TIMEOUT_MS(),
-            stepMs: Flag.STREAM_STEP_TIMEOUT_MS(),
+            chunkMs: config.streamChunkTimeoutMs,
+            stepMs: config.streamStepTimeoutMs,
           },
           onError(error) {
             log.error(() => ({ message: 'stream error', error }));
@@ -1671,7 +1671,7 @@ export namespace SessionPrompt {
     modelID: string;
   }) {
     // Skip title generation if disabled (default)
-    if (!Flag.GENERATE_TITLE) {
+    if (!config.generateTitle) {
       log.info(() => ({
         message: 'title generation disabled',
         hint: 'Enable with --generate-title flag or AGENT_GENERATE_TITLE=true',

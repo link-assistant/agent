@@ -1,5 +1,6 @@
 import { test, expect, describe, beforeEach, mock } from 'bun:test';
 import { RetryFetch } from '../src/provider/retry-fetch';
+import { config } from '../src/flag/agent-config';
 
 /**
  * Tests for the RetryFetch wrapper.
@@ -52,9 +53,13 @@ describe('RetryFetch', () => {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       const originalMinInterval =
         process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+      const savedRetryTimeout = config.retryTimeout;
+      const savedMinInterval = config.minRetryInterval;
 
       // Set very short timeout for testing
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '0'; // 0 seconds = immediate timeout
+      config.retryTimeout = 0;
+      config.minRetryInterval = 0;
 
       try {
         const mockResponse = new Response('rate limited', {
@@ -76,6 +81,8 @@ describe('RetryFetch', () => {
         expect(result.status).toBe(429);
       } finally {
         // Restore original env values
+        config.retryTimeout = savedRetryTimeout;
+        config.minRetryInterval = savedMinInterval;
         if (originalRetryTimeout !== undefined) {
           process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
             originalRetryTimeout;
@@ -97,10 +104,14 @@ describe('RetryFetch', () => {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
       const originalMinInterval =
         process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+      const savedRetryTimeout = config.retryTimeout;
+      const savedMinInterval = config.minRetryInterval;
 
       // Set longer timeout but short min interval for fast test
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
       process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum
+      config.retryTimeout = 3600;
+      config.minRetryInterval = 0;
 
       try {
         let callCount = 0;
@@ -129,6 +140,8 @@ describe('RetryFetch', () => {
         expect(result.status).toBe(200);
       } finally {
         // Restore original env values
+        config.retryTimeout = savedRetryTimeout;
+        config.minRetryInterval = savedMinInterval;
         if (originalRetryTimeout !== undefined) {
           process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
             originalRetryTimeout;
@@ -205,10 +218,14 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     const originalMinInterval =
       process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    const savedRetryTimeout = config.retryTimeout;
+    const savedMinInterval = config.minRetryInterval;
 
     // Set long global timeout (1 hour) but we'll use a short provider timeout
     process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum
+    config.retryTimeout = 3600;
+    config.minRetryInterval = 0;
 
     try {
       let callCount = 0;
@@ -245,6 +262,8 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
       expect(result.status).toBe(200);
     } finally {
       // Restore original env values
+      config.retryTimeout = savedRetryTimeout;
+      config.minRetryInterval = savedMinInterval;
       if (originalRetryTimeout !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
           originalRetryTimeout;
@@ -266,10 +285,14 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     const originalMinInterval =
       process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    const savedRetryTimeout = config.retryTimeout;
+    const savedMinInterval = config.minRetryInterval;
 
     // Set very short global timeout (immediate)
     process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '0'; // 0 seconds = immediate timeout
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
+    config.retryTimeout = 0;
+    config.minRetryInterval = 0;
 
     try {
       const mockResponse = new Response('rate limited', {
@@ -291,6 +314,8 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
       expect(result.status).toBe(429);
     } finally {
       // Restore original env values
+      config.retryTimeout = savedRetryTimeout;
+      config.minRetryInterval = savedMinInterval;
       if (originalRetryTimeout !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
           originalRetryTimeout;
@@ -312,10 +337,14 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     const originalMinInterval =
       process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    const savedRetryTimeout = config.retryTimeout;
+    const savedMinInterval = config.minRetryInterval;
 
     // Set long timeout so we can test cancellation
     process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
+    config.retryTimeout = 3600;
+    config.minRetryInterval = 0;
 
     try {
       const mockFetch = mock(() =>
@@ -350,6 +379,8 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
       expect(result.status).toBe(429);
     } finally {
       // Restore original env values
+      config.retryTimeout = savedRetryTimeout;
+      config.minRetryInterval = savedMinInterval;
       if (originalRetryTimeout !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
           originalRetryTimeout;
@@ -376,10 +407,14 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     const originalMinInterval =
       process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    const savedRetryTimeout = config.retryTimeout;
+    const savedMinInterval = config.minRetryInterval;
 
     // Set timeout to accommodate long waits
     process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour (enough for test)
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
+    config.retryTimeout = 3600;
+    config.minRetryInterval = 0;
 
     try {
       let callCount = 0;
@@ -423,6 +458,8 @@ describe('Isolated signal for rate limit waits (issue #183)', () => {
       expect(result.status).toBe(200);
     } finally {
       // Restore original env values
+      config.retryTimeout = savedRetryTimeout;
+      config.minRetryInterval = savedMinInterval;
       if (originalRetryTimeout !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
           originalRetryTimeout;
@@ -454,11 +491,15 @@ describe('Long retry-after values are respected (issue #223)', () => {
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     const originalMinInterval =
       process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    const savedRetryTimeout = config.retryTimeout;
+    const savedMinInterval = config.minRetryInterval;
 
     // Set a short global timeout so the system gives up quickly
     // but long enough that a short retry-after (1s) would succeed
     process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '2'; // 2 seconds
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
+    config.retryTimeout = 2;
+    config.minRetryInterval = 0;
 
     try {
       const mockFetch = mock(() =>
@@ -486,6 +527,8 @@ describe('Long retry-after values are respected (issue #223)', () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(result.status).toBe(429);
     } finally {
+      config.retryTimeout = savedRetryTimeout;
+      config.minRetryInterval = savedMinInterval;
       if (originalRetryTimeout !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
           originalRetryTimeout;
@@ -506,10 +549,14 @@ describe('Long retry-after values are respected (issue #223)', () => {
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     const originalMinInterval =
       process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    const savedRetryTimeout = config.retryTimeout;
+    const savedMinInterval = config.minRetryInterval;
 
     // Set global timeout shorter than the retry-after
     process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0';
+    config.retryTimeout = 3600;
+    config.minRetryInterval = 0;
 
     try {
       const mockFetch = mock(() =>
@@ -533,6 +580,8 @@ describe('Long retry-after values are respected (issue #223)', () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(result.status).toBe(429);
     } finally {
+      config.retryTimeout = savedRetryTimeout;
+      config.minRetryInterval = savedMinInterval;
       if (originalRetryTimeout !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
           originalRetryTimeout;
@@ -551,68 +600,76 @@ describe('Long retry-after values are respected (issue #223)', () => {
 
 describe('Flag configuration', () => {
   test('MIN_RETRY_INTERVAL defaults to 30 seconds', async () => {
-    const { Flag } = await import('../src/flag/flag');
+    const { config, resetConfig } = await import('../src/flag/agent-config');
 
     // Clear env var to test default
     const original = process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
     delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
     delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
+    resetConfig();
 
     try {
-      expect(Flag.MIN_RETRY_INTERVAL()).toBe(30000);
+      expect(config.minRetryInterval * 1000).toBe(30000);
     } finally {
       if (original !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = original;
       }
+      resetConfig();
     }
   });
 
   test('MIN_RETRY_INTERVAL can be configured via env var', async () => {
-    const { Flag } = await import('../src/flag/flag');
+    const { config, resetConfig } = await import('../src/flag/agent-config');
 
     const original = process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '60'; // 60 seconds
+    resetConfig();
 
     try {
-      expect(Flag.MIN_RETRY_INTERVAL()).toBe(60000);
+      expect(config.minRetryInterval * 1000).toBe(60000);
     } finally {
       if (original !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = original;
       } else {
         delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
       }
+      resetConfig();
     }
   });
 
   test('RETRY_TIMEOUT defaults to 7 days', async () => {
-    const { Flag } = await import('../src/flag/flag');
+    const { config, resetConfig } = await import('../src/flag/agent-config');
 
     const original = process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     delete process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
+    resetConfig();
 
     try {
-      expect(Flag.RETRY_TIMEOUT()).toBe(604800); // 7 days in seconds
+      expect(config.retryTimeout).toBe(604800); // 7 days in seconds
     } finally {
       if (original !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = original;
       }
+      resetConfig();
     }
   });
 
   test('MAX_RETRY_DELAY defaults to 20 minutes', async () => {
-    const { Flag } = await import('../src/flag/flag');
+    const { config, resetConfig } = await import('../src/flag/agent-config');
 
     const original = process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'];
     delete process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'];
     delete process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'];
+    resetConfig();
 
     try {
-      expect(Flag.MAX_RETRY_DELAY()).toBe(1200000); // 20 minutes in ms
+      expect(config.maxRetryDelay * 1000).toBe(1200000); // 20 minutes in ms
     } finally {
       if (original !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_MAX_RETRY_DELAY'] = original;
       }
+      resetConfig();
     }
   });
 });
@@ -628,10 +685,10 @@ describe('Flag configuration', () => {
  */
 describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
   test('returns 429 immediately when RETRY_ON_RATE_LIMITS is false', async () => {
-    const { Flag } = await import('../src/flag/flag');
+    const { config } = await import('../src/flag/agent-config');
 
-    const originalValue = Flag.RETRY_ON_RATE_LIMITS;
-    Flag.setRetryOnRateLimits(false);
+    const originalValue = config.retryOnRateLimits;
+    config.retryOnRateLimits = false;
 
     try {
       const mockResponse = new Response('rate limited', {
@@ -650,19 +707,23 @@ describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(result.status).toBe(429);
     } finally {
-      Flag.setRetryOnRateLimits(originalValue);
+      config.retryOnRateLimits = originalValue;
     }
   });
 
   test('still retries 429 when RETRY_ON_RATE_LIMITS is true (default)', async () => {
-    const { Flag } = await import('../src/flag/flag');
+    const { config } = await import('../src/flag/agent-config');
     const originalRetryTimeout =
       process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'];
     const originalMinInterval =
       process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
 
-    const originalValue = Flag.RETRY_ON_RATE_LIMITS;
-    Flag.setRetryOnRateLimits(true);
+    const originalValue = config.retryOnRateLimits;
+    const originalRetryTimeoutConfig = config.retryTimeout;
+    const originalMinIntervalConfig = config.minRetryInterval;
+    config.retryOnRateLimits = true;
+    config.retryTimeout = 3600; // 1 hour
+    config.minRetryInterval = 0; // No minimum for fast test
     process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] = '3600'; // 1 hour
     process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'] = '0'; // No minimum for fast test
 
@@ -691,7 +752,9 @@ describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(result.status).toBe(200);
     } finally {
-      Flag.setRetryOnRateLimits(originalValue);
+      config.retryOnRateLimits = originalValue;
+      config.retryTimeout = originalRetryTimeoutConfig;
+      config.minRetryInterval = originalMinIntervalConfig;
       if (originalRetryTimeout !== undefined) {
         process.env['LINK_ASSISTANT_AGENT_RETRY_TIMEOUT'] =
           originalRetryTimeout;
@@ -708,16 +771,16 @@ describe('RETRY_ON_RATE_LIMITS flag (--no-retry-on-rate-limits)', () => {
   });
 
   test('RETRY_ON_RATE_LIMITS defaults to true', async () => {
-    const { Flag } = await import('../src/flag/flag');
-    const original = Flag.RETRY_ON_RATE_LIMITS;
+    const { config } = await import('../src/flag/agent-config');
+    const original = config.retryOnRateLimits;
 
     // Reset to default
-    Flag.setRetryOnRateLimits(true);
+    config.retryOnRateLimits = true;
 
     try {
-      expect(Flag.RETRY_ON_RATE_LIMITS).toBe(true);
+      expect(config.retryOnRateLimits).toBe(true);
     } finally {
-      Flag.setRetryOnRateLimits(original);
+      config.retryOnRateLimits = original;
     }
   });
 });

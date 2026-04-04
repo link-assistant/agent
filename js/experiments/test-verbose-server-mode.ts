@@ -4,7 +4,7 @@
  * Related to: https://github.com/link-assistant/agent/issues/215
  */
 
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/flag/agent-config';
 import { Log } from '../src/util/log';
 import { Instance } from '../src/project/instance';
 import { Provider } from '../src/provider/provider';
@@ -13,7 +13,7 @@ import { Session } from '../src/session/index';
 import { SessionPrompt } from '../src/session/prompt';
 
 // Enable verbose
-Flag.setVerbose(true);
+setVerbose(true);
 
 // Init logging
 await Log.init({
@@ -22,7 +22,7 @@ await Log.init({
 });
 
 console.error('[TEST] Verbose mode enabled');
-console.error('[TEST] Flag.VERBOSE =', Flag.VERBOSE);
+console.error('[TEST] config.verbose =', config.verbose);
 
 await Instance.provide({
   directory: process.cwd(),

@@ -3,7 +3,7 @@ import z from 'zod';
 import { type LanguageModelUsage, type ProviderMetadata } from 'ai';
 import { Bus } from '../bus';
 import { Config } from '../config/config';
-import { Flag } from '../flag/flag';
+import { isVerbose } from '../flag/agent-config';
 import { Identifier } from '../id/id';
 import type { ModelsDev } from '../provider/models';
 import { Storage } from '../storage/storage';
@@ -35,7 +35,7 @@ export namespace Session {
    */
   export const toDecimal = (value: unknown, context?: string): Decimal => {
     // Log input data in verbose mode to help identify issues
-    if (Flag.isVerbose()) {
+    if (isVerbose()) {
       log.debug(() => ({
         message: 'toDecimal input',
         context,
@@ -51,7 +51,7 @@ export namespace Session {
       const result = new Decimal(value as any);
 
       // Log successful conversion in verbose mode
-      if (Flag.isVerbose()) {
+      if (isVerbose()) {
         log.debug(() => ({
           message: 'toDecimal success',
           context,
@@ -62,7 +62,7 @@ export namespace Session {
       return result;
     } catch (error) {
       // Log the error and return Decimal(NaN)
-      if (Flag.isVerbose()) {
+      if (isVerbose()) {
         log.debug(() => ({
           message: 'toDecimal error - returning Decimal(NaN)',
           context,
@@ -397,7 +397,7 @@ export namespace Session {
    */
   export const toNumber = (value: unknown, context?: string): number => {
     // Log input data in verbose mode to help identify issues
-    if (Flag.isVerbose()) {
+    if (isVerbose()) {
       log.debug(() => ({
         message: 'toNumber input',
         context,
@@ -412,7 +412,7 @@ export namespace Session {
       // These are expected for optional fields like cachedInputTokens, reasoningTokens
       // See: https://github.com/link-assistant/agent/issues/127
       if (value === undefined || value === null) {
-        if (Flag.isVerbose()) {
+        if (isVerbose()) {
           log.debug(() => ({
             message: 'toNumber received undefined/null, returning 0',
             context,
@@ -432,7 +432,7 @@ export namespace Session {
         typeof (value as { total: unknown }).total === 'number'
       ) {
         const result = (value as { total: number }).total;
-        if (Flag.isVerbose()) {
+        if (isVerbose()) {
           log.debug(() => ({
             message: 'toNumber extracted total from object',
             context,
@@ -452,7 +452,7 @@ export namespace Session {
       }
 
       // Log successful conversion in verbose mode
-      if (Flag.isVerbose()) {
+      if (isVerbose()) {
         log.debug(() => ({
           message: 'toNumber success',
           context,
@@ -463,7 +463,7 @@ export namespace Session {
       return result;
     } catch (error) {
       // Log the error and return NaN
-      if (Flag.isVerbose()) {
+      if (isVerbose()) {
         log.debug(() => ({
           message: 'toNumber error - returning NaN',
           context,
@@ -493,7 +493,7 @@ export namespace Session {
    */
   export const toFinishReason = (value: unknown): string => {
     // Log input data in verbose mode to help identify issues
-    if (Flag.isVerbose()) {
+    if (isVerbose()) {
       log.debug(() => ({
         message: 'toFinishReason input',
         valueType: typeof value,
@@ -518,7 +518,7 @@ export namespace Session {
 
       // Try common field names that might contain the reason
       if (typeof obj.type === 'string') {
-        if (Flag.isVerbose()) {
+        if (isVerbose()) {
           log.debug(() => ({
             message: 'toFinishReason extracted type from object',
             result: obj.type,
@@ -528,7 +528,7 @@ export namespace Session {
       }
 
       if (typeof obj.finishReason === 'string') {
-        if (Flag.isVerbose()) {
+        if (isVerbose()) {
           log.debug(() => ({
             message: 'toFinishReason extracted finishReason from object',
             result: obj.finishReason,
@@ -538,7 +538,7 @@ export namespace Session {
       }
 
       if (typeof obj.reason === 'string') {
-        if (Flag.isVerbose()) {
+        if (isVerbose()) {
           log.debug(() => ({
             message: 'toFinishReason extracted reason from object',
             result: obj.reason,
@@ -550,7 +550,7 @@ export namespace Session {
       // Handle AI SDK unified/raw format: {unified: "tool-calls", raw: "tool_calls"}
       // See: https://github.com/link-assistant/agent/issues/129
       if (typeof obj.unified === 'string') {
-        if (Flag.isVerbose()) {
+        if (isVerbose()) {
           log.debug(() => ({
             message: 'toFinishReason extracted unified from object',
             result: obj.unified,
@@ -560,7 +560,7 @@ export namespace Session {
       }
 
       // If we can't extract a specific field, return JSON representation
-      if (Flag.isVerbose()) {
+      if (isVerbose()) {
         log.debug(() => ({
           message: 'toFinishReason could not extract string, using JSON',
           result: JSON.stringify(value),
@@ -602,7 +602,7 @@ export namespace Session {
       }
 
       // Log raw usage data in verbose mode for debugging
-      if (Flag.isVerbose()) {
+      if (isVerbose()) {
         log.debug(() => ({
           message: 'getUsage called with raw data',
           rawUsage: JSON.stringify(input.usage),
@@ -642,7 +642,7 @@ export namespace Session {
       // If standard usage is empty but openrouter metadata has usage, use it as source
       let effectiveUsage = input.usage;
       if (standardUsageIsEmpty && openrouterUsage) {
-        if (Flag.isVerbose()) {
+        if (isVerbose()) {
           log.debug(() => ({
             message:
               'Standard usage empty, falling back to openrouter metadata',
@@ -682,7 +682,7 @@ export namespace Session {
           anthropicUsage &&
           (anthropicUsage.input_tokens || anthropicUsage.output_tokens)
         ) {
-          if (Flag.isVerbose()) {
+          if (isVerbose()) {
             log.debug(() => ({
               message:
                 'Standard usage empty, falling back to anthropic provider metadata',

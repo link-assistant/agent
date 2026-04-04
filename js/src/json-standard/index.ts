@@ -10,7 +10,7 @@
  */
 
 import { EOL } from 'os';
-import { Flag } from '../flag/flag';
+import { config } from '../flag/agent-config';
 
 export type JsonStandard = 'opencode' | 'claude';
 
@@ -61,7 +61,7 @@ export function serializeOutput(
     return JSON.stringify(event) + EOL;
   }
   // OpenCode format - compact if LINK_ASSISTANT_AGENT_COMPACT_JSON is set
-  if (Flag.COMPACT_JSON()) {
+  if (config.compactJson) {
     return JSON.stringify(event) + EOL;
   }
   return JSON.stringify(event, null, 2) + EOL;

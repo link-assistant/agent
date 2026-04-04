@@ -1,8 +1,10 @@
 #!/usr/bin/env bun
-import { Flag } from './flag/flag.ts';
 import {
-  initAgentConfig,
-  getAgentConfigSnapshot,
+  config,
+  initConfig,
+  isVerbose,
+  setVerbose,
+  getConfigSnapshot,
 } from './flag/agent-config.ts';
 import { setProcessName } from './cli/process-name.ts';
 setProcessName('agent');
@@ -253,7 +255,7 @@ async function runAgentMode(argv, request) {
     workingDirectory: process.cwd(),
     scriptPath: import.meta.path,
   }));
-  if (Flag.DRY_RUN) {
+  if (config.dryRun) {
     Log.Default.info(() => ({
       message: 'Dry run mode enabled',
       mode: 'dry-run',
@@ -340,7 +342,7 @@ async function runContinuousAgentMode(argv) {
     workingDirectory: process.cwd(),
     scriptPath: import.meta.path,
   }));
-  if (Flag.DRY_RUN) {
+  if (config.dryRun) {
     Log.Default.info(() => ({
       message: 'Dry run mode enabled',
       mode: 'dry-run',
@@ -612,7 +614,7 @@ async function main() {
         handler: async (argv) => {
           // Check both CLI flag and environment variable for compact JSON mode
           const compactJson =
-            argv['compact-json'] === true || Flag.COMPACT_JSON();
+            argv['compact-json'] === true || config.compactJson;
 
           // Check if --prompt flag was provided
           if (argv.prompt) {
@@ -777,44 +779,30 @@ async function main() {
       // See: https://github.com/link-foundation/lino-arguments
       // See: https://github.com/link-assistant/agent/issues/227
       .middleware(async (argv) => {
-        // Initialize centralized AgentConfig using makeConfig from lino-arguments.
-        // makeConfig resolves CLI args + env vars + .lenv files in one place,
-        // with yargs options and getenv defaults defined together.
+        // Initialize global config using makeConfig from lino-arguments.
+        // Resolves CLI args + env vars + .lenv files in one place.
+        // After this call, the global `config` variable is fully resolved.
         // See: https://github.com/link-foundation/lino-arguments
-        const agentConfig = initAgentConfig();
+        initConfig();
 
-        // Sync mutable Flag values from the resolved config.
-        const isCompact =
-          argv['compact-json'] === true || agentConfig.compactJson;
+        // Override compact-json from argv if explicitly set.
+        if (argv['compact-json'] === true) {
+          config.compactJson = true;
+        }
+        const isCompact = config.compactJson;
         if (isCompact) {
-          Flag.setCompactJson(true);
           setCompactJson(true);
         }
-        if (agentConfig.verbose) {
-          Flag.setVerbose(true);
-        }
-        if (agentConfig.dryRun) {
-          Flag.setDryRun(true);
-        }
-        if (agentConfig.generateTitle) {
-          Flag.setGenerateTitle(true);
-        }
-        if (!agentConfig.outputResponseModel) {
-          Flag.setOutputResponseModel(false);
-        }
-        if (!agentConfig.summarizeSession) {
-          Flag.setSummarizeSession(false);
-        } else {
-          Flag.setSummarizeSession(true);
-        }
-        if (!agentConfig.retryOnRateLimits) {
-          Flag.setRetryOnRateLimits(false);
+
+        // Sync verbose to env var for subprocess resilience.
+        if (config.verbose) {
+          setVerbose(true);
         }
 
         // Initialize logging.
         await Log.init({
-          print: Flag.isVerbose(),
-          level: Flag.isVerbose() ? 'DEBUG' : 'INFO',
+          print: isVerbose(),
+          level: isVerbose() ? 'DEBUG' : 'INFO',
           compactJson: isCompact,
         });
 
@@ -825,7 +813,7 @@ async function main() {
           type: 'config',
           message: 'Agent configuration resolved',
           source: 'lino-arguments (CLI args > env vars > .lenv > defaults)',
-          config: getAgentConfigSnapshot(),
+          config: getConfigSnapshot(),
         }));
 
         // Global fetch monkey-patch for verbose HTTP logging (#221).

@@ -3,17 +3,17 @@
  * properly propagates changes across module boundaries in Bun.
  */
 
-import { Flag } from '../src/flag/flag';
+import { config, setVerbose } from '../src/flag/agent-config';
 
-console.log('Initial Flag.VERBOSE:', Flag.VERBOSE);
+console.log('Initial config.verbose:', config.verbose);
 
 // Simulate CLI middleware setting verbose
-Flag.setVerbose(true);
-console.log('After setVerbose(true):', Flag.VERBOSE);
+setVerbose(true);
+console.log('After setVerbose(true):', config.verbose);
 
 // Test closure behavior - simulate the fetch wrapper
 const wrapper = () => {
-  if (!Flag.VERBOSE) {
+  if (!config.verbose) {
     return 'verbose OFF - would skip logging';
   }
   return 'verbose ON - would log HTTP request';
@@ -22,11 +22,11 @@ const wrapper = () => {
 console.log('Closure test (should be ON):', wrapper());
 
 // Test toggling off
-Flag.setVerbose(false);
-console.log('After setVerbose(false):', Flag.VERBOSE);
+setVerbose(false);
+console.log('After setVerbose(false):', config.verbose);
 console.log('Closure test (should be OFF):', wrapper());
 
 // Toggle back on
-Flag.setVerbose(true);
-console.log('After setVerbose(true) again:', Flag.VERBOSE);
+setVerbose(true);
+console.log('After setVerbose(true) again:', config.verbose);
 console.log('Closure test (should be ON):', wrapper());

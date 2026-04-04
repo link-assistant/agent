@@ -9,7 +9,7 @@ import { Global } from '../global';
 import fs from 'fs/promises';
 import { lazy } from '../util/lazy';
 import { NamedError } from '../util/error';
-import { Flag } from '../flag/flag';
+import { config } from '../flag/agent-config';
 import { Auth } from '../auth';
 import { createVerboseFetch } from '../util/verbose-fetch';
 import {
@@ -136,11 +136,11 @@ export namespace Config {
     let result = await global();
 
     // Override with custom config if provided
-    if (Flag.CONFIG) {
-      result = mergeDeep(result, await loadFile(Flag.CONFIG));
+    if (config.config) {
+      result = mergeDeep(result, await loadFile(config.config));
       log.debug(() => ({
         message: 'loaded custom config',
-        path: Flag.CONFIG,
+        path: config.config,
       }));
     }
 
@@ -155,8 +155,8 @@ export namespace Config {
       }
     }
 
-    if (Flag.CONFIG_CONTENT) {
-      result = mergeDeep(result, JSON.parse(Flag.CONFIG_CONTENT));
+    if (config.configContent) {
+      result = mergeDeep(result, JSON.parse(config.configContent));
       log.debug(() => ({
         message:
           'loaded custom config from LINK_ASSISTANT_AGENT_CONFIG_CONTENT',
@@ -212,11 +212,11 @@ export namespace Config {
 
     const directories = [Global.Path.config, ...filteredDirs];
 
-    if (Flag.CONFIG_DIR) {
-      directories.push(Flag.CONFIG_DIR);
+    if (config.configDir) {
+      directories.push(config.configDir);
       log.debug(() => ({
         message: 'loading config from LINK_ASSISTANT_AGENT_CONFIG_DIR',
-        path: Flag.CONFIG_DIR,
+        path: config.configDir,
       }));
     }
 
@@ -227,7 +227,7 @@ export namespace Config {
       if (
         dir.endsWith('.link-assistant-agent') ||
         dir.endsWith('.opencode') ||
-        dir === Flag.CONFIG_DIR
+        dir === config.configDir
       ) {
         for (const file of ['opencode.jsonc', 'opencode.json']) {
           log.debug(() => ({

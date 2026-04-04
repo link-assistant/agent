@@ -9,7 +9,7 @@ import { Bus } from '../bus';
 import z from 'zod';
 import type { ModelsDev } from '../provider/models';
 import { SessionPrompt } from './prompt';
-import { Flag } from '../flag/flag';
+import { config, isVerbose } from '../flag/agent-config';
 import { Token } from '../util/token';
 import { Log } from '../util/log';
 import { ProviderTransform } from '../provider/transform';
@@ -98,7 +98,7 @@ export namespace SessionCompaction {
     compactionModel?: CompactionModelConfig;
     compactionModelContextLimit?: number;
   }) {
-    if (Flag.DISABLE_AUTOCOMPACT) return false;
+    if (config.disableAutocompact) return false;
     const baseModelContextLimit = input.model.limit.context;
     if (baseModelContextLimit === 0) return false;
     const count =
@@ -180,7 +180,7 @@ export namespace SessionCompaction {
   // calls. then erases output of previous tool calls. idea is to throw away old
   // tool calls that are no longer relevant.
   export async function prune(input: { sessionID: string }) {
-    if (Flag.DISABLE_PRUNE) return;
+    if (config.disablePrune) return;
     log.info(() => ({ message: 'pruning' }));
     const msgs = await Session.messages({ sessionID: input.sessionID });
     let total = 0;
@@ -240,7 +240,7 @@ export namespace SessionCompaction {
       input.model.providerID,
       input.model.modelID
     );
-    if (Flag.isVerbose()) {
+    if (isVerbose()) {
       log.info(() => ({
         message: 'compaction model loaded',
         providerID: model.providerID,
@@ -303,7 +303,7 @@ export namespace SessionCompaction {
     // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
     const safeModelMessages = Array.isArray(modelMessages) ? modelMessages : [];
 
-    if (Flag.isVerbose()) {
+    if (isVerbose()) {
       log.info(() => ({
         message: 'compaction streamText call',
         providerID: model.providerID,
