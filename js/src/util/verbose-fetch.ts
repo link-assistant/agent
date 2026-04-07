@@ -25,6 +25,21 @@ const log = Log.create({ service: 'http' });
 let globalHttpCallCount = 0;
 
 /**
+ * Track pending async stream log operations (#231).
+ * When the process exits while stream logging is in progress, we log a warning
+ * so missing HTTP response bodies are visible in the logs rather than silently lost.
+ */
+let pendingStreamLogs = 0;
+
+/**
+ * Get the current count of pending stream log operations.
+ * Useful for diagnostics and testing.
+ */
+export function getPendingStreamLogCount(): number {
+  return pendingStreamLogs;
+}
+
+/**
  * Sanitize HTTP headers by masking sensitive values.
  * Masks authorization, x-api-key, and api-key headers.
  */
@@ -196,7 +211,8 @@ export function createVerboseFetch(
           if (isStreaming) {
             const [sdkStream, logStream] = response.body.tee();
 
-            // Consume log stream asynchronously
+            // Consume log stream asynchronously, tracking pending operations (#231)
+            pendingStreamLogs++;
             (async () => {
               try {
                 const reader = logStream.getReader();
@@ -225,6 +241,8 @@ export function createVerboseFetch(
                 });
               } catch {
                 // Ignore logging errors
+              } finally {
+                pendingStreamLogs--;
               }
             })();
 
@@ -303,4 +321,19 @@ export function getHttpCallCount(): number {
  */
 export function resetHttpCallCount(): void {
   globalHttpCallCount = 0;
+}
+
+/**
+ * Register a process exit handler that warns about pending stream log operations.
+ * Call this once at startup when verbose mode is enabled (#231).
+ */
+export function registerPendingStreamLogExitHandler(): void {
+  process.once('exit', () => {
+    if (pendingStreamLogs > 0) {
+      // Use stderr directly since the process is exiting and log infrastructure may be unavailable
+      process.stderr.write(
+        `[debug] warning: ${pendingStreamLogs} HTTP stream response log(s) were still pending at process exit — response bodies may be missing from logs\n`
+      );
+    }
+  });
 }

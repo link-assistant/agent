@@ -1249,8 +1249,10 @@ export namespace Provider {
               providerID: provider.id,
             });
             // Redundant stderr confirmation — visible even if stdout is piped/filtered
+            // Use "[debug]" prefix instead of "[verbose]" to avoid outer solver's
+            // error detection matching this as an error (#231)
             process.stderr.write(
-              `[verbose] HTTP logging active for provider: ${provider.id}\n`
+              `[debug] verbose HTTP logging active for provider: ${provider.id}\n`
             );
           }
 
@@ -1623,35 +1625,30 @@ export namespace Provider {
     }
 
     if (!isSyntheticProvider && !info) {
-      // Still not found after refresh - create fallback info and try anyway
-      // Provider may support unlisted models
+      // Model not found even after cache refresh — fail with a clear error (#231)
+      // Previously this created synthetic fallback info, which allowed the API call
+      // to proceed with the wrong model (e.g., kimi-k2.5-free routed to minimax-m2.5-free)
       const availableInProvider = Object.keys(provider.info.models).slice(
         0,
         10
       );
-      log.warn(() => ({
+      log.error(() => ({
         message:
-          'model not in provider catalog after refresh - attempting anyway (may be unlisted)',
+          'model not found in provider catalog after refresh — refusing to proceed',
         providerID,
         modelID,
         availableModels: availableInProvider,
         totalModels: Object.keys(provider.info.models).length,
       }));
 
-      // Create a minimal fallback model info so SDK loading can proceed
-      // Use sensible defaults - the provider will reject if the model truly doesn't exist
-      info = {
-        id: modelID,
-        name: modelID,
-        release_date: '',
-        attachment: false,
-        reasoning: false,
-        temperature: true,
-        tool_call: true,
-        cost: { input: 0, output: 0 },
-        limit: { context: 128000, output: 16384 },
-        options: {},
-      } as ModelsDev.Model;
+      throw new ModelNotFoundError({
+        providerID,
+        modelID,
+        suggestion:
+          `Model "${modelID}" not found in provider "${providerID}" (checked ${Object.keys(provider.info.models).length} models). ` +
+          `Available models include: ${availableInProvider.join(', ')}. ` +
+          `Use --model ${providerID}/<model-id> with a valid model.`,
+      });
     }
 
     try {

@@ -27,7 +27,10 @@ import { McpCommand } from './cli/cmd/mcp.ts';
 import { AuthCommand } from './cli/cmd/auth.ts';
 import { FormatError } from './cli/error.ts';
 import { UI } from './cli/ui.ts';
-import { createVerboseFetch } from './util/verbose-fetch.ts';
+import {
+  createVerboseFetch,
+  registerPendingStreamLogExitHandler,
+} from './util/verbose-fetch.ts';
 import {
   runContinuousServerMode,
   runContinuousDirectMode,
@@ -822,6 +825,8 @@ async function main() {
             caller: 'global',
           });
           globalThis.__agentVerboseFetchInstalled = true;
+          // Register handler to warn about pending stream logs at process exit (#231)
+          registerPendingStreamLogExitHandler();
         }
       })
       .fail((msg, err, yargs) => {
