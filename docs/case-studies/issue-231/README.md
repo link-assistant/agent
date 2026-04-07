@@ -73,5 +73,5 @@ Analysis of execution log from a run where the user requested `kimi-k2.5-free` m
 
 ## References
 
-- Execution log: `./execution-log.txt` (55,320 lines)
+- Execution log: [external link](https://github.com/konard/log-tmp-solution-draft-log-pr-1775565431104.txt/raw/main/tmp-solution-draft-log-pr-1775565431104.txt) (55,320 lines)
 - Issue: https://github.com/link-assistant/agent/issues/231
