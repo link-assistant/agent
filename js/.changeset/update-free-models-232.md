@@ -1,5 +1,5 @@
 ---
-"@link-assistant/agent": minor
+'@link-assistant/agent': minor
 ---
 
 feat: make qwen3.6-plus-free the default model, add compaction models cascade (#232)
