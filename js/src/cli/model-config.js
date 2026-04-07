@@ -68,29 +68,39 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
       modelID,
     }));
 
-    // Validate that the model exists in the provider (#196)
-    // Without this check, a non-existent model silently proceeds and fails at API call time
-    // with confusing "reason: unknown" and zero tokens
+    // Validate that the model exists in the provider (#196, #231)
+    // If user explicitly specified provider/model and the model is not found,
+    // fail immediately instead of silently falling back to a different model.
     try {
       const { Provider } = await import('../provider/provider.ts');
       const s = await Provider.state();
       const provider = s.providers[providerID];
       if (provider && !provider.info.models[modelID]) {
-        // Provider exists but model doesn't - warn and suggest alternatives
-        const availableModels = Object.keys(provider.info.models).slice(0, 5);
-        Log.Default.warn(() => ({
+        // Provider exists but model doesn't — fail with a clear error (#231)
+        // Silent fallback caused kimi-k2.5-free to be routed to minimax-m2.5-free
+        const availableModels = Object.keys(provider.info.models).slice(0, 10);
+        Log.Default.error(() => ({
           message:
-            'model not found in provider - will attempt anyway (provider may support unlisted models)',
+            'model not found in provider — refusing to proceed with explicit provider/model',
           providerID,
           modelID,
           availableModels,
         }));
+        throw new Error(
+          `Model "${modelID}" not found in provider "${providerID}". ` +
+            `Available models include: ${availableModels.join(', ')}. ` +
+            `Use --model ${providerID}/<model-id> with a valid model, or omit the provider prefix for auto-resolution.`
+        );
       }
     } catch (validationError) {
-      // Don't fail on validation errors - the model may still work
-      // This is a best-effort check
+      // Re-throw if this is our own validation error (not an infrastructure issue)
+      if (validationError?.message?.includes('not found in provider')) {
+        throw validationError;
+      }
+      // For infrastructure errors (e.g. can't load provider state), log and continue
       Log.Default.info(() => ({
-        message: 'skipping model existence validation',
+        message:
+          'skipping model existence validation due to infrastructure error',
         reason: validationError?.message,
       }));
     }

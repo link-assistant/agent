@@ -33,8 +33,8 @@ describe('RetryFetch', () => {
       expect(await result.text()).toBe('success');
     });
 
-    test('passes through error responses (non-429) unchanged', async () => {
-      const mockResponse = new Response('error', { status: 500 });
+    test('passes through non-retryable error responses unchanged', async () => {
+      const mockResponse = new Response('not found', { status: 404 });
       const mockFetch = mock(() => Promise.resolve(mockResponse));
 
       const retryFetch = RetryFetch.create({
@@ -44,7 +44,7 @@ describe('RetryFetch', () => {
       const result = await retryFetch('https://example.com');
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(result.status).toBe(500);
+      expect(result.status).toBe(404);
     });
 
     test('returns 429 response when retry timeout is exceeded', async () => {
@@ -154,6 +154,206 @@ describe('RetryFetch', () => {
         } else {
           delete process.env['LINK_ASSISTANT_AGENT_MIN_RETRY_INTERVAL'];
         }
+      }
+    });
+  });
+
+  /**
+   * Tests for server error (5xx) retry logic (#231).
+   *
+   * Server errors (500, 502, 503) are retried up to SERVER_ERROR_MAX_RETRIES (3)
+   * times with exponential backoff. This prevents lost compaction cycles when the
+   * OpenCode API returns intermittent 500 errors.
+   *
+   * @see https://github.com/link-assistant/agent/issues/231
+   * @see https://github.com/link-assistant/hive-mind/issues/1537
+   */
+  describe('server error retries (#231)', () => {
+    test('retries on 500 and succeeds on second attempt', async () => {
+      const savedRetryTimeout = config.retryTimeout;
+      const savedMinInterval = config.minRetryInterval;
+      config.retryTimeout = 3600;
+      config.minRetryInterval = 0;
+
+      try {
+        let callCount = 0;
+        const mockFetch = mock(() => {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.resolve(
+              new Response(
+                '{"type":"error","error":{"type":"error","message":"Cannot read properties of undefined (reading \'input_tokens\')"}}',
+                { status: 500 }
+              )
+            );
+          }
+          return Promise.resolve(new Response('success', { status: 200 }));
+        });
+
+        const retryFetch = RetryFetch.create({
+          baseFetch: mockFetch as unknown as typeof fetch,
+        });
+
+        const result = await retryFetch('https://opencode.ai/zen/v1/responses');
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+        expect(result.status).toBe(200);
+      } finally {
+        config.retryTimeout = savedRetryTimeout;
+        config.minRetryInterval = savedMinInterval;
+      }
+    });
+
+    test('retries on 502 Bad Gateway', async () => {
+      const savedRetryTimeout = config.retryTimeout;
+      const savedMinInterval = config.minRetryInterval;
+      config.retryTimeout = 3600;
+      config.minRetryInterval = 0;
+
+      try {
+        let callCount = 0;
+        const mockFetch = mock(() => {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.resolve(
+              new Response('Bad Gateway', { status: 502 })
+            );
+          }
+          return Promise.resolve(new Response('success', { status: 200 }));
+        });
+
+        const retryFetch = RetryFetch.create({
+          baseFetch: mockFetch as unknown as typeof fetch,
+        });
+
+        const result = await retryFetch('https://example.com');
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+        expect(result.status).toBe(200);
+      } finally {
+        config.retryTimeout = savedRetryTimeout;
+        config.minRetryInterval = savedMinInterval;
+      }
+    });
+
+    test('retries on 503 Service Unavailable', async () => {
+      const savedRetryTimeout = config.retryTimeout;
+      const savedMinInterval = config.minRetryInterval;
+      config.retryTimeout = 3600;
+      config.minRetryInterval = 0;
+
+      try {
+        let callCount = 0;
+        const mockFetch = mock(() => {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.resolve(
+              new Response('Service Unavailable', { status: 503 })
+            );
+          }
+          return Promise.resolve(new Response('success', { status: 200 }));
+        });
+
+        const retryFetch = RetryFetch.create({
+          baseFetch: mockFetch as unknown as typeof fetch,
+        });
+
+        const result = await retryFetch('https://example.com');
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+        expect(result.status).toBe(200);
+      } finally {
+        config.retryTimeout = savedRetryTimeout;
+        config.minRetryInterval = savedMinInterval;
+      }
+    });
+
+    test('gives up after SERVER_ERROR_MAX_RETRIES (3) attempts', async () => {
+      const savedRetryTimeout = config.retryTimeout;
+      const savedMinInterval = config.minRetryInterval;
+      const savedMaxRetryDelay = config.maxRetryDelay;
+      config.retryTimeout = 3600;
+      config.minRetryInterval = 0;
+      config.maxRetryDelay = 0.01; // 10ms max delay for fast test
+
+      try {
+        const mockFetch = mock(() =>
+          Promise.resolve(
+            new Response('Internal Server Error', { status: 500 })
+          )
+        );
+
+        const retryFetch = RetryFetch.create({
+          baseFetch: mockFetch as unknown as typeof fetch,
+        });
+
+        const result = await retryFetch('https://example.com');
+
+        // 1 initial + 3 retries = 4 total attempts, then gives up
+        expect(mockFetch).toHaveBeenCalledTimes(4);
+        expect(result.status).toBe(500);
+      } finally {
+        config.retryTimeout = savedRetryTimeout;
+        config.minRetryInterval = savedMinInterval;
+        config.maxRetryDelay = savedMaxRetryDelay;
+      }
+    });
+
+    test('does not retry on 400 Bad Request', async () => {
+      const mockFetch = mock(() =>
+        Promise.resolve(new Response('Bad Request', { status: 400 }))
+      );
+
+      const retryFetch = RetryFetch.create({
+        baseFetch: mockFetch as unknown as typeof fetch,
+      });
+
+      const result = await retryFetch('https://example.com');
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe(400);
+    });
+
+    test('does not retry on 401 Unauthorized', async () => {
+      const mockFetch = mock(() =>
+        Promise.resolve(new Response('Unauthorized', { status: 401 }))
+      );
+
+      const retryFetch = RetryFetch.create({
+        baseFetch: mockFetch as unknown as typeof fetch,
+      });
+
+      const result = await retryFetch('https://example.com');
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe(401);
+    });
+
+    test('respects global retry timeout for server errors', async () => {
+      const savedRetryTimeout = config.retryTimeout;
+      const savedMinInterval = config.minRetryInterval;
+      config.retryTimeout = 0; // Immediate timeout
+      config.minRetryInterval = 0;
+
+      try {
+        const mockFetch = mock(() =>
+          Promise.resolve(
+            new Response('Internal Server Error', { status: 500 })
+          )
+        );
+
+        const retryFetch = RetryFetch.create({
+          baseFetch: mockFetch as unknown as typeof fetch,
+        });
+
+        const result = await retryFetch('https://example.com');
+
+        // Should return 500 immediately since timeout is 0
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(result.status).toBe(500);
+      } finally {
+        config.retryTimeout = savedRetryTimeout;
+        config.minRetryInterval = savedMinInterval;
       }
     });
   });

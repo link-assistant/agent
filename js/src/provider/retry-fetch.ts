@@ -2,10 +2,11 @@ import { Log } from '../util/log';
 import { config } from '../config/config';
 
 /**
- * Custom fetch wrapper that handles rate limits (HTTP 429) using time-based retry logic.
+ * Custom fetch wrapper that handles rate limits (HTTP 429) and server errors (HTTP 5xx)
+ * using time-based retry logic.
  *
- * This wrapper intercepts 429 responses at the HTTP level before the AI SDK's internal
- * retry mechanism can interfere. It respects:
+ * This wrapper intercepts 429 and 5xx responses at the HTTP level before the AI SDK's
+ * internal retry mechanism can interfere. It respects:
  * - retry-after headers (both seconds and HTTP date formats)
  * - retry-after-ms header for millisecond precision
  * - LINK_ASSISTANT_AGENT_RETRY_TIMEOUT for global time-based retry limit
@@ -15,10 +16,12 @@ import { config } from '../config/config';
  * The AI SDK's internal retry uses a fixed count (default 3 attempts) and ignores
  * retry-after headers. When providers return long retry-after values (e.g., 64 minutes),
  * the SDK exhausts its retries before the agent can properly wait.
+ * Additionally, server errors (500, 502, 503) from providers like OpenCode API were not
+ * retried, causing compaction cycles to be lost silently.
  *
  * Solution:
- * By wrapping fetch, we handle rate limits at the HTTP layer with time-based retries,
- * ensuring the agent's 7-week global timeout is respected.
+ * By wrapping fetch, we handle rate limits and server errors at the HTTP layer with
+ * time-based retries, ensuring the agent's 7-week global timeout is respected.
  *
  * Important: Rate limit waits use ISOLATED AbortControllers that are NOT subject to
  * provider/stream timeouts. This prevents long rate limit waits (e.g., 15 hours) from
@@ -26,6 +29,7 @@ import { config } from '../config/config';
  *
  * @see https://github.com/link-assistant/agent/issues/167
  * @see https://github.com/link-assistant/agent/issues/183
+ * @see https://github.com/link-assistant/agent/issues/231
  * @see https://github.com/vercel/ai/issues/12585
  */
 
@@ -36,6 +40,20 @@ export namespace RetryFetch {
   const RETRY_INITIAL_DELAY = 2000;
   const RETRY_BACKOFF_FACTOR = 2;
   const RETRY_MAX_DELAY_NO_HEADERS = 30_000;
+
+  // Maximum number of retries for server errors (5xx) — unlike rate limits (429)
+  // which retry indefinitely within the global timeout, server errors use a fixed
+  // retry count to avoid retrying permanently broken endpoints (#231)
+  const SERVER_ERROR_MAX_RETRIES = 3;
+
+  /**
+   * Check if an HTTP status code is a retryable server error.
+   * Retries on 500 (Internal Server Error), 502 (Bad Gateway), and 503 (Service Unavailable).
+   * @see https://github.com/link-assistant/agent/issues/231
+   */
+  function isRetryableServerError(status: number): boolean {
+    return status === 500 || status === 502 || status === 503;
+  }
 
   // Minimum retry interval to prevent rapid retries (default: 30 seconds)
   // Can be configured via AGENT_MIN_RETRY_INTERVAL env var
@@ -298,19 +316,20 @@ export namespace RetryFetch {
   };
 
   /**
-   * Create a fetch function that handles rate limits with time-based retry logic.
+   * Create a fetch function that handles rate limits and server errors with retry logic.
    *
    * This wrapper:
-   * 1. Intercepts HTTP 429 responses
-   * 2. Parses retry-after headers
-   * 3. Waits for the specified duration (respecting global timeout)
-   * 4. Retries the request
+   * 1. Intercepts HTTP 429 (rate limit) responses — retries with retry-after headers
+   * 2. Intercepts HTTP 500/502/503 (server error) responses — retries up to SERVER_ERROR_MAX_RETRIES
+   * 3. Parses retry-after headers for 429 responses
+   * 4. Uses exponential backoff for server errors and network errors
+   * 5. Respects global LINK_ASSISTANT_AGENT_RETRY_TIMEOUT for all retries
    *
    * If retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT, the original 429 response is returned
    * to let higher-level error handling take over.
    *
    * @param options Configuration options
-   * @returns A fetch function with rate limit retry handling
+   * @returns A fetch function with rate limit and server error retry handling
    */
   export function create(options: RetryFetchOptions = {}): typeof fetch {
     const baseFetch = options.baseFetch ?? fetch;
@@ -365,7 +384,74 @@ export namespace RetryFetch {
           throw error;
         }
 
-        // Only handle rate limit errors (429)
+        // Handle retryable server errors (500, 502, 503) with limited retries (#231)
+        // Unlike rate limits (429) which retry indefinitely within timeout,
+        // server errors use a fixed count to avoid retrying broken endpoints.
+        if (isRetryableServerError(response.status)) {
+          if (attempt > SERVER_ERROR_MAX_RETRIES) {
+            // Read response body for diagnostics before returning (#231)
+            // This ensures the actual server error is visible in logs,
+            // preventing misleading downstream errors like "input_tokens undefined"
+            let errorBody = '';
+            try {
+              errorBody = await response.clone().text();
+            } catch {
+              errorBody = '<failed to read response body>';
+            }
+            log.warn(() => ({
+              message:
+                'server error max retries exceeded, returning error response',
+              sessionID,
+              status: response.status,
+              attempt,
+              maxRetries: SERVER_ERROR_MAX_RETRIES,
+              responseBody: errorBody.slice(0, 500),
+            }));
+            return response;
+          }
+
+          const elapsed = Date.now() - startTime;
+          if (elapsed >= maxRetryTimeout) {
+            let errorBody = '';
+            try {
+              errorBody = await response.clone().text();
+            } catch {
+              errorBody = '<failed to read response body>';
+            }
+            log.warn(() => ({
+              message:
+                'retry timeout exceeded for server error, returning error response',
+              sessionID,
+              status: response.status,
+              elapsedMs: elapsed,
+              maxRetryTimeoutMs: maxRetryTimeout,
+              responseBody: errorBody.slice(0, 500),
+            }));
+            return response;
+          }
+
+          // Use exponential backoff for server errors (no retry-after expected)
+          const delay = addJitter(
+            Math.min(
+              RETRY_INITIAL_DELAY * Math.pow(RETRY_BACKOFF_FACTOR, attempt - 1),
+              Math.min(maxBackoffDelay, RETRY_MAX_DELAY_NO_HEADERS)
+            )
+          );
+
+          log.info(() => ({
+            message: 'server error, will retry',
+            sessionID,
+            status: response.status,
+            attempt,
+            maxRetries: SERVER_ERROR_MAX_RETRIES,
+            delayMs: delay,
+          }));
+
+          await sleep(delay, init?.signal ?? undefined);
+          continue;
+        }
+
+        // Only handle rate limit errors (429) beyond this point
         if (response.status !== 429) {
           return response;
         }
