@@ -389,6 +389,15 @@ export namespace RetryFetch {
         // server errors use a fixed count to avoid retrying broken endpoints.
         if (isRetryableServerError(response.status)) {
           if (attempt > SERVER_ERROR_MAX_RETRIES) {
+            // Read response body for diagnostics before returning (#231)
+            // This ensures the actual server error is visible in logs,
+            // preventing misleading downstream errors like "input_tokens undefined"
+            let errorBody = '';
+            try {
+              errorBody = await response.clone().text();
+            } catch {
+              errorBody = '<failed to read response body>';
+            }
             log.warn(() => ({
               message:
                 'server error max retries exceeded, returning error response',
@@ -396,12 +405,19 @@ export namespace RetryFetch {
               status: response.status,
               attempt,
               maxRetries: SERVER_ERROR_MAX_RETRIES,
+              responseBody: errorBody.slice(0, 500),
             }));
             return response;
           }
 
           const elapsed = Date.now() - startTime;
           if (elapsed >= maxRetryTimeout) {
+            let errorBody = '';
+            try {
+              errorBody = await response.clone().text();
+            } catch {
+              errorBody = '<failed to read response body>';
+            }
             log.warn(() => ({
               message:
                 'retry timeout exceeded for server error, returning error response',
@@ -409,6 +425,7 @@ export namespace RetryFetch {
               status: response.status,
               elapsedMs: elapsed,
               maxRetryTimeoutMs: maxRetryTimeout,
+              responseBody: errorBody.slice(0, 500),
             }));
             return response;
           }

@@ -118,27 +118,6 @@ describe('Provider.getModel - strict model lookup (#231)', () => {
   });
 });
 
-describe('Verbose logging - stderr prefix (#231)', () => {
-  test('should use [debug] prefix instead of [verbose] to avoid error detection', () => {
-    // Before fix: "[verbose] HTTP logging active for provider: opencode"
-    // After fix: "[debug] verbose HTTP logging active for provider: opencode"
-    //
-    // The outer solver's error detection pattern matches "[verbose]" messages
-    // on stderr as errors, causing false positive error detection.
-
-    const oldMessage = '[verbose] HTTP logging active for provider: opencode';
-    const newMessage =
-      '[debug] verbose HTTP logging active for provider: opencode';
-
-    // The old message might be matched by broad error detection
-    expect(oldMessage.startsWith('[verbose]')).toBe(true);
-
-    // The new message uses [debug] prefix
-    expect(newMessage.startsWith('[debug]')).toBe(true);
-    expect(newMessage).toContain('verbose HTTP logging active');
-  });
-});
-
 describe('Pending stream log tracking (#231)', () => {
   const originalVerbose = false;
 

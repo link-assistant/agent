@@ -1249,10 +1249,8 @@ export namespace Provider {
               providerID: provider.id,
             });
             // Redundant stderr confirmation — visible even if stdout is piped/filtered
-            // Use "[debug]" prefix instead of "[verbose]" to avoid outer solver's
-            // error detection matching this as an error (#231)
             process.stderr.write(
-              `[debug] verbose HTTP logging active for provider: ${provider.id}\n`
+              `[verbose] HTTP logging active for provider: ${provider.id}\n`
             );
           }
 

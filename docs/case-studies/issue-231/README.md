@@ -42,22 +42,26 @@ Analysis of execution log from a run where the user requested `kimi-k2.5-free` m
 
 ### Problem 3: Verbose Log Message Misinterpreted as Error
 
-**What happened:** `provider.ts:1252-1254` writes `[verbose] HTTP logging active for provider: opencode` to stderr. The outer solver scans stderr for error-like patterns and flagged this as an error, setting `errorDetectedInOutput: true` even though the agent exited with code 0.
+**What happened:** `provider.ts:1252-1254` writes `[verbose] HTTP logging active for provider: opencode` to stderr. The outer solver (Hive Mind) scans stderr for error-like patterns and flagged this as an error, setting `errorDetectedInOutput: true` even though the agent exited with code 0.
 
-**Root cause:** Writing diagnostic messages to stderr. While stderr is commonly used for diagnostic output, the outer solver's error detection is too broad.
+**Root cause:** The outer solver's (Hive Mind) error detection is too broad — it matches diagnostic messages on stderr as errors.
 
-**Fix:** Change the stderr message format to avoid triggering error detection. Prefix with a clearly non-error marker.
+**Fix:** This is a Hive Mind issue, not an Agent issue. The `[verbose]` prefix is the correct convention for this codebase. Reported to Hive Mind for fix in their error detection logic.
 
 ### Problem 4: OpenCode API 500 Errors — No Retry
 
 **What happened:** Two 500 Internal Server Errors from the OpenCode `/responses` endpoint for `gpt-5-nano` compaction at 12:33:44 and 12:33:52 UTC. Error: `Cannot read properties of undefined (reading 'input_tokens')`. The compaction results were lost because the agent had no retry logic for server errors.
 
-**Root cause (server-side):** Server-side bug in OpenCode API's usage tracking where `input_tokens` is undefined. Reported to https://github.com/link-assistant/hive-mind/issues/1537.
+**Root cause analysis:** The error `Cannot read properties of undefined (reading 'input_tokens')` is misleading — it is NOT an error in our code's data processing. The actual chain of events:
+1. OpenCode API returned an HTTP 500 error response (server-side bug, reported to https://github.com/link-assistant/hive-mind/issues/1537)
+2. `retry-fetch.ts` did not retry 500 errors — it only retried 429 (rate limits), so the 500 response was passed through to the AI SDK
+3. The AI SDK attempted to parse the 500 error response body as a normal completion response
+4. The error response body lacked the `usage` object, causing the TypeError when the SDK accessed `usage.input_tokens`
 
 **Root cause (agent-side):** The `retry-fetch.ts` wrapper only retried HTTP 429 (rate limit) responses. Server errors (500, 502, 503) were passed through without retry, causing intermittent API failures to silently lose compaction results. The `auth/plugins.ts` also only considered 429 and 503 as retryable, missing 500 and 502.
 
 **Fix:**
-1. `retry-fetch.ts`: Added retry logic for HTTP 500, 502, 503 with exponential backoff (2s, 4s, 8s) and a maximum of 3 retries. Unlike rate limit retries which can continue indefinitely within the global timeout, server error retries are capped to avoid retrying permanently broken endpoints.
+1. `retry-fetch.ts`: Added retry logic for HTTP 500, 502, 503 with exponential backoff (2s, 4s, 8s) and a maximum of 3 retries. Unlike rate limit retries which can continue indefinitely within the global timeout, server error retries are capped to avoid retrying permanently broken endpoints. When retries are exhausted, the server error response body is logged for diagnostics, preventing misleading downstream errors.
 2. `auth/plugins.ts`: Added 500 and 502 to the retryable status set alongside existing 429 and 503.
 
 ### Problem 5: Storage Migration Failure Silently Swallowed

@@ -332,7 +332,7 @@ export function registerPendingStreamLogExitHandler(): void {
     if (pendingStreamLogs > 0) {
       // Use stderr directly since the process is exiting and log infrastructure may be unavailable
       process.stderr.write(
-        `[debug] warning: ${pendingStreamLogs} HTTP stream response log(s) were still pending at process exit — response bodies may be missing from logs\n`
+        `[verbose] warning: ${pendingStreamLogs} HTTP stream response log(s) were still pending at process exit — response bodies may be missing from logs\n`
       );
     }
   });
