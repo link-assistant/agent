@@ -66,7 +66,9 @@ describe('Model validation - explicit provider/model format (#231)', () => {
     const validationError = new Error(
       'Model "kimi-k2.5-free" not found in provider "opencode".'
     );
-    const isOurError = validationError.message.includes('not found in provider');
+    const isOurError = validationError.message.includes(
+      'not found in provider'
+    );
     expect(isOurError).toBe(true);
 
     const infrastructureError = new Error('Cannot read provider state');
