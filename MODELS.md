@@ -30,7 +30,9 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 | Model                                    | Model ID                      | Input  | Output | Cached Read | Cached Write |
 | ---------------------------------------- | ----------------------------- | ------ | ------ | ----------- | ------------ |
 | **Free Models (Output: $0.00)**          |
-| MiniMax M2.5 Free (recommended)          | `opencode/minimax-m2.5-free`  | Free   | Free   | Free        | -            |
+| Qwen 3.6 Plus Free (default)            | `opencode/qwen3.6-plus-free`  | Free   | Free   | Free        | -            |
+| Nemotron 3 Super Free                    | `opencode/nemotron-3-super-free` | Free | Free   | Free        | -            |
+| MiniMax M2.5 Free                        | `opencode/minimax-m2.5-free`  | Free   | Free   | Free        | -            |
 | GPT 5 Nano                               | `opencode/gpt-5-nano`         | Free   | Free   | Free        | -            |
 | Big Pickle                               | `opencode/big-pickle`         | Free   | Free   | Free        | -            |
 | **Discontinued Free Models**             |
@@ -58,9 +60,9 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 
 ## Default Model
 
-The default model is **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`), which is completely free and recommended for coding tasks.
+The default model is **Qwen 3.6 Plus Free** (`opencode/qwen3.6-plus-free`), which is completely free and offers the largest context window (~1M tokens) among free models.
 
-> **Note:** Big Pickle (`opencode/big-pickle`) was previously the default free model, but MiniMax M2.5 Free is now the recommended choice.
+> **Note:** MiniMax M2.5 Free (`opencode/minimax-m2.5-free`) was previously the default free model. Qwen 3.6 Plus Free is now the default due to its superior context window and agent performance. See [issue #232](https://github.com/link-assistant/agent/issues/232).
 
 > **Note:** Kimi K2.5 Free (`opencode/kimi-k2.5-free`) was previously the default free model, but it was removed from the OpenCode Zen provider in March 2026. See [Case Study #208](docs/case-studies/issue-208/README.md) for details.
 
@@ -68,9 +70,11 @@ The default model is **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`), which
 
 ### Free Models (in order of recommendation)
 
-1. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Recommended free model (strong general-purpose performance)
-2. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable OpenAI-powered free option
-3. **Big Pickle** (`opencode/big-pickle`) - Stealth model, free during evaluation
+1. **Qwen 3.6 Plus Free** (`opencode/qwen3.6-plus-free`) - Default free model (~1M context, strong agent performance)
+2. **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`) - NVIDIA hybrid Mamba-Transformer (~262K context, strong reasoning)
+3. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Strong general-purpose performance (~200K context)
+4. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable OpenAI-powered free option (~400K context)
+5. **Big Pickle** (`opencode/big-pickle`) - Stealth model, free during evaluation (~200K context)
 
 > **Note:** `opencode/kimi-k2.5-free`, `opencode/minimax-m2.1-free`, and `opencode/glm-4.7-free` are no longer available as free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
 
@@ -79,14 +83,20 @@ The default model is **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`), which
 ### Using the Default Model (Free)
 
 ```bash
-# Uses opencode/minimax-m2.5-free by default
+# Uses opencode/qwen3.6-plus-free by default
 echo "hello" | agent
 ```
 
 ### Using Other Free Models
 
 ```bash
-# MiniMax M2.5 Free (recommended free)
+# Qwen 3.6 Plus Free (default)
+echo "hello" | agent --model opencode/qwen3.6-plus-free
+
+# Nemotron 3 Super Free
+echo "hello" | agent --model opencode/nemotron-3-super-free
+
+# MiniMax M2.5 Free
 echo "hello" | agent --model opencode/minimax-m2.5-free
 
 # GPT 5 Nano
