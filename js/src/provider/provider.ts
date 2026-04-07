@@ -1241,17 +1241,13 @@ export namespace Provider {
 
           // Log a one-time confirmation that the verbose wrapper is active for this provider.
           // This diagnostic breadcrumb confirms the wrapper is in the fetch chain.
-          // Also write to stderr as a redundant channel — stdout JSON may be filtered by wrappers.
           // See: https://github.com/link-assistant/agent/issues/215
+          // See: https://github.com/link-assistant/agent/issues/235
           if (!verboseWrapperConfirmed) {
             verboseWrapperConfirmed = true;
-            log.info('verbose HTTP logging active', {
+            log.debug('verbose HTTP logging active', {
               providerID: provider.id,
             });
-            // Redundant stderr confirmation — visible even if stdout is piped/filtered
-            process.stderr.write(
-              `[verbose] HTTP logging active for provider: ${provider.id}\n`
-            );
           }
 
           const url =

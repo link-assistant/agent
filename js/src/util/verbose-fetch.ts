@@ -330,10 +330,15 @@ export function resetHttpCallCount(): void {
 export function registerPendingStreamLogExitHandler(): void {
   process.once('exit', () => {
     if (pendingStreamLogs > 0) {
-      // Use stderr directly since the process is exiting and log infrastructure may be unavailable
-      process.stderr.write(
-        `[verbose] warning: ${pendingStreamLogs} HTTP stream response log(s) were still pending at process exit — response bodies may be missing from logs\n`
-      );
+      // Use stderr directly since the process is exiting and log infrastructure may be unavailable.
+      // Write as JSON to avoid the stderr interceptor wrapping it as "type": "error" (#235).
+      const warning = JSON.stringify({
+        type: 'log',
+        level: 'warn',
+        service: 'http',
+        message: `${pendingStreamLogs} HTTP stream response log(s) were still pending at process exit — response bodies may be missing from logs`,
+      });
+      process.stderr.write(warning + '\n');
     }
   });
 }

@@ -1,5 +1,15 @@
 # @link-assistant/agent
 
+## 0.20.1
+
+### Patch Changes
+
+- fix: verbose log messages no longer emitted as "type": "error" events (#235)
+  - `provider.ts`: replace `process.stderr.write()` with `log.debug()` for verbose HTTP logging diagnostic breadcrumb — prevents stderr interceptor from wrapping it as `"type": "error"`
+  - `verbose-fetch.ts`: exit handler now writes proper JSON `{"type": "log", "level": "warn", ...}` instead of plain text `[verbose]` prefix
+  - `index.js`: stderr interceptor now wraps `[verbose]`/`[debug]` prefixed messages as `"type": "log"` instead of `"type": "error"` — a safety net for any remaining plain-text verbose messages
+  - Consumers (like Hive Mind's solve.mjs) no longer see false error events from verbose mode
+
 ## 0.20.0
 
 ### Minor Changes
