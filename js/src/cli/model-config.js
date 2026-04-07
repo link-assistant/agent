@@ -99,7 +99,8 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
       }
       // For infrastructure errors (e.g. can't load provider state), log and continue
       Log.Default.info(() => ({
-        message: 'skipping model existence validation due to infrastructure error',
+        message:
+          'skipping model existence validation due to infrastructure error',
         reason: validationError?.message,
       }));
     }
