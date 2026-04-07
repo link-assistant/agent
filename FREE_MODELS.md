@@ -2,30 +2,38 @@
 
 This document lists all free AI models currently supported by the agent. Free models require no API key and are available for immediate use.
 
-> **Last Updated:** March 2026
+> **Last Updated:** April 2026
 
 ## Quick Start
 
 Use any free model with the `--model` flag:
 
 ```bash
-echo "hello" | agent --model opencode/minimax-m2.5-free
+echo "hello" | agent --model opencode/qwen3.6-plus-free
 ```
 
 ## OpenCode Zen Free Models
 
 [OpenCode Zen](https://opencode.ai/docs/zen/) offers curated, tested models. These free models require no authentication:
 
-| Model             | Model ID                      | Description                                      |
-| ----------------- | ----------------------------- | ------------------------------------------------ |
-| MiniMax M2.5 Free | `opencode/minimax-m2.5-free`  | **Recommended.** Strong general-purpose performance |
-| GPT 5 Nano        | `opencode/gpt-5-nano`         | Reliable OpenAI-powered free option              |
-| Big Pickle        | `opencode/big-pickle`         | Stealth model, free during evaluation period     |
+| Model                   | Model ID                           | Context Window  | Description                                         |
+| ----------------------- | ---------------------------------- | --------------- | --------------------------------------------------- |
+| Qwen 3.6 Plus Free      | `opencode/qwen3.6-plus-free`      | ~1,000,000      | **Default.** Largest context, strong agent performance |
+| Nemotron 3 Super Free   | `opencode/nemotron-3-super-free`   | ~262,144        | NVIDIA hybrid Mamba-Transformer, strong reasoning   |
+| MiniMax M2.5 Free       | `opencode/minimax-m2.5-free`      | ~200,000        | Strong general-purpose performance                  |
+| GPT 5 Nano              | `opencode/gpt-5-nano`             | ~400,000        | Reliable OpenAI-powered free option                 |
+| Big Pickle              | `opencode/big-pickle`             | ~200,000        | Stealth model, free during evaluation period        |
 
 ### Usage Examples
 
 ```bash
-# MiniMax M2.5 Free (recommended)
+# Qwen 3.6 Plus Free (default)
+echo "hello" | agent --model opencode/qwen3.6-plus-free
+
+# Nemotron 3 Super Free
+echo "hello" | agent --model opencode/nemotron-3-super-free
+
+# MiniMax M2.5 Free
 echo "hello" | agent --model opencode/minimax-m2.5-free
 
 # GPT 5 Nano
@@ -90,7 +98,7 @@ The following models were previously free but are no longer available:
 
 ### Use OpenCode Zen when:
 - You want the most tested and reliable free models
-- You prefer `minimax-m2.5-free` as the recommended choice
+- You prefer `qwen3.6-plus-free` as the default with ~1M context window
 - You need a simple, curated list of models
 
 ### Use Kilo Gateway when:
@@ -102,7 +110,8 @@ The following models were previously free but are no longer available:
 
 The agent intelligently routes model requests:
 
-- `minimax-m2.5-free` without provider prefix → OpenCode Zen (`opencode/minimax-m2.5-free`)
+- `qwen3.6-plus-free` without provider prefix → OpenCode Zen (`opencode/qwen3.6-plus-free`)
+- `nemotron-3-super-free` without provider prefix → OpenCode Zen (`opencode/nemotron-3-super-free`)
 - `big-pickle` without provider prefix → OpenCode Zen (`opencode/big-pickle`)
 - `kilo/minimax-m2.5-free` explicitly → Kilo Gateway
 

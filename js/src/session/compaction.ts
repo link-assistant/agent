@@ -37,14 +37,34 @@ export namespace SessionCompaction {
   export const OVERFLOW_SAFETY_MARGIN = 0.85;
 
   /**
+   * A single compaction model entry in the cascade.
+   * @see https://github.com/link-assistant/agent/issues/232
+   */
+  export interface CompactionModelEntry {
+    providerID: string;
+    modelID: string;
+    useSameModel: boolean;
+  }
+
+  /**
    * Compaction model configuration passed from CLI.
+   * Supports both single model (backward compat) and cascade of models (#232).
    * @see https://github.com/link-assistant/agent/issues/219
+   * @see https://github.com/link-assistant/agent/issues/232
    */
   export interface CompactionModelConfig {
     providerID: string;
     modelID: string;
     useSameModel: boolean;
     compactionSafetyMarginPercent: number;
+    /**
+     * Ordered cascade of compaction models from smallest/cheapest to largest.
+     * When present, the system tries each model in order during compaction.
+     * If used context exceeds a model's limit or its rate limit is reached,
+     * the next model is tried.
+     * @see https://github.com/link-assistant/agent/issues/232
+     */
+    compactionModels?: CompactionModelEntry[];
   }
 
   /**

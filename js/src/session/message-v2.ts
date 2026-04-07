@@ -398,6 +398,15 @@ export namespace MessageV2 {
         modelID: z.string(),
         useSameModel: z.boolean(),
         compactionSafetyMarginPercent: z.number(),
+        compactionModels: z
+          .array(
+            z.object({
+              providerID: z.string(),
+              modelID: z.string(),
+              useSameModel: z.boolean(),
+            })
+          )
+          .optional(),
       })
       .optional(),
     system: z.string().optional(),
