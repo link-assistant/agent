@@ -89,7 +89,8 @@ process.stderr.write = function (chunk, encoding, callback) {
 
   // Wrap non-JSON stderr output in JSON envelope.
   // Verbose/debug messages should use "type": "log", not "type": "error" (#235).
-  const isVerboseMsg = trimmed.startsWith('[verbose]') || trimmed.startsWith('[debug]');
+  const isVerboseMsg =
+    trimmed.startsWith('[verbose]') || trimmed.startsWith('[debug]');
   const wrapped = isVerboseMsg
     ? `${JSON.stringify({
         type: 'log',

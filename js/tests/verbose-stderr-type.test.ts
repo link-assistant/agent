@@ -64,9 +64,7 @@ describe('Stderr interceptor — verbose message wrapping (#235)', () => {
   });
 
   test('debug messages are wrapped as "type": "log"', () => {
-    const result = simulateStderrInterceptor(
-      '[debug] some diagnostic message'
-    );
+    const result = simulateStderrInterceptor('[debug] some diagnostic message');
     expect(result).toEqual({
       type: 'log',
       level: 'debug',
