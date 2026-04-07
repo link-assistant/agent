@@ -251,9 +251,21 @@ describe('contextDiagnostics with compaction model', () => {
 });
 
 describe('CLI defaults', () => {
+  test('default model is opencode/qwen3.6-plus-free', async () => {
+    const { DEFAULT_MODEL } = await import('../src/cli/defaults');
+    expect(DEFAULT_MODEL).toBe('opencode/qwen3.6-plus-free');
+  });
+
   test('default compaction model is opencode/gpt-5-nano', async () => {
     const { DEFAULT_COMPACTION_MODEL } = await import('../src/cli/defaults');
     expect(DEFAULT_COMPACTION_MODEL).toBe('opencode/gpt-5-nano');
+  });
+
+  test('default compaction models cascade is a links notation sequence', async () => {
+    const { DEFAULT_COMPACTION_MODELS } = await import('../src/cli/defaults');
+    expect(DEFAULT_COMPACTION_MODELS).toBe(
+      '(big-pickle nemotron-3-super-free minimax-m2.5-free gpt-5-nano qwen3.6-plus-free same)'
+    );
   });
 
   test('default compaction safety margin is 15%', async () => {
@@ -277,5 +289,61 @@ describe('argv parsing', () => {
       await import('../src/cli/argv');
     const result = getCompactionSafetyMarginFromProcessArgv();
     expect(result).toBe(null);
+  });
+
+  test('getCompactionModelsFromProcessArgv returns null when not set', async () => {
+    const { getCompactionModelsFromProcessArgv } =
+      await import('../src/cli/argv');
+    const result = getCompactionModelsFromProcessArgv();
+    expect(result).toBe(null);
+  });
+});
+
+describe('CompactionModelConfig with cascade', () => {
+  test('CompactionModelConfig supports compactionModels array', () => {
+    const config: SessionCompaction.CompactionModelConfig = {
+      providerID: 'opencode',
+      modelID: 'big-pickle',
+      useSameModel: false,
+      compactionSafetyMarginPercent: 15,
+      compactionModels: [
+        { providerID: 'opencode', modelID: 'big-pickle', useSameModel: false },
+        {
+          providerID: 'opencode',
+          modelID: 'nemotron-3-super-free',
+          useSameModel: false,
+        },
+        {
+          providerID: 'opencode',
+          modelID: 'minimax-m2.5-free',
+          useSameModel: false,
+        },
+        { providerID: 'opencode', modelID: 'gpt-5-nano', useSameModel: false },
+        {
+          providerID: 'opencode',
+          modelID: 'qwen3.6-plus-free',
+          useSameModel: false,
+        },
+        {
+          providerID: 'opencode',
+          modelID: 'qwen3.6-plus-free',
+          useSameModel: true,
+        },
+      ],
+    };
+    expect(config.compactionModels).toBeDefined();
+    expect(config.compactionModels!.length).toBe(6);
+    expect(config.compactionModels![0].modelID).toBe('big-pickle');
+    expect(config.compactionModels![5].useSameModel).toBe(true);
+  });
+
+  test('CompactionModelConfig backward compat without compactionModels', () => {
+    const config: SessionCompaction.CompactionModelConfig = {
+      providerID: 'opencode',
+      modelID: 'gpt-5-nano',
+      useSameModel: false,
+      compactionSafetyMarginPercent: 15,
+    };
+    expect(config.compactionModels).toBeUndefined();
   });
 });
