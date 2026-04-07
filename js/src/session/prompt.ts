@@ -581,9 +581,11 @@ export namespace SessionPrompt {
                   entryProviderID,
                   entryModelID
                 );
-                const entryContextLimit =
-                  entryModel.info?.limit?.context ?? 0;
-                if (entryContextLimit > 0 && currentTokens > entryContextLimit) {
+                const entryContextLimit = entryModel.info?.limit?.context ?? 0;
+                if (
+                  entryContextLimit > 0 &&
+                  currentTokens > entryContextLimit
+                ) {
                   log.info(() => ({
                     message:
                       'skipping compaction model — context too small for current tokens',
@@ -621,8 +623,7 @@ export namespace SessionPrompt {
             } catch (err) {
               // If rate limited or error, try next model in cascade
               log.warn(() => ({
-                message:
-                  'compaction model failed — trying next in cascade',
+                message: 'compaction model failed — trying next in cascade',
                 modelID: entryModelID,
                 providerID: entryProviderID,
                 error: err?.message,
