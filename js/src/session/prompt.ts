@@ -95,6 +95,15 @@ export namespace SessionPrompt {
         modelID: z.string(),
         useSameModel: z.boolean(),
         compactionSafetyMarginPercent: z.number(),
+        compactionModels: z
+          .array(
+            z.object({
+              providerID: z.string(),
+              modelID: z.string(),
+              useSameModel: z.boolean(),
+            })
+          )
+          .optional(),
       })
       .optional(),
     agent: z.string().optional(),
@@ -542,27 +551,108 @@ export namespace SessionPrompt {
 
       // pending compaction
       if (task?.type === 'compaction') {
-        // Use compaction model if configured, otherwise fall back to base model
+        // Use compaction model cascade if configured (#232)
         const compactionModelConfig = lastUser.compactionModel;
-        const compactionProviderID =
-          compactionModelConfig && !compactionModelConfig.useSameModel
-            ? compactionModelConfig.providerID
-            : model.providerID;
-        const compactionModelID =
-          compactionModelConfig && !compactionModelConfig.useSameModel
-            ? compactionModelConfig.modelID
-            : model.modelID;
-        const result = await SessionCompaction.process({
-          messages: msgs,
-          parentID: lastUser.id,
-          abort,
-          model: {
-            providerID: compactionProviderID,
-            modelID: compactionModelID,
-          },
-          sessionID,
-        });
-        if (result === 'stop') break;
+        const cascade = compactionModelConfig?.compactionModels;
+
+        if (cascade && cascade.length > 0) {
+          // Cascade logic: try each model in order (smallest to largest context)
+          // Skip models whose context limit is smaller than current used tokens
+          // Skip models that hit rate limits (try next)
+          const currentTokens = lastFinished
+            ? lastFinished.tokens.input +
+              lastFinished.tokens.cache.read +
+              lastFinished.tokens.output
+            : 0;
+
+          let compactionResult = 'stop';
+          for (const entry of cascade) {
+            const entryProviderID = entry.useSameModel
+              ? model.providerID
+              : entry.providerID;
+            const entryModelID = entry.useSameModel
+              ? model.modelID
+              : entry.modelID;
+
+            // Check if this model's context is large enough for the current tokens
+            if (!entry.useSameModel) {
+              try {
+                const entryModel = await Provider.getModel(
+                  entryProviderID,
+                  entryModelID
+                );
+                const entryContextLimit =
+                  entryModel.info?.limit?.context ?? 0;
+                if (entryContextLimit > 0 && currentTokens > entryContextLimit) {
+                  log.info(() => ({
+                    message:
+                      'skipping compaction model — context too small for current tokens',
+                    modelID: entryModelID,
+                    providerID: entryProviderID,
+                    contextLimit: entryContextLimit,
+                    currentTokens,
+                  }));
+                  continue;
+                }
+              } catch {
+                log.info(() => ({
+                  message:
+                    'could not resolve compaction cascade model — skipping',
+                  modelID: entryModelID,
+                  providerID: entryProviderID,
+                }));
+                continue;
+              }
+            }
+
+            try {
+              compactionResult = await SessionCompaction.process({
+                messages: msgs,
+                parentID: lastUser.id,
+                abort,
+                model: {
+                  providerID: entryProviderID,
+                  modelID: entryModelID,
+                },
+                sessionID,
+              });
+              // If compaction succeeded, break the cascade
+              break;
+            } catch (err) {
+              // If rate limited or error, try next model in cascade
+              log.warn(() => ({
+                message:
+                  'compaction model failed — trying next in cascade',
+                modelID: entryModelID,
+                providerID: entryProviderID,
+                error: err?.message,
+              }));
+              continue;
+            }
+          }
+          if (compactionResult === 'stop') break;
+        } else {
+          // Single model fallback (backward compatibility)
+          const compactionProviderID =
+            compactionModelConfig && !compactionModelConfig.useSameModel
+              ? compactionModelConfig.providerID
+              : model.providerID;
+          const compactionModelID =
+            compactionModelConfig && !compactionModelConfig.useSameModel
+              ? compactionModelConfig.modelID
+              : model.modelID;
+          const result = await SessionCompaction.process({
+            messages: msgs,
+            parentID: lastUser.id,
+            abort,
+            model: {
+              providerID: compactionProviderID,
+              modelID: compactionModelID,
+            },
+            sessionID,
+          });
+          if (result === 'stop') break;
+        }
         continue;
       }
 

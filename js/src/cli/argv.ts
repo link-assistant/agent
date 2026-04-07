@@ -69,3 +69,14 @@ export function getCompactionModelFromProcessArgv(): string | null {
 export function getCompactionSafetyMarginFromProcessArgv(): string | null {
   return getArgFromProcessArgv('compaction-safety-margin');
 }
+
+/**
+ * Extract --compaction-models argument directly from process.argv
+ * The value is a links notation references sequence, e.g.:
+ *   "(big-pickle nemotron-3-super-free minimax-m2.5-free gpt-5-nano qwen3.6-plus-free same)"
+ * @returns The compaction models argument from CLI or null if not found
+ * @see https://github.com/link-assistant/agent/issues/232
+ */
+export function getCompactionModelsFromProcessArgv(): string | null {
+  return getArgFromProcessArgv('compaction-models');
+}

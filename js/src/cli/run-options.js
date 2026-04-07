@@ -1,6 +1,7 @@
 import {
   DEFAULT_MODEL,
   DEFAULT_COMPACTION_MODEL,
+  DEFAULT_COMPACTION_MODELS,
   DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
 } from './defaults.ts';
 
@@ -151,8 +152,16 @@ export function buildRunOptions(yargs) {
     .option('compaction-model', {
       type: 'string',
       description:
-        'Model to use for context compaction in format providerID/modelID. Use "same" to use the base model. Default: opencode/gpt-5-nano (free, 400K context).',
+        'Model to use for context compaction in format providerID/modelID. Use "same" to use the base model. Default: opencode/gpt-5-nano (free, 400K context). Overridden by --compaction-models if both are specified.',
       default: DEFAULT_COMPACTION_MODEL,
+    })
+    .option('compaction-models', {
+      type: 'string',
+      description:
+        'Ordered cascade of compaction models in links notation sequence format: "(model1 model2 ... same)". ' +
+        'Models are tried from smallest/cheapest context to largest. If used context exceeds a model\'s limit or its rate limit is reached, the next model is tried. ' +
+        'The special value "same" uses the base model. Overrides --compaction-model when specified.',
+      default: DEFAULT_COMPACTION_MODELS,
     })
     .option('compaction-safety-margin', {
       type: 'number',

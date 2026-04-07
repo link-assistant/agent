@@ -1,6 +1,7 @@
 import {
   getModelFromProcessArgv,
   getCompactionModelFromProcessArgv,
+  getCompactionModelsFromProcessArgv,
   getCompactionSafetyMarginFromProcessArgv,
 } from './argv.ts';
 import { Log } from '../util/log.ts';
@@ -8,6 +9,7 @@ import {
   DEFAULT_PROVIDER_ID,
   DEFAULT_MODEL_ID,
   DEFAULT_COMPACTION_MODEL,
+  DEFAULT_COMPACTION_MODELS,
   DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
 } from './defaults.ts';
 
@@ -174,19 +176,72 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
 }
 
 /**
+ * Parse a links notation references sequence string into an array of model names.
+ * Format: "(model1 model2 model3)" — parenthesized space-separated list.
+ * @param {string} notation - Links notation sequence string
+ * @returns {string[]} Array of model name strings
+ * @see https://github.com/link-assistant/agent/issues/232
+ */
+function parseLinksNotationSequence(notation) {
+  const trimmed = notation.trim();
+  // Remove surrounding parentheses if present
+  const inner =
+    trimmed.startsWith('(') && trimmed.endsWith(')')
+      ? trimmed.slice(1, -1)
+      : trimmed;
+  // Split on whitespace and filter empty strings
+  return inner
+    .split(/\s+/)
+    .filter((s) => s.length > 0);
+}
+
+/**
+ * Resolve a single compaction model entry (short name, provider/model, or "same").
+ * @returns {{ providerID: string, modelID: string, useSameModel: boolean }}
+ */
+async function resolveCompactionModelEntry(
+  modelArg,
+  baseProviderID,
+  baseModelID
+) {
+  const useSameModel = modelArg.toLowerCase() === 'same';
+
+  if (useSameModel) {
+    return {
+      providerID: baseProviderID,
+      modelID: baseModelID,
+      useSameModel: true,
+    };
+  }
+
+  if (modelArg.includes('/')) {
+    const parts = modelArg.split('/');
+    return {
+      providerID: parts[0],
+      modelID: parts.slice(1).join('/'),
+      useSameModel: false,
+    };
+  }
+
+  // Short name resolution
+  const { Provider } = await import('../provider/provider.ts');
+  const resolved = await Provider.parseModelWithResolution(modelArg);
+  return {
+    providerID: resolved.providerID,
+    modelID: resolved.modelID,
+    useSameModel: false,
+  };
+}
+
+/**
  * Parse compaction model config from argv.
- * Resolves --compaction-model and --compaction-safety-margin CLI arguments.
+ * Supports both --compaction-model (single) and --compaction-models (cascade).
+ * When --compaction-models is specified, it overrides --compaction-model.
  * The special value "same" means use the base model for compaction.
  * @see https://github.com/link-assistant/agent/issues/219
+ * @see https://github.com/link-assistant/agent/issues/232
  */
 async function parseCompactionModelConfig(argv, baseProviderID, baseModelID) {
-  // Get compaction model from CLI (safeguard against yargs caching)
-  const cliCompactionModelArg = getCompactionModelFromProcessArgv();
-  const compactionModelArg =
-    cliCompactionModelArg ??
-    argv['compaction-model'] ??
-    DEFAULT_COMPACTION_MODEL;
-
   // Get safety margin from CLI
   const cliSafetyMarginArg = getCompactionSafetyMarginFromProcessArgv();
   const compactionSafetyMarginPercent = cliSafetyMarginArg
@@ -194,49 +249,98 @@ async function parseCompactionModelConfig(argv, baseProviderID, baseModelID) {
     : (argv['compaction-safety-margin'] ??
       DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT);
 
-  // Special "same" alias — use the base model for compaction
-  const useSameModel = compactionModelArg.toLowerCase() === 'same';
+  // Check for --compaction-models (cascade) first — it overrides --compaction-model
+  const cliCompactionModelsArg = getCompactionModelsFromProcessArgv();
+  const compactionModelsArg =
+    cliCompactionModelsArg ??
+    argv['compaction-models'] ??
+    DEFAULT_COMPACTION_MODELS;
 
-  let compactionProviderID;
-  let compactionModelID;
+  // Parse the links notation sequence into an array of model names
+  const modelNames = parseLinksNotationSequence(compactionModelsArg);
 
-  if (useSameModel) {
-    compactionProviderID = baseProviderID;
-    compactionModelID = baseModelID;
+  if (modelNames.length > 0) {
+    // Resolve each model in the cascade
+    const compactionModels = [];
+    for (const name of modelNames) {
+      try {
+        const resolved = await resolveCompactionModelEntry(
+          name,
+          baseProviderID,
+          baseModelID
+        );
+        compactionModels.push({
+          providerID: resolved.providerID,
+          modelID: resolved.modelID,
+          useSameModel: resolved.useSameModel,
+        });
+      } catch (err) {
+        // If a model can't be resolved, log and skip it
+        Log.Default.warn(() => ({
+          message:
+            'skipping unresolvable compaction model in cascade',
+          model: name,
+          error: err?.message,
+        }));
+      }
+    }
+
     Log.Default.info(() => ({
-      message:
-        'compaction model set to "same" — using base model for compaction',
-      compactionProviderID,
-      compactionModelID,
+      message: 'compaction models cascade configured',
+      models: compactionModels.map((m) =>
+        m.useSameModel ? 'same' : `${m.providerID}/${m.modelID}`
+      ),
+      source: cliCompactionModelsArg ? 'cli' : 'default',
     }));
-  } else if (compactionModelArg.includes('/')) {
-    const parts = compactionModelArg.split('/');
-    compactionProviderID = parts[0];
-    compactionModelID = parts.slice(1).join('/');
-    Log.Default.info(() => ({
-      message: 'using explicit compaction model',
-      compactionProviderID,
-      compactionModelID,
-    }));
-  } else {
-    // Short name resolution
-    const { Provider } = await import('../provider/provider.ts');
-    const resolved =
-      await Provider.parseModelWithResolution(compactionModelArg);
-    compactionProviderID = resolved.providerID;
-    compactionModelID = resolved.modelID;
-    Log.Default.info(() => ({
-      message: 'resolved short compaction model name',
-      input: compactionModelArg,
-      compactionProviderID,
-      compactionModelID,
-    }));
+
+    // Use the first model as the primary compaction model (for backward compatibility)
+    // The full cascade is stored in compactionModels array
+    const primary = compactionModels[0] || {
+      providerID: baseProviderID,
+      modelID: baseModelID,
+      useSameModel: true,
+    };
+
+    return {
+      providerID: primary.providerID,
+      modelID: primary.modelID,
+      useSameModel: primary.useSameModel,
+      compactionSafetyMarginPercent,
+      compactionModels,
+    };
   }
 
+  // Fallback to single --compaction-model
+  const cliCompactionModelArg = getCompactionModelFromProcessArgv();
+  const compactionModelArg =
+    cliCompactionModelArg ??
+    argv['compaction-model'] ??
+    DEFAULT_COMPACTION_MODEL;
+
+  const resolved = await resolveCompactionModelEntry(
+    compactionModelArg,
+    baseProviderID,
+    baseModelID
+  );
+
+  Log.Default.info(() => ({
+    message: 'using single compaction model',
+    compactionProviderID: resolved.providerID,
+    compactionModelID: resolved.modelID,
+    useSameModel: resolved.useSameModel,
+  }));
+
   return {
-    providerID: compactionProviderID,
-    modelID: compactionModelID,
-    useSameModel,
+    providerID: resolved.providerID,
+    modelID: resolved.modelID,
+    useSameModel: resolved.useSameModel,
     compactionSafetyMarginPercent,
+    compactionModels: [
+      {
+        providerID: resolved.providerID,
+        modelID: resolved.modelID,
+        useSameModel: resolved.useSameModel,
+      },
+    ],
   };
 }
