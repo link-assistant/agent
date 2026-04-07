@@ -159,7 +159,7 @@ export function buildRunOptions(yargs) {
       type: 'string',
       description:
         'Ordered cascade of compaction models in links notation sequence format: "(model1 model2 ... same)". ' +
-        'Models are tried from smallest/cheapest context to largest. If used context exceeds a model\'s limit or its rate limit is reached, the next model is tried. ' +
+        "Models are tried from smallest/cheapest context to largest. If used context exceeds a model's limit or its rate limit is reached, the next model is tried. " +
         'The special value "same" uses the base model. Overrides --compaction-model when specified.',
       default: DEFAULT_COMPACTION_MODELS,
     })

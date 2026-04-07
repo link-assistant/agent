@@ -190,9 +190,7 @@ function parseLinksNotationSequence(notation) {
       ? trimmed.slice(1, -1)
       : trimmed;
   // Split on whitespace and filter empty strings
-  return inner
-    .split(/\s+/)
-    .filter((s) => s.length > 0);
+  return inner.split(/\s+/).filter((s) => s.length > 0);
 }
 
 /**
@@ -277,8 +275,7 @@ async function parseCompactionModelConfig(argv, baseProviderID, baseModelID) {
       } catch (err) {
         // If a model can't be resolved, log and skip it
         Log.Default.warn(() => ({
-          message:
-            'skipping unresolvable compaction model in cascade',
+          message: 'skipping unresolvable compaction model in cascade',
           model: name,
           error: err?.message,
         }));
