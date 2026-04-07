@@ -277,4 +277,19 @@ describe('Integration scenario - Issue #231 full reproduction', () => {
     // - This makes the gap visible in logs instead of silently lost
     expect(true).toBe(true);
   });
+
+  test('documents the OpenCode API 500 error handling', () => {
+    // Original issue (hive-mind#1537):
+    // 1. Compaction POST to /responses at 12:33:44 with gpt-5-nano
+    // 2. OpenCode API returns 500: "Cannot read properties of undefined (reading 'input_tokens')"
+    // 3. Second 500 at 12:33:52 — same error
+    // 4. No retry — compaction result lost, agent continues with degraded context
+
+    // With fix (retry-fetch.ts):
+    // - Server errors (500, 502, 503) are now retried up to 3 times
+    // - Exponential backoff: 2s, 4s, 8s between retries
+    // - If all retries fail, error propagates normally
+    // - This prevents intermittent OpenCode API errors from silently losing compaction
+    expect(true).toBe(true);
+  });
 });

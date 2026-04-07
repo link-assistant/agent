@@ -48,13 +48,17 @@ Analysis of execution log from a run where the user requested `kimi-k2.5-free` m
 
 **Fix:** Change the stderr message format to avoid triggering error detection. Prefix with a clearly non-error marker.
 
-### Problem 4: OpenCode API 500 Errors (External)
+### Problem 4: OpenCode API 500 Errors — No Retry
 
-**What happened:** Two 500 Internal Server Errors from the OpenCode `/responses` endpoint for `gpt-5-nano` compaction. Error: `Cannot read properties of undefined (reading 'input_tokens')`.
+**What happened:** Two 500 Internal Server Errors from the OpenCode `/responses` endpoint for `gpt-5-nano` compaction at 12:33:44 and 12:33:52 UTC. Error: `Cannot read properties of undefined (reading 'input_tokens')`. The compaction results were lost because the agent had no retry logic for server errors.
 
-**Root cause:** Server-side bug in OpenCode API's usage tracking where `input_tokens` is undefined. This is external to this codebase.
+**Root cause (server-side):** Server-side bug in OpenCode API's usage tracking where `input_tokens` is undefined. Reported to https://github.com/link-assistant/hive-mind/issues/1537.
 
-**Action:** Report to https://github.com/link-assistant/hive-mind/issues
+**Root cause (agent-side):** The `retry-fetch.ts` wrapper only retried HTTP 429 (rate limit) responses. Server errors (500, 502, 503) were passed through without retry, causing intermittent API failures to silently lose compaction results. The `auth/plugins.ts` also only considered 429 and 503 as retryable, missing 500 and 502.
+
+**Fix:**
+1. `retry-fetch.ts`: Added retry logic for HTTP 500, 502, 503 with exponential backoff (2s, 4s, 8s) and a maximum of 3 retries. Unlike rate limit retries which can continue indefinitely within the global timeout, server error retries are capped to avoid retrying permanently broken endpoints.
+2. `auth/plugins.ts`: Added 500 and 502 to the retryable status set alongside existing 429 and 503.
 
 ### Problem 5: Storage Migration Failure Silently Swallowed
 
@@ -68,6 +72,8 @@ Analysis of execution log from a run where the user requested `kimi-k2.5-free` m
 
 - `js/src/cli/model-config.js` — Model validation (Problem 1)
 - `js/src/provider/provider.ts` — Model resolution fallback (Problem 1), verbose stderr (Problem 3)
+- `js/src/provider/retry-fetch.ts` — Server error retry logic (Problem 4)
+- `js/src/auth/plugins.ts` — Retryable status codes (Problem 4)
 - `js/src/util/verbose-fetch.ts` — Async response logging (Problem 2)
 - `js/src/storage/storage.ts` — Migration error handling (Problem 5)
 
@@ -75,3 +81,4 @@ Analysis of execution log from a run where the user requested `kimi-k2.5-free` m
 
 - Execution log: [external link](https://github.com/konard/log-tmp-solution-draft-log-pr-1775565431104.txt/raw/main/tmp-solution-draft-log-pr-1775565431104.txt) (55,320 lines)
 - Issue: https://github.com/link-assistant/agent/issues/231
+- OpenCode API 500 error report: https://github.com/link-assistant/hive-mind/issues/1537

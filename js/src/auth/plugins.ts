@@ -1542,9 +1542,12 @@ const GooglePlugin: AuthPlugin = {
 
     /**
      * Check if a response status is retryable (transient error).
+     * Includes 500 for server errors like OpenCode API input_tokens undefined (#231).
      */
     const isRetryableStatus = (status: number): boolean => {
-      return status === 429 || status === 503;
+      return (
+        status === 429 || status === 500 || status === 502 || status === 503
+      );
     };
 
     /**
