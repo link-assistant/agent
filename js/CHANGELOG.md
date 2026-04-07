@@ -1,5 +1,17 @@
 # @link-assistant/agent
 
+## 0.19.1
+
+### Patch Changes
+
+- fix: fail immediately when explicit model not found instead of silent fallback (#231)
+  - `model-config.js`: throw error instead of warning when explicit `provider/model` specifies a model not found in the provider catalog (previously kimi-k2.5-free was silently routed to minimax-m2.5-free)
+  - `provider.ts`: throw `ModelNotFoundError` instead of creating synthetic fallback model info for unknown models after cache refresh
+  - `provider.ts`: change stderr verbose diagnostic prefix from `[verbose]` to `[debug]` to avoid outer solver's error detection false positive
+  - `verbose-fetch.ts`: track pending async stream log operations and warn at process exit if HTTP response bodies were not logged
+  - `storage.ts`: log actual error details (name, message, stack) for migration failures instead of swallowing the error
+  - Add case study analysis for the issue with timeline reconstruction and root cause analysis
+
 ## 0.19.0
 
 ### Minor Changes
