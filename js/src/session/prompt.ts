@@ -304,15 +304,30 @@ export namespace SessionPrompt {
         // continue the loop to execute them instead of prematurely exiting.
         // See: https://github.com/link-assistant/agent/issues/194
         if (lastAssistant.finish === 'unknown') {
+          // First check for tool calls BEFORE checking zero tokens (#239)
+          // Some providers (e.g., OpenCode Zen / OpenRouter) return zero tokens and
+          // unknown finish reason even when the model successfully executed tool calls.
+          // We must check for tool calls first to avoid prematurely terminating
+          // a session that is actually making progress.
+          const lastAssistantParts = msgs.find(
+            (m) => m.info.id === lastAssistant.id
+          )?.parts;
+          const hasToolCalls = lastAssistantParts?.some(
+            (p) =>
+              p.type === 'tool' &&
+              (p.state.status === 'completed' || p.state.status === 'running')
+          );
+
           // SAFETY CHECK for issue #196: Detect zero-token responses as provider failures
           // When all tokens are 0 and finish reason is 'unknown', this indicates the provider
           // returned an empty/error response (e.g., rate limit, model unavailable, API failure).
-          // Log a clear error message so the problem is visible in logs.
+          // But ONLY treat this as fatal if there are NO tool calls (#239).
           const tokens = lastAssistant.tokens;
           if (
             tokens.input === 0 &&
             tokens.output === 0 &&
-            tokens.reasoning === 0
+            tokens.reasoning === 0 &&
+            !hasToolCalls
           ) {
             const errorMessage =
               `Provider returned zero tokens with unknown finish reason. ` +
@@ -340,20 +355,13 @@ export namespace SessionPrompt {
             break;
           }
 
-          const lastAssistantParts = msgs.find(
-            (m) => m.info.id === lastAssistant.id
-          )?.parts;
-          const hasToolCalls = lastAssistantParts?.some(
-            (p) =>
-              p.type === 'tool' &&
-              (p.state.status === 'completed' || p.state.status === 'running')
-          );
           if (hasToolCalls) {
             log.info(() => ({
               message:
                 'continuing loop despite unknown finish reason - tool calls detected',
               sessionID,
               finishReason: lastAssistant.finish,
+              zeroTokens: tokens.input === 0 && tokens.output === 0,
               hint: 'Provider returned undefined finishReason but made tool calls',
             }));
             // Don't break - continue the loop to handle tool call results

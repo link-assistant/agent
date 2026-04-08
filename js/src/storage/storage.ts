@@ -22,7 +22,8 @@ export namespace Storage {
 
   const MIGRATIONS: Migration[] = [
     async (dir) => {
-      const project = path.resolve(dir, '../project');
+      // Sanitize path: strip null bytes that may appear in Bun runtime path operations (#239)
+      const project = path.resolve(dir, '../project').replace(/\0/g, '');
       if (
         !(await fs
           .stat(project)
