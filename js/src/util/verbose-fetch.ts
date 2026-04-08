@@ -79,7 +79,7 @@ export function sanitizeHeaders(
  */
 export function bodyPreview(
   body: BodyInit | null | undefined,
-  maxChars = 200000
+  maxChars = 4000
 ): string | undefined {
   if (!body) return undefined;
 
@@ -128,8 +128,8 @@ export function createVerboseFetch(
 ): typeof fetch {
   const {
     caller,
-    responseBodyMaxChars = 200000,
-    requestBodyMaxChars = 200000,
+    responseBodyMaxChars = 4000,
+    requestBodyMaxChars = 4000,
   } = options;
 
   return async (
