@@ -22,8 +22,9 @@ test('Agent-cli --verbose mode logs HTTP requests and responses for "hi"', async
   const input = '{"message":"hi"}';
 
   // Run with --verbose and --no-retry-on-rate-limits to get verbose HTTP logs
+  // Explicitly specify --model to decouple CI integration test from the default model setting
   const result = await sh(
-    `echo '${input}' | bun run ${projectRoot}/src/index.js --verbose --no-retry-on-rate-limits`,
+    `echo '${input}' | bun run ${projectRoot}/src/index.js --model opencode/minimax-m2.5-free --verbose --no-retry-on-rate-limits`,
     { timeout: 110000 }
   );
 
