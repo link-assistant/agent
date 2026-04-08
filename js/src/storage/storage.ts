@@ -23,7 +23,13 @@ export namespace Storage {
   const MIGRATIONS: Migration[] = [
     async (dir) => {
       const project = path.resolve(dir, '../project');
-      if (!fs.exists(project)) return;
+      if (
+        !(await fs
+          .stat(project)
+          .then((s) => s.isDirectory())
+          .catch(() => false))
+      )
+        return;
       for await (const projectDir of new Bun.Glob('*').scan({
         cwd: project,
         onlyFiles: false,
@@ -45,7 +51,13 @@ export namespace Storage {
             if (worktree) break;
           }
           if (!worktree) continue;
-          if (!(await fs.exists(worktree))) continue;
+          if (
+            !(await fs
+              .stat(worktree)
+              .then((s) => s.isDirectory())
+              .catch(() => false))
+          )
+            continue;
           const [id] = await $`git rev-list --max-parents=0 --all`
             .quiet()
             .nothrow()
@@ -174,8 +186,8 @@ export namespace Storage {
   const state = lazy(async () => {
     const dir = path.join(Global.Path.data, 'storage');
     const migration = await Bun.file(path.join(dir, 'migration'))
-      .json()
-      .then((x) => parseInt(x))
+      .text()
+      .then((x) => parseInt(x.trim(), 10))
       .catch(() => 0);
     for (let index = migration; index < MIGRATIONS.length; index++) {
       log.info(() => ({ message: 'running migration', index }));
