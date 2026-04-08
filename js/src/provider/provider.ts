@@ -1619,30 +1619,52 @@ export namespace Provider {
     }
 
     if (!isSyntheticProvider && !info) {
-      // Model not found even after cache refresh — fail with a clear error (#231)
-      // Previously this created synthetic fallback info, which allowed the API call
-      // to proceed with the wrong model (e.g., kimi-k2.5-free routed to minimax-m2.5-free)
+      // Model not found even after cache refresh.
+      // Check if this is the default model — if so, create synthetic info and proceed (#239).
+      // The models.dev API can lag behind the provider's actual model availability.
+      // For user-specified models, fail with a clear error (#231) to prevent silent substitution.
+      const { DEFAULT_PROVIDER_ID, DEFAULT_MODEL_ID } = await import(
+        '../cli/defaults.ts'
+      );
+      const isDefaultModel =
+        providerID === DEFAULT_PROVIDER_ID && modelID === DEFAULT_MODEL_ID;
       const availableInProvider = Object.keys(provider.info.models).slice(
         0,
         10
       );
-      log.error(() => ({
-        message:
-          'model not found in provider catalog after refresh — refusing to proceed',
-        providerID,
-        modelID,
-        availableModels: availableInProvider,
-        totalModels: Object.keys(provider.info.models).length,
-      }));
 
-      throw new ModelNotFoundError({
-        providerID,
-        modelID,
-        suggestion:
-          `Model "${modelID}" not found in provider "${providerID}" (checked ${Object.keys(provider.info.models).length} models). ` +
-          `Available models include: ${availableInProvider.join(', ')}. ` +
-          `Use --model ${providerID}/<model-id> with a valid model.`,
-      });
+      if (isDefaultModel) {
+        // Default model not in models.dev catalog — create synthetic info and try anyway (#239)
+        log.warn(() => ({
+          message:
+            'default model not in provider catalog — creating synthetic info to proceed',
+          providerID,
+          modelID,
+          availableModels: availableInProvider,
+        }));
+        info = {
+          id: modelID,
+          name: modelID,
+        } as typeof info;
+      } else {
+        log.error(() => ({
+          message:
+            'model not found in provider catalog after refresh — refusing to proceed',
+          providerID,
+          modelID,
+          availableModels: availableInProvider,
+          totalModels: Object.keys(provider.info.models).length,
+        }));
+
+        throw new ModelNotFoundError({
+          providerID,
+          modelID,
+          suggestion:
+            `Model "${modelID}" not found in provider "${providerID}" (checked ${Object.keys(provider.info.models).length} models). ` +
+            `Available models include: ${availableInProvider.join(', ')}. ` +
+            `Use --model ${providerID}/<model-id> with a valid model.`,
+        });
+      }
     }
 
     try {
