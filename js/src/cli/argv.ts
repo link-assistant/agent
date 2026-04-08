@@ -4,15 +4,15 @@
  */
 
 /**
- * Extract a named argument directly from process.argv.
+ * Extract a named argument from an arbitrary argv-like array.
  * Supports --name=value, --name value, and optional short aliases (-x=value, -x value).
- * @returns The argument value from CLI or null if not found
+ * @returns The argument value or null if not found
  */
-function getArgFromProcessArgv(
+function extractArgFromArray(
+  args: string[],
   longFlag: string,
   shortFlag?: string
 ): string | null {
-  const args = process.argv;
   const longPrefix = `--${longFlag}=`;
   const shortPrefix = shortFlag ? `-${shortFlag}=` : null;
   for (let i = 0; i < args.length; i++) {
@@ -40,6 +40,38 @@ function getArgFromProcessArgv(
       }
     }
   }
+  return null;
+}
+
+/**
+ * Extract a named argument directly from process.argv, falling back to Bun.argv.
+ * Bun global installs and compiled binaries may have different process.argv structures
+ * (see oven-sh/bun#22157), so we check both sources. (#192, #239)
+ * @returns The argument value from CLI or null if not found
+ */
+function getArgFromProcessArgv(
+  longFlag: string,
+  shortFlag?: string
+): string | null {
+  // Try process.argv first (standard Node.js / Bun behavior)
+  const fromProcess = extractArgFromArray(process.argv, longFlag, shortFlag);
+  if (fromProcess !== null) {
+    return fromProcess;
+  }
+
+  // Fallback: try Bun.argv if available — Bun global installs may have
+  // different process.argv structure (extra elements, shifted indices) (#239)
+  if (typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv) {
+    const fromBun = extractArgFromArray(
+      globalThis.Bun.argv,
+      longFlag,
+      shortFlag
+    );
+    if (fromBun !== null) {
+      return fromBun;
+    }
+  }
+
   return null;
 }
 

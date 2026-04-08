@@ -7,7 +7,12 @@ import { data } from './models-macro';
 
 export namespace ModelsDev {
   const log = Log.create({ service: 'models.dev' });
-  const verboseFetch = createVerboseFetch(fetch, { caller: 'models.dev' });
+  const verboseFetch = createVerboseFetch(fetch, {
+    caller: 'models.dev',
+    // models.dev/api.json response can be 200KB+; logging the full body
+    // crashes the subprocess in CI (#239). Keep preview small.
+    responseBodyMaxChars: 2000,
+  });
   const filepath = path.join(Global.Path.cache, 'models.json');
 
   export const Model = z

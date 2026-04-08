@@ -21,11 +21,24 @@ import {
  * @returns {Promise<{providerID: string, modelID: string}>}
  */
 export async function parseModelConfig(argv, outputError, outputStatus) {
-  // Safeguard: validate argv.model against process.argv to detect yargs/cache mismatch (#192, #196)
+  // Safeguard: validate argv.model against process.argv to detect yargs/cache mismatch (#192, #196, #239)
   // This is critical because yargs under Bun may fail to parse --model correctly,
   // returning the default value instead of the user's CLI argument.
   const cliModelArg = getModelFromProcessArgv();
   let modelArg = argv.model;
+
+  // Diagnostic logging: always log raw argv sources when debugging model resolution (#239)
+  // Bun global installs may have different process.argv structure (oven-sh/bun#22157)
+  Log.Default.info(() => ({
+    message: 'model resolution: argv sources',
+    processArgv: process.argv,
+    bunArgv:
+      typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv
+        ? globalThis.Bun.argv
+        : '(not available)',
+    cliModelArg: cliModelArg ?? '(null - not found in argv)',
+    yargsModel: modelArg,
+  }));
 
   // ALWAYS prefer the CLI value over yargs when available (#196)
   // The yargs default (DEFAULT_MODEL) can silently override user's --model argument
@@ -41,6 +54,29 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     // Always use CLI value when available, even if it matches yargs
     // This ensures we use the actual CLI argument, not a cached/default yargs value
     modelArg = cliModelArg;
+  } else if (modelArg === `${DEFAULT_PROVIDER_ID}/${DEFAULT_MODEL_ID}`) {
+    // cliModelArg is null AND yargs returned the default — check if process.argv
+    // actually contains --model to detect silent yargs/Bun mismatch (#239)
+    const rawArgvStr = process.argv.join(' ');
+    if (
+      rawArgvStr.includes('--model ') ||
+      rawArgvStr.includes('--model=') ||
+      rawArgvStr.includes('-m ') ||
+      rawArgvStr.includes('-m=')
+    ) {
+      Log.Default.error(() => ({
+        message:
+          'CRITICAL: --model flag detected in process.argv but both getModelFromProcessArgv() and yargs returned default. ' +
+          'This is likely a Bun/yargs argument parsing bug (oven-sh/bun#22157). ' +
+          'The requested model will NOT be used — the default model will be used instead.',
+        processArgv: process.argv,
+        bunArgv:
+          typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv
+            ? globalThis.Bun.argv
+            : '(not available)',
+        defaultModel: `${DEFAULT_PROVIDER_ID}/${DEFAULT_MODEL_ID}`,
+      }));
+    }
   }
 
   let providerID;
@@ -73,26 +109,41 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     // Validate that the model exists in the provider (#196, #231)
     // If user explicitly specified provider/model and the model is not found,
     // fail immediately instead of silently falling back to a different model.
+    // However, if the model is the default (no --model CLI flag), warn but proceed (#239).
+    // The models.dev API may lag behind the provider's actual model availability.
+    const isDefaultModel = !cliModelArg;
     try {
       const { Provider } = await import('../provider/provider.ts');
       const s = await Provider.state();
       const provider = s.providers[providerID];
       if (provider && !provider.info.models[modelID]) {
-        // Provider exists but model doesn't — fail with a clear error (#231)
-        // Silent fallback caused kimi-k2.5-free to be routed to minimax-m2.5-free
         const availableModels = Object.keys(provider.info.models).slice(0, 10);
-        Log.Default.error(() => ({
-          message:
-            'model not found in provider — refusing to proceed with explicit provider/model',
-          providerID,
-          modelID,
-          availableModels,
-        }));
-        throw new Error(
-          `Model "${modelID}" not found in provider "${providerID}". ` +
-            `Available models include: ${availableModels.join(', ')}. ` +
-            `Use --model ${providerID}/<model-id> with a valid model, or omit the provider prefix for auto-resolution.`
-        );
+        if (isDefaultModel) {
+          // Default model not in models.dev catalog — warn but proceed (#239)
+          // The provider may still accept it; models.dev can lag behind actual availability.
+          Log.Default.warn(() => ({
+            message:
+              'default model not found in models.dev catalog — proceeding anyway',
+            providerID,
+            modelID,
+            availableModels,
+          }));
+        } else {
+          // User explicitly specified provider/model — fail with a clear error (#231)
+          // Silent fallback caused kimi-k2.5-free to be routed to minimax-m2.5-free
+          Log.Default.error(() => ({
+            message:
+              'model not found in provider — refusing to proceed with explicit provider/model',
+            providerID,
+            modelID,
+            availableModels,
+          }));
+          throw new Error(
+            `Model "${modelID}" not found in provider "${providerID}". ` +
+              `Available models include: ${availableModels.join(', ')}. ` +
+              `Use --model ${providerID}/<model-id> with a valid model, or omit the provider prefix for auto-resolution.`
+          );
+        }
       }
     } catch (validationError) {
       // Re-throw if this is our own validation error (not an infrastructure issue)

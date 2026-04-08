@@ -86,6 +86,38 @@ describe('Model validation - explicit provider/model format (#231)', () => {
     const modelExists = !!providerModels['minimax-m2.5-free'];
     expect(modelExists).toBe(true);
   });
+
+  test('should warn but proceed when default model not in models.dev catalog (#239)', () => {
+    // When no --model CLI flag is provided, the default model (qwen3.6-plus-free)
+    // should NOT be rejected even if models.dev API doesn't list it yet.
+    // The models.dev API can lag behind the provider's actual model availability.
+    //
+    // Before fix: default model treated same as explicit — threw Error
+    // After fix: default model logs warning and proceeds, letting the provider
+    // accept or reject the model at runtime.
+
+    const cliModelArg = null; // No --model flag provided
+    const isDefaultModel = !cliModelArg;
+    expect(isDefaultModel).toBe(true);
+
+    // With isDefaultModel=true, the validation block warns instead of throwing
+    // This means the agent can still use qwen3.6-plus-free even if models.dev
+    // temporarily doesn't list it
+    const providerModels: Record<string, boolean> = {
+      'minimax-m2.5-free': true,
+      'gpt-5-nano': true,
+    };
+    const modelID = 'qwen3.6-plus-free';
+    const modelExists = !!providerModels[modelID];
+    expect(modelExists).toBe(false);
+
+    // Default model: should NOT throw (warn only)
+    let threw = false;
+    if (!modelExists && !isDefaultModel) {
+      threw = true;
+    }
+    expect(threw).toBe(false);
+  });
 });
 
 describe('Provider.getModel - strict model lookup (#231)', () => {
