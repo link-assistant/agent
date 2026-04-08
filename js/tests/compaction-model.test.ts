@@ -251,9 +251,9 @@ describe('contextDiagnostics with compaction model', () => {
 });
 
 describe('CLI defaults', () => {
-  test('default model is opencode/minimax-m2.5-free', async () => {
+  test('default model is opencode/qwen3.6-plus-free', async () => {
     const { DEFAULT_MODEL } = await import('../src/cli/defaults');
-    expect(DEFAULT_MODEL).toBe('opencode/minimax-m2.5-free');
+    expect(DEFAULT_MODEL).toBe('opencode/qwen3.6-plus-free');
   });
 
   test('default compaction model is opencode/gpt-5-nano', async () => {
@@ -264,7 +264,7 @@ describe('CLI defaults', () => {
   test('default compaction models cascade is a links notation sequence', async () => {
     const { DEFAULT_COMPACTION_MODELS } = await import('../src/cli/defaults');
     expect(DEFAULT_COMPACTION_MODELS).toBe(
-      '(big-pickle nemotron-3-super-free minimax-m2.5-free gpt-5-nano same)'
+      '(big-pickle nemotron-3-super-free minimax-m2.5-free gpt-5-nano qwen3.6-plus-free same)'
     );
   });
 
@@ -321,15 +321,20 @@ describe('CompactionModelConfig with cascade', () => {
         { providerID: 'opencode', modelID: 'gpt-5-nano', useSameModel: false },
         {
           providerID: 'opencode',
-          modelID: 'minimax-m2.5-free',
+          modelID: 'qwen3.6-plus-free',
+          useSameModel: false,
+        },
+        {
+          providerID: 'opencode',
+          modelID: 'qwen3.6-plus-free',
           useSameModel: true,
         },
       ],
     };
     expect(config.compactionModels).toBeDefined();
-    expect(config.compactionModels!.length).toBe(5);
+    expect(config.compactionModels!.length).toBe(6);
     expect(config.compactionModels![0].modelID).toBe('big-pickle');
-    expect(config.compactionModels![4].useSameModel).toBe(true);
+    expect(config.compactionModels![5].useSameModel).toBe(true);
   });
 
   test('CompactionModelConfig backward compat without compactionModels', () => {
