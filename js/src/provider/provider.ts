@@ -1623,9 +1623,8 @@ export namespace Provider {
       // Check if this is the default model — if so, create synthetic info and proceed (#239).
       // The models.dev API can lag behind the provider's actual model availability.
       // For user-specified models, fail with a clear error (#231) to prevent silent substitution.
-      const { DEFAULT_PROVIDER_ID, DEFAULT_MODEL_ID } = await import(
-        '../cli/defaults.ts'
-      );
+      const { DEFAULT_PROVIDER_ID, DEFAULT_MODEL_ID } =
+        await import('../cli/defaults.ts');
       const isDefaultModel =
         providerID === DEFAULT_PROVIDER_ID && modelID === DEFAULT_MODEL_ID;
       const availableInProvider = Object.keys(provider.info.models).slice(
