@@ -32,7 +32,10 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
   Log.Default.info(() => ({
     message: 'model resolution: argv sources',
     processArgv: process.argv,
-    bunArgv: typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv ? globalThis.Bun.argv : '(not available)',
+    bunArgv:
+      typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv
+        ? globalThis.Bun.argv
+        : '(not available)',
     cliModelArg: cliModelArg ?? '(null - not found in argv)',
     yargsModel: modelArg,
   }));
@@ -55,14 +58,22 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     // cliModelArg is null AND yargs returned the default — check if process.argv
     // actually contains --model to detect silent yargs/Bun mismatch (#239)
     const rawArgvStr = process.argv.join(' ');
-    if (rawArgvStr.includes('--model ') || rawArgvStr.includes('--model=') ||
-        rawArgvStr.includes('-m ') || rawArgvStr.includes('-m=')) {
+    if (
+      rawArgvStr.includes('--model ') ||
+      rawArgvStr.includes('--model=') ||
+      rawArgvStr.includes('-m ') ||
+      rawArgvStr.includes('-m=')
+    ) {
       Log.Default.error(() => ({
-        message: 'CRITICAL: --model flag detected in process.argv but both getModelFromProcessArgv() and yargs returned default. ' +
+        message:
+          'CRITICAL: --model flag detected in process.argv but both getModelFromProcessArgv() and yargs returned default. ' +
           'This is likely a Bun/yargs argument parsing bug (oven-sh/bun#22157). ' +
           'The requested model will NOT be used — the default model will be used instead.',
         processArgv: process.argv,
-        bunArgv: typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv ? globalThis.Bun.argv : '(not available)',
+        bunArgv:
+          typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv
+            ? globalThis.Bun.argv
+            : '(not available)',
         defaultModel: `${DEFAULT_PROVIDER_ID}/${DEFAULT_MODEL_ID}`,
       }));
     }
