@@ -62,7 +62,11 @@ function getArgFromProcessArgv(
   // Fallback: try Bun.argv if available — Bun global installs may have
   // different process.argv structure (extra elements, shifted indices) (#239)
   if (typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv) {
-    const fromBun = extractArgFromArray(globalThis.Bun.argv, longFlag, shortFlag);
+    const fromBun = extractArgFromArray(
+      globalThis.Bun.argv,
+      longFlag,
+      shortFlag
+    );
     if (fromBun !== null) {
       return fromBun;
     }
