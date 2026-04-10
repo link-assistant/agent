@@ -35,14 +35,10 @@ describe('--temperature CLI option (#241)', () => {
   });
 
   test('ProviderTransform.temperature returns model-specific defaults', async () => {
-    const { ProviderTransform } = await import(
-      '../src/provider/transform.ts'
-    );
+    const { ProviderTransform } = await import('../src/provider/transform.ts');
 
     // Qwen models → 0.55
-    expect(ProviderTransform.temperature('opencode', 'qwen3-coder')).toBe(
-      0.55
-    );
+    expect(ProviderTransform.temperature('opencode', 'qwen3-coder')).toBe(0.55);
 
     // Claude models → undefined (use provider default)
     expect(
@@ -50,14 +46,12 @@ describe('--temperature CLI option (#241)', () => {
     ).toBeUndefined();
 
     // Gemini 3 Pro → 1.0
-    expect(
-      ProviderTransform.temperature('google', 'gemini-3-pro')
-    ).toBe(1.0);
+    expect(ProviderTransform.temperature('google', 'gemini-3-pro')).toBe(1.0);
 
     // Other models → 0
-    expect(
-      ProviderTransform.temperature('opencode', 'minimax-m2.5-free')
-    ).toBe(0);
+    expect(ProviderTransform.temperature('opencode', 'minimax-m2.5-free')).toBe(
+      0
+    );
   });
 
   test('MessageV2.User schema accepts optional temperature field', async () => {
@@ -133,6 +127,8 @@ describe('--temperature Rust CLI option (#241)', () => {
     expect(cliSource).toContain('pub temperature: Option<f64>');
     // Verify it has the correct arg attribute (no default value)
     expect(cliSource).toContain('#[arg(long)]');
-    expect(cliSource).toContain('/// Override the temperature for model completions');
+    expect(cliSource).toContain(
+      '/// Override the temperature for model completions'
+    );
   });
 });
