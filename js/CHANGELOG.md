@@ -1,16 +1,5 @@
 # @link-assistant/agent
 
-## 0.21.0
-
-### Minor Changes
-
-- feat: replace deprecated qwen3.6-plus-free default with nemotron-3-super-free (#242)
-  - Change default model from `qwen3.6-plus-free` to `nemotron-3-super-free` (~262K context)
-  - Remove `qwen3.6-plus-free` from compaction models cascade (free promotion ended April 2026)
-  - Updated cascade: `(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)`
-  - Move `qwen3.6-plus-free` to deprecated/discontinued sections in documentation
-  - Update provider priority lists to remove unavailable model
-
 ## 0.20.2
 
 ### Patch Changes
