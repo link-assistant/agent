@@ -49,6 +49,10 @@ pub struct Args {
     #[arg(long, default_value = "false")]
     pub compact_json: bool,
 
+    /// Override the temperature for model completions
+    #[arg(long)]
+    pub temperature: Option<f64>,
+
     /// Working directory
     #[arg(long)]
     pub working_directory: Option<PathBuf>,

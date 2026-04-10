@@ -110,6 +110,7 @@ export namespace SessionPrompt {
     noReply: z.boolean().optional(),
     system: z.string().optional(),
     appendSystem: z.string().optional(),
+    temperature: z.number().optional(),
     tools: z.record(z.string(), z.boolean()).optional(),
     parts: z.array(
       z.discriminatedUnion('type', [
@@ -734,10 +735,12 @@ export namespace SessionPrompt {
       });
       const params = {
         temperature:
-          (model.info?.temperature ?? false)
-            ? (agent.temperature ??
-              ProviderTransform.temperature(model.providerID, model.modelID))
-            : undefined,
+          lastUser.temperature != null
+            ? lastUser.temperature
+            : (model.info?.temperature ?? false)
+              ? (agent.temperature ??
+                ProviderTransform.temperature(model.providerID, model.modelID))
+              : undefined,
         topP:
           agent.topP ?? ProviderTransform.topP(model.providerID, model.modelID),
         options: {
@@ -1189,6 +1192,7 @@ export namespace SessionPrompt {
       tools: input.tools,
       system: input.system,
       appendSystem: input.appendSystem,
+      temperature: input.temperature,
       agent: agent.name,
       model: await resolveModel({
         model: input.model,

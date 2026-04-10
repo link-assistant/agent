@@ -168,5 +168,10 @@ export function buildRunOptions(yargs) {
       description:
         'Safety margin (%) of usable context window before triggering compaction. Only applies when the compaction model has equal or smaller context than the base model. Default: 15.',
       default: DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
+    })
+    .option('temperature', {
+      type: 'number',
+      description:
+        'Override the temperature for model completions. When not set, the default per-model temperature is used.',
     });
 }

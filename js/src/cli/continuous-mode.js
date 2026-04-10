@@ -194,7 +194,8 @@ export async function runContinuousServerMode(
   systemMessage,
   appendSystemMessage,
   jsonStandard,
-  compactionModel
+  compactionModel,
+  temperature
 ) {
   // Check both CLI flag and environment variable for compact JSON mode
   const compactJson = argv['compact-json'] === true || config.compactJson;
@@ -290,6 +291,7 @@ export async function runContinuousServerMode(
             compactionModel,
             system: systemMessage,
             appendSystem: appendSystemMessage,
+            temperature,
           }),
         }
       ).catch((error) => {
@@ -446,7 +448,8 @@ export async function runContinuousDirectMode(
   systemMessage,
   appendSystemMessage,
   jsonStandard,
-  compactionModel
+  compactionModel,
+  temperature
 ) {
   // Check both CLI flag and environment variable for compact JSON mode
   const compactJson = argv['compact-json'] === true || config.compactJson;
@@ -523,6 +526,7 @@ export async function runContinuousDirectMode(
         compactionModel,
         system: systemMessage,
         appendSystem: appendSystemMessage,
+        temperature,
       }).catch((error) => {
         hasError = true;
         eventHandler.output({
