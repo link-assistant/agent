@@ -224,13 +224,33 @@ async fn run_with_input(args: &Args, working_dir: &PathBuf, message: &str) -> Re
         args.compact_json,
     );
 
-    if args.dry_run {
-        // In dry run mode, just echo the message
+    // Log temperature when verbose mode is on
+    if args.verbose {
+        let temp_display = match args.temperature {
+            Some(t) => format!("{}", t),
+            None => "default".to_string(),
+        };
         output_event(
             &OutputEvent::Text {
                 timestamp: timestamp_ms(),
                 session_id: session_id.clone(),
-                text: format!("[DRY RUN] Received message: {}", message),
+                text: format!("Temperature: {}", temp_display),
+            },
+            args.compact_json,
+        );
+    }
+
+    if args.dry_run {
+        // In dry run mode, echo the message and show configuration
+        let temp_info = match args.temperature {
+            Some(t) => format!(", temperature: {}", t),
+            None => String::new(),
+        };
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("[DRY RUN] Received message: {}{}", message, temp_info),
             },
             args.compact_json,
         );
@@ -299,11 +319,43 @@ mod tests {
         assert_eq!(args.json_standard, "opencode");
         assert!(!args.verbose);
         assert!(!args.dry_run);
+        assert!(args.temperature.is_none());
     }
 
     #[test]
     fn test_args_with_prompt() {
         let args = Args::parse_from(["agent", "-p", "hello"]);
+        assert_eq!(args.prompt, Some("hello".to_string()));
+    }
+
+    #[test]
+    fn test_args_temperature_not_set() {
+        let args = Args::parse_from(["agent"]);
+        assert!(args.temperature.is_none());
+    }
+
+    #[test]
+    fn test_args_temperature_float() {
+        let args = Args::parse_from(["agent", "--temperature", "0.7"]);
+        assert_eq!(args.temperature, Some(0.7));
+    }
+
+    #[test]
+    fn test_args_temperature_zero() {
+        let args = Args::parse_from(["agent", "--temperature", "0"]);
+        assert_eq!(args.temperature, Some(0.0));
+    }
+
+    #[test]
+    fn test_args_temperature_one() {
+        let args = Args::parse_from(["agent", "--temperature", "1.0"]);
+        assert_eq!(args.temperature, Some(1.0));
+    }
+
+    #[test]
+    fn test_args_temperature_with_prompt() {
+        let args = Args::parse_from(["agent", "--temperature", "0.5", "-p", "hello"]);
+        assert_eq!(args.temperature, Some(0.5));
         assert_eq!(args.prompt, Some("hello".to_string()));
     }
 }
