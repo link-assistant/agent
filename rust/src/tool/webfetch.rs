@@ -311,41 +311,25 @@ fn convert_headings(html: &str) -> String {
 }
 
 fn replace_tag_with_prefix(html: &str, tag: &str, prefix: &str) -> String {
-    let open_re = format!("<{}[^>]*>", tag);
     let close = format!("</{}>", tag);
     let lower = html.to_lowercase();
     let mut result = html.to_string();
-    let mut offset = 0i64;
 
-    // Simple approach: find and replace each tag
-    let mut search_start = 0;
-    loop {
-        let lower_shifted = &lower[search_start..];
-        if let Some(pos) = lower_shifted.find(&format!("<{}", tag)) {
-            let abs_pos = search_start + pos;
-            // Find end of opening tag
-            if let Some(tag_end) = lower[abs_pos..].find('>') {
-                let after_open = abs_pos + tag_end + 1;
-                // Find closing tag
-                if let Some(close_pos) = lower[after_open..].find(&close) {
-                    let close_abs = after_open + close_pos;
-                    let close_end = close_abs + close.len();
-                    let inner = &result[after_open..close_abs];
-                    let replacement = format!("{}{}\n", prefix, inner);
-                    result.replace_range(abs_pos..close_end, &replacement);
-                    search_start = abs_pos + replacement.len();
-                    // Update lower
-                    let lower_new = result.to_lowercase();
-                    // Need to re-create lower from updated result
-                    return replace_tag_with_prefix(&result, tag, prefix); // recurse to handle multiple
-                } else {
-                    break;
-                }
-            } else {
-                break;
+    // Find the first occurrence of the opening tag
+    if let Some(pos) = lower.find(&format!("<{}", tag)) {
+        // Find end of opening tag
+        if let Some(tag_end) = lower[pos..].find('>') {
+            let after_open = pos + tag_end + 1;
+            // Find closing tag
+            if let Some(close_pos) = lower[after_open..].find(&close) {
+                let close_abs = after_open + close_pos;
+                let close_end = close_abs + close.len();
+                let inner = &result[after_open..close_abs];
+                let replacement = format!("{}{}\n", prefix, inner);
+                result.replace_range(pos..close_end, &replacement);
+                // Recurse to handle multiple occurrences
+                return replace_tag_with_prefix(&result, tag, prefix);
             }
-        } else {
-            break;
         }
     }
     result
