@@ -209,21 +209,20 @@ fn collect_files(path: &Path, glob_filter: Option<&str>) -> Result<Vec<std::path
                 }
                 !is_hidden(e.file_name().to_str().unwrap_or(""))
             })
+            .filter_map(|e| e.ok())
         {
-            if let Ok(entry) = entry {
-                if entry.file_type().is_file() {
-                    let file_path = entry.path();
+            if entry.file_type().is_file() {
+                let file_path = entry.path();
 
-                    // Apply glob filter if specified
-                    if let Some(pattern) = glob_filter {
-                        let name = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-                        if !matches_glob(name, pattern) {
-                            continue;
-                        }
+                // Apply glob filter if specified
+                if let Some(pattern) = glob_filter {
+                    let name = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                    if !matches_glob(name, pattern) {
+                        continue;
                     }
-
-                    files.push(file_path.to_path_buf());
                 }
+
+                files.push(file_path.to_path_buf());
             }
         }
     }
@@ -237,7 +236,7 @@ fn is_hidden(name: &str) -> bool {
 }
 
 /// Simple glob matching for common patterns
-fn matches_glob(name: &str, pattern: &str) -> bool {
+pub fn matches_glob(name: &str, pattern: &str) -> bool {
     if pattern.starts_with("*.") {
         let ext = &pattern[1..];
         name.ends_with(ext)
@@ -250,6 +249,7 @@ fn matches_glob(name: &str, pattern: &str) -> bool {
 }
 
 /// Search a file for matches
+#[allow(clippy::too_many_arguments)]
 fn search_file(
     content: &str,
     regex: &Regex,
@@ -260,7 +260,7 @@ fn search_file(
     context_before: usize,
     context_after: usize,
 ) -> Vec<String> {
-    let rel_path = ctx.relative_path(&file_path.to_path_buf());
+    let rel_path = ctx.relative_path(file_path);
     let lines: Vec<&str> = content.lines().collect();
     let mut results = Vec::new();
     let mut has_match = false;
@@ -273,11 +273,11 @@ fn search_file(
                 "content" => {
                     // Add context before
                     let start = i.saturating_sub(context_before);
-                    for j in start..i {
+                    for (j, ctx_line) in lines.iter().enumerate().skip(start).take(i - start) {
                         let line_output = if show_line_numbers {
-                            format!("{}:{}: {}", rel_path, j + 1, lines[j])
+                            format!("{}:{}: {}", rel_path, j + 1, ctx_line)
                         } else {
-                            format!("{}: {}", rel_path, lines[j])
+                            format!("{}: {}", rel_path, ctx_line)
                         };
                         results.push(line_output);
                     }
@@ -292,11 +292,11 @@ fn search_file(
 
                     // Add context after
                     let end = (i + context_after + 1).min(lines.len());
-                    for j in (i + 1)..end {
+                    for (j, ctx_line) in lines.iter().enumerate().skip(i + 1).take(end - (i + 1)) {
                         let line_output = if show_line_numbers {
-                            format!("{}:{}: {}", rel_path, j + 1, lines[j])
+                            format!("{}:{}: {}", rel_path, j + 1, ctx_line)
                         } else {
-                            format!("{}: {}", rel_path, lines[j])
+                            format!("{}: {}", rel_path, ctx_line)
                         };
                         results.push(line_output);
                     }
@@ -322,83 +322,5 @@ fn search_file(
         }
     } else {
         vec![]
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::TempDir;
-
-    fn create_context(dir: &Path) -> ToolContext {
-        ToolContext::new("ses_test", "msg_test", dir)
-    }
-
-    #[tokio::test]
-    async fn test_grep_simple() {
-        let temp = TempDir::new().unwrap();
-        fs::write(
-            temp.path().join("test.txt"),
-            "hello world\nfoo bar\nhello again",
-        )
-        .unwrap();
-
-        let tool = GrepTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "pattern": "hello",
-            "output_mode": "content"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("hello world"));
-        assert!(result.output.contains("hello again"));
-        assert!(!result.output.contains("foo bar"));
-    }
-
-    #[tokio::test]
-    async fn test_grep_files_with_matches() {
-        let temp = TempDir::new().unwrap();
-        fs::write(temp.path().join("match.txt"), "hello world").unwrap();
-        fs::write(temp.path().join("no_match.txt"), "goodbye world").unwrap();
-
-        let tool = GrepTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "pattern": "hello",
-            "output_mode": "files_with_matches"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("match.txt"));
-        assert!(!result.output.contains("no_match.txt"));
-    }
-
-    #[tokio::test]
-    async fn test_grep_case_insensitive() {
-        let temp = TempDir::new().unwrap();
-        fs::write(temp.path().join("test.txt"), "Hello World\nHELLO WORLD").unwrap();
-
-        let tool = GrepTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "pattern": "hello",
-            "-i": true,
-            "output_mode": "content"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("Hello World"));
-        assert!(result.output.contains("HELLO WORLD"));
-    }
-
-    #[test]
-    fn test_glob_matching() {
-        assert!(matches_glob("file.js", "*.js"));
-        assert!(!matches_glob("file.ts", "*.js"));
-        assert!(matches_glob("file.tsx", "**/*.tsx"));
     }
 }

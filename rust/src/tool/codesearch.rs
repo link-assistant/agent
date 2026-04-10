@@ -76,6 +76,7 @@ struct McpCodeResult {
 #[derive(Debug, Deserialize)]
 struct McpContent {
     #[serde(rename = "type")]
+    #[allow(dead_code)]
     content_type: String,
     text: String,
 }
@@ -188,22 +189,5 @@ impl Tool for CodeSearchTool {
             metadata: json!({}),
             attachments: None,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::TempDir;
-
-    fn create_context(dir: &std::path::Path) -> ToolContext {
-        ToolContext::new("ses_test", "msg_test", dir)
-    }
-
-    #[test]
-    fn test_params_schema() {
-        let tool = CodeSearchTool;
-        let schema = tool.parameters_schema();
-        assert!(schema["properties"]["query"].is_object());
     }
 }

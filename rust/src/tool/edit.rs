@@ -276,7 +276,7 @@ fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool)
 }
 
 /// Try exact string replacement
-fn try_exact_replace(content: &str, old: &str, new: &str, replace_all: bool) -> Option<String> {
+pub fn try_exact_replace(content: &str, old: &str, new: &str, replace_all: bool) -> Option<String> {
     if !content.contains(old) {
         return None;
     }
@@ -303,7 +303,7 @@ fn try_exact_replace(content: &str, old: &str, new: &str, replace_all: bool) -> 
 }
 
 /// Try line-trimmed matching (ignore leading/trailing whitespace per line)
-fn try_line_trimmed_replace(
+pub fn try_line_trimmed_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -321,8 +321,8 @@ fn try_line_trimmed_replace(
     for i in 0..=content_lines.len().saturating_sub(search_lines.len()) {
         let mut all_match = true;
 
-        for j in 0..search_lines.len() {
-            if content_lines.get(i + j).map(|l| l.trim()) != Some(search_lines[j].trim()) {
+        for (j, search_line) in search_lines.iter().enumerate() {
+            if content_lines.get(i + j).map(|l| l.trim()) != Some(search_line.trim()) {
                 all_match = false;
                 break;
             }
@@ -356,7 +356,7 @@ fn try_line_trimmed_replace(
 }
 
 /// Try whitespace-normalized matching
-fn try_whitespace_normalized_replace(
+pub fn try_whitespace_normalized_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -398,7 +398,7 @@ fn try_whitespace_normalized_replace(
 }
 
 /// Try block anchor matching (match by first and last line)
-fn try_block_anchor_replace(
+pub fn try_block_anchor_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -451,7 +451,7 @@ fn try_block_anchor_replace(
 
 /// Try indentation-flexible matching (normalize leading indentation)
 /// Mirrors the JS IndentationFlexibleReplacer strategy.
-fn try_indentation_flexible_replace(
+pub fn try_indentation_flexible_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -519,7 +519,7 @@ fn try_indentation_flexible_replace(
 
 /// Try escape-normalized matching (unescape common escape sequences)
 /// Mirrors the JS EscapeNormalizedReplacer strategy.
-fn try_escape_normalized_replace(
+pub fn try_escape_normalized_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -633,7 +633,7 @@ fn try_escape_normalized_replace(
 
 /// Try trimmed boundary matching (trim leading/trailing whitespace from old string)
 /// Mirrors the JS TrimmedBoundaryReplacer strategy.
-fn try_trimmed_boundary_replace(
+pub fn try_trimmed_boundary_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -705,7 +705,7 @@ fn try_trimmed_boundary_replace(
 /// Try context-aware matching (use first and last lines as context anchors,
 /// require >=50% of middle lines to match)
 /// Mirrors the JS ContextAwareReplacer strategy.
-fn try_context_aware_replace(
+pub fn try_context_aware_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -777,164 +777,9 @@ fn try_context_aware_replace(
 
 /// Try multi-occurrence replacement (all occurrences, used for replace_all)
 /// Mirrors the JS MultiOccurrenceReplacer strategy.
-fn try_multi_occurrence_replace(content: &str, old: &str, new: &str) -> Option<String> {
+pub fn try_multi_occurrence_replace(content: &str, old: &str, new: &str) -> Option<String> {
     if !content.contains(old) {
         return None;
     }
     Some(content.replace(old, new))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs as std_fs;
-    use tempfile::TempDir;
-
-    fn create_context(dir: &std::path::Path) -> ToolContext {
-        ToolContext::new("ses_test", "msg_test", dir)
-    }
-
-    #[tokio::test]
-    async fn test_edit_exact_match() {
-        let temp = TempDir::new().unwrap();
-        let file_path = temp.path().join("test.txt");
-        std_fs::write(&file_path, "hello world").unwrap();
-
-        let tool = EditTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "filePath": file_path.to_string_lossy(),
-            "oldString": "world",
-            "newString": "rust"
-        });
-
-        tool.execute(params, &ctx).await.unwrap();
-
-        let content = std_fs::read_to_string(&file_path).unwrap();
-        assert_eq!(content, "hello rust");
-    }
-
-    #[tokio::test]
-    async fn test_edit_replace_all() {
-        let temp = TempDir::new().unwrap();
-        let file_path = temp.path().join("test.txt");
-        std_fs::write(&file_path, "foo bar foo baz foo").unwrap();
-
-        let tool = EditTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "filePath": file_path.to_string_lossy(),
-            "oldString": "foo",
-            "newString": "qux",
-            "replaceAll": true
-        });
-
-        tool.execute(params, &ctx).await.unwrap();
-
-        let content = std_fs::read_to_string(&file_path).unwrap();
-        assert_eq!(content, "qux bar qux baz qux");
-    }
-
-    #[tokio::test]
-    async fn test_edit_same_string_error() {
-        let temp = TempDir::new().unwrap();
-        let file_path = temp.path().join("test.txt");
-        std_fs::write(&file_path, "hello").unwrap();
-
-        let tool = EditTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "filePath": file_path.to_string_lossy(),
-            "oldString": "hello",
-            "newString": "hello"
-        });
-
-        let result = tool.execute(params, &ctx).await;
-        assert!(result.is_err());
-    }
-
-    #[tokio::test]
-    async fn test_edit_create_new_file() {
-        let temp = TempDir::new().unwrap();
-        let file_path = temp.path().join("new_file.txt");
-
-        let tool = EditTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "filePath": file_path.to_string_lossy(),
-            "oldString": "",
-            "newString": "new content"
-        });
-
-        tool.execute(params, &ctx).await.unwrap();
-
-        let content = std_fs::read_to_string(&file_path).unwrap();
-        assert_eq!(content, "new content");
-    }
-
-    #[test]
-    fn test_exact_replace() {
-        let content = "hello world";
-        let result = try_exact_replace(content, "world", "rust", false);
-        assert_eq!(result, Some("hello rust".to_string()));
-    }
-
-    #[test]
-    fn test_multiple_matches_without_replace_all() {
-        let content = "foo bar foo";
-        let result = try_exact_replace(content, "foo", "baz", false);
-        assert_eq!(result, None);
-    }
-
-    #[test]
-    fn test_replace_all() {
-        let content = "foo bar foo";
-        let result = try_exact_replace(content, "foo", "baz", true);
-        assert_eq!(result, Some("baz bar baz".to_string()));
-    }
-
-    #[test]
-    fn test_indentation_flexible() {
-        let content = "    fn hello() {\n        println!(\"hi\");\n    }";
-        let old = "fn hello() {\n    println!(\"hi\");\n}";
-        let result = try_indentation_flexible_replace(content, old, "fn world() {}", false);
-        assert!(result.is_some());
-    }
-
-    #[test]
-    fn test_escape_normalized() {
-        let content = "let msg = \"hello\\nworld\";";
-        // This should pass through exactly since there's no escape difference
-        let result = try_escape_normalized_replace(content, "hello", "goodbye", false);
-        assert!(result.is_some());
-    }
-
-    #[test]
-    fn test_trimmed_boundary() {
-        let content = "  hello world  ";
-        let old = "  hello world  "; // with leading/trailing spaces
-        let result = try_trimmed_boundary_replace(content, old, "goodbye", false);
-        // Trimmed match should fail since old == trimmed old doesn't hold here
-        // (old already equals content)
-        // So let's test when old has extra whitespace
-        let old2 = "  hello world  \n  "; // extra trailing whitespace
-        let result2 = try_trimmed_boundary_replace(content, old2, "goodbye", false);
-        // May or may not match depending on content - just ensure no panic
-        let _ = result2;
-    }
-
-    #[test]
-    fn test_context_aware() {
-        let content = "fn foo() {\n    let x = 1;\n    x + 1\n}";
-        let old = "fn foo() {\n    let x = 1;\n    x + 1\n}";
-        let result = try_context_aware_replace(content, old, "fn bar() {}", false);
-        assert!(result.is_some());
-    }
-
-    #[test]
-    fn test_multi_occurrence_replace() {
-        let content = "foo bar foo baz foo";
-        let result = try_multi_occurrence_replace(content, "foo", "qux");
-        assert_eq!(result, Some("qux bar qux baz qux".to_string()));
-    }
 }

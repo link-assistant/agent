@@ -62,29 +62,3 @@ impl Tool for InvalidTool {
         })
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::TempDir;
-
-    fn create_context(dir: &std::path::Path) -> ToolContext {
-        ToolContext::new("ses_test", "msg_test", dir)
-    }
-
-    #[tokio::test]
-    async fn test_invalid_tool() {
-        let temp = TempDir::new().unwrap();
-        let tool = InvalidTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "tool": "someTool",
-            "error": "missing required parameter 'foo'"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert_eq!(result.title, "Invalid Tool");
-        assert!(result.output.contains("missing required parameter 'foo'"));
-    }
-}

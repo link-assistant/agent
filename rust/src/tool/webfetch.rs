@@ -190,7 +190,7 @@ impl Tool for WebFetchTool {
 }
 
 /// Extract plain text from HTML by stripping tags
-fn extract_text_from_html(html: &str) -> String {
+pub fn extract_text_from_html(html: &str) -> String {
     let mut text = String::new();
     let mut in_tag = false;
     let mut in_script_or_style = false;
@@ -286,13 +286,9 @@ fn remove_tag_with_content(html: &str, tag: &str) -> String {
     let open = format!("<{}", tag);
     let close = format!("</{}>", tag);
     let mut result = html.to_string();
-    loop {
-        if let Some(start) = result.to_lowercase().find(&open) {
-            if let Some(end) = result.to_lowercase()[start..].find(&close) {
-                result.replace_range(start..start + end + close.len(), "");
-            } else {
-                break;
-            }
+    while let Some(start) = result.to_lowercase().find(&open) {
+        if let Some(end) = result.to_lowercase()[start..].find(&close) {
+            result.replace_range(start..start + end + close.len(), "");
         } else {
             break;
         }
@@ -342,14 +338,12 @@ fn convert_links(html: &str) -> String {
         let lower = result.to_lowercase();
         if let Some(start) = lower.find("<a ") {
             let href_start = lower[start..].find("href=\"");
-            let href = href_start
-                .map(|h| {
-                    let href_content_start = start + h + 6;
-                    result[href_content_start..]
-                        .find('"')
-                        .map(|end| result[href_content_start..href_content_start + end].to_string())
-                })
-                .flatten();
+            let href = href_start.and_then(|h| {
+                let href_content_start = start + h + 6;
+                result[href_content_start..]
+                    .find('"')
+                    .map(|end| result[href_content_start..href_content_start + end].to_string())
+            });
 
             if let Some(tag_end) = lower[start..].find('>') {
                 let inner_start = start + tag_end + 1;
@@ -402,7 +396,7 @@ fn convert_code(html: &str) -> String {
     result
 }
 
-fn strip_remaining_tags(html: &str) -> String {
+pub fn strip_remaining_tags(html: &str) -> String {
     let mut result = String::new();
     let mut in_tag = false;
 
@@ -417,7 +411,7 @@ fn strip_remaining_tags(html: &str) -> String {
     result
 }
 
-fn decode_html_entities(html: &str) -> String {
+pub fn decode_html_entities(html: &str) -> String {
     html.replace("&amp;", "&")
         .replace("&lt;", "<")
         .replace("&gt;", ">")
@@ -425,33 +419,4 @@ fn decode_html_entities(html: &str) -> String {
         .replace("&#39;", "'")
         .replace("&nbsp;", " ")
         .replace("&apos;", "'")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_extract_text_from_html() {
-        let html =
-            "<html><body><h1>Hello</h1><p>World</p><script>alert('x')</script></body></html>";
-        let text = extract_text_from_html(html);
-        assert!(text.contains("Hello"));
-        assert!(text.contains("World"));
-        assert!(!text.contains("alert"));
-    }
-
-    #[test]
-    fn test_html_entities() {
-        let html = "Hello &amp; World &lt;tag&gt;";
-        let decoded = decode_html_entities(html);
-        assert_eq!(decoded, "Hello & World <tag>");
-    }
-
-    #[test]
-    fn test_strip_tags() {
-        let html = "<p>Hello <b>World</b></p>";
-        let stripped = strip_remaining_tags(html);
-        assert_eq!(stripped, "Hello World");
-    }
 }

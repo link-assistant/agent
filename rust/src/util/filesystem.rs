@@ -87,7 +87,7 @@ impl Filesystem {
                 result.push(search);
             }
 
-            if stop.map_or(false, |s| s == current) {
+            if stop.is_some_and(|s| s == current) {
                 break;
             }
 
@@ -148,41 +148,5 @@ mod pathdiff {
         } else {
             Ok(result)
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_relative_path() {
-        let rel = Filesystem::relative("/home/user", "/home/user/docs/file.txt");
-        assert_eq!(rel.to_string_lossy(), "docs/file.txt");
-    }
-
-    #[tokio::test]
-    async fn test_find_up() {
-        // Create a temp directory structure for testing
-        let temp = tempfile::tempdir().unwrap();
-        let base = temp.path();
-
-        // Create nested directories
-        let nested = base.join("a").join("b").join("c");
-        tokio::fs::create_dir_all(&nested).await.unwrap();
-
-        // Create target files at different levels
-        tokio::fs::write(base.join("target.txt"), "root")
-            .await
-            .unwrap();
-        tokio::fs::write(base.join("a").join("target.txt"), "a")
-            .await
-            .unwrap();
-
-        // Find from deepest level
-        let found = Filesystem::find_up("target.txt", &nested, None).await;
-
-        // Should find files at a/ and root
-        assert_eq!(found.len(), 2);
     }
 }

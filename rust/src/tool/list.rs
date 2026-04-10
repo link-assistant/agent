@@ -147,22 +147,21 @@ impl Tool for ListTool {
                 let name = e.file_name().to_str().unwrap_or("");
                 !should_ignore(name, &ignore_patterns)
             })
+            .filter_map(|e| e.ok())
         {
-            if let Ok(entry) = entry {
-                if entry.path() == dir_path {
-                    continue;
-                }
-                if entry.file_type().is_file() {
-                    // Get relative path from root
-                    if let Ok(rel) = entry.path().strip_prefix(&dir_path) {
-                        let rel_str = rel.to_string_lossy().to_string();
-                        // Normalize path separators
-                        let rel_str = rel_str.replace('\\', "/");
-                        files.push(rel_str);
-                        if files.len() >= LIMIT {
-                            truncated = true;
-                            break;
-                        }
+            if entry.path() == dir_path {
+                continue;
+            }
+            if entry.file_type().is_file() {
+                // Get relative path from root
+                if let Ok(rel) = entry.path().strip_prefix(&dir_path) {
+                    let rel_str = rel.to_string_lossy().to_string();
+                    // Normalize path separators
+                    let rel_str = rel_str.replace('\\', "/");
+                    files.push(rel_str);
+                    if files.len() >= LIMIT {
+                        truncated = true;
+                        break;
                     }
                 }
             }
@@ -190,7 +189,7 @@ impl Tool for ListTool {
 }
 
 /// Check if a file/directory name should be ignored
-fn should_ignore(name: &str, patterns: &[String]) -> bool {
+pub fn should_ignore(name: &str, patterns: &[String]) -> bool {
     for pattern in patterns {
         // Simple pattern matching: exact name match or prefix match for dirs
         if name == pattern.as_str() {
@@ -239,10 +238,7 @@ fn build_tree_output(root: &Path, files: &[String], truncated: bool) -> String {
         }
         dirs.insert(dir.clone());
 
-        files_by_dir
-            .entry(dir)
-            .or_insert_with(Vec::new)
-            .push(basename);
+        files_by_dir.entry(dir).or_default().push(basename);
     }
 
     let mut output = format!("{}/\n", root.display());
@@ -268,7 +264,7 @@ fn render_dir(
     let mut output = String::new();
 
     if depth > 0 {
-        let name = dir_path.split('/').last().unwrap_or(dir_path);
+        let name = dir_path.split('/').next_back().unwrap_or(dir_path);
         output.push_str(&format!("{}{}/\n", indent, name));
     }
 
@@ -309,78 +305,4 @@ fn render_dir(
     }
 
     output
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs;
-    use tempfile::TempDir;
-
-    fn create_context(dir: &Path) -> ToolContext {
-        ToolContext::new("ses_test", "msg_test", dir)
-    }
-
-    #[tokio::test]
-    async fn test_list_directory() {
-        let temp = TempDir::new().unwrap();
-        fs::write(temp.path().join("file1.txt"), "content").unwrap();
-        fs::write(temp.path().join("file2.txt"), "more content").unwrap();
-        fs::create_dir(temp.path().join("subdir")).unwrap();
-        fs::write(temp.path().join("subdir").join("nested.txt"), "nested").unwrap();
-
-        let tool = ListTool;
-        let ctx = create_context(temp.path());
-        let params = json!({});
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("file1.txt"));
-        assert!(result.output.contains("file2.txt"));
-        assert!(result.output.contains("subdir"));
-        assert!(result.output.contains("nested.txt"));
-    }
-
-    #[tokio::test]
-    async fn test_list_ignores_node_modules() {
-        let temp = TempDir::new().unwrap();
-        fs::write(temp.path().join("app.js"), "code").unwrap();
-        fs::create_dir(temp.path().join("node_modules")).unwrap();
-        fs::write(temp.path().join("node_modules").join("pkg.js"), "package").unwrap();
-
-        let tool = ListTool;
-        let ctx = create_context(temp.path());
-        let params = json!({});
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("app.js"));
-        assert!(!result.output.contains("pkg.js"));
-    }
-
-    #[tokio::test]
-    async fn test_list_nonexistent() {
-        let temp = TempDir::new().unwrap();
-
-        let tool = ListTool;
-        let ctx = create_context(temp.path());
-        let params = json!({ "path": "/nonexistent/path" });
-
-        let result = tool.execute(params, &ctx).await;
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_should_ignore() {
-        let patterns = vec![
-            "node_modules".to_string(),
-            ".git".to_string(),
-            "dist".to_string(),
-        ];
-        assert!(should_ignore("node_modules", &patterns));
-        assert!(should_ignore(".git", &patterns));
-        assert!(should_ignore("dist", &patterns));
-        assert!(!should_ignore("src", &patterns));
-        assert!(!should_ignore("main.rs", &patterns));
-    }
 }

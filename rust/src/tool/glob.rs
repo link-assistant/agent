@@ -6,7 +6,6 @@ use async_trait::async_trait;
 use glob::glob as glob_match;
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::path::Path;
 
 use super::{context::ToolContext, Tool, ToolResult};
 use crate::error::{AgentError, Result};
@@ -121,66 +120,5 @@ impl Tool for GlobTool {
             }),
             attachments: None,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs;
-    use tempfile::TempDir;
-
-    fn create_context(dir: &Path) -> ToolContext {
-        ToolContext::new("ses_test", "msg_test", dir)
-    }
-
-    #[tokio::test]
-    async fn test_glob_txt_files() {
-        let temp = TempDir::new().unwrap();
-        fs::write(temp.path().join("file1.txt"), "content").unwrap();
-        fs::write(temp.path().join("file2.txt"), "content").unwrap();
-        fs::write(temp.path().join("file3.rs"), "content").unwrap();
-
-        let tool = GlobTool;
-        let ctx = create_context(temp.path());
-        let params = json!({ "pattern": "*.txt" });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("file1.txt"));
-        assert!(result.output.contains("file2.txt"));
-        assert!(!result.output.contains("file3.rs"));
-    }
-
-    #[tokio::test]
-    async fn test_glob_recursive() {
-        let temp = TempDir::new().unwrap();
-        fs::create_dir(temp.path().join("subdir")).unwrap();
-        fs::write(temp.path().join("root.txt"), "content").unwrap();
-        fs::write(temp.path().join("subdir").join("nested.txt"), "content").unwrap();
-
-        let tool = GlobTool;
-        let ctx = create_context(temp.path());
-        let params = json!({ "pattern": "**/*.txt" });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("root.txt"));
-        assert!(result.output.contains("nested.txt"));
-    }
-
-    #[tokio::test]
-    async fn test_glob_no_matches() {
-        let temp = TempDir::new().unwrap();
-        fs::write(temp.path().join("file.txt"), "content").unwrap();
-
-        let tool = GlobTool;
-        let ctx = create_context(temp.path());
-        let params = json!({ "pattern": "*.rs" });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.is_empty());
-        assert_eq!(result.metadata["count"], 0);
     }
 }
