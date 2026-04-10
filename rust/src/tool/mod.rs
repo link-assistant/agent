@@ -4,12 +4,19 @@
 //! mirroring the JavaScript implementation's tool/ directory.
 
 pub mod bash;
+pub mod batch;
+pub mod codesearch;
 pub mod context;
 pub mod edit;
 pub mod glob;
 pub mod grep;
+pub mod invalid;
 pub mod list;
+pub mod multiedit;
 pub mod read;
+pub mod todo;
+pub mod webfetch;
+pub mod websearch;
 pub mod write;
 
 use async_trait::async_trait;
@@ -71,16 +78,25 @@ pub struct ToolRegistry {
 
 impl ToolRegistry {
     /// Create a new registry with all built-in tools
+    /// Mirrors the JavaScript ToolRegistry which includes all tools from registry.ts
     pub fn new() -> Self {
         Self {
             tools: vec![
+                Box::new(invalid::InvalidTool),
+                Box::new(bash::BashTool),
                 Box::new(read::ReadTool),
-                Box::new(write::WriteTool),
-                Box::new(edit::EditTool),
-                Box::new(list::ListTool),
                 Box::new(glob::GlobTool),
                 Box::new(grep::GrepTool),
-                Box::new(bash::BashTool),
+                Box::new(list::ListTool),
+                Box::new(edit::EditTool),
+                Box::new(write::WriteTool),
+                Box::new(webfetch::WebFetchTool),
+                Box::new(websearch::WebSearchTool),
+                Box::new(codesearch::CodeSearchTool),
+                Box::new(batch::BatchTool),
+                Box::new(todo::TodoWriteTool),
+                Box::new(todo::TodoReadTool),
+                Box::new(multiedit::MultiEditTool),
             ],
         }
     }
@@ -125,6 +141,41 @@ mod tests {
         let registry = ToolRegistry::new();
         assert!(registry.get("read").is_some());
         assert!(registry.get("write").is_some());
+        assert!(registry.get("edit").is_some());
+        assert!(registry.get("bash").is_some());
+        assert!(registry.get("glob").is_some());
+        assert!(registry.get("grep").is_some());
+        assert!(registry.get("list").is_some());
+        assert!(registry.get("webfetch").is_some());
+        assert!(registry.get("websearch").is_some());
+        assert!(registry.get("codesearch").is_some());
+        assert!(registry.get("batch").is_some());
+        assert!(registry.get("todowrite").is_some());
+        assert!(registry.get("todoread").is_some());
+        assert!(registry.get("multiedit").is_some());
+        assert!(registry.get("invalid").is_some());
         assert!(registry.get("nonexistent").is_none());
+    }
+
+    #[test]
+    fn test_registry_has_all_js_tools() {
+        let registry = ToolRegistry::new();
+        // Verify all tools from the JavaScript registry are present
+        let tool_ids: Vec<&str> = registry.all().iter().map(|t| t.id()).collect();
+        assert!(tool_ids.contains(&"bash"));
+        assert!(tool_ids.contains(&"read"));
+        assert!(tool_ids.contains(&"write"));
+        assert!(tool_ids.contains(&"edit"));
+        assert!(tool_ids.contains(&"glob"));
+        assert!(tool_ids.contains(&"grep"));
+        assert!(tool_ids.contains(&"list"));
+        assert!(tool_ids.contains(&"webfetch"));
+        assert!(tool_ids.contains(&"websearch"));
+        assert!(tool_ids.contains(&"codesearch"));
+        assert!(tool_ids.contains(&"batch"));
+        assert!(tool_ids.contains(&"todowrite"));
+        assert!(tool_ids.contains(&"todoread"));
+        assert!(tool_ids.contains(&"multiedit"));
+        assert!(tool_ids.contains(&"invalid"));
     }
 }
