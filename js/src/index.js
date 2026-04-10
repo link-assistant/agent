@@ -313,7 +313,8 @@ async function runAgentMode(argv, request) {
           systemMessage,
           appendSystemMessage,
           jsonStandard,
-          compactionModel
+          compactionModel,
+          argv.temperature
         );
       } else {
         // DIRECT MODE: Run everything in single process
@@ -325,7 +326,8 @@ async function runAgentMode(argv, request) {
           systemMessage,
           appendSystemMessage,
           jsonStandard,
-          compactionModel
+          compactionModel,
+          argv.temperature
         );
       }
     },
@@ -399,7 +401,8 @@ async function runContinuousAgentMode(argv) {
           systemMessage,
           appendSystemMessage,
           jsonStandard,
-          compactionModel
+          compactionModel,
+          argv.temperature
         );
       } else {
         // DIRECT MODE: Run everything in single process
@@ -410,7 +413,8 @@ async function runContinuousAgentMode(argv) {
           systemMessage,
           appendSystemMessage,
           jsonStandard,
-          compactionModel
+          compactionModel,
+          argv.temperature
         );
       }
     },
@@ -433,7 +437,8 @@ async function runServerMode(
   systemMessage,
   appendSystemMessage,
   jsonStandard,
-  compactionModel
+  compactionModel,
+  temperature
 ) {
   const compactJson = argv['compact-json'] === true;
 
@@ -502,6 +507,7 @@ async function runServerMode(
           compactionModel,
           system: systemMessage,
           appendSystem: appendSystemMessage,
+          temperature,
         }),
       }
     ).catch((error) => {
@@ -534,7 +540,8 @@ async function runDirectMode(
   systemMessage,
   appendSystemMessage,
   jsonStandard,
-  compactionModel
+  compactionModel,
+  temperature
 ) {
   const compactJson = argv['compact-json'] === true;
 
@@ -587,6 +594,7 @@ async function runDirectMode(
       compactionModel,
       system: systemMessage,
       appendSystem: appendSystemMessage,
+      temperature,
     }).catch((error) => {
       hasError = true;
       eventHandler.output({

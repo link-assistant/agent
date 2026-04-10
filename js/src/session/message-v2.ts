@@ -411,6 +411,7 @@ export namespace MessageV2 {
       .optional(),
     system: z.string().optional(),
     appendSystem: z.string().optional(),
+    temperature: z.number().optional(),
     tools: z.record(z.string(), z.boolean()).optional(),
   }).meta({
     ref: 'UserMessage',

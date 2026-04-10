@@ -12,46 +12,209 @@ use crate::error::{AgentError, Result};
 use crate::id::{ascending, Prefix};
 use crate::tool::{ToolContext, ToolRegistry};
 
+/// Default model used when no `--model` CLI argument is provided.
+pub const DEFAULT_MODEL: &str = "opencode/nemotron-3-super-free";
+
+/// Default compaction model used when no `--compaction-model` CLI argument is provided.
+/// gpt-5-nano has a 400K context window, larger than most free base models (~200K).
+pub const DEFAULT_COMPACTION_MODEL: &str = "opencode/gpt-5-nano";
+
+/// Default compaction models cascade, ordered from smallest/cheapest context to largest.
+/// During compaction, the system tries each model in order.
+pub const DEFAULT_COMPACTION_MODELS: &str =
+    "(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)";
+
+/// Default compaction safety margin as a percentage of usable context window.
+pub const DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT: u32 = 15;
+
 /// Agent CLI - A minimal AI CLI agent compatible with OpenCode's JSON interface
 #[derive(Parser, Debug)]
 #[command(name = "agent")]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
     /// Model to use in format providerID/modelID
-    #[arg(long, default_value = "opencode/minimax-m2.5-free")]
+    #[arg(long, default_value = DEFAULT_MODEL)]
     pub model: String,
 
-    /// JSON output format standard
+    /// JSON output format standard: "opencode" (default) or "claude" (experimental)
     #[arg(long, default_value = "opencode", value_parser = ["opencode", "claude"])]
     pub json_standard: String,
 
-    /// Direct prompt (bypasses stdin reading)
-    #[arg(short = 'p', long)]
-    pub prompt: Option<String>,
-
-    /// System message override
+    /// Full override of the system message
     #[arg(long)]
     pub system_message: Option<String>,
 
-    /// Append to system message
+    /// Full override of the system message from file
+    #[arg(long)]
+    pub system_message_file: Option<String>,
+
+    /// Append to the default system message
     #[arg(long)]
     pub append_system_message: Option<String>,
 
-    /// Enable verbose mode
-    #[arg(long, default_value = "false")]
+    /// Append to the default system message from file
+    #[arg(long)]
+    pub append_system_message_file: Option<String>,
+
+    /// Run in server mode (default: true). Use --no-server to disable.
+    #[arg(long)]
+    server: bool,
+    #[arg(long = "no-server", hide = true)]
+    no_server: bool,
+
+    /// Enable verbose mode to debug API requests (shows system prompt, token counts, etc.)
+    #[arg(long)]
     pub verbose: bool,
 
-    /// Dry run mode (simulate without API calls)
-    #[arg(long, default_value = "false")]
+    /// Simulate operations without making actual API calls or package installations (useful for testing)
+    #[arg(long)]
     pub dry_run: bool,
 
-    /// Output compact JSON (single line)
-    #[arg(long, default_value = "false")]
+    /// Use existing Claude OAuth credentials from ~/.claude/.credentials.json (from Claude Code CLI)
+    #[arg(long)]
+    pub use_existing_claude_oauth: bool,
+
+    /// Prompt message to send directly (bypasses stdin reading)
+    #[arg(short = 'p', long)]
+    pub prompt: Option<String>,
+
+    /// Disable stdin streaming mode (requires --prompt or shows help)
+    #[arg(long)]
+    pub disable_stdin: bool,
+
+    /// Optional timeout in milliseconds for stdin reading (default: no timeout)
+    #[arg(long)]
+    pub stdin_stream_timeout: Option<u64>,
+
+    /// Enable auto-merging of rapidly arriving input lines into single messages (default: true).
+    /// Use --no-auto-merge-queued-messages to disable.
+    #[arg(long)]
+    auto_merge_queued_messages: bool,
+    #[arg(long = "no-auto-merge-queued-messages", hide = true)]
+    no_auto_merge_queued_messages: bool,
+
+    /// Enable interactive mode to accept manual input as plain text strings (default: true).
+    /// Use --no-interactive to only accept JSON input.
+    #[arg(long)]
+    interactive: bool,
+    #[arg(long = "no-interactive", hide = true)]
+    no_interactive: bool,
+
+    /// Keep accepting stdin input even after the agent finishes work (default: true).
+    /// Use --no-always-accept-stdin for single-message mode.
+    #[arg(long)]
+    always_accept_stdin: bool,
+    #[arg(long = "no-always-accept-stdin", hide = true)]
+    no_always_accept_stdin: bool,
+
+    /// Output compact JSON (single line) instead of pretty-printed JSON (default: false).
+    /// Useful for program-to-program communication.
+    #[arg(long)]
     pub compact_json: bool,
+
+    /// Resume a specific session by ID. By default, forks the session with a new UUID.
+    /// Use --no-fork to continue in the same session.
+    #[arg(short = 'r', long)]
+    pub resume: Option<String>,
+
+    /// Continue the most recent session. By default, forks the session with a new UUID.
+    /// Use --no-fork to continue in the same session.
+    #[arg(short = 'c', long = "continue")]
+    pub continue_session: bool,
+
+    /// When used with --resume or --continue, continue in the same session without forking to a new UUID.
+    #[arg(long)]
+    pub no_fork: bool,
+
+    /// Generate session titles using AI (default: false). Disabling saves tokens and prevents rate limit issues.
+    #[arg(long)]
+    pub generate_title: bool,
+
+    /// Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)
+    #[arg(long)]
+    pub retry_timeout: Option<u64>,
+
+    /// Retry AI completions API requests when rate limited (HTTP 429).
+    /// Use --no-retry-on-rate-limits in integration tests to fail fast instead of waiting.
+    #[arg(long)]
+    retry_on_rate_limits: bool,
+    #[arg(long = "no-retry-on-rate-limits", hide = true)]
+    no_retry_on_rate_limits: bool,
+
+    /// Include model info in step_finish output (default: true).
+    /// Use --no-output-response-model to disable.
+    #[arg(long)]
+    output_response_model: bool,
+    #[arg(long = "no-output-response-model", hide = true)]
+    no_output_response_model: bool,
+
+    /// Generate AI session summaries (default: true). Use --no-summarize-session to disable.
+    #[arg(long)]
+    summarize_session: bool,
+    #[arg(long = "no-summarize-session", hide = true)]
+    no_summarize_session: bool,
+
+    /// Model to use for context compaction in format providerID/modelID.
+    /// Use "same" to use the base model.
+    #[arg(long, default_value = DEFAULT_COMPACTION_MODEL)]
+    pub compaction_model: String,
+
+    /// Ordered cascade of compaction models in links notation sequence format.
+    /// Models are tried from smallest/cheapest context to largest.
+    /// The special value "same" uses the base model. Overrides --compaction-model when specified.
+    #[arg(long, default_value = DEFAULT_COMPACTION_MODELS)]
+    pub compaction_models: String,
+
+    /// Safety margin (%) of usable context window before triggering compaction.
+    /// Only applies when the compaction model has equal or smaller context than the base model.
+    #[arg(long, default_value_t = DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT)]
+    pub compaction_safety_margin: u32,
+
+    /// Override the temperature for model completions.
+    /// When not set, the default per-model temperature is used.
+    #[arg(long)]
+    pub temperature: Option<f64>,
 
     /// Working directory
     #[arg(long)]
     pub working_directory: Option<PathBuf>,
+}
+
+impl Args {
+    /// Effective server mode: defaults to true, --no-server sets to false
+    pub fn server(&self) -> bool {
+        !self.no_server
+    }
+
+    /// Effective auto-merge: defaults to true, --no-auto-merge-queued-messages sets to false
+    pub fn auto_merge_queued_messages(&self) -> bool {
+        !self.no_auto_merge_queued_messages
+    }
+
+    /// Effective interactive: defaults to true, --no-interactive sets to false
+    pub fn interactive(&self) -> bool {
+        !self.no_interactive
+    }
+
+    /// Effective always-accept-stdin: defaults to true, --no-always-accept-stdin sets to false
+    pub fn always_accept_stdin(&self) -> bool {
+        !self.no_always_accept_stdin
+    }
+
+    /// Effective retry-on-rate-limits: defaults to true, --no-retry-on-rate-limits sets to false
+    pub fn retry_on_rate_limits(&self) -> bool {
+        !self.no_retry_on_rate_limits
+    }
+
+    /// Effective output-response-model: defaults to true, --no-output-response-model sets to false
+    pub fn output_response_model(&self) -> bool {
+        !self.no_output_response_model
+    }
+
+    /// Effective summarize-session: defaults to true, --no-summarize-session sets to false
+    pub fn summarize_session(&self) -> bool {
+        !self.no_summarize_session
+    }
 }
 
 /// JSON input format
@@ -138,6 +301,37 @@ fn timestamp_ms() -> u64 {
         .as_millis() as u64
 }
 
+/// Read system message from file if specified
+fn read_system_message_file(path: &str) -> Result<String> {
+    std::fs::read_to_string(path).map_err(|e| AgentError::FileNotFound {
+        path: path.to_string(),
+        suggestions: vec![format!("Failed to read system message file: {}", e)],
+    })
+}
+
+/// Resolve the effective system message from CLI args (mirrors JS readSystemMessages)
+fn resolve_system_messages(args: &Args) -> Result<(Option<String>, Option<String>)> {
+    // Full override: --system-message or --system-message-file
+    let system_message = if let Some(ref msg) = args.system_message {
+        Some(msg.clone())
+    } else if let Some(ref path) = args.system_message_file {
+        Some(read_system_message_file(path)?)
+    } else {
+        None
+    };
+
+    // Append: --append-system-message or --append-system-message-file
+    let append_system_message = if let Some(ref msg) = args.append_system_message {
+        Some(msg.clone())
+    } else if let Some(ref path) = args.append_system_message_file {
+        Some(read_system_message_file(path)?)
+    } else {
+        None
+    };
+
+    Ok((system_message, append_system_message))
+}
+
 /// Run the CLI with parsed arguments
 pub async fn run(args: Args) -> Result<()> {
     let working_dir = args
@@ -145,15 +339,38 @@ pub async fn run(args: Args) -> Result<()> {
         .clone()
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
 
+    // Resolve system messages from file args if needed
+    let (system_message, append_system_message) = resolve_system_messages(&args)?;
+
+    // Handle --disable-stdin: requires --prompt or shows help
+    if args.disable_stdin && args.prompt.is_none() {
+        return Err(AgentError::invalid_arguments(
+            "cli",
+            "--disable-stdin requires --prompt to be set",
+        ));
+    }
+
     // Handle direct prompt mode
     if let Some(ref prompt) = args.prompt {
-        return run_with_input(&args, &working_dir, prompt).await;
+        return run_with_input(
+            &args,
+            &working_dir,
+            prompt,
+            system_message.as_deref(),
+            append_system_message.as_deref(),
+        )
+        .await;
     }
 
     // Output status
+    let mode = if args.server() {
+        "server"
+    } else {
+        "stdin-stream"
+    };
     output_event(
         &OutputEvent::Status {
-            mode: "stdin-stream".to_string(),
+            mode: mode.to_string(),
             message: "Agent CLI (Rust) ready. Accepts JSON and plain text input.".to_string(),
             hint: Some("Press CTRL+C to exit.".to_string()),
         },
@@ -170,13 +387,42 @@ pub async fn run(args: Args) -> Result<()> {
                     continue;
                 }
 
-                // Try to parse as JSON, otherwise treat as plain text
-                let message = match serde_json::from_str::<InputMessage>(trimmed) {
-                    Ok(msg) => msg.message,
-                    Err(_) => trimmed.to_string(),
+                // Try to parse as JSON if not in interactive mode, otherwise treat as plain text
+                let message = if args.interactive() {
+                    match serde_json::from_str::<InputMessage>(trimmed) {
+                        Ok(msg) => msg.message,
+                        Err(_) => trimmed.to_string(),
+                    }
+                } else {
+                    // Non-interactive mode: only accept JSON input
+                    match serde_json::from_str::<InputMessage>(trimmed) {
+                        Ok(msg) => msg.message,
+                        Err(e) => {
+                            output_event(
+                                &OutputEvent::Error {
+                                    timestamp: timestamp_ms(),
+                                    session_id: None,
+                                    error: serde_json::json!({
+                                        "name": "InvalidInput",
+                                        "data": { "message": format!("Expected JSON input in non-interactive mode: {}", e) }
+                                    }),
+                                },
+                                args.compact_json,
+                            );
+                            continue;
+                        }
+                    }
                 };
 
-                if let Err(e) = run_with_input(&args, &working_dir, &message).await {
+                if let Err(e) = run_with_input(
+                    &args,
+                    &working_dir,
+                    &message,
+                    system_message.as_deref(),
+                    append_system_message.as_deref(),
+                )
+                .await
+                {
                     output_event(
                         &OutputEvent::Error {
                             timestamp: timestamp_ms(),
@@ -185,6 +431,11 @@ pub async fn run(args: Args) -> Result<()> {
                         },
                         args.compact_json,
                     );
+                }
+
+                // In single-message mode (--no-always-accept-stdin), exit after first message
+                if !args.always_accept_stdin() {
+                    break;
                 }
             }
             Err(e) => {
@@ -207,7 +458,13 @@ pub async fn run(args: Args) -> Result<()> {
 }
 
 /// Run with a specific input message
-async fn run_with_input(args: &Args, working_dir: &PathBuf, message: &str) -> Result<()> {
+async fn run_with_input(
+    args: &Args,
+    working_dir: &PathBuf,
+    message: &str,
+    system_message: Option<&str>,
+    append_system_message: Option<&str>,
+) -> Result<()> {
     let session_id = ascending(Prefix::Session, None);
     let message_id = ascending(Prefix::Message, None);
 
@@ -220,19 +477,165 @@ async fn run_with_input(args: &Args, working_dir: &PathBuf, message: &str) -> Re
         args.compact_json,
     );
 
-    if args.dry_run {
-        // In dry run mode, just echo the message
+    // Log configuration when verbose mode is on
+    if args.verbose {
+        let temp_display = match args.temperature {
+            Some(t) => format!("{}", t),
+            None => "default".to_string(),
+        };
         output_event(
             &OutputEvent::Text {
                 timestamp: timestamp_ms(),
                 session_id: session_id.clone(),
-                text: format!("[DRY RUN] Received message: {}", message),
+                text: format!("Temperature: {}", temp_display),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("Model: {}", args.model),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("JSON standard: {}", args.json_standard),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("Compaction model: {}", args.compaction_model),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("Compaction models: {}", args.compaction_models),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!(
+                    "Compaction safety margin: {}%",
+                    args.compaction_safety_margin
+                ),
+            },
+            args.compact_json,
+        );
+
+        if let Some(sys_msg) = system_message {
+            output_event(
+                &OutputEvent::Text {
+                    timestamp: timestamp_ms(),
+                    session_id: session_id.clone(),
+                    text: format!("System message: {}", sys_msg),
+                },
+                args.compact_json,
+            );
+        }
+
+        if let Some(append_msg) = append_system_message {
+            output_event(
+                &OutputEvent::Text {
+                    timestamp: timestamp_ms(),
+                    session_id: session_id.clone(),
+                    text: format!("Append system message: {}", append_msg),
+                },
+                args.compact_json,
+            );
+        }
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("Server mode: {}", args.server()),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("Interactive: {}", args.interactive()),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("Generate title: {}", args.generate_title),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("Summarize session: {}", args.summarize_session()),
+            },
+            args.compact_json,
+        );
+
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("Retry on rate limits: {}", args.retry_on_rate_limits()),
+            },
+            args.compact_json,
+        );
+
+        if let Some(timeout) = args.retry_timeout {
+            output_event(
+                &OutputEvent::Text {
+                    timestamp: timestamp_ms(),
+                    session_id: session_id.clone(),
+                    text: format!("Retry timeout: {}s", timeout),
+                },
+                args.compact_json,
+            );
+        }
+    }
+
+    if args.dry_run {
+        // In dry run mode, echo the message and show configuration
+        let temp_info = match args.temperature {
+            Some(t) => format!(", temperature: {}", t),
+            None => String::new(),
+        };
+        output_event(
+            &OutputEvent::Text {
+                timestamp: timestamp_ms(),
+                session_id: session_id.clone(),
+                text: format!("[DRY RUN] Received message: {}{}", message, temp_info),
             },
             args.compact_json,
         );
     } else {
         // Create tool context
-        let ctx = ToolContext::new(&session_id, &message_id, working_dir);
+        let _ctx = ToolContext::new(&session_id, &message_id, working_dir);
 
         // Initialize tool registry
         let registry = ToolRegistry::new();
@@ -291,15 +694,336 @@ mod tests {
     #[test]
     fn test_args_defaults() {
         let args = Args::parse_from(["agent"]);
-        assert_eq!(args.model, "opencode/minimax-m2.5-free");
+        assert_eq!(args.model, DEFAULT_MODEL);
         assert_eq!(args.json_standard, "opencode");
+        assert!(args.server());
         assert!(!args.verbose);
         assert!(!args.dry_run);
+        assert!(!args.use_existing_claude_oauth);
+        assert!(args.prompt.is_none());
+        assert!(!args.disable_stdin);
+        assert!(args.stdin_stream_timeout.is_none());
+        assert!(args.auto_merge_queued_messages());
+        assert!(args.interactive());
+        assert!(args.always_accept_stdin());
+        assert!(!args.compact_json);
+        assert!(args.resume.is_none());
+        assert!(!args.continue_session);
+        assert!(!args.no_fork);
+        assert!(!args.generate_title);
+        assert!(args.retry_timeout.is_none());
+        assert!(args.retry_on_rate_limits());
+        assert!(args.output_response_model());
+        assert!(args.summarize_session());
+        assert_eq!(args.compaction_model, DEFAULT_COMPACTION_MODEL);
+        assert_eq!(args.compaction_models, DEFAULT_COMPACTION_MODELS);
+        assert_eq!(
+            args.compaction_safety_margin,
+            DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT
+        );
+        assert!(args.temperature.is_none());
+        assert!(args.system_message.is_none());
+        assert!(args.system_message_file.is_none());
+        assert!(args.append_system_message.is_none());
+        assert!(args.append_system_message_file.is_none());
+        assert!(args.working_directory.is_none());
     }
 
     #[test]
     fn test_args_with_prompt() {
         let args = Args::parse_from(["agent", "-p", "hello"]);
         assert_eq!(args.prompt, Some("hello".to_string()));
+    }
+
+    #[test]
+    fn test_args_temperature_not_set() {
+        let args = Args::parse_from(["agent"]);
+        assert!(args.temperature.is_none());
+    }
+
+    #[test]
+    fn test_args_temperature_float() {
+        let args = Args::parse_from(["agent", "--temperature", "0.7"]);
+        assert_eq!(args.temperature, Some(0.7));
+    }
+
+    #[test]
+    fn test_args_temperature_zero() {
+        let args = Args::parse_from(["agent", "--temperature", "0"]);
+        assert_eq!(args.temperature, Some(0.0));
+    }
+
+    #[test]
+    fn test_args_temperature_one() {
+        let args = Args::parse_from(["agent", "--temperature", "1.0"]);
+        assert_eq!(args.temperature, Some(1.0));
+    }
+
+    #[test]
+    fn test_args_temperature_with_prompt() {
+        let args = Args::parse_from(["agent", "--temperature", "0.5", "-p", "hello"]);
+        assert_eq!(args.temperature, Some(0.5));
+        assert_eq!(args.prompt, Some("hello".to_string()));
+    }
+
+    #[test]
+    fn test_args_model() {
+        let args = Args::parse_from(["agent", "--model", "opencode/gpt-5"]);
+        assert_eq!(args.model, "opencode/gpt-5");
+    }
+
+    #[test]
+    fn test_args_json_standard_claude() {
+        let args = Args::parse_from(["agent", "--json-standard", "claude"]);
+        assert_eq!(args.json_standard, "claude");
+    }
+
+    #[test]
+    fn test_args_system_message() {
+        let args = Args::parse_from(["agent", "--system-message", "You are helpful"]);
+        assert_eq!(args.system_message, Some("You are helpful".to_string()));
+    }
+
+    #[test]
+    fn test_args_system_message_file() {
+        let args = Args::parse_from(["agent", "--system-message-file", "/tmp/sys.txt"]);
+        assert_eq!(args.system_message_file, Some("/tmp/sys.txt".to_string()));
+    }
+
+    #[test]
+    fn test_args_append_system_message() {
+        let args = Args::parse_from(["agent", "--append-system-message", "extra instructions"]);
+        assert_eq!(
+            args.append_system_message,
+            Some("extra instructions".to_string())
+        );
+    }
+
+    #[test]
+    fn test_args_append_system_message_file() {
+        let args = Args::parse_from(["agent", "--append-system-message-file", "/tmp/append.txt"]);
+        assert_eq!(
+            args.append_system_message_file,
+            Some("/tmp/append.txt".to_string())
+        );
+    }
+
+    #[test]
+    fn test_args_server_mode() {
+        // Default is true
+        let args = Args::parse_from(["agent"]);
+        assert!(args.server());
+    }
+
+    #[test]
+    fn test_args_no_server() {
+        let args = Args::parse_from(["agent", "--no-server"]);
+        assert!(!args.server());
+    }
+
+    #[test]
+    fn test_args_verbose() {
+        let args = Args::parse_from(["agent", "--verbose"]);
+        assert!(args.verbose);
+    }
+
+    #[test]
+    fn test_args_dry_run() {
+        let args = Args::parse_from(["agent", "--dry-run"]);
+        assert!(args.dry_run);
+    }
+
+    #[test]
+    fn test_args_use_existing_claude_oauth() {
+        let args = Args::parse_from(["agent", "--use-existing-claude-oauth"]);
+        assert!(args.use_existing_claude_oauth);
+    }
+
+    #[test]
+    fn test_args_disable_stdin() {
+        let args = Args::parse_from(["agent", "--disable-stdin", "-p", "test"]);
+        assert!(args.disable_stdin);
+    }
+
+    #[test]
+    fn test_args_stdin_stream_timeout() {
+        let args = Args::parse_from(["agent", "--stdin-stream-timeout", "5000"]);
+        assert_eq!(args.stdin_stream_timeout, Some(5000));
+    }
+
+    #[test]
+    fn test_args_no_auto_merge_queued_messages() {
+        let args = Args::parse_from(["agent", "--no-auto-merge-queued-messages"]);
+        assert!(!args.auto_merge_queued_messages());
+    }
+
+    #[test]
+    fn test_args_no_interactive() {
+        let args = Args::parse_from(["agent", "--no-interactive"]);
+        assert!(!args.interactive());
+    }
+
+    #[test]
+    fn test_args_no_always_accept_stdin() {
+        let args = Args::parse_from(["agent", "--no-always-accept-stdin"]);
+        assert!(!args.always_accept_stdin());
+    }
+
+    #[test]
+    fn test_args_compact_json() {
+        let args = Args::parse_from(["agent", "--compact-json"]);
+        assert!(args.compact_json);
+    }
+
+    #[test]
+    fn test_args_resume() {
+        let args = Args::parse_from(["agent", "--resume", "ses_abc123"]);
+        assert_eq!(args.resume, Some("ses_abc123".to_string()));
+    }
+
+    #[test]
+    fn test_args_resume_short() {
+        let args = Args::parse_from(["agent", "-r", "ses_abc123"]);
+        assert_eq!(args.resume, Some("ses_abc123".to_string()));
+    }
+
+    #[test]
+    fn test_args_continue() {
+        let args = Args::parse_from(["agent", "--continue"]);
+        assert!(args.continue_session);
+    }
+
+    #[test]
+    fn test_args_continue_short() {
+        let args = Args::parse_from(["agent", "-c"]);
+        assert!(args.continue_session);
+    }
+
+    #[test]
+    fn test_args_no_fork() {
+        let args = Args::parse_from(["agent", "--no-fork", "--resume", "ses_abc"]);
+        assert!(args.no_fork);
+    }
+
+    #[test]
+    fn test_args_generate_title() {
+        let args = Args::parse_from(["agent", "--generate-title"]);
+        assert!(args.generate_title);
+    }
+
+    #[test]
+    fn test_args_retry_timeout() {
+        let args = Args::parse_from(["agent", "--retry-timeout", "3600"]);
+        assert_eq!(args.retry_timeout, Some(3600));
+    }
+
+    #[test]
+    fn test_args_no_retry_on_rate_limits() {
+        let args = Args::parse_from(["agent", "--no-retry-on-rate-limits"]);
+        assert!(!args.retry_on_rate_limits());
+    }
+
+    #[test]
+    fn test_args_no_output_response_model() {
+        let args = Args::parse_from(["agent", "--no-output-response-model"]);
+        assert!(!args.output_response_model());
+    }
+
+    #[test]
+    fn test_args_no_summarize_session() {
+        let args = Args::parse_from(["agent", "--no-summarize-session"]);
+        assert!(!args.summarize_session());
+    }
+
+    #[test]
+    fn test_args_compaction_model() {
+        let args = Args::parse_from(["agent", "--compaction-model", "opencode/gpt-5"]);
+        assert_eq!(args.compaction_model, "opencode/gpt-5");
+    }
+
+    #[test]
+    fn test_args_compaction_models() {
+        let args = Args::parse_from(["agent", "--compaction-models", "(model1 model2 same)"]);
+        assert_eq!(args.compaction_models, "(model1 model2 same)");
+    }
+
+    #[test]
+    fn test_args_compaction_safety_margin() {
+        let args = Args::parse_from(["agent", "--compaction-safety-margin", "20"]);
+        assert_eq!(args.compaction_safety_margin, 20);
+    }
+
+    #[test]
+    fn test_args_all_options_combined() {
+        let args = Args::parse_from([
+            "agent",
+            "--model",
+            "opencode/gpt-5",
+            "--json-standard",
+            "claude",
+            "--system-message",
+            "Be helpful",
+            "--verbose",
+            "--dry-run",
+            "--compact-json",
+            "--temperature",
+            "0.8",
+            "--compaction-model",
+            "same",
+            "--compaction-safety-margin",
+            "10",
+            "--no-interactive",
+            "--no-always-accept-stdin",
+            "--no-retry-on-rate-limits",
+            "--retry-timeout",
+            "60",
+            "--generate-title",
+            "--no-summarize-session",
+            "-p",
+            "test prompt",
+        ]);
+        assert_eq!(args.model, "opencode/gpt-5");
+        assert_eq!(args.json_standard, "claude");
+        assert_eq!(args.system_message, Some("Be helpful".to_string()));
+        assert!(args.verbose);
+        assert!(args.dry_run);
+        assert!(args.compact_json);
+        assert_eq!(args.temperature, Some(0.8));
+        assert_eq!(args.compaction_model, "same");
+        assert_eq!(args.compaction_safety_margin, 10);
+        assert!(!args.interactive());
+        assert!(!args.always_accept_stdin());
+        assert!(!args.retry_on_rate_limits());
+        assert_eq!(args.retry_timeout, Some(60));
+        assert!(args.generate_title);
+        assert!(!args.summarize_session());
+        assert_eq!(args.prompt, Some("test prompt".to_string()));
+    }
+
+    #[test]
+    fn test_default_model_matches_js() {
+        // Ensures Rust default model matches JavaScript DEFAULT_MODEL
+        assert_eq!(DEFAULT_MODEL, "opencode/nemotron-3-super-free");
+    }
+
+    #[test]
+    fn test_default_compaction_model_matches_js() {
+        // Ensures Rust default compaction model matches JavaScript DEFAULT_COMPACTION_MODEL
+        assert_eq!(DEFAULT_COMPACTION_MODEL, "opencode/gpt-5-nano");
+    }
+
+    #[test]
+    fn test_default_compaction_models_matches_js() {
+        // Ensures Rust default compaction models matches JavaScript DEFAULT_COMPACTION_MODELS
+        assert_eq!(
+            DEFAULT_COMPACTION_MODELS,
+            "(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)"
+        );
+    }
+
+    #[test]
+    fn test_default_compaction_safety_margin_matches_js() {
+        // Ensures Rust default compaction safety margin matches JavaScript
+        assert_eq!(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT, 15);
     }
 }
