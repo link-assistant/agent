@@ -6,7 +6,7 @@
  */
 
 /** Default model used when no `--model` CLI argument is provided. */
-export const DEFAULT_MODEL = 'opencode/qwen3.6-plus-free';
+export const DEFAULT_MODEL = 'opencode/nemotron-3-super-free';
 
 /** Default provider ID extracted from DEFAULT_MODEL. */
 export const DEFAULT_PROVIDER_ID = DEFAULT_MODEL.split('/')[0];
@@ -31,20 +31,21 @@ export const DEFAULT_COMPACTION_MODEL = 'opencode/gpt-5-nano';
  * The special value "same" means use the same model as `--model`.
  *
  * Parsed as links notation references sequence (single anonymous link):
- *   "(big-pickle nemotron-3-super-free minimax-m2.5-free gpt-5-nano qwen3.6-plus-free same)"
+ *   "(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)"
  *
  * Context limits (approximate):
  *   big-pickle:            ~200K
- *   nemotron-3-super-free: ~262K
  *   minimax-m2.5-free:     ~200K
+ *   nemotron-3-super-free: ~262K (default model)
  *   gpt-5-nano:            ~400K
- *   qwen3.6-plus-free:     ~1M
  *   same:                  (base model's context)
  *
+ * Note: qwen3.6-plus-free was removed — free promotion ended April 2026.
+ * @see https://github.com/link-assistant/agent/issues/242
  * @see https://github.com/link-assistant/agent/issues/232
  */
 export const DEFAULT_COMPACTION_MODELS =
-  '(big-pickle nemotron-3-super-free minimax-m2.5-free gpt-5-nano qwen3.6-plus-free same)';
+  '(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)';
 
 /**
  * Default compaction safety margin as a percentage of usable context window.

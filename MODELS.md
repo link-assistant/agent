@@ -30,12 +30,12 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 | Model                                    | Model ID                      | Input  | Output | Cached Read | Cached Write |
 | ---------------------------------------- | ----------------------------- | ------ | ------ | ----------- | ------------ |
 | **Free Models (Output: $0.00)**          |
-| Qwen 3.6 Plus Free (default)            | `opencode/qwen3.6-plus-free`  | Free   | Free   | Free        | -            |
-| Nemotron 3 Super Free                    | `opencode/nemotron-3-super-free` | Free | Free   | Free        | -            |
+| Nemotron 3 Super Free (default)          | `opencode/nemotron-3-super-free` | Free | Free   | Free        | -            |
 | MiniMax M2.5 Free                        | `opencode/minimax-m2.5-free`  | Free   | Free   | Free        | -            |
 | GPT 5 Nano                               | `opencode/gpt-5-nano`         | Free   | Free   | Free        | -            |
 | Big Pickle                               | `opencode/big-pickle`         | Free   | Free   | Free        | -            |
 | **Discontinued Free Models**             |
+| ~~Qwen 3.6 Plus Free~~                   | `opencode/qwen3.6-plus-free`  | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | ~~Kimi K2.5 Free~~                       | `opencode/kimi-k2.5-free`     | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | ~~Grok Code Fast 1~~                     | `opencode/grok-code`          | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
 | ~~MiniMax M2.1 Free~~                    | `opencode/minimax-m2.1-free`  | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
@@ -60,9 +60,11 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 
 ## Default Model
 
-The default model is **Qwen 3.6 Plus Free** (`opencode/qwen3.6-plus-free`), which is completely free and offers the largest context window (~1M tokens) among free models.
+The default model is **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`), which is completely free and offers strong reasoning capabilities with a ~262K token context window (NVIDIA hybrid Mamba-Transformer architecture).
 
-> **Note:** MiniMax M2.5 Free (`opencode/minimax-m2.5-free`) was previously the default free model. Qwen 3.6 Plus Free is now the default due to its superior context window and agent performance. See [issue #232](https://github.com/link-assistant/agent/issues/232).
+> **Note:** Qwen 3.6 Plus Free (`opencode/qwen3.6-plus-free`) was previously the default free model, but OpenCode Zen ended the free promotion in April 2026. The model now requires an OpenCode Go subscription. See [issue #242](https://github.com/link-assistant/agent/issues/242).
+
+> **Note:** MiniMax M2.5 Free (`opencode/minimax-m2.5-free`) was previously the default free model. See [issue #232](https://github.com/link-assistant/agent/issues/232).
 
 > **Note:** Kimi K2.5 Free (`opencode/kimi-k2.5-free`) was previously the default free model, but it was removed from the OpenCode Zen provider in March 2026. See [Case Study #208](docs/case-studies/issue-208/README.md) for details.
 
@@ -70,30 +72,26 @@ The default model is **Qwen 3.6 Plus Free** (`opencode/qwen3.6-plus-free`), whic
 
 ### Free Models (in order of recommendation)
 
-1. **Qwen 3.6 Plus Free** (`opencode/qwen3.6-plus-free`) - Default free model (~1M context, strong agent performance)
-2. **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`) - NVIDIA hybrid Mamba-Transformer (~262K context, strong reasoning)
-3. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Strong general-purpose performance (~200K context)
-4. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable OpenAI-powered free option (~400K context)
-5. **Big Pickle** (`opencode/big-pickle`) - Stealth model, free during evaluation (~200K context)
+1. **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`) - Default free model, NVIDIA hybrid Mamba-Transformer (~262K context, strong reasoning)
+2. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Strong general-purpose performance (~200K context)
+3. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable OpenAI-powered free option (~400K context)
+4. **Big Pickle** (`opencode/big-pickle`) - Stealth model, free during evaluation (~200K context)
 
-> **Note:** `opencode/kimi-k2.5-free`, `opencode/minimax-m2.1-free`, and `opencode/glm-4.7-free` are no longer available as free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
+> **Note:** `opencode/qwen3.6-plus-free`, `opencode/kimi-k2.5-free`, `opencode/minimax-m2.1-free`, and `opencode/glm-4.7-free` are no longer available as free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
 
 ## Usage Examples
 
 ### Using the Default Model (Free)
 
 ```bash
-# Uses opencode/qwen3.6-plus-free by default
+# Uses opencode/nemotron-3-super-free by default
 echo "hello" | agent
 ```
 
 ### Using Other Free Models
 
 ```bash
-# Qwen 3.6 Plus Free (default)
-echo "hello" | agent --model opencode/qwen3.6-plus-free
-
-# Nemotron 3 Super Free
+# Nemotron 3 Super Free (default)
 echo "hello" | agent --model opencode/nemotron-3-super-free
 
 # MiniMax M2.5 Free
