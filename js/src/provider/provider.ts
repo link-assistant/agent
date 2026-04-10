@@ -1749,10 +1749,9 @@ export namespace Provider {
     }
     if (providerID === 'opencode' || providerID === 'local') {
       priority = [
-        'qwen3.6-plus-free',
+        'nemotron-3-super-free',
         'minimax-m2.5-free',
         'gpt-5-nano',
-        'nemotron-3-super-free',
         'big-pickle',
       ];
     }
@@ -1781,9 +1780,8 @@ export namespace Provider {
   }
 
   const priority = [
-    'qwen3.6-plus-free',
-    'glm-5-free',
     'nemotron-3-super-free',
+    'glm-5-free',
     'minimax-m2.5-free',
     'gpt-5-nano',
     'big-pickle',
@@ -1866,7 +1864,7 @@ export namespace Provider {
    * 1. If model is uniquely available in one provider, use that provider
    * 2. If model is available in multiple providers, prioritize based on free model availability:
    *    - kilo: glm-5-free, glm-4.5-air-free, minimax-m2.5-free, giga-potato-free, deepseek-r1-free (unique to Kilo)
-   *    - opencode: big-pickle, gpt-5-nano, qwen3.6-plus-free, nemotron-3-super-free (unique to OpenCode)
+   *    - opencode: big-pickle, gpt-5-nano, nemotron-3-super-free (unique to OpenCode)
    * 3. For shared models, prefer OpenCode first, then fall back to Kilo on rate limit
    *
    * @param modelID - Short model name without provider prefix

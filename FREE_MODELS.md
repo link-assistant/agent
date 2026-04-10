@@ -9,7 +9,7 @@ This document lists all free AI models currently supported by the agent. Free mo
 Use any free model with the `--model` flag:
 
 ```bash
-echo "hello" | agent --model opencode/qwen3.6-plus-free
+echo "hello" | agent --model opencode/nemotron-3-super-free
 ```
 
 ## OpenCode Zen Free Models
@@ -18,8 +18,7 @@ echo "hello" | agent --model opencode/qwen3.6-plus-free
 
 | Model                   | Model ID                           | Context Window  | Description                                         |
 | ----------------------- | ---------------------------------- | --------------- | --------------------------------------------------- |
-| Qwen 3.6 Plus Free      | `opencode/qwen3.6-plus-free`      | ~1,000,000      | **Default.** Largest context, strong agent performance |
-| Nemotron 3 Super Free   | `opencode/nemotron-3-super-free`   | ~262,144        | NVIDIA hybrid Mamba-Transformer, strong reasoning   |
+| Nemotron 3 Super Free   | `opencode/nemotron-3-super-free`   | ~262,144        | **Default.** NVIDIA hybrid Mamba-Transformer, strong reasoning |
 | MiniMax M2.5 Free       | `opencode/minimax-m2.5-free`      | ~200,000        | Strong general-purpose performance                  |
 | GPT 5 Nano              | `opencode/gpt-5-nano`             | ~400,000        | Reliable OpenAI-powered free option                 |
 | Big Pickle              | `opencode/big-pickle`             | ~200,000        | Stealth model, free during evaluation period        |
@@ -27,10 +26,7 @@ echo "hello" | agent --model opencode/qwen3.6-plus-free
 ### Usage Examples
 
 ```bash
-# Qwen 3.6 Plus Free (default)
-echo "hello" | agent --model opencode/qwen3.6-plus-free
-
-# Nemotron 3 Super Free
+# Nemotron 3 Super Free (default)
 echo "hello" | agent --model opencode/nemotron-3-super-free
 
 # MiniMax M2.5 Free
@@ -85,6 +81,7 @@ The following models were previously free but are no longer available:
 
 | Model              | Former Model ID               | Status                                   |
 | ------------------ | ----------------------------- | ---------------------------------------- |
+| Qwen 3.6 Plus Free | `opencode/qwen3.6-plus-free`  | Free promotion ended (April 2026) — now requires OpenCode Go subscription. See [issue #242](https://github.com/link-assistant/agent/issues/242) |
 | Kimi K2.5 Free     | `opencode/kimi-k2.5-free`     | Removed from OpenCode Zen (March 2026) — see [issue #208](https://github.com/link-assistant/agent/issues/208) |
 | Grok Code Fast 1   | `opencode/grok-code`          | Discontinued January 2026                |
 | MiniMax M2.1 Free  | `opencode/minimax-m2.1-free`  | Replaced by `opencode/minimax-m2.5-free` |
@@ -98,7 +95,7 @@ The following models were previously free but are no longer available:
 
 ### Use OpenCode Zen when:
 - You want the most tested and reliable free models
-- You prefer `qwen3.6-plus-free` as the default with ~1M context window
+- You prefer `nemotron-3-super-free` as the default with ~262K context window
 - You need a simple, curated list of models
 
 ### Use Kilo Gateway when:
@@ -110,7 +107,6 @@ The following models were previously free but are no longer available:
 
 The agent intelligently routes model requests:
 
-- `qwen3.6-plus-free` without provider prefix → OpenCode Zen (`opencode/qwen3.6-plus-free`)
 - `nemotron-3-super-free` without provider prefix → OpenCode Zen (`opencode/nemotron-3-super-free`)
 - `big-pickle` without provider prefix → OpenCode Zen (`opencode/big-pickle`)
 - `kilo/minimax-m2.5-free` explicitly → Kilo Gateway

@@ -88,7 +88,7 @@ describe('Model validation - explicit provider/model format (#231)', () => {
   });
 
   test('should warn but proceed when default model not in models.dev catalog (#239)', () => {
-    // When no --model CLI flag is provided, the default model (qwen3.6-plus-free)
+    // When no --model CLI flag is provided, the default model (nemotron-3-super-free)
     // should NOT be rejected even if models.dev API doesn't list it yet.
     // The models.dev API can lag behind the provider's actual model availability.
     //
@@ -101,13 +101,13 @@ describe('Model validation - explicit provider/model format (#231)', () => {
     expect(isDefaultModel).toBe(true);
 
     // With isDefaultModel=true, the validation block warns instead of throwing
-    // This means the agent can still use qwen3.6-plus-free even if models.dev
+    // This means the agent can still use nemotron-3-super-free even if models.dev
     // temporarily doesn't list it
     const providerModels: Record<string, boolean> = {
       'minimax-m2.5-free': true,
       'gpt-5-nano': true,
     };
-    const modelID = 'qwen3.6-plus-free';
+    const modelID = 'nemotron-3-super-free';
     const modelExists = !!providerModels[modelID];
     expect(modelExists).toBe(false);
 
