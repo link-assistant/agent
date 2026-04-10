@@ -244,16 +244,13 @@ fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool)
     }
 
     // Strategy 7: TrimmedBoundaryReplacer
-    if let Some(result) =
-        try_trimmed_boundary_replace(content, old_string, new_string, replace_all)
+    if let Some(result) = try_trimmed_boundary_replace(content, old_string, new_string, replace_all)
     {
         return Ok(result);
     }
 
     // Strategy 8: ContextAwareReplacer
-    if let Some(result) =
-        try_context_aware_replace(content, old_string, new_string, replace_all)
-    {
+    if let Some(result) = try_context_aware_replace(content, old_string, new_string, replace_all) {
         return Ok(result);
     }
 
@@ -534,14 +531,38 @@ fn try_escape_normalized_replace(
         while let Some(c) = chars.next() {
             if c == '\\' {
                 match chars.peek() {
-                    Some('n') => { chars.next(); result.push('\n'); }
-                    Some('t') => { chars.next(); result.push('\t'); }
-                    Some('r') => { chars.next(); result.push('\r'); }
-                    Some('\'') => { chars.next(); result.push('\''); }
-                    Some('"') => { chars.next(); result.push('"'); }
-                    Some('`') => { chars.next(); result.push('`'); }
-                    Some('\\') => { chars.next(); result.push('\\'); }
-                    Some('$') => { chars.next(); result.push('$'); }
+                    Some('n') => {
+                        chars.next();
+                        result.push('\n');
+                    }
+                    Some('t') => {
+                        chars.next();
+                        result.push('\t');
+                    }
+                    Some('r') => {
+                        chars.next();
+                        result.push('\r');
+                    }
+                    Some('\'') => {
+                        chars.next();
+                        result.push('\'');
+                    }
+                    Some('"') => {
+                        chars.next();
+                        result.push('"');
+                    }
+                    Some('`') => {
+                        chars.next();
+                        result.push('`');
+                    }
+                    Some('\\') => {
+                        chars.next();
+                        result.push('\\');
+                    }
+                    Some('$') => {
+                        chars.next();
+                        result.push('$');
+                    }
                     _ => result.push(c),
                 }
             } else {

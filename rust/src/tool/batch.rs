@@ -168,26 +168,24 @@ impl Tool for BatchTool {
                         )),
                     });
                 }
-                Some(tool) => {
-                    match tool.execute(call.parameters.clone(), ctx).await {
-                        Ok(result) => {
-                            results.push(BatchCallResult {
-                                tool: call.tool.clone(),
-                                success: true,
-                                output: Some(result.output),
-                                error: None,
-                            });
-                        }
-                        Err(e) => {
-                            results.push(BatchCallResult {
-                                tool: call.tool.clone(),
-                                success: false,
-                                output: None,
-                                error: Some(e.to_string()),
-                            });
-                        }
+                Some(tool) => match tool.execute(call.parameters.clone(), ctx).await {
+                    Ok(result) => {
+                        results.push(BatchCallResult {
+                            tool: call.tool.clone(),
+                            success: true,
+                            output: Some(result.output),
+                            error: None,
+                        });
                     }
-                }
+                    Err(e) => {
+                        results.push(BatchCallResult {
+                            tool: call.tool.clone(),
+                            success: false,
+                            output: None,
+                            error: Some(e.to_string()),
+                        });
+                    }
+                },
             }
         }
 
@@ -217,9 +215,11 @@ impl Tool for BatchTool {
             )
         };
 
-        let tool_names: Vec<&str> = active_calls.iter().map(|c| c.tool.as_str()).chain(
-            discarded_calls.iter().map(|c| c.tool.as_str())
-        ).collect();
+        let tool_names: Vec<&str> = active_calls
+            .iter()
+            .map(|c| c.tool.as_str())
+            .chain(discarded_calls.iter().map(|c| c.tool.as_str()))
+            .collect();
 
         Ok(ToolResult {
             title: format!("Batch execution ({}/{} successful)", successful, total),

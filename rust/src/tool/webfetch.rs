@@ -358,12 +358,14 @@ fn convert_links(html: &str) -> String {
         let lower = result.to_lowercase();
         if let Some(start) = lower.find("<a ") {
             let href_start = lower[start..].find("href=\"");
-            let href = href_start.map(|h| {
-                let href_content_start = start + h + 6;
-                result[href_content_start..]
-                    .find('"')
-                    .map(|end| result[href_content_start..href_content_start + end].to_string())
-            }).flatten();
+            let href = href_start
+                .map(|h| {
+                    let href_content_start = start + h + 6;
+                    result[href_content_start..]
+                        .find('"')
+                        .map(|end| result[href_content_start..href_content_start + end].to_string())
+                })
+                .flatten();
 
             if let Some(tag_end) = lower[start..].find('>') {
                 let inner_start = start + tag_end + 1;
@@ -408,7 +410,9 @@ fn replace_inline_tag(html: &str, tag: &str, marker: &str) -> String {
 fn convert_code(html: &str) -> String {
     let mut result = html.to_string();
     // Code blocks: <pre><code>content</code></pre> -> ```content```
-    result = result.replace("<pre><code>", "```\n").replace("</code></pre>", "\n```");
+    result = result
+        .replace("<pre><code>", "```\n")
+        .replace("</code></pre>", "\n```");
     // Inline code: <code>text</code> -> `text`
     result = replace_inline_tag(&result, "code", "`");
     result
@@ -445,7 +449,8 @@ mod tests {
 
     #[test]
     fn test_extract_text_from_html() {
-        let html = "<html><body><h1>Hello</h1><p>World</p><script>alert('x')</script></body></html>";
+        let html =
+            "<html><body><h1>Hello</h1><p>World</p><script>alert('x')</script></body></html>";
         let text = extract_text_from_html(html);
         assert!(text.contains("Hello"));
         assert!(text.contains("World"));

@@ -171,7 +171,11 @@ impl Tool for ListTool {
         // Build tree structure similar to JS output
         let output = build_tree_output(&dir_path, &files, truncated);
 
-        let display_title = if title.is_empty() { ".".to_string() } else { title };
+        let display_title = if title.is_empty() {
+            ".".to_string()
+        } else {
+            title
+        };
 
         Ok(ToolResult {
             title: display_title,
@@ -245,7 +249,9 @@ fn build_tree_output(root: &Path, files: &[String], truncated: bool) -> String {
     output.push_str(&render_dir(".", &dirs, &files_by_dir, 0));
 
     if truncated {
-        output.push_str("\n(Results are truncated. Consider using a more specific path or pattern.)\n");
+        output.push_str(
+            "\n(Results are truncated. Consider using a more specific path or pattern.)\n",
+        );
     }
 
     output
@@ -340,10 +346,7 @@ mod tests {
         let temp = TempDir::new().unwrap();
         fs::write(temp.path().join("app.js"), "code").unwrap();
         fs::create_dir(temp.path().join("node_modules")).unwrap();
-        fs::write(
-            temp.path().join("node_modules").join("pkg.js"),
-            "package",
-        ).unwrap();
+        fs::write(temp.path().join("node_modules").join("pkg.js"), "package").unwrap();
 
         let tool = ListTool;
         let ctx = create_context(temp.path());
