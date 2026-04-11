@@ -13,12 +13,13 @@ const BINARY_EXTENSIONS: &[&str] = &[
 ];
 
 /// Known image file extensions
+#[allow(dead_code)]
 const IMAGE_EXTENSIONS: &[&str] = &[
     ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif", ".svg", ".ico", ".avif",
 ];
 
 /// Check if a file extension indicates a binary file
-fn is_binary_extension(path: &Path) -> bool {
+pub fn is_binary_extension(path: &Path) -> bool {
     path.extension()
         .and_then(|e| e.to_str())
         .map(|ext| {
@@ -150,61 +151,5 @@ pub fn validate_image_format(bytes: &[u8], expected_format: &str) -> bool {
             brand == "avif" || brand == "avis"
         }
         _ => true, // Unknown format, skip validation
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::path::PathBuf;
-
-    #[test]
-    fn test_binary_extension_detection() {
-        assert!(is_binary_extension(&PathBuf::from("file.exe")));
-        assert!(is_binary_extension(&PathBuf::from("archive.zip")));
-        assert!(is_binary_extension(&PathBuf::from("data.bin")));
-        assert!(!is_binary_extension(&PathBuf::from("code.rs")));
-        assert!(!is_binary_extension(&PathBuf::from("readme.txt")));
-    }
-
-    #[test]
-    fn test_image_extension_detection() {
-        assert_eq!(
-            is_image_extension(&PathBuf::from("photo.jpg")),
-            Some("JPEG")
-        );
-        assert_eq!(is_image_extension(&PathBuf::from("icon.PNG")), Some("PNG"));
-        assert_eq!(is_image_extension(&PathBuf::from("code.rs")), None);
-    }
-
-    #[test]
-    fn test_binary_content_detection() {
-        let path = PathBuf::from("test.txt");
-
-        // Text content
-        let text = b"Hello, World!";
-        assert!(!is_binary_file(&path, text));
-
-        // Binary content with null byte
-        let binary = b"Hello\x00World";
-        assert!(is_binary_file(&path, binary));
-
-        // Empty file
-        assert!(!is_binary_file(&path, &[]));
-    }
-
-    #[test]
-    fn test_image_format_validation() {
-        // Valid PNG
-        let png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
-        assert!(validate_image_format(&png, "PNG"));
-
-        // Invalid PNG (wrong signature)
-        let not_png = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-        assert!(!validate_image_format(&not_png, "PNG"));
-
-        // Valid JPEG
-        let jpeg = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46];
-        assert!(validate_image_format(&jpeg, "JPEG"));
     }
 }

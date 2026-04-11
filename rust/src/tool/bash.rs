@@ -133,9 +133,11 @@ impl Tool for BashTool {
 
                 Ok(ToolResult {
                     title,
-                    output,
+                    output: output.clone(),
                     metadata: json!({
                         "exitCode": exit_code,
+                        "exit": exit_code,
+                        "output": output,
                         "command": params.command,
                     }),
                     attachments: None,
@@ -178,90 +180,4 @@ async fn execute_command(
     let exit_code = status.code().unwrap_or(-1);
 
     Ok((stdout, stderr, exit_code))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::TempDir;
-
-    fn create_context(dir: &std::path::Path) -> ToolContext {
-        ToolContext::new("ses_test", "msg_test", dir)
-    }
-
-    #[tokio::test]
-    async fn test_bash_echo() {
-        let temp = TempDir::new().unwrap();
-        let tool = BashTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "command": "echo 'hello world'"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("hello world"));
-        assert_eq!(result.metadata["exitCode"], 0);
-    }
-
-    #[tokio::test]
-    async fn test_bash_ls() {
-        let temp = TempDir::new().unwrap();
-        std::fs::write(temp.path().join("test.txt"), "content").unwrap();
-
-        let tool = BashTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "command": "ls"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("test.txt"));
-    }
-
-    #[tokio::test]
-    async fn test_bash_exit_code() {
-        let temp = TempDir::new().unwrap();
-        let tool = BashTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "command": "exit 42"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert_eq!(result.metadata["exitCode"], 42);
-    }
-
-    #[tokio::test]
-    async fn test_bash_stderr() {
-        let temp = TempDir::new().unwrap();
-        let tool = BashTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "command": "echo 'error message' >&2"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result.output.contains("error message"));
-    }
-
-    #[tokio::test]
-    async fn test_bash_working_directory() {
-        let temp = TempDir::new().unwrap();
-        let tool = BashTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "command": "pwd"
-        });
-
-        let result = tool.execute(params, &ctx).await.unwrap();
-
-        assert!(result
-            .output
-            .trim()
-            .ends_with(temp.path().file_name().unwrap().to_str().unwrap()));
-    }
 }

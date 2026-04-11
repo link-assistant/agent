@@ -16,6 +16,7 @@ pub enum Prefix {
     Permission,
     User,
     Part,
+    Call,
 }
 
 impl Prefix {
@@ -27,6 +28,7 @@ impl Prefix {
             Prefix::Permission => "per",
             Prefix::User => "usr",
             Prefix::Part => "prt",
+            Prefix::Call => "call",
         }
     }
 }
@@ -87,8 +89,8 @@ pub fn create(prefix: Prefix, descending: bool, timestamp: Option<u64>) -> Strin
 
     // Extract 6 bytes for the time component
     let mut time_bytes = [0u8; 6];
-    for i in 0..6 {
-        time_bytes[i] = ((now >> (40 - 8 * i)) & 0xff) as u8;
+    for (i, byte) in time_bytes.iter_mut().enumerate().take(6) {
+        *byte = ((now >> (40 - 8 * i)) & 0xff) as u8;
     }
 
     // Build the ID: prefix_timeHex + random
@@ -123,63 +125,5 @@ pub fn descending(prefix: Prefix, given: Option<&str>) -> String {
             id.to_string()
         }
         None => create(prefix, true, None),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_prefix_strings() {
-        assert_eq!(Prefix::Session.as_str(), "ses");
-        assert_eq!(Prefix::Message.as_str(), "msg");
-        assert_eq!(Prefix::Permission.as_str(), "per");
-        assert_eq!(Prefix::User.as_str(), "usr");
-        assert_eq!(Prefix::Part.as_str(), "prt");
-    }
-
-    #[test]
-    fn test_create_ascending() {
-        let id1 = ascending(Prefix::Session, None);
-        let id2 = ascending(Prefix::Session, None);
-
-        assert!(id1.starts_with("ses_"));
-        assert!(id2.starts_with("ses_"));
-        assert_ne!(id1, id2);
-        // Ascending IDs should sort ascending by time
-        assert!(id1 < id2);
-    }
-
-    #[test]
-    fn test_create_descending() {
-        let id1 = descending(Prefix::Message, None);
-        let id2 = descending(Prefix::Message, None);
-
-        assert!(id1.starts_with("msg_"));
-        assert!(id2.starts_with("msg_"));
-        assert_ne!(id1, id2);
-        // Descending IDs should sort descending by time
-        assert!(id1 > id2);
-    }
-
-    #[test]
-    fn test_id_length() {
-        let id = ascending(Prefix::Part, None);
-        // Format: prefix_timeHex(12 chars) + random(14 chars) = 4 + 1 + 26 = 31
-        assert_eq!(id.len(), 4 + 26); // "prt_" + 26 chars
-    }
-
-    #[test]
-    fn test_given_id_passthrough() {
-        let given = "ses_abc123def456";
-        let id = ascending(Prefix::Session, Some(given));
-        assert_eq!(id, given);
-    }
-
-    #[test]
-    #[should_panic(expected = "does not start with")]
-    fn test_given_id_wrong_prefix() {
-        ascending(Prefix::Session, Some("msg_wrong_prefix"));
     }
 }

@@ -4,12 +4,19 @@
 //! mirroring the JavaScript implementation's tool/ directory.
 
 pub mod bash;
+pub mod batch;
+pub mod codesearch;
 pub mod context;
 pub mod edit;
 pub mod glob;
 pub mod grep;
+pub mod invalid;
 pub mod list;
+pub mod multiedit;
 pub mod read;
+pub mod todo;
+pub mod webfetch;
+pub mod websearch;
 pub mod write;
 
 use async_trait::async_trait;
@@ -71,16 +78,25 @@ pub struct ToolRegistry {
 
 impl ToolRegistry {
     /// Create a new registry with all built-in tools
+    /// Mirrors the JavaScript ToolRegistry which includes all tools from registry.ts
     pub fn new() -> Self {
         Self {
             tools: vec![
+                Box::new(invalid::InvalidTool),
+                Box::new(bash::BashTool),
                 Box::new(read::ReadTool),
-                Box::new(write::WriteTool),
-                Box::new(edit::EditTool),
-                Box::new(list::ListTool),
                 Box::new(glob::GlobTool),
                 Box::new(grep::GrepTool),
-                Box::new(bash::BashTool),
+                Box::new(list::ListTool),
+                Box::new(edit::EditTool),
+                Box::new(write::WriteTool),
+                Box::new(webfetch::WebFetchTool),
+                Box::new(websearch::WebSearchTool),
+                Box::new(codesearch::CodeSearchTool),
+                Box::new(batch::BatchTool),
+                Box::new(todo::TodoWriteTool),
+                Box::new(todo::TodoReadTool),
+                Box::new(multiedit::MultiEditTool),
             ],
         }
     }
@@ -107,24 +123,5 @@ impl ToolRegistry {
 impl Default for ToolRegistry {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_registry_creation() {
-        let registry = ToolRegistry::new();
-        assert!(!registry.all().is_empty());
-    }
-
-    #[test]
-    fn test_tool_lookup() {
-        let registry = ToolRegistry::new();
-        assert!(registry.get("read").is_some());
-        assert!(registry.get("write").is_some());
-        assert!(registry.get("nonexistent").is_none());
     }
 }

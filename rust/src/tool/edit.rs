@@ -205,37 +205,78 @@ fn create_diff(old: &str, new: &str, path: &str) -> String {
 }
 
 /// Perform string replacement with fallback strategies
+/// Mirrors the JavaScript implementation's replace() function with all 9 strategies.
 fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool) -> Result<String> {
-    // Try exact match first
+    // Strategy 1: SimpleReplacer / exact match
     if let Some(result) = try_exact_replace(content, old_string, new_string, replace_all) {
         return Ok(result);
     }
 
-    // Try line-trimmed matching
+    // Strategy 2: LineTrimmedReplacer
     if let Some(result) = try_line_trimmed_replace(content, old_string, new_string, replace_all) {
         return Ok(result);
     }
 
-    // Try whitespace-normalized matching
+    // Strategy 3: BlockAnchorReplacer
+    if let Some(result) = try_block_anchor_replace(content, old_string, new_string, replace_all) {
+        return Ok(result);
+    }
+
+    // Strategy 4: WhitespaceNormalizedReplacer
     if let Some(result) =
         try_whitespace_normalized_replace(content, old_string, new_string, replace_all)
     {
         return Ok(result);
     }
 
-    // Try block anchor matching
-    if let Some(result) = try_block_anchor_replace(content, old_string, new_string, replace_all) {
+    // Strategy 5: IndentationFlexibleReplacer
+    if let Some(result) =
+        try_indentation_flexible_replace(content, old_string, new_string, replace_all)
+    {
         return Ok(result);
     }
 
-    Err(AgentError::tool_execution(
-        "edit",
-        "oldString not found in content",
-    ))
+    // Strategy 6: EscapeNormalizedReplacer
+    if let Some(result) =
+        try_escape_normalized_replace(content, old_string, new_string, replace_all)
+    {
+        return Ok(result);
+    }
+
+    // Strategy 7: TrimmedBoundaryReplacer
+    if let Some(result) = try_trimmed_boundary_replace(content, old_string, new_string, replace_all)
+    {
+        return Ok(result);
+    }
+
+    // Strategy 8: ContextAwareReplacer
+    if let Some(result) = try_context_aware_replace(content, old_string, new_string, replace_all) {
+        return Ok(result);
+    }
+
+    // Strategy 9: MultiOccurrenceReplacer - only for replace_all
+    if replace_all {
+        if let Some(result) = try_multi_occurrence_replace(content, old_string, new_string) {
+            return Ok(result);
+        }
+    }
+
+    // Determine whether the string was found but had multiple matches
+    if content.contains(old_string) {
+        Err(AgentError::tool_execution(
+            "edit",
+            "Found multiple matches for oldString. Provide more surrounding lines in oldString to identify the correct match.",
+        ))
+    } else {
+        Err(AgentError::tool_execution(
+            "edit",
+            "oldString not found in content",
+        ))
+    }
 }
 
 /// Try exact string replacement
-fn try_exact_replace(content: &str, old: &str, new: &str, replace_all: bool) -> Option<String> {
+pub fn try_exact_replace(content: &str, old: &str, new: &str, replace_all: bool) -> Option<String> {
     if !content.contains(old) {
         return None;
     }
@@ -262,7 +303,7 @@ fn try_exact_replace(content: &str, old: &str, new: &str, replace_all: bool) -> 
 }
 
 /// Try line-trimmed matching (ignore leading/trailing whitespace per line)
-fn try_line_trimmed_replace(
+pub fn try_line_trimmed_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -280,8 +321,8 @@ fn try_line_trimmed_replace(
     for i in 0..=content_lines.len().saturating_sub(search_lines.len()) {
         let mut all_match = true;
 
-        for j in 0..search_lines.len() {
-            if content_lines.get(i + j).map(|l| l.trim()) != Some(search_lines[j].trim()) {
+        for (j, search_line) in search_lines.iter().enumerate() {
+            if content_lines.get(i + j).map(|l| l.trim()) != Some(search_line.trim()) {
                 all_match = false;
                 break;
             }
@@ -315,7 +356,7 @@ fn try_line_trimmed_replace(
 }
 
 /// Try whitespace-normalized matching
-fn try_whitespace_normalized_replace(
+pub fn try_whitespace_normalized_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -357,7 +398,7 @@ fn try_whitespace_normalized_replace(
 }
 
 /// Try block anchor matching (match by first and last line)
-fn try_block_anchor_replace(
+pub fn try_block_anchor_replace(
     content: &str,
     old: &str,
     new: &str,
@@ -408,112 +449,337 @@ fn try_block_anchor_replace(
     Some(result)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs as std_fs;
-    use tempfile::TempDir;
-
-    fn create_context(dir: &std::path::Path) -> ToolContext {
-        ToolContext::new("ses_test", "msg_test", dir)
+/// Try indentation-flexible matching (normalize leading indentation)
+/// Mirrors the JS IndentationFlexibleReplacer strategy.
+pub fn try_indentation_flexible_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    replace_all: bool,
+) -> Option<String> {
+    fn remove_indentation(text: &str) -> String {
+        let lines: Vec<&str> = text.lines().collect();
+        let non_empty: Vec<&&str> = lines.iter().filter(|l| !l.trim().is_empty()).collect();
+        if non_empty.is_empty() {
+            return text.to_string();
+        }
+        let min_indent = non_empty
+            .iter()
+            .map(|l| l.len() - l.trim_start().len())
+            .min()
+            .unwrap_or(0);
+        lines
+            .iter()
+            .map(|l| {
+                if l.trim().is_empty() {
+                    l.to_string()
+                } else {
+                    l[min_indent.min(l.len())..].to_string()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 
-    #[tokio::test]
-    async fn test_edit_exact_match() {
-        let temp = TempDir::new().unwrap();
-        let file_path = temp.path().join("test.txt");
-        std_fs::write(&file_path, "hello world").unwrap();
+    let normalized_old = remove_indentation(old);
+    let content_lines: Vec<&str> = content.lines().collect();
+    let old_lines: Vec<&str> = old.lines().collect();
 
-        let tool = EditTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "filePath": file_path.to_string_lossy(),
-            "oldString": "world",
-            "newString": "rust"
-        });
-
-        tool.execute(params, &ctx).await.unwrap();
-
-        let content = std_fs::read_to_string(&file_path).unwrap();
-        assert_eq!(content, "hello rust");
+    if old_lines.is_empty() {
+        return None;
     }
 
-    #[tokio::test]
-    async fn test_edit_replace_all() {
-        let temp = TempDir::new().unwrap();
-        let file_path = temp.path().join("test.txt");
-        std_fs::write(&file_path, "foo bar foo baz foo").unwrap();
+    let mut matches = Vec::new();
 
-        let tool = EditTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "filePath": file_path.to_string_lossy(),
-            "oldString": "foo",
-            "newString": "qux",
-            "replaceAll": true
-        });
-
-        tool.execute(params, &ctx).await.unwrap();
-
-        let content = std_fs::read_to_string(&file_path).unwrap();
-        assert_eq!(content, "qux bar qux baz qux");
+    for i in 0..=content_lines.len().saturating_sub(old_lines.len()) {
+        let block = content_lines[i..i + old_lines.len()].join("\n");
+        if remove_indentation(&block) == normalized_old {
+            matches.push(block);
+        }
     }
 
-    #[tokio::test]
-    async fn test_edit_same_string_error() {
-        let temp = TempDir::new().unwrap();
-        let file_path = temp.path().join("test.txt");
-        std_fs::write(&file_path, "hello").unwrap();
-
-        let tool = EditTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "filePath": file_path.to_string_lossy(),
-            "oldString": "hello",
-            "newString": "hello"
-        });
-
-        let result = tool.execute(params, &ctx).await;
-        assert!(result.is_err());
+    if matches.is_empty() {
+        return None;
     }
 
-    #[tokio::test]
-    async fn test_edit_create_new_file() {
-        let temp = TempDir::new().unwrap();
-        let file_path = temp.path().join("new_file.txt");
-
-        let tool = EditTool;
-        let ctx = create_context(temp.path());
-        let params = json!({
-            "filePath": file_path.to_string_lossy(),
-            "oldString": "",
-            "newString": "new content"
-        });
-
-        tool.execute(params, &ctx).await.unwrap();
-
-        let content = std_fs::read_to_string(&file_path).unwrap();
-        assert_eq!(content, "new content");
+    if !replace_all && matches.len() > 1 {
+        return None;
     }
 
-    #[test]
-    fn test_exact_replace() {
-        let content = "hello world";
-        let result = try_exact_replace(content, "world", "rust", false);
-        assert_eq!(result, Some("hello rust".to_string()));
+    let mut result = content.to_string();
+    for matched in matches.into_iter() {
+        result = result.replacen(&matched, new, 1);
+        if !replace_all {
+            break;
+        }
     }
 
-    #[test]
-    fn test_multiple_matches_without_replace_all() {
-        let content = "foo bar foo";
-        let result = try_exact_replace(content, "foo", "baz", false);
-        assert_eq!(result, None);
+    Some(result)
+}
+
+/// Try escape-normalized matching (unescape common escape sequences)
+/// Mirrors the JS EscapeNormalizedReplacer strategy.
+pub fn try_escape_normalized_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    replace_all: bool,
+) -> Option<String> {
+    fn unescape(s: &str) -> String {
+        let mut result = String::new();
+        let mut chars = s.chars().peekable();
+        while let Some(c) = chars.next() {
+            if c == '\\' {
+                match chars.peek() {
+                    Some('n') => {
+                        chars.next();
+                        result.push('\n');
+                    }
+                    Some('t') => {
+                        chars.next();
+                        result.push('\t');
+                    }
+                    Some('r') => {
+                        chars.next();
+                        result.push('\r');
+                    }
+                    Some('\'') => {
+                        chars.next();
+                        result.push('\'');
+                    }
+                    Some('"') => {
+                        chars.next();
+                        result.push('"');
+                    }
+                    Some('`') => {
+                        chars.next();
+                        result.push('`');
+                    }
+                    Some('\\') => {
+                        chars.next();
+                        result.push('\\');
+                    }
+                    Some('$') => {
+                        chars.next();
+                        result.push('$');
+                    }
+                    _ => result.push(c),
+                }
+            } else {
+                result.push(c);
+            }
+        }
+        result
     }
 
-    #[test]
-    fn test_replace_all() {
-        let content = "foo bar foo";
-        let result = try_exact_replace(content, "foo", "baz", true);
-        assert_eq!(result, Some("baz bar baz".to_string()));
+    let unescaped_old = unescape(old);
+
+    // Try direct match with unescaped string
+    if content.contains(&unescaped_old) {
+        let first_idx = content.find(&unescaped_old)?;
+        let last_idx = content.rfind(&unescaped_old)?;
+
+        if !replace_all && first_idx != last_idx {
+            return None;
+        }
+
+        if replace_all {
+            return Some(content.replace(&unescaped_old, new));
+        }
+
+        return Some(format!(
+            "{}{}{}",
+            &content[..first_idx],
+            new,
+            &content[first_idx + unescaped_old.len()..]
+        ));
     }
+
+    // Try line-by-line matching with unescaping
+    let content_lines: Vec<&str> = content.lines().collect();
+    let find_lines: Vec<&str> = unescaped_old.lines().collect();
+
+    if find_lines.is_empty() {
+        return None;
+    }
+
+    let mut matches = Vec::new();
+
+    for i in 0..=content_lines.len().saturating_sub(find_lines.len()) {
+        let block = content_lines[i..i + find_lines.len()].join("\n");
+        if unescape(&block) == unescaped_old {
+            matches.push(block);
+        }
+    }
+
+    if matches.is_empty() {
+        return None;
+    }
+
+    if !replace_all && matches.len() > 1 {
+        return None;
+    }
+
+    let mut result = content.to_string();
+    for matched in matches.into_iter() {
+        result = result.replacen(&matched, new, 1);
+        if !replace_all {
+            break;
+        }
+    }
+
+    Some(result)
+}
+
+/// Try trimmed boundary matching (trim leading/trailing whitespace from old string)
+/// Mirrors the JS TrimmedBoundaryReplacer strategy.
+pub fn try_trimmed_boundary_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    replace_all: bool,
+) -> Option<String> {
+    let trimmed_old = old.trim();
+    if trimmed_old == old {
+        // Already trimmed, no point trying
+        return None;
+    }
+
+    // Try to find the trimmed version directly
+    if content.contains(trimmed_old) {
+        let first_idx = content.find(trimmed_old)?;
+        let last_idx = content.rfind(trimmed_old)?;
+
+        if !replace_all && first_idx != last_idx {
+            return None;
+        }
+
+        if replace_all {
+            return Some(content.replace(trimmed_old, new));
+        }
+
+        return Some(format!(
+            "{}{}{}",
+            &content[..first_idx],
+            new,
+            &content[first_idx + trimmed_old.len()..]
+        ));
+    }
+
+    // Try finding blocks where trimmed content matches
+    let content_lines: Vec<&str> = content.lines().collect();
+    let old_lines: Vec<&str> = old.lines().collect();
+
+    if old_lines.is_empty() {
+        return None;
+    }
+
+    let mut matches = Vec::new();
+
+    for i in 0..=content_lines.len().saturating_sub(old_lines.len()) {
+        let block = content_lines[i..i + old_lines.len()].join("\n");
+        if block.trim() == trimmed_old {
+            matches.push(block);
+        }
+    }
+
+    if matches.is_empty() {
+        return None;
+    }
+
+    if !replace_all && matches.len() > 1 {
+        return None;
+    }
+
+    let mut result = content.to_string();
+    for matched in matches.into_iter() {
+        result = result.replacen(&matched, new, 1);
+        if !replace_all {
+            break;
+        }
+    }
+
+    Some(result)
+}
+
+/// Try context-aware matching (use first and last lines as context anchors,
+/// require >=50% of middle lines to match)
+/// Mirrors the JS ContextAwareReplacer strategy.
+pub fn try_context_aware_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    _replace_all: bool,
+) -> Option<String> {
+    let mut find_lines: Vec<&str> = old.lines().collect();
+
+    if find_lines.len() < 3 {
+        return None;
+    }
+
+    // Remove trailing empty line if present
+    if find_lines.last() == Some(&"") {
+        find_lines.pop();
+    }
+
+    let content_lines: Vec<&str> = content.lines().collect();
+    let first_line = find_lines[0].trim();
+    let last_line = find_lines.last()?.trim();
+
+    for i in 0..content_lines.len() {
+        if content_lines[i].trim() != first_line {
+            continue;
+        }
+
+        // Look for matching last line
+        for j in (i + 2)..content_lines.len() {
+            if content_lines[j].trim() == last_line {
+                let block_lines = &content_lines[i..=j];
+
+                // Only match if same number of lines
+                if block_lines.len() == find_lines.len() {
+                    let mut matching_lines = 0usize;
+                    let mut total_non_empty = 0usize;
+
+                    for k in 1..block_lines.len() - 1 {
+                        let block_line = block_lines[k].trim();
+                        let find_line = find_lines[k].trim();
+
+                        if !block_line.is_empty() || !find_line.is_empty() {
+                            total_non_empty += 1;
+                            if block_line == find_line {
+                                matching_lines += 1;
+                            }
+                        }
+                    }
+
+                    let ratio = if total_non_empty == 0 {
+                        1.0f64
+                    } else {
+                        matching_lines as f64 / total_non_empty as f64
+                    };
+
+                    if ratio >= 0.5 {
+                        let matched = block_lines.join("\n");
+                        let result = content.replacen(&matched, new, 1);
+                        if result != content {
+                            return Some(result);
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    None
+}
+
+/// Try multi-occurrence replacement (all occurrences, used for replace_all)
+/// Mirrors the JS MultiOccurrenceReplacer strategy.
+pub fn try_multi_occurrence_replace(content: &str, old: &str, new: &str) -> Option<String> {
+    if !content.contains(old) {
+        return None;
+    }
+    Some(content.replace(old, new))
 }
