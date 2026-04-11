@@ -63,12 +63,25 @@ sweet spot when token counting is reliable. When token counting is unreliable
 - `DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT`: 15 → 25
 - Updated in both JS (`compaction.ts`, `defaults.ts`) and Rust (`cli.rs`)
 
-### Fix 2: Token estimation fallback
+### Fix 2: Token estimation fallback with BPE tokenization
 
 Added `estimatedInputTokens` parameter to `isOverflow()`. When the provider
-returns 0 for all token counts, the system estimates input tokens from message
-content using the 4-chars-per-token heuristic. This ensures compaction triggers
-even when providers don't report usage.
+returns 0 for all token counts, the system counts tokens from message content
+using real BPE tokenization (`gpt-tokenizer` with `o200k_base` encoding) when
+available, falling back to a character-based heuristic (~4 chars/token) for
+models with unknown tokenizers.
+
+**Why not always use real BPE?** Different LLM providers use different tokenizers:
+- OpenAI models (GPT-4o, GPT-4.1, GPT-5): `o200k_base` BPE — supported via `gpt-tokenizer`
+- Nvidia Nemotron: Custom SentencePiece BPE (256K vocab) — no JS library available
+- Google Gemini: SentencePiece — no JS library available
+- Meta Llama: SentencePiece — no JS library available
+- Anthropic Claude: Proprietary BPE (~65K vocab) — not publicly available
+
+Since the failing model (Nemotron) uses a tokenizer unavailable in JS, real BPE
+cannot guarantee accuracy for all providers. The 75% safety margin (25% buffer)
+absorbs the ±20% estimation error inherent in both the heuristic and cross-tokenizer
+estimation.
 
 ### Fix 3: Cap maxOutputTokens to context limit
 
@@ -87,11 +100,13 @@ model's hard limit.
 
 ## Files Changed
 
+- `js/src/util/token.ts` — Add `countTokens()` with real BPE via gpt-tokenizer, heuristic fallback
 - `js/src/session/compaction.ts` — Lower margin, add estimation fallback
-- `js/src/session/prompt.ts` — Pass estimated tokens, cap output tokens
+- `js/src/session/prompt.ts` — Use `Token.countTokens()` for overflow detection, cap output tokens
 - `js/src/cli/defaults.ts` — Update default margin percentage
 - `rust/src/cli.rs` — Sync Rust default
 - `js/tests/compaction-model.test.ts` — Update tests, add estimation tests
+- `js/tests/token.test.ts` — Tests for Token.estimate and Token.countTokens
 
 ## References
 

@@ -706,27 +706,29 @@ export namespace SessionPrompt {
       }
 
       // context overflow, needs compaction
-      // Estimate input tokens from message content as fallback for providers
+      // Count input tokens from message content as fallback for providers
       // that return 0 token counts (e.g., Nvidia/nemotron via OpenCode).
+      // Uses real BPE tokenization (gpt-tokenizer) when available, falls back
+      // to character-based heuristic (~4 chars/token) for unknown tokenizers.
       // @see https://github.com/link-assistant/agent/issues/249
-      const estimatedInputTokens = Token.estimate(
-        msgs
-          .map((m) =>
-            m.parts
-              .map((p) => {
-                if (p.type === 'text') return p.text;
-                if (
-                  p.type === 'tool' &&
-                  p.state.status === 'completed' &&
-                  !p.state.time.compacted
-                )
-                  return p.state.output;
-                return '';
-              })
-              .join('')
-          )
-          .join('')
-      );
+      const messageContent = msgs
+        .map((m) =>
+          m.parts
+            .map((p) => {
+              if (p.type === 'text') return p.text;
+              if (
+                p.type === 'tool' &&
+                p.state.status === 'completed' &&
+                !p.state.time.compacted
+              )
+                return p.state.output;
+              return '';
+            })
+            .join('')
+        )
+        .join('');
+      const tokenResult = Token.countTokens(messageContent);
+      const estimatedInputTokens = tokenResult.count;
       if (
         lastFinished &&
         lastFinished.summary !== true &&
