@@ -343,5 +343,5 @@ fn test_default_compaction_models_matches_js() {
 
 #[test]
 fn test_default_compaction_safety_margin_matches_js() {
-    assert_eq!(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT, 15);
+    assert_eq!(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT, 25);
 }
