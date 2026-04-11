@@ -83,8 +83,7 @@ export namespace SessionPrompt {
     const capped = Math.min(input.baseMaxOutput, available);
     if (capped < input.baseMaxOutput) {
       log.info(() => ({
-        message:
-          'capped maxOutputTokens to fit within context limit',
+        message: 'capped maxOutputTokens to fit within context limit',
         baseMaxOutput: input.baseMaxOutput,
         cappedMaxOutput: capped,
         contextLimit: input.contextLimit,

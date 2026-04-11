@@ -169,7 +169,8 @@ export namespace SessionCompaction {
       currentTokens: count,
       providerTokens: providerCount,
       estimatedInputTokens: input.estimatedInputTokens ?? 0,
-      usingEstimate: providerCount === 0 && (input.estimatedInputTokens ?? 0) > 0,
+      usingEstimate:
+        providerCount === 0 && (input.estimatedInputTokens ?? 0) > 0,
       tokensBreakdown: {
         input: input.tokens.input,
         cacheRead: input.tokens.cache.read,
