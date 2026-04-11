@@ -667,6 +667,27 @@ export namespace SessionPrompt {
       }
 
       // context overflow, needs compaction
+      // Estimate input tokens from message content as fallback for providers
+      // that return 0 token counts (e.g., Nvidia/nemotron via OpenCode).
+      // @see https://github.com/link-assistant/agent/issues/249
+      const estimatedInputTokens = Token.estimate(
+        msgs
+          .map((m) =>
+            m.parts
+              .map((p) => {
+                if (p.type === 'text') return p.text;
+                if (
+                  p.type === 'tool' &&
+                  p.state.status === 'completed' &&
+                  !p.state.time.compacted
+                )
+                  return p.state.output;
+                return '';
+              })
+              .join('')
+          )
+          .join('')
+      );
       if (
         lastFinished &&
         lastFinished.summary !== true &&
@@ -675,6 +696,7 @@ export namespace SessionPrompt {
           model: model.info ?? { id: model.modelID },
           compactionModel: lastUser.compactionModel,
           compactionModelContextLimit,
+          estimatedInputTokens,
         })
       ) {
         await SessionCompaction.create({
