@@ -327,20 +327,46 @@ export namespace SessionProcessor {
                   input.assistantMessage.cost += usage.cost;
                   input.assistantMessage.tokens = usage.tokens;
 
-                  // Log warning when provider returns zero tokens (#198)
+                  // Log raw usage data at step level for debugging token parsing issues.
+                  // The AI SDK may drop token data between the raw HTTP response and the
+                  // finish-step event (e.g., @ai-sdk/openai-compatible may not propagate
+                  // usage from SSE stream chunks). This log helps detect such mismatches.
+                  // @see https://github.com/link-assistant/agent/issues/249
+                  if (isVerbose()) {
+                    log.debug(() => ({
+                      message: 'step-finish raw usage diagnostics',
+                      providerID: input.providerID,
+                      modelID: input.model.id,
+                      parsedTokens: usage.tokens,
+                      rawUsage: JSON.stringify(value.usage ?? null),
+                      rawProviderMetadata: JSON.stringify(
+                        value.providerMetadata ?? null
+                      ),
+                      rawFinishReason: String(
+                        value.finishReason ?? 'undefined'
+                      ),
+                      respondedModelID:
+                        (value as any).response?.modelId ?? 'none',
+                    }));
+                  }
+
+                  // Log warning when provider returns zero tokens (#198, #249)
+                  // This fires for any finish reason — not just 'unknown' — because the
+                  // root cause is the AI SDK not propagating usage from the raw HTTP
+                  // response, which can happen regardless of finish reason.
                   if (
                     usage.tokens.input === 0 &&
                     usage.tokens.output === 0 &&
-                    usage.tokens.reasoning === 0 &&
-                    finishReason === 'unknown'
+                    usage.tokens.reasoning === 0
                   ) {
                     log.warn(() => ({
                       message:
-                        'provider returned zero tokens with unknown finish reason at step level',
+                        'provider returned zero tokens at step level — AI SDK may not be propagating usage from raw HTTP response',
                       providerID: input.providerID,
                       requestedModelID: input.model.id,
                       respondedModelID:
                         (value as any).response?.modelId ?? 'none',
+                      finishReason,
                       rawFinishReason: String(
                         value.finishReason ?? 'undefined'
                       ),
@@ -348,8 +374,9 @@ export namespace SessionProcessor {
                       providerMetadata: JSON.stringify(
                         value.providerMetadata ?? null
                       ),
+                      hint: 'Check verbose HTTP logs for raw provider response — the HTTP response may contain valid usage data that the AI SDK failed to propagate. The token estimation fallback in isOverflow() handles this case.',
                       issue:
-                        'https://github.com/link-assistant/agent/issues/198',
+                        'https://github.com/link-assistant/agent/issues/249',
                     }));
                   }
 
