@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/src/tool/multiedit.ts behavior
 //! and the original inline tests from rust/src/tool/multiedit.rs.
 
-use agent::tool::multiedit::MultiEditTool;
-use agent::tool::{Tool, ToolContext};
+use link_assistant_agent::tool::multiedit::MultiEditTool;
+use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
 use std::fs;
 use tempfile::TempDir;

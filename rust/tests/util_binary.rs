@@ -2,7 +2,7 @@
 //!
 //! Extracted from the original inline tests in rust/src/util/binary.rs.
 
-use agent::util::binary::{
+use link_assistant_agent::util::binary::{
     is_binary_extension, is_binary_file, is_image_extension, validate_image_format,
 };
 use std::path::PathBuf;

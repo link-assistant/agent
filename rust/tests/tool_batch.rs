@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/tests/integration/batch.tools.test.js
 //! and the original inline tests from rust/src/tool/batch.rs.
 
-use agent::tool::batch::BatchTool;
-use agent::tool::{Tool, ToolContext};
+use link_assistant_agent::tool::batch::BatchTool;
+use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
 use std::fs;
 use tempfile::TempDir;

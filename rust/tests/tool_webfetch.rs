@@ -3,7 +3,9 @@
 //! Mirrors test coverage from js/tests/integration/webfetch.tools.test.js
 //! and the original inline tests from rust/src/tool/webfetch.rs.
 
-use agent::tool::webfetch::{decode_html_entities, extract_text_from_html, strip_remaining_tags};
+use link_assistant_agent::tool::webfetch::{
+    decode_html_entities, extract_text_from_html, strip_remaining_tags,
+};
 
 #[test]
 fn test_extract_text_from_html() {
@@ -69,8 +71,8 @@ fn test_extract_text_from_plain() {
     assert!(text.contains("Just plain text"));
 }
 
-use agent::tool::webfetch::WebFetchTool;
-use agent::tool::Tool;
+use link_assistant_agent::tool::webfetch::WebFetchTool;
+use link_assistant_agent::tool::Tool;
 
 #[test]
 fn test_webfetch_tool_id() {

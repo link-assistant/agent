@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/tests/integration/glob.tools.test.js
 //! and the original inline tests from rust/src/tool/glob.rs.
 
-use agent::tool::glob::GlobTool;
-use agent::tool::{Tool, ToolContext};
+use link_assistant_agent::tool::glob::GlobTool;
+use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
 use std::fs;
 use std::path::Path;

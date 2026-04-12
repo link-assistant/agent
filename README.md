@@ -22,7 +22,7 @@ This repository contains two implementations of the agent:
 | Implementation                 | Status               | Package Manager | Install Command                        |
 | ------------------------------ | -------------------- | --------------- | -------------------------------------- |
 | [JavaScript/Bun](js/README.md) | **Production Ready** | npm             | `bun install -g @link-assistant/agent` |
-| [Rust](rust/README.md)         | Work in Progress     | cargo           | `cargo install agent` (when published) |
+| [Rust](rust/README.md)         | Work in Progress     | cargo           | `cargo install link-assistant-agent`   |
 
 Both implementations aim to be fully compatible with [OpenCode](https://github.com/sst/opencode)'s `run --format json` mode.
 
@@ -61,6 +61,8 @@ See [js/README.md](js/README.md) for full documentation including:
 - JSON output standards (OpenCode and Claude formats)
 
 ### Rust Implementation
+
+[![Crates.io](https://img.shields.io/crates/v/link-assistant-agent.svg)](https://crates.io/crates/link-assistant-agent)
 
 The Rust implementation provides core functionality but is still under active development.
 

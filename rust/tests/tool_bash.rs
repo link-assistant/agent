@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/tests/integration/bash.tools.test.js
 //! and the original inline tests from rust/src/tool/bash.rs.
 
-use agent::tool::bash::BashTool;
-use agent::tool::{Tool, ToolContext};
+use link_assistant_agent::tool::bash::BashTool;
+use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
 use tempfile::TempDir;
 

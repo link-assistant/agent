@@ -2,7 +2,7 @@
 //!
 //! Extracted from the original inline tests in rust/src/error.rs.
 
-use agent::error::AgentError;
+use link_assistant_agent::error::AgentError;
 
 #[test]
 fn test_file_not_found_error() {

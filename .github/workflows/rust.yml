@@ -251,8 +251,18 @@ jobs:
         run: cargo build --release
         working-directory: rust
 
-      - name: Create GitHub Release
+      - name: Publish to crates.io
+        id: publish
         if: steps.check.outputs.should_release == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          cargo publish --verbose
+          echo "published=true" >> $GITHUB_OUTPUT
+        working-directory: rust
+
+      - name: Create GitHub Release
+        if: steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -262,7 +272,7 @@ jobs:
             --prefix "rust-"
 
       - name: Format GitHub release notes
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/format-github-release.mjs --release-version "${{ steps.current_version.outputs.version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "rust-"
@@ -318,8 +328,18 @@ jobs:
         run: cargo build --release
         working-directory: rust
 
-      - name: Create GitHub Release
+      - name: Publish to crates.io
+        id: publish
         if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          cargo publish --verbose
+          echo "published=true" >> $GITHUB_OUTPUT
+        working-directory: rust
+
+      - name: Create GitHub Release
+        if: steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -329,7 +349,7 @@ jobs:
             --prefix "rust-"
 
       - name: Format GitHub release notes
-        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
+        if: steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/format-github-release.mjs --release-version "${{ steps.version.outputs.new_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "rust-"

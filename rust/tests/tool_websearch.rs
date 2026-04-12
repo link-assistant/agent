@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/tests/integration/websearch.tools.test.js
 //! and the original inline tests from rust/src/tool/websearch.rs.
 
-use agent::tool::websearch::WebSearchTool;
-use agent::tool::Tool;
+use link_assistant_agent::tool::websearch::WebSearchTool;
+use link_assistant_agent::tool::Tool;
 
 #[test]
 fn test_params_schema() {

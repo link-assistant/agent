@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/tests/integration/grep.tools.test.js
 //! and the original inline tests from rust/src/tool/grep.rs.
 
-use agent::tool::grep::{matches_glob, GrepTool};
-use agent::tool::{Tool, ToolContext};
+use link_assistant_agent::tool::grep::{matches_glob, GrepTool};
+use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
 use std::fs;
 use std::path::Path;

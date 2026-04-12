@@ -2,11 +2,11 @@
 //!
 //! Extracted from the original inline tests in rust/src/cli.rs.
 
-use agent::cli::{
+use clap::Parser;
+use link_assistant_agent::cli::{
     Args, InputMessage, DEFAULT_COMPACTION_MODEL, DEFAULT_COMPACTION_MODELS,
     DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT, DEFAULT_MODEL,
 };
-use clap::Parser;
 
 #[test]
 fn test_parse_json_input() {

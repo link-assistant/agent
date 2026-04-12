@@ -3,10 +3,10 @@
 //! This is the Rust implementation of the @link-assistant/agent CLI tool.
 //! It provides the same functionality as the JavaScript/Bun version but runs as a native binary.
 
-use agent::cli;
-use agent::error::Result;
 use clap::Parser;
 use cli::Args;
+use link_assistant_agent::cli;
+use link_assistant_agent::error::Result;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 #[tokio::main]
