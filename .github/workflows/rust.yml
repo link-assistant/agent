@@ -182,7 +182,9 @@ jobs:
   auto-release:
     name: Auto Release
     needs: [lint, test, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Use always() to ensure this job runs even when changelog-check was skipped (on push events)
+    # Without always(), GitHub Actions skips jobs when any transitive dependency was skipped
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -259,11 +261,18 @@ jobs:
             --repository "${{ github.repository }}" \
             --prefix "rust-"
 
+      - name: Format GitHub release notes
+        if: steps.check.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/format-github-release.mjs --release-version "${{ steps.current_version.outputs.version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "rust-"
+
   # Manual release via workflow_dispatch
   manual-release:
     name: Manual Release
     needs: [lint, test, build]
-    if: github.event_name == 'workflow_dispatch'
+    # Use always() to ensure this job runs even when changelog-check was skipped
+    if: always() && github.event_name == 'workflow_dispatch' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -318,3 +327,9 @@ jobs:
             --release-version "${{ steps.version.outputs.new_version }}" \
             --repository "${{ github.repository }}" \
             --prefix "rust-"
+
+      - name: Format GitHub release notes
+        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/format-github-release.mjs --release-version "${{ steps.version.outputs.new_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "rust-"

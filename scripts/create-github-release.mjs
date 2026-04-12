@@ -79,13 +79,16 @@ try {
 
   // Extract changelog entry for this version
   // Read from CHANGELOG.md between this version header and the next version header
-  const versionHeaderRegex = new RegExp(`## ${version}[\\s\\S]*?(?=## \\d|$)`);
+  // Supports both JS format (## 0.22.0) and Rust format (## [0.8.0] - 2026-04-11)
+  const escapedVersion = version.replace(/\./g, '\\.');
+  const versionHeaderRegex = new RegExp(
+    `## \\[?${escapedVersion}\\]?[^\\n]*\\n([\\s\\S]*?)(?=## [\\[\\d]|$)`
+  );
   const match = changelog.match(versionHeaderRegex);
 
   let releaseNotes = '';
   if (match) {
-    // Remove the version header itself and trim
-    releaseNotes = match[0].replace(`## ${version}`, '').trim();
+    releaseNotes = match[1].trim();
   }
 
   if (!releaseNotes) {
