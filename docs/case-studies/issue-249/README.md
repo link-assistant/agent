@@ -36,6 +36,7 @@ The raw HTTP response body stream was captured by `verbose-fetch.ts` and clearly
 shows the SSE chunk with `"prompt_tokens":15506,"completion_tokens":80`.
 
 **Why does this happen?** The AI SDK `@ai-sdk/openai-compatible` v1.0.33 should:
+
 1. Parse the SSE chunk's `usage.prompt_tokens` → `usage.promptTokens`
 2. Emit finish event with `inputTokens: usage.promptTokens`
 3. AI SDK core converts via `convertV2UsageToV3` → `{inputTokens: {total: N}}`
@@ -57,6 +58,7 @@ computed `currentTokens = 0 + 0 + 0 = 0`, which is always below any
 `safeLimit`, so compaction was never triggered.
 
 **Evidence from logs:**
+
 ```
 "currentTokens": 0,
 "tokensBreakdown": { "input": 0, "cacheRead": 0, "output": 0 },
@@ -71,6 +73,7 @@ all 10+ checks showed `currentTokens: 0`.
 
 The system always requested `max_tokens: 32000` regardless of how much input
 was in the prompt. When input grew to 230,145 tokens:
+
 - Available: 262,144 - 230,145 = 31,999 tokens
 - Requested: 32,000 tokens
 - Total: 262,145 > 262,144 → **error**
@@ -82,14 +85,14 @@ counts. When they don't, a larger margin is needed as a safety buffer.
 
 ## Research: Industry Compaction Thresholds
 
-| Tool | Threshold | Margin | Notes |
-|------|-----------|--------|-------|
-| Gemini CLI | 50% | 50% | Most conservative; configurable |
-| OpenCode (upstream sst/opencode) | 75% | 25% | Hardcoded 0.75 |
-| Claude Code | ~83.5% | ~16.5% | Reduced buffer in 2026 |
-| Codex CLI | ~95% | ~5% | Users report "too late" |
-| link-assistant/agent (before) | 85% | 15% | |
-| link-assistant/agent (after) | 75% | 25% | Matches OpenCode upstream |
+| Tool                             | Threshold | Margin | Notes                           |
+| -------------------------------- | --------- | ------ | ------------------------------- |
+| Gemini CLI                       | 50%       | 50%    | Most conservative; configurable |
+| OpenCode (upstream sst/opencode) | 75%       | 25%    | Hardcoded 0.75                  |
+| Claude Code                      | ~83.5%    | ~16.5% | Reduced buffer in 2026          |
+| Codex CLI                        | ~95%      | ~5%    | Users report "too late"         |
+| link-assistant/agent (before)    | 85%       | 15%    |                                 |
+| link-assistant/agent (after)     | 75%       | 25%    | Matches OpenCode upstream       |
 
 **Community consensus:** 80-90% is the recommended range, with 85-90% as the
 sweet spot when token counting is reliable. When token counting is unreliable
@@ -112,6 +115,7 @@ available, falling back to a character-based heuristic (~4 chars/token) for
 models with unknown tokenizers.
 
 **Why not always use real BPE?** Different LLM providers use different tokenizers:
+
 - OpenAI models (GPT-4o, GPT-4.1, GPT-5): `o200k_base` BPE — supported via `gpt-tokenizer`
 - Nvidia Nemotron: Custom SentencePiece BPE (256K vocab) — no JS library available
 - Google Gemini: SentencePiece — no JS library available
@@ -157,11 +161,63 @@ OpenRouter SSE response showing valid `prompt_tokens: 15506` despite the AI SDK
 reporting 0 tokens at the step-finish level.
 
 **Additional diagnostic logging added in this PR:**
+
 - `processor.ts`: Step-finish raw usage diagnostics (verbose mode) — logs both
   the AI SDK's parsed usage and the raw `value.usage` from the finish-step event
 - `processor.ts`: Enhanced zero-token warning — now fires regardless of
   finishReason, with a hint pointing to verbose HTTP logs for the raw response
 - `session/index.ts`: `getUsage()` already logs raw usage data in verbose mode
+
+### Fix 4: Raw SSE usage recovery (AI SDK bypass)
+
+Added `SSEUsageExtractor` that intercepts raw HTTP SSE streaming responses at
+the `fetch()` level (before the AI SDK processes them) and parses usage tokens
+directly from SSE `data:` chunks. This works in both verbose and non-verbose
+modes. When the AI SDK's `finish-step` event reports zero tokens, the processor
+automatically recovers usage from the raw SSE data.
+
+This is modeled after OpenAI Codex's approach (Rust, raw HTTP + manual SSE
+parsing) and provides a reliable fallback regardless of AI SDK bugs.
+
+Supported SSE usage formats:
+
+- OpenAI: `usage.prompt_tokens`, `usage.completion_tokens`
+- Anthropic: `usage.input_tokens`, `usage.output_tokens`, `usage.cache_read_input_tokens`
+- Groq: `x_groq.usage.prompt_tokens`
+- Generic: `usage.promptTokens`, `usage.completionTokens`
+
+## Research: SDK Choices of Agentic CLIs
+
+| Tool            | Language   | SDK                     | Usage Source                           |
+| --------------- | ---------- | ----------------------- | -------------------------------------- |
+| **OpenCode**    | TypeScript | Vercel AI SDK (`ai` v6) | `streamText` usage — same bug exposure |
+| **Codex**       | Rust       | Custom (reqwest + SSE)  | Hand-parsed SSE events — most reliable |
+| **Gemini CLI**  | TypeScript | `@google/genai` v1.30   | `usageMetadata` from SDK               |
+| **Qwen Agent**  | Python     | `dashscope` + `openai`  | SDK response objects                   |
+| **Claude Code** | TypeScript | `@anthropic-ai/sdk`     | Messages API usage field               |
+| **Aider**       | Python     | `litellm` v1.82         | `completion.usage` via litellm         |
+
+**Key findings:**
+
+- The Vercel AI SDK streaming usage bug is a **known open issue** (vercel/ai #9921, #12477, #7412)
+- `@ai-sdk/openai-compatible` has been updated from v1.x to v2.x — may fix some issues
+- OpenCode uses the exact same AI SDK pattern and would have the same vulnerability
+- Codex is the only tool that parses raw HTTP, making it immune to SDK abstraction bugs
+- Our SSE usage recovery provides Codex-like reliability while keeping the AI SDK abstraction
+
+**Future work: Switchable SDK backends**
+
+The user requested the ability to switch between SDK backends via CLI option.
+Full backend alternatives that could be implemented:
+
+1. **AI SDK (current)** — `streamText()` + `generateText()` via Vercel AI SDK
+2. **Direct fetch** — Raw HTTP + SSE parsing (like Codex), bypassing AI SDK entirely
+3. **Provider-specific SDKs** — `@anthropic-ai/sdk`, `@google/genai`, OpenAI SDK
+4. **LiteLLM** — Universal gateway (Python ecosystem, requires bridge)
+
+This would require significant architectural work (abstracting the provider layer,
+implementing SSE parsing for each format, tool call handling, etc.) and is tracked
+as a separate feature request.
 
 ## Upstream Issue Recommendations
 
@@ -182,13 +238,16 @@ reports 0 for all token counts. This should be reported to `vercel/ai` with:
 ## Files Changed
 
 - `js/src/util/token.ts` — Add `countTokens()` with real BPE via gpt-tokenizer, heuristic fallback
+- `js/src/util/sse-usage-extractor.ts` — Raw SSE stream usage parser (AI SDK bypass)
 - `js/src/session/compaction.ts` — Lower margin, add estimation fallback
 - `js/src/session/prompt.ts` — Use `Token.countTokens()` for overflow detection, cap output tokens
-- `js/src/session/processor.ts` — Enhanced zero-token diagnostics and verbose logging
+- `js/src/session/processor.ts` — SSE usage recovery + enhanced zero-token diagnostics
+- `js/src/provider/provider.ts` — SSE stream interception for usage extraction
 - `js/src/cli/defaults.ts` — Update default margin percentage
 - `rust/src/cli.rs` — Sync Rust default
 - `js/tests/compaction-model.test.ts` — Update tests, add estimation tests
 - `js/tests/token.test.ts` — Tests for Token.estimate and Token.countTokens
+- `js/tests/sse-usage-extractor.test.ts` — 17 tests for SSE usage extraction
 
 ## References
 
