@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.1
+
+### Patch Changes
+
+- df87e66: Lower compaction safety margin from 85% to 75% to reduce context overflow errors. Add token estimation fallback when providers return 0 token counts. Cap maxOutputTokens to never exceed model context limit.
+
 ## 0.22.0
 
 ### Minor Changes
