@@ -30,11 +30,19 @@ export namespace SessionCompaction {
 
   /**
    * Default safety margin ratio for compaction trigger.
-   * We trigger compaction at 85% of usable context to avoid hitting hard limits.
-   * This means we stop 15% before (context - output) tokens.
+   * We trigger compaction at 75% of usable context to avoid hitting hard limits.
+   * This means we stop 25% before (context - output) tokens.
+   *
+   * Lowered from 0.85 to 0.75 (matching OpenCode upstream) because:
+   * - When providers return 0 token counts, the system relies on estimated tokens
+   *   which can be inaccurate, so a larger safety buffer is needed.
+   * - Gemini CLI uses 50%, OpenCode upstream uses 75%, Claude Code uses ~83.5%.
+   * - A 75% threshold provides a good balance between context utilization and
+   *   preventing context overflow errors.
    * @see https://github.com/link-assistant/agent/issues/217
+   * @see https://github.com/link-assistant/agent/issues/249
    */
-  export const OVERFLOW_SAFETY_MARGIN = 0.85;
+  export const OVERFLOW_SAFETY_MARGIN = 0.75;
 
   /**
    * A single compaction model entry in the cascade.
@@ -117,12 +125,26 @@ export namespace SessionCompaction {
     model: ModelsDev.Model;
     compactionModel?: CompactionModelConfig;
     compactionModelContextLimit?: number;
+    /**
+     * Optional estimated input tokens from message content.
+     * Used as fallback when provider returns 0 for all token counts.
+     * This prevents the system from never triggering compaction when
+     * providers don't report token usage.
+     * @see https://github.com/link-assistant/agent/issues/249
+     */
+    estimatedInputTokens?: number;
   }) {
     if (config.disableAutocompact) return false;
     const baseModelContextLimit = input.model.limit.context;
     if (baseModelContextLimit === 0) return false;
-    const count =
+    const providerCount =
       input.tokens.input + input.tokens.cache.read + input.tokens.output;
+    // When provider returns 0 for all token counts, use the estimated input tokens
+    // as a fallback. This prevents the system from never triggering compaction
+    // when providers (e.g., OpenCode with Nvidia/nemotron) don't report token usage.
+    // @see https://github.com/link-assistant/agent/issues/249
+    const count =
+      providerCount > 0 ? providerCount : (input.estimatedInputTokens ?? 0);
     const outputTokenLimit =
       Math.min(input.model.limit.output, SessionPrompt.OUTPUT_TOKEN_MAX) ||
       SessionPrompt.OUTPUT_TOKEN_MAX;
@@ -145,6 +167,10 @@ export namespace SessionCompaction {
       compactionModelID: input.compactionModel?.modelID,
       compactionModelContextLimit: input.compactionModelContextLimit,
       currentTokens: count,
+      providerTokens: providerCount,
+      estimatedInputTokens: input.estimatedInputTokens ?? 0,
+      usingEstimate:
+        providerCount === 0 && (input.estimatedInputTokens ?? 0) > 0,
       tokensBreakdown: {
         input: input.tokens.input,
         cacheRead: input.tokens.cache.read,

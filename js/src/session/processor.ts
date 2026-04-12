@@ -18,6 +18,7 @@ import { SessionRetry } from './retry';
 import { SessionStatus } from './status';
 import { config, isVerbose } from '../config/config';
 import { SessionCompaction } from './compaction';
+import { SSEUsageExtractor } from '../util/sse-usage-extractor';
 
 export namespace SessionProcessor {
   const DOOM_LOOP_THRESHOLD = 3;
@@ -327,30 +328,93 @@ export namespace SessionProcessor {
                   input.assistantMessage.cost += usage.cost;
                   input.assistantMessage.tokens = usage.tokens;
 
-                  // Log warning when provider returns zero tokens (#198)
-                  if (
-                    usage.tokens.input === 0 &&
-                    usage.tokens.output === 0 &&
-                    usage.tokens.reasoning === 0 &&
-                    finishReason === 'unknown'
-                  ) {
-                    log.warn(() => ({
-                      message:
-                        'provider returned zero tokens with unknown finish reason at step level',
+                  // Log raw usage data at step level for debugging token parsing issues.
+                  // The AI SDK may drop token data between the raw HTTP response and the
+                  // finish-step event (e.g., @ai-sdk/openai-compatible may not propagate
+                  // usage from SSE stream chunks). This log helps detect such mismatches.
+                  // @see https://github.com/link-assistant/agent/issues/249
+                  if (isVerbose()) {
+                    log.debug(() => ({
+                      message: 'step-finish raw usage diagnostics',
                       providerID: input.providerID,
-                      requestedModelID: input.model.id,
-                      respondedModelID:
-                        (value as any).response?.modelId ?? 'none',
+                      modelID: input.model.id,
+                      parsedTokens: usage.tokens,
+                      rawUsage: JSON.stringify(value.usage ?? null),
+                      rawProviderMetadata: JSON.stringify(
+                        value.providerMetadata ?? null
+                      ),
                       rawFinishReason: String(
                         value.finishReason ?? 'undefined'
                       ),
-                      rawUsage: JSON.stringify(value.usage ?? null),
-                      providerMetadata: JSON.stringify(
-                        value.providerMetadata ?? null
-                      ),
-                      issue:
-                        'https://github.com/link-assistant/agent/issues/198',
+                      respondedModelID:
+                        (value as any).response?.modelId ?? 'none',
                     }));
+                  }
+
+                  // When AI SDK returns zero tokens, try to recover usage from
+                  // raw SSE stream data captured by the fetch interceptor.
+                  // The AI SDK may drop token data between the raw HTTP response
+                  // and the finish-step event (known bug in @ai-sdk/openai-compatible).
+                  // @see https://github.com/link-assistant/agent/issues/249
+                  if (
+                    usage.tokens.input === 0 &&
+                    usage.tokens.output === 0 &&
+                    usage.tokens.reasoning === 0
+                  ) {
+                    const sseUsage = SSEUsageExtractor.consumeLatestUsage();
+                    if (sseUsage) {
+                      const recoveredUsage = Session.getUsage({
+                        model: input.model,
+                        usage: {
+                          inputTokens: sseUsage.promptTokens,
+                          outputTokens: sseUsage.completionTokens,
+                          totalTokens: sseUsage.totalTokens,
+                          reasoningTokens: sseUsage.reasoningTokens ?? 0,
+                          cachedInputTokens: sseUsage.cachedTokens ?? 0,
+                        },
+                        metadata: value.providerMetadata,
+                      });
+                      input.assistantMessage.cost =
+                        input.assistantMessage.cost -
+                        usage.cost +
+                        recoveredUsage.cost;
+                      input.assistantMessage.tokens = recoveredUsage.tokens;
+                      log.warn(() => ({
+                        message:
+                          'recovered usage from raw SSE stream — AI SDK dropped token data',
+                        providerID: input.providerID,
+                        requestedModelID: input.model.id,
+                        recoveredTokens: recoveredUsage.tokens,
+                        recoveredCost: recoveredUsage.cost,
+                        ssePromptTokens: sseUsage.promptTokens,
+                        sseCompletionTokens: sseUsage.completionTokens,
+                        issue:
+                          'https://github.com/link-assistant/agent/issues/249',
+                      }));
+                      // Update the step-finish part with recovered data
+                      usage.tokens = recoveredUsage.tokens;
+                      usage.cost = recoveredUsage.cost;
+                    } else {
+                      log.warn(() => ({
+                        message:
+                          'provider returned zero tokens at step level — AI SDK may not be propagating usage from raw HTTP response',
+                        providerID: input.providerID,
+                        requestedModelID: input.model.id,
+                        respondedModelID:
+                          (value as any).response?.modelId ?? 'none',
+                        finishReason,
+                        rawFinishReason: String(
+                          value.finishReason ?? 'undefined'
+                        ),
+                        rawUsage: JSON.stringify(value.usage ?? null),
+                        providerMetadata: JSON.stringify(
+                          value.providerMetadata ?? null
+                        ),
+                        hint: 'No raw SSE usage found either. The token estimation fallback in isOverflow() handles this case.',
+                        issue:
+                          'https://github.com/link-assistant/agent/issues/249',
+                      }));
+                    }
                   }
 
                   // Build model info if --output-response-model flag is enabled

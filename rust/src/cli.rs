@@ -25,7 +25,9 @@ pub const DEFAULT_COMPACTION_MODELS: &str =
     "(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)";
 
 /// Default compaction safety margin as a percentage of usable context window.
-pub const DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT: u32 = 15;
+/// Increased from 15% to 25% to reduce probability of context overflow errors.
+/// @see https://github.com/link-assistant/agent/issues/249
+pub const DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT: u32 = 25;
 
 /// Agent CLI - A minimal AI CLI agent compatible with OpenCode's JSON interface
 #[derive(Parser, Debug)]

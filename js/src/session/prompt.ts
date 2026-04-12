@@ -54,6 +54,45 @@ export namespace SessionPrompt {
   const log = Log.create({ service: 'session.prompt' });
   export const OUTPUT_TOKEN_MAX = 32_000;
 
+  /**
+   * Cap maxOutputTokens so that estimated input + output never exceeds
+   * the model's context limit. This prevents "context length exceeded" errors
+   * when the conversation has grown close to the model's limit.
+   *
+   * Returns at least 1024 tokens to avoid degenerate cases.
+   * Returns baseMaxOutput unchanged if contextLimit is 0 (unknown).
+   * @see https://github.com/link-assistant/agent/issues/249
+   */
+  function capOutputTokensToContext(input: {
+    baseMaxOutput: number;
+    contextLimit: number;
+    estimatedInputTokens: number;
+  }): number {
+    if (input.contextLimit <= 0) return input.baseMaxOutput;
+    const available = input.contextLimit - input.estimatedInputTokens;
+    if (available < 1024) {
+      log.warn(() => ({
+        message:
+          'estimated input tokens near or exceeding context limit — capping output to 1024',
+        contextLimit: input.contextLimit,
+        estimatedInputTokens: input.estimatedInputTokens,
+        available,
+      }));
+      return 1024;
+    }
+    const capped = Math.min(input.baseMaxOutput, available);
+    if (capped < input.baseMaxOutput) {
+      log.info(() => ({
+        message: 'capped maxOutputTokens to fit within context limit',
+        baseMaxOutput: input.baseMaxOutput,
+        cappedMaxOutput: capped,
+        contextLimit: input.contextLimit,
+        estimatedInputTokens: input.estimatedInputTokens,
+      }));
+    }
+    return capped;
+  }
+
   const state = Instance.state(
     () => {
       const data: Record<
@@ -667,6 +706,29 @@ export namespace SessionPrompt {
       }
 
       // context overflow, needs compaction
+      // Count input tokens from message content as fallback for providers
+      // that return 0 token counts (e.g., Nvidia/nemotron via OpenCode).
+      // Uses real BPE tokenization (gpt-tokenizer) when available, falls back
+      // to character-based heuristic (~4 chars/token) for unknown tokenizers.
+      // @see https://github.com/link-assistant/agent/issues/249
+      const messageContent = msgs
+        .map((m) =>
+          m.parts
+            .map((p) => {
+              if (p.type === 'text') return p.text;
+              if (
+                p.type === 'tool' &&
+                p.state.status === 'completed' &&
+                !p.state.time.compacted
+              )
+                return p.state.output;
+              return '';
+            })
+            .join('')
+        )
+        .join('');
+      const tokenResult = Token.countTokens(messageContent);
+      const estimatedInputTokens = tokenResult.count;
       if (
         lastFinished &&
         lastFinished.summary !== true &&
@@ -675,6 +737,7 @@ export namespace SessionPrompt {
           model: model.info ?? { id: model.modelID },
           compactionModel: lastUser.compactionModel,
           compactionModelContextLimit,
+          estimatedInputTokens,
         })
       ) {
         await SessionCompaction.create({
@@ -908,12 +971,16 @@ export namespace SessionPrompt {
           // set to 0, we handle loop
           maxRetries: 0,
           activeTools: Object.keys(tools).filter((x) => x !== 'invalid'),
-          maxOutputTokens: ProviderTransform.maxOutputTokens(
-            model.providerID,
-            params.options,
-            model.info?.limit?.output ?? 100000,
-            OUTPUT_TOKEN_MAX
-          ),
+          maxOutputTokens: capOutputTokensToContext({
+            baseMaxOutput: ProviderTransform.maxOutputTokens(
+              model.providerID,
+              params.options,
+              model.info?.limit?.output ?? 100000,
+              OUTPUT_TOKEN_MAX
+            ),
+            contextLimit: model.info?.limit?.context ?? 0,
+            estimatedInputTokens,
+          }),
           abortSignal: abort,
           providerOptions: ProviderTransform.providerOptions(
             model.npm,

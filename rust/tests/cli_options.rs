@@ -582,7 +582,7 @@ fn compaction_safety_margin_default() {
         .args(["--dry-run", "--verbose", "-p", "hello"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("Compaction safety margin: 15%"));
+        .stdout(predicate::str::contains("Compaction safety margin: 25%"));
 }
 
 #[test]

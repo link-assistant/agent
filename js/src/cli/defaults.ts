@@ -52,6 +52,11 @@ export const DEFAULT_COMPACTION_MODELS =
  * Applied only when the compaction model has a context window equal to or smaller
  * than the base model. When the compaction model has a larger context, the margin
  * is automatically set to 0 (allowing 100% context usage).
+ *
+ * Increased from 15% to 25% to reduce probability of context overflow errors,
+ * especially when providers return inaccurate or zero token counts.
+ * Matches OpenCode upstream's 75% threshold (25% margin).
  * @see https://github.com/link-assistant/agent/issues/219
+ * @see https://github.com/link-assistant/agent/issues/249
  */
-export const DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT = 15;
+export const DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT = 25;

@@ -9,8 +9,9 @@ import { test, expect, describe } from 'bun:test';
  * 1. When compaction model has larger context than base model → no safety margin (ratio 1.0)
  * 2. When compaction model is "same" → apply configured safety margin
  * 3. When compaction model has equal or smaller context → apply configured safety margin
- * 4. Default safety margin is 15% (ratio 0.85)
+ * 4. Default safety margin is 25% (ratio 0.75) — lowered from 15% in #249
  * 5. Safety margin is configurable via --compaction-safety-margin
+ * 6. When provider returns 0 tokens, estimatedInputTokens fallback is used
  *
  * @see https://github.com/link-assistant/agent/issues/219
  */
@@ -19,11 +20,11 @@ import { test, expect, describe } from 'bun:test';
 import { SessionCompaction } from '../src/session/compaction';
 
 describe('computeSafetyMarginRatio', () => {
-  test('returns default 0.85 when no compaction model config', () => {
+  test('returns default 0.75 when no compaction model config', () => {
     const ratio = SessionCompaction.computeSafetyMarginRatio({
       baseModelContextLimit: 200_000,
     });
-    expect(ratio).toBe(0.85);
+    expect(ratio).toBe(0.75);
   });
 
   test('returns 1.0 when compaction model has larger context than base model', () => {
@@ -47,11 +48,11 @@ describe('computeSafetyMarginRatio', () => {
         providerID: 'opencode',
         modelID: 'some-model',
         useSameModel: false,
-        compactionSafetyMarginPercent: 15,
+        compactionSafetyMarginPercent: 25,
       },
       compactionModelContextLimit: 200_000,
     });
-    expect(ratio).toBe(0.85);
+    expect(ratio).toBe(0.75);
   });
 
   test('returns configured ratio when compaction model has smaller context', () => {
@@ -77,11 +78,11 @@ describe('computeSafetyMarginRatio', () => {
         providerID: 'opencode',
         modelID: 'minimax-m2.5-free',
         useSameModel: true,
-        compactionSafetyMarginPercent: 15,
+        compactionSafetyMarginPercent: 25,
       },
       compactionModelContextLimit: 400_000,
     });
-    expect(ratio).toBe(0.85);
+    expect(ratio).toBe(0.75);
   });
 
   test('supports custom safety margin percentage', () => {
@@ -117,11 +118,11 @@ describe('computeSafetyMarginRatio', () => {
         providerID: 'opencode',
         modelID: 'gpt-5-nano',
         useSameModel: false,
-        compactionSafetyMarginPercent: 15,
+        compactionSafetyMarginPercent: 25,
       },
       compactionModelContextLimit: 0,
     });
-    expect(ratio).toBe(0.85);
+    expect(ratio).toBe(0.75);
   });
 
   test('falls back to configured ratio when compaction model context limit is undefined', () => {
@@ -131,10 +132,10 @@ describe('computeSafetyMarginRatio', () => {
         providerID: 'opencode',
         modelID: 'gpt-5-nano',
         useSameModel: false,
-        compactionSafetyMarginPercent: 15,
+        compactionSafetyMarginPercent: 25,
       },
     });
-    expect(ratio).toBe(0.85);
+    expect(ratio).toBe(0.75);
   });
 });
 
@@ -159,10 +160,10 @@ describe('isOverflow with compaction model', () => {
     cache: { read: 0, write: 0 },
   };
 
-  test('overflows with default safety margin at 85% of usable context', () => {
+  test('overflows with default safety margin at 75% of usable context', () => {
     // usable = 200000 - 32000 = 168000
-    // safeLimit = 168000 * 0.85 = 142800
-    // tokens = 140000 + 0 + 5000 = 145000 > 142800 → overflow
+    // safeLimit = 168000 * 0.75 = 126000
+    // tokens = 140000 + 0 + 5000 = 145000 > 126000 → overflow
     const overflow = SessionCompaction.isOverflow({
       tokens,
       model: baseModel as any,
@@ -181,7 +182,7 @@ describe('isOverflow with compaction model', () => {
         providerID: 'opencode',
         modelID: 'gpt-5-nano',
         useSameModel: false,
-        compactionSafetyMarginPercent: 15,
+        compactionSafetyMarginPercent: 25,
       },
       compactionModelContextLimit: 400_000,
     });
@@ -200,11 +201,64 @@ describe('isOverflow with compaction model', () => {
         providerID: 'opencode',
         modelID: 'gpt-5-nano',
         useSameModel: false,
-        compactionSafetyMarginPercent: 15,
+        compactionSafetyMarginPercent: 25,
       },
       compactionModelContextLimit: 400_000,
     });
     expect(overflow).toBe(true);
+  });
+
+  test('uses estimatedInputTokens when provider returns 0 tokens', () => {
+    // When provider returns all zeros, use estimated tokens
+    // usable = 200000 - 32000 = 168000
+    // safeLimit = 168000 * 0.75 = 126000 (default ratio without compaction model)
+    // estimatedInputTokens = 130000 > 126000 → overflow
+    const zeroTokens = {
+      input: 0,
+      output: 0,
+      reasoning: 0,
+      cache: { read: 0, write: 0 },
+    };
+    const overflow = SessionCompaction.isOverflow({
+      tokens: zeroTokens,
+      model: baseModel as any,
+      estimatedInputTokens: 130_000,
+    });
+    expect(overflow).toBe(true);
+  });
+
+  test('does NOT use estimatedInputTokens when provider returns non-zero tokens', () => {
+    // When provider returns valid tokens, use them even if below threshold
+    // usable = 200000 - 32000 = 168000
+    // safeLimit = 168000 * 0.75 = 126000
+    // providerTokens = 50000 + 0 + 5000 = 55000 < 126000 → no overflow
+    // estimatedInputTokens = 200000 would cause overflow if used, but should be ignored
+    const lowTokens = {
+      input: 50_000,
+      output: 5_000,
+      reasoning: 0,
+      cache: { read: 0, write: 0 },
+    };
+    const overflow = SessionCompaction.isOverflow({
+      tokens: lowTokens,
+      model: baseModel as any,
+      estimatedInputTokens: 200_000,
+    });
+    expect(overflow).toBe(false);
+  });
+
+  test('does NOT overflow with 0 tokens and no estimate', () => {
+    const zeroTokens = {
+      input: 0,
+      output: 0,
+      reasoning: 0,
+      cache: { read: 0, write: 0 },
+    };
+    const overflow = SessionCompaction.isOverflow({
+      tokens: zeroTokens,
+      model: baseModel as any,
+    });
+    expect(overflow).toBe(false);
   });
 });
 
@@ -228,8 +282,8 @@ describe('contextDiagnostics with compaction model', () => {
       model: baseModel as any,
     });
     expect(diag).toBeDefined();
-    expect(diag!.safetyMargin).toBe(0.85);
-    expect(diag!.safeLimit).toBe(Math.floor(168_000 * 0.85));
+    expect(diag!.safetyMargin).toBe(0.75);
+    expect(diag!.safeLimit).toBe(Math.floor(168_000 * 0.75));
   });
 
   test('uses 1.0 ratio when compaction model has larger context', () => {
@@ -240,7 +294,7 @@ describe('contextDiagnostics with compaction model', () => {
         providerID: 'opencode',
         modelID: 'gpt-5-nano',
         useSameModel: false,
-        compactionSafetyMarginPercent: 15,
+        compactionSafetyMarginPercent: 25,
       },
       compactionModelContextLimit: 400_000,
     });
@@ -268,10 +322,10 @@ describe('CLI defaults', () => {
     );
   });
 
-  test('default compaction safety margin is 15%', async () => {
+  test('default compaction safety margin is 25%', async () => {
     const { DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT } =
       await import('../src/cli/defaults');
-    expect(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT).toBe(15);
+    expect(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT).toBe(25);
   });
 });
 
@@ -305,7 +359,7 @@ describe('CompactionModelConfig with cascade', () => {
       providerID: 'opencode',
       modelID: 'big-pickle',
       useSameModel: false,
-      compactionSafetyMarginPercent: 15,
+      compactionSafetyMarginPercent: 25,
       compactionModels: [
         { providerID: 'opencode', modelID: 'big-pickle', useSameModel: false },
         {
@@ -337,7 +391,7 @@ describe('CompactionModelConfig with cascade', () => {
       providerID: 'opencode',
       modelID: 'gpt-5-nano',
       useSameModel: false,
-      compactionSafetyMarginPercent: 15,
+      compactionSafetyMarginPercent: 25,
     };
     expect(config.compactionModels).toBeUndefined();
   });
