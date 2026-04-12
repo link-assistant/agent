@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/tests/integration/read.tools.test.js
 //! and the original inline tests from rust/src/tool/read.rs.
 
-use agent::tool::read::ReadTool;
-use agent::tool::{Tool, ToolContext};
+use link_assistant_agent::tool::read::ReadTool;
+use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
 use std::fs;
 use std::path::Path;

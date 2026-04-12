@@ -2,7 +2,7 @@
 //!
 //! Extracted from the original inline tests in rust/src/util/filesystem.rs.
 
-use agent::util::filesystem::Filesystem;
+use link_assistant_agent::util::filesystem::Filesystem;
 
 #[test]
 fn test_relative_path() {

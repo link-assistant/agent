@@ -1,5 +1,5 @@
 [package]
-name = "agent"
+name = "link-assistant-agent"
 version = "0.8.0"
 edition = "2021"
 description = "A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface"
@@ -68,7 +68,7 @@ assert_cmd = "2.0"
 predicates = "3.1"
 
 [lib]
-name = "agent"
+name = "link_assistant_agent"
 path = "src/lib.rs"
 
 [[bin]]

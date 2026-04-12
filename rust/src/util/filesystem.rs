@@ -14,7 +14,7 @@ impl Filesystem {
     ///
     /// # Examples
     /// ```
-    /// use agent::util::Filesystem;
+    /// use link_assistant_agent::util::Filesystem;
     ///
     /// assert!(Filesystem::overlaps("/home/user", "/home/user/docs"));
     /// assert!(Filesystem::overlaps("/home/user/docs", "/home/user"));
@@ -44,7 +44,7 @@ impl Filesystem {
     ///
     /// # Examples
     /// ```
-    /// use agent::util::Filesystem;
+    /// use link_assistant_agent::util::Filesystem;
     ///
     /// assert!(Filesystem::contains("/home/user", "/home/user/docs"));
     /// assert!(!Filesystem::contains("/home/user/docs", "/home/user"));

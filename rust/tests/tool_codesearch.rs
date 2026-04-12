@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/tests/integration/codesearch.tools.test.js
 //! and the original inline tests from rust/src/tool/codesearch.rs.
 
-use agent::tool::codesearch::CodeSearchTool;
-use agent::tool::Tool;
+use link_assistant_agent::tool::codesearch::CodeSearchTool;
+use link_assistant_agent::tool::Tool;
 
 #[test]
 fn test_params_schema() {

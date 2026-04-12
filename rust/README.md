@@ -1,8 +1,8 @@
-# agent (Rust)
+# link-assistant-agent (Rust)
 
 **A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface**
 
-[![Crates.io](https://img.shields.io/crates/v/agent.svg)](https://crates.io/crates/agent)
+[![Crates.io](https://img.shields.io/crates/v/link-assistant-agent.svg)](https://crates.io/crates/link-assistant-agent)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 > This is the Rust implementation. See also the [JavaScript/Bun implementation](../js/README.md).
@@ -65,10 +65,10 @@ cargo build --release
 ./target/release/agent --help
 ```
 
-### From crates.io (when published)
+### From crates.io
 
 ```bash
-cargo install agent
+cargo install link-assistant-agent
 ```
 
 ## Quick Start

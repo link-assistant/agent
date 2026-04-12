@@ -2,7 +2,7 @@
 //!
 //! Extracted from the original inline tests in rust/src/tool/context.rs.
 
-use agent::tool::ToolContext;
+use link_assistant_agent::tool::ToolContext;
 use std::path::PathBuf;
 
 #[test]

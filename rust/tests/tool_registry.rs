@@ -2,7 +2,7 @@
 //!
 //! Extracted from the original inline tests in rust/src/tool/mod.rs.
 
-use agent::tool::ToolRegistry;
+use link_assistant_agent::tool::ToolRegistry;
 
 #[test]
 fn test_registry_creation() {

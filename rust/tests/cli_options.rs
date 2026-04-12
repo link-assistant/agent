@@ -4,13 +4,13 @@
 //! as the JavaScript implementation, ensuring full feature parity.
 //! Each option is tested via the compiled binary using assert_cmd.
 
-use assert_cmd::cargo_bin_cmd;
+use assert_cmd::Command;
 use predicates::prelude::*;
 use std::io::Write;
 
 /// Helper to create a Command for the agent binary.
 fn agent_cmd() -> assert_cmd::Command {
-    cargo_bin_cmd!()
+    Command::cargo_bin("agent").unwrap()
 }
 
 // ── Model option ──────────────────────────────────────────────────────

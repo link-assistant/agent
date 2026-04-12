@@ -7,12 +7,12 @@
 //! These tests verify the Rust CLI binary accepts and parses the
 //! --temperature flag correctly, mirroring the JavaScript test suite.
 
-use assert_cmd::cargo_bin_cmd;
+use assert_cmd::Command;
 use predicates::prelude::*;
 
 /// Helper to create a Command for the agent binary.
 fn agent_cmd() -> assert_cmd::Command {
-    cargo_bin_cmd!()
+    Command::cargo_bin("agent").unwrap()
 }
 
 #[test]

@@ -2,7 +2,7 @@
 //!
 //! Extracted from the original inline tests in rust/src/id.rs.
 
-use agent::id::{ascending, descending, Prefix};
+use link_assistant_agent::id::{ascending, descending, Prefix};
 
 #[test]
 fn test_prefix_strings() {

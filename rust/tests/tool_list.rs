@@ -3,8 +3,8 @@
 //! Mirrors test coverage from js/tests/integration/list.tools.test.js
 //! and the original inline tests from rust/src/tool/list.rs.
 
-use agent::tool::list::{should_ignore, ListTool};
-use agent::tool::{Tool, ToolContext};
+use link_assistant_agent::tool::list::{should_ignore, ListTool};
+use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
 use std::fs;
 use std::path::Path;

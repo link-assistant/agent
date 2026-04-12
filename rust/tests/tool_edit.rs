@@ -3,12 +3,12 @@
 //! Mirrors test coverage from js/tests/integration/edit.tools.test.js
 //! and the original inline tests from rust/src/tool/edit.rs.
 
-use agent::tool::edit::{
+use link_assistant_agent::tool::edit::{
     try_context_aware_replace, try_escape_normalized_replace, try_exact_replace,
     try_indentation_flexible_replace, try_multi_occurrence_replace, try_trimmed_boundary_replace,
     EditTool,
 };
-use agent::tool::{Tool, ToolContext};
+use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
 use std::fs;
 use tempfile::TempDir;
