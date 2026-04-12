@@ -17,6 +17,7 @@ import { iife } from '../util/iife';
 import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';
 import { RetryFetch } from './retry-fetch';
+import { SSEUsageExtractor } from '../util/sse-usage-extractor';
 
 // Direct imports for bundled providers - these are pre-installed to avoid runtime installation hangs
 // @see https://github.com/link-assistant/agent/issues/173
@@ -1232,8 +1233,41 @@ export namespace Provider {
           // flag state loss in subprocess/module-reload scenarios.
           // See: https://github.com/link-assistant/agent/issues/206
           // See: https://github.com/link-assistant/agent/issues/227
+          // Even when verbose mode is off, intercept streaming responses
+          // to extract usage tokens from raw SSE data. This is critical for
+          // recovering usage when the AI SDK drops it from finish-step events.
+          // @see https://github.com/link-assistant/agent/issues/249
           if (!isVerbose()) {
-            return innerFetch(input, init);
+            const response = await innerFetch(input, init);
+            const ct = response.headers.get('content-type') ?? '';
+            const isSSE =
+              ct.includes('event-stream') || ct.includes('octet-stream');
+            if (isSSE && response.body) {
+              const [sdkStream, usageStream] = response.body.tee();
+              const sseReqId = SSEUsageExtractor.nextRequestId();
+              (async () => {
+                try {
+                  const reader = usageStream.getReader();
+                  const decoder = new TextDecoder();
+                  let body = '';
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    body += decoder.decode(value, { stream: true });
+                    if (body.length > 50000) break;
+                  }
+                  SSEUsageExtractor.processStreamForUsage(sseReqId, body);
+                } catch {
+                  // Never break the SDK stream
+                }
+              })();
+              return new Response(sdkStream, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers,
+              });
+            }
+            return response;
           }
 
           httpCallCount++;
@@ -1374,6 +1408,10 @@ export namespace Provider {
                 const [sdkStream, logStream] = response.body.tee();
 
                 // Consume log stream asynchronously (does not block SDK)
+                // Also extract usage tokens from raw SSE data as fallback
+                // for when the AI SDK drops usage from its finish-step event.
+                // @see https://github.com/link-assistant/agent/issues/249
+                const sseRequestId = SSEUsageExtractor.nextRequestId();
                 (async () => {
                   try {
                     const reader = logStream.getReader();
@@ -1395,6 +1433,11 @@ export namespace Provider {
                         }
                       }
                     }
+                    // Extract usage from raw SSE stream as AI SDK fallback
+                    SSEUsageExtractor.processStreamForUsage(
+                      sseRequestId,
+                      bodyPreview
+                    );
                     // Use direct (non-lazy) logging for stream body
                     // See: https://github.com/link-assistant/agent/issues/211
                     log.info('HTTP response body (stream)', {
@@ -1402,6 +1445,7 @@ export namespace Provider {
                       providerID: provider.id,
                       callNum,
                       url,
+                      sseRequestId,
                       bodyPreview: truncated
                         ? bodyPreview + `... [truncated]`
                         : bodyPreview,
