@@ -11,8 +11,9 @@
  * - Verifies the crate actually appeared on crates.io after publishing
  * - Outputs `published=true` and `published_version=X.Y.Z` for GitHub Actions
  *
- * Required environment variables:
+ * Required environment variables (at least one must be set):
  * - CARGO_REGISTRY_TOKEN: API token for crates.io
+ * - CARGO_TOKEN: Fallback API token (e.g. set at organization level)
  *
  * Optional environment variables:
  * - GITHUB_OUTPUT: GitHub Actions output file path
@@ -199,10 +200,17 @@ async function main() {
       );
     }
 
-    // Verify CARGO_REGISTRY_TOKEN is set
+    // Resolve CARGO_REGISTRY_TOKEN with CARGO_TOKEN as fallback
+    if (!process.env.CARGO_REGISTRY_TOKEN && process.env.CARGO_TOKEN) {
+      console.log(
+        'CARGO_REGISTRY_TOKEN not set, using CARGO_TOKEN as fallback'
+      );
+      process.env.CARGO_REGISTRY_TOKEN = process.env.CARGO_TOKEN;
+    }
+
     if (!process.env.CARGO_REGISTRY_TOKEN) {
       console.error(
-        'Error: CARGO_REGISTRY_TOKEN environment variable is not set'
+        'Error: Neither CARGO_REGISTRY_TOKEN nor CARGO_TOKEN environment variable is set'
       );
       process.exit(1);
     }
