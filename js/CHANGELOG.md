@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.6
+
+### Patch Changes
+
+- 7cbdfbe: Added shared concurrency group to JS release jobs to prevent race condition with Rust CI/CD pushes to main
+
 ## 0.22.5
 
 ### Patch Changes
