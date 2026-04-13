@@ -108,11 +108,23 @@ try {
     body: releaseNotes,
   });
 
-  await $`gh api repos/${repository}/releases -X POST --input -`.run({
-    stdin: payload,
-  });
-
-  console.log(`\u2705 Created GitHub release: ${tag}`);
+  try {
+    await $`gh api repos/${repository}/releases -X POST --input -`.run({
+      stdin: payload,
+    });
+    console.log(`\u2705 Created GitHub release: ${tag}`);
+  } catch (releaseError) {
+    const errorMsg = releaseError.message || '';
+    if (
+      errorMsg.includes('already exists') ||
+      errorMsg.includes('already_exists') ||
+      errorMsg.includes('Validation Failed')
+    ) {
+      console.log(`Release ${tag} already exists, skipping creation`);
+    } else {
+      throw releaseError;
+    }
+  }
 } catch (error) {
   console.error('Error creating release:', error.message);
   process.exit(1);
