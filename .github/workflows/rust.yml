@@ -262,7 +262,7 @@ jobs:
         run: node scripts/publish-to-crates.mjs --should-pull
 
       - name: Create GitHub Release
-        if: steps.publish.outputs.published == 'true'
+        if: steps.check.outputs.should_release == 'true' && (steps.publish.outputs.published == 'true' || steps.publish.outcome == 'success')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -272,7 +272,7 @@ jobs:
             --prefix "rust-"
 
       - name: Format GitHub release notes
-        if: steps.publish.outputs.published == 'true'
+        if: steps.check.outputs.should_release == 'true' && (steps.publish.outputs.published == 'true' || steps.publish.outcome == 'success')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/format-github-release.mjs --release-version "${{ steps.current_version.outputs.version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "rust-"
@@ -339,7 +339,7 @@ jobs:
         run: node scripts/publish-to-crates.mjs
 
       - name: Create GitHub Release
-        if: steps.publish.outputs.published == 'true'
+        if: steps.publish.outputs.published == 'true' || steps.publish.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -349,7 +349,7 @@ jobs:
             --prefix "rust-"
 
       - name: Format GitHub release notes
-        if: steps.publish.outputs.published == 'true'
+        if: steps.publish.outputs.published == 'true' || steps.publish.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/format-github-release.mjs --release-version "${{ steps.version.outputs.new_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "rust-"

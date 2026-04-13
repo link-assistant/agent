@@ -31,7 +31,8 @@ import {
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 10000; // 10 seconds
-const VERIFY_DELAY = 5000; // 5 seconds for crates.io propagation
+const VERIFY_DELAY = 15000; // 15 seconds for crates.io propagation
+const VERIFY_RETRIES = 3; // Number of verification attempts
 
 const args = process.argv.slice(2);
 const getArg = (name, defaultValue) => {
@@ -141,16 +142,33 @@ async function checkCrateExists(packageName) {
   }
 }
 
+const ALREADY_EXISTS_PATTERNS = [
+  'already exists on crates.io index',
+  'crate already uploaded',
+  'already exists on the registry',
+];
+
 const FAILURE_PATTERNS = [
   'error[E',
   'error: ',
   '403 Forbidden',
   '401 Unauthorized',
   'the remote server responded with an error',
-  'crate already uploaded',
 ];
 
+function detectAlreadyExists(output) {
+  for (const pattern of ALREADY_EXISTS_PATTERNS) {
+    if (output.includes(pattern)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function detectPublishFailure(output) {
+  if (detectAlreadyExists(output)) {
+    return null;
+  }
   for (const pattern of FAILURE_PATTERNS) {
     if (output.includes(pattern)) {
       return pattern;
@@ -222,7 +240,6 @@ async function main() {
 
     for (let i = 1; i <= MAX_RETRIES; i++) {
       console.log(`\nPublish attempt ${i} of ${MAX_RETRIES}...`);
-      let lastError = null;
 
       const result = exec(cargoPublishCmd, {
         capture: true,
@@ -236,32 +253,47 @@ async function main() {
         console.log(combinedOutput);
       }
 
-      // Check exit code
-      if (result.code !== 0) {
-        console.error(`cargo publish exited with code ${result.code}`);
-        lastError = new Error(
-          `cargo publish failed with exit code ${result.code}`
+      // "already exists" means the crate was published (possibly by a previous attempt)
+      if (detectAlreadyExists(combinedOutput)) {
+        console.log(
+          `Crate ${packageName}@${currentVersion} already exists on crates.io (published successfully)`
         );
+        setOutput('published', 'true');
+        setOutput('published_version', currentVersion);
+        setOutput('already_published', 'true');
+        return;
       }
 
-      // Check for failure patterns in output
+      // Check for real failure patterns in output
       const failurePattern = detectPublishFailure(combinedOutput);
       if (failurePattern) {
-        // "crate already uploaded" is actually a success case
-        if (failurePattern === 'crate already uploaded') {
-          console.log('Crate was already uploaded (race condition), treating as success');
-        } else {
-          console.error(`Detected publish failure: "${failurePattern}"`);
-          lastError =
-            lastError ||
-            new Error(`Publish failed: detected "${failurePattern}" in output`);
+        console.error(`Detected publish failure: "${failurePattern}"`);
+        if (i < MAX_RETRIES) {
+          console.log(
+            `Publish failed, waiting ${RETRY_DELAY / 1000}s before retry...`
+          );
+          await sleep(RETRY_DELAY);
         }
+        continue;
       }
 
-      if (!lastError) {
-        // Verify the crate is actually on crates.io
+      // Check exit code for unexpected failures
+      if (result.code !== 0) {
+        console.error(`cargo publish exited with code ${result.code}`);
+        if (i < MAX_RETRIES) {
+          console.log(
+            `Publish failed, waiting ${RETRY_DELAY / 1000}s before retry...`
+          );
+          await sleep(RETRY_DELAY);
+        }
+        continue;
+      }
+
+      // Verify the crate is actually on crates.io (with retries for propagation delay)
+      let verified = false;
+      for (let v = 1; v <= VERIFY_RETRIES; v++) {
         console.log(
-          `Waiting ${VERIFY_DELAY / 1000}s for crates.io propagation...`
+          `Waiting ${VERIFY_DELAY / 1000}s for crates.io propagation (verification ${v}/${VERIFY_RETRIES})...`
         );
         await sleep(VERIFY_DELAY);
 
@@ -269,31 +301,35 @@ async function main() {
         const isPublished = await checkCratesIo(packageName, currentVersion);
 
         if (isPublished) {
-          setOutput('published', 'true');
-          setOutput('published_version', currentVersion);
+          verified = true;
+          break;
+        }
+
+        if (v < VERIFY_RETRIES) {
           console.log(
-            `\u2705 Published ${packageName}@${currentVersion} to crates.io`
-          );
-          return;
-        } else {
-          console.error(
-            `Verification failed: ${packageName}@${currentVersion} not found on crates.io after publish`
-          );
-          lastError = new Error(
-            'Crate not found on crates.io after publish attempt'
+            `Not found yet, retrying verification...`
           );
         }
       }
 
-      // Retry or fail
-      if (lastError) {
-        if (i < MAX_RETRIES) {
-          console.log(
-            `Publish failed, waiting ${RETRY_DELAY / 1000}s before retry...`
-          );
-          await sleep(RETRY_DELAY);
-        }
+      if (verified) {
+        setOutput('published', 'true');
+        setOutput('published_version', currentVersion);
+        console.log(
+          `\u2705 Published ${packageName}@${currentVersion} to crates.io`
+        );
+        return;
       }
+
+      console.warn(
+        `Verification could not confirm ${packageName}@${currentVersion} on crates.io after ${VERIFY_RETRIES} attempts`
+      );
+      console.warn(
+        'This may be a crates.io propagation delay. Treating as successful since cargo publish exited with code 0.'
+      );
+      setOutput('published', 'true');
+      setOutput('published_version', currentVersion);
+      return;
     }
 
     console.error(`\u274c Failed to publish after ${MAX_RETRIES} attempts`);
