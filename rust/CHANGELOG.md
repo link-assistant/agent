@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.9.1] - 2026-04-13
+
+### Fixed
+
+- Fixed false positive success on Rust package publishing (#255)
+  - Added `publish-to-crates.mjs` script with retry logic and post-publish verification against the crates.io API
+  - CI now verifies the crate actually appeared on crates.io before creating a GitHub release
+  - Uses `--allow-dirty` flag to prevent `Cargo.lock` false failures during publishing
+
 ## [0.9.0] - 2026-04-12
 
 ### Changed
