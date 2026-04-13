@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.4
+
+### Patch Changes
+
+- f0c7865: Add publish verification to Rust CI/CD to prevent false positive releases
+
 ## 0.22.3
 
 ### Patch Changes
