@@ -246,6 +246,8 @@ ${newEntry}
   }
 }
 
+const MAX_PUSH_RETRIES = 3;
+
 async function main() {
   try {
     // Configure git
@@ -253,6 +255,21 @@ async function main() {
     exec(
       'git config user.email "github-actions[bot]@users.noreply.github.com"'
     );
+
+    // Pull latest changes from remote before starting
+    console.log('Fetching latest changes from origin/main...');
+    exec('git fetch origin main');
+
+    const localHead = exec('git rev-parse HEAD');
+    const remoteHead = exec('git rev-parse origin/main');
+
+    if (localHead !== remoteHead) {
+      console.log(
+        `Remote main has advanced (local: ${localHead.slice(0, 7)}, remote: ${remoteHead.slice(0, 7)})`
+      );
+      console.log('Rebasing on remote main to incorporate changes...');
+      exec('git rebase origin/main');
+    }
 
     const current = getCurrentVersion();
     const newVersion = calculateNewVersion(current, bumpType);
@@ -313,10 +330,25 @@ async function main() {
     exec(`git tag -a rust-v${newVersion} -m "${tagMsg.replace(/"/g, '\\"')}"`);
     console.log(`Created tag rust-v${newVersion}`);
 
-    // Push changes and tag
-    exec('git push');
-    exec('git push --tags');
-    console.log('Pushed changes and tags');
+    // Push with retry: if another CI job (e.g. JS release) pushed to main
+    // concurrently, pull --rebase and retry
+    for (let attempt = 1; attempt <= MAX_PUSH_RETRIES; attempt++) {
+      try {
+        exec('git push');
+        exec('git push --tags');
+        console.log('Pushed changes and tags');
+        break;
+      } catch (pushError) {
+        if (attempt < MAX_PUSH_RETRIES) {
+          console.log(
+            `Push failed (attempt ${attempt}/${MAX_PUSH_RETRIES}), pulling and retrying...`
+          );
+          exec('git pull --rebase origin main');
+        } else {
+          throw pushError;
+        }
+      }
+    }
 
     setOutput('version_committed', 'true');
     setOutput('new_version', newVersion);
