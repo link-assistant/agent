@@ -186,6 +186,9 @@ jobs:
     # Without always(), GitHub Actions skips jobs when any transitive dependency was skipped
     if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success'
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-main
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
@@ -281,6 +284,9 @@ jobs:
     # Use always() to ensure this job runs even when changelog-check was skipped
     if: always() && github.event_name == 'workflow_dispatch' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success'
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-main
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:

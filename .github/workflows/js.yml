@@ -195,6 +195,9 @@ jobs:
     # This is needed because lint/test jobs have a transitive dependency on changeset-check
     if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.verbose-integration.result == 'success'
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-main
+      cancel-in-progress: false
     # Permissions required for npm OIDC trusted publishing
     permissions:
       contents: write
@@ -256,6 +259,9 @@ jobs:
     name: Instant Release
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_mode == 'instant'
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-main
+      cancel-in-progress: false
     # Permissions required for npm OIDC trusted publishing
     permissions:
       contents: write
