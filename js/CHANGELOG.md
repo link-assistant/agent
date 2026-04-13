@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.5
+
+### Patch Changes
+
+- df1566f: Add CARGO_TOKEN fallback support to publish-to-crates.mjs for organization-level secrets
+
 ## 0.22.4
 
 ### Patch Changes
