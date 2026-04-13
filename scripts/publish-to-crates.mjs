@@ -31,8 +31,8 @@ import {
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 10000; // 10 seconds
-const VERIFY_DELAY = 15000; // 15 seconds for crates.io propagation
-const VERIFY_RETRIES = 3; // Number of verification attempts
+const VERIFY_DELAY = 20000; // 20 seconds for crates.io propagation
+const VERIFY_RETRIES = 5; // Number of verification attempts
 
 const args = process.argv.slice(2);
 const getArg = (name, defaultValue) => {
@@ -241,6 +241,22 @@ async function main() {
     for (let i = 1; i <= MAX_RETRIES; i++) {
       console.log(`\nPublish attempt ${i} of ${MAX_RETRIES}...`);
 
+      // Before each attempt, check crates.io API to see if a prior attempt succeeded
+      // (crates.io propagation can cause verification to fail even when publish succeeded)
+      if (i > 1) {
+        console.log('Checking crates.io API before retry...');
+        const nowPublished = await checkCratesIo(packageName, currentVersion);
+        if (nowPublished) {
+          console.log(
+            `${packageName}@${currentVersion} is now confirmed on crates.io (prior attempt succeeded)`
+          );
+          setOutput('published', 'true');
+          setOutput('published_version', currentVersion);
+          setOutput('already_published', 'true');
+          return;
+        }
+      }
+
       const result = exec(cargoPublishCmd, {
         capture: true,
         allowFailure: true,
@@ -256,7 +272,7 @@ async function main() {
       // "already exists" means the crate was published (possibly by a previous attempt)
       if (detectAlreadyExists(combinedOutput)) {
         console.log(
-          `Crate ${packageName}@${currentVersion} already exists on crates.io (published successfully)`
+          `Crate ${packageName}@${currentVersion} already exists on crates.io (treating as success)`
         );
         setOutput('published', 'true');
         setOutput('published_version', currentVersion);
