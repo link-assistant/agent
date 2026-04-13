@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.9.2] - 2026-04-13
+
+### Fixed
+
+- Use `CARGO_TOKEN` (organization-level secret) as fallback when `CARGO_REGISTRY_TOKEN` is not set, fixing crates.io publishing in CI/CD
+
+### Fixed
+
+- Fixed git push race condition in Rust CI/CD auto-release that caused non-fast-forward rejection when JS CI pushed concurrently
+- Added fetch/rebase before commit and push retry with pull --rebase (up to 3 attempts)
+- Added shared concurrency group (`release-main`) across Rust and JS release jobs to serialize pushes to main
+
 ## [0.9.1] - 2026-04-13
 
 ### Fixed
