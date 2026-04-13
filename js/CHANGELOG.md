@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.3
+
+### Patch Changes
+
+- ddf3008: Fix Rust CI/CD publishing by committing Cargo.lock in version bump to prevent cargo publish failure
+
 ## 0.22.2
 
 ### Patch Changes
