@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.7
+
+### Patch Changes
+
+- 565a76f: Handle crates.io propagation delays and treat "already exists" as successful publish in CI/CD scripts
+
 ## 0.22.6
 
 ### Patch Changes
