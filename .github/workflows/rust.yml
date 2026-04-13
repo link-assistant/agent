@@ -170,12 +170,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-build-
 
-      - name: Build release
-        run: cargo build --release --verbose
-        working-directory: rust
-
       - name: Check package
         run: cargo package --list
+        working-directory: rust
+
+      - name: Build release
+        run: cargo build --release --verbose
         working-directory: rust
 
   # Automatic release on push to main using changelog fragments

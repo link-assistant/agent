@@ -1,0 +1,48 @@
+
+X main Rust CI/CD Pipeline · 24307135603
+Triggered via push about 58 minutes ago
+
+JOBS
+- Changelog Fragment Check in 0s (ID 70970254661)
+✓ Lint and Format Check in 48s (ID 70970254665)
+✓ Test (ubuntu-latest) in 56s (ID 70970254666)
+✓ Test (macos-latest) in 33s (ID 70970254667)
+✓ Build Package in 40s (ID 70970305575)
+X Auto Release in 1m10s (ID 70970340623)
+  ✓ Set up job
+  ✓ Run actions/checkout@v6
+  ✓ Setup Rust
+  ✓ Setup Node.js
+  ✓ Configure git
+  ✓ Determine bump type from changelog fragments
+  ✓ Check if version already released or no fragments
+  ✓ Collect changelog and bump version
+  ✓ Get current version
+  ✓ Build release
+  X Publish to crates.io
+  - Create GitHub Release
+  - Format GitHub release notes
+  - Post Setup Node.js
+  ✓ Post Run actions/checkout@v6
+  ✓ Complete job
+- Manual Release in 0s (ID 70970340692)
+
+ANNOTATIONS
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/cache@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Lint and Format Check: .github#2
+
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/cache@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Test (ubuntu-latest): .github#2
+
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/cache@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Test (macos-latest): .github#2
+
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/cache@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Build Package: .github#2
+
+X Process completed with exit code 101.
+Auto Release: .github#18
+
+
+To see what failed, try: gh run view 24307135603 --log-failed
+View this run on GitHub: https://github.com/link-assistant/agent/actions/runs/24307135603

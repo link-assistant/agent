@@ -21,8 +21,10 @@ import { execSync } from 'child_process';
 import {
   getRustRoot,
   getCargoTomlPath,
+  getCargoLockPath,
   getChangelogDir,
   getChangelogPath,
+  needsCd,
   parseRustRootConfig,
 } from './rust-paths.mjs';
 
@@ -49,6 +51,7 @@ if (!bumpType || !['major', 'minor', 'patch'].includes(bumpType)) {
 
 // Get paths based on detected/configured rust root
 const CARGO_TOML = getCargoTomlPath({ rustRoot });
+const CARGO_LOCK = getCargoLockPath({ rustRoot });
 const CHANGELOG_DIR = getChangelogDir({ rustRoot });
 const CHANGELOG_FILE = getChangelogPath({ rustRoot });
 
@@ -265,11 +268,20 @@ async function main() {
     // Update version in Cargo.toml
     updateCargoToml(newVersion);
 
+    // Regenerate Cargo.lock to reflect the new version in Cargo.toml.
+    // This is necessary because cargo publish refuses to publish when
+    // Cargo.lock has uncommitted changes. Without this step, the next
+    // `cargo build` would update Cargo.lock, leaving it dirty.
+    const generateLockfileCmd = `cargo generate-lockfile${needsCd({ rustRoot }) ? ` --manifest-path ${CARGO_TOML}` : ''}`;
+    exec(generateLockfileCmd);
+    console.log('Regenerated Cargo.lock');
+
     // Collect changelog fragments
     collectChangelog(newVersion);
 
     // Stage files
     exec(`git add ${CARGO_TOML}`);
+    exec(`git add ${CARGO_LOCK}`);
     if (existsSync(CHANGELOG_FILE)) {
       exec(`git add ${CHANGELOG_FILE}`);
     }

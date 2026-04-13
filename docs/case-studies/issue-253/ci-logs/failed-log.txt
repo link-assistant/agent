@@ -1,0 +1,18 @@
+Auto Release	Publish to crates.io	﻿2026-04-12T12:52:10.8415218Z ##[group]Run cargo publish --verbose
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8415539Z [36;1mcargo publish --verbose[0m
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8415792Z [36;1mecho "published=true" >> $GITHUB_OUTPUT[0m
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8428510Z shell: /usr/bin/bash -e {0}
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8428748Z env:
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8428927Z   CARGO_TERM_COLOR: always
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8429148Z   CARGO_HOME: /home/runner/.cargo
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8429377Z   CARGO_INCREMENTAL: 0
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8429572Z   CARGO_REGISTRY_TOKEN: 
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8429774Z ##[endgroup]
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.8620566Z [1m[92m    Updating[0m crates.io index
+Auto Release	Publish to crates.io	2026-04-12T12:52:10.9200053Z [1m[92m  Credential[0m cargo:token get crates-io
+Auto Release	Publish to crates.io	2026-04-12T12:52:11.1581512Z [1m[91merror[0m: 1 files in the working directory contain changes that were not yet committed into git:
+Auto Release	Publish to crates.io	2026-04-12T12:52:11.1581960Z 
+Auto Release	Publish to crates.io	2026-04-12T12:52:11.1582042Z Cargo.lock
+Auto Release	Publish to crates.io	2026-04-12T12:52:11.1582154Z 
+Auto Release	Publish to crates.io	2026-04-12T12:52:11.1582506Z to proceed despite this and include the uncommitted changes, pass the `--allow-dirty` flag
+Auto Release	Publish to crates.io	2026-04-12T12:52:11.1623153Z ##[error]Process completed with exit code 101.
