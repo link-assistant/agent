@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.8
+
+### Patch Changes
+
+- 0068041: fix(ci): add recovery for missing Rust GitHub releases and improve crates.io publish resilience
+
 ## 0.22.7
 
 ### Patch Changes
