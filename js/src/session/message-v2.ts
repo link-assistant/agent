@@ -849,6 +849,48 @@ export namespace MessageV2 {
     return result;
   }
 
+  function normalizeProviderErrorObject(e: unknown) {
+    if (!e || typeof e !== 'object') return;
+
+    const root = e as Record<string, unknown>;
+    const candidate =
+      root['error'] && typeof root['error'] === 'object'
+        ? (root['error'] as Record<string, unknown>)
+        : root;
+    const rawCode =
+      candidate['code'] ?? candidate['statusCode'] ?? candidate['status'];
+    const statusCode =
+      typeof rawCode === 'number'
+        ? rawCode
+        : typeof rawCode === 'string' && /^\d+$/.test(rawCode)
+          ? Number.parseInt(rawCode, 10)
+          : undefined;
+
+    if (statusCode === undefined) return;
+
+    let responseBody: string | undefined;
+    try {
+      responseBody = JSON.stringify(e);
+    } catch {
+      responseBody = undefined;
+    }
+
+    const message =
+      typeof candidate['message'] === 'string'
+        ? candidate['message']
+        : typeof root['message'] === 'string'
+          ? root['message']
+          : `Provider returned HTTP ${statusCode}`;
+
+    return {
+      message,
+      statusCode,
+      isRetryable:
+        statusCode === 429 || (statusCode >= 500 && statusCode < 600),
+      responseBody,
+    };
+  }
+
   export function fromError(e: unknown, ctx: { providerID: string }) {
     switch (true) {
       case e instanceof DOMException && e.name === 'AbortError':
@@ -884,6 +926,10 @@ export namespace MessageV2 {
           },
           { cause: e }
         ).toObject();
+      case normalizeProviderErrorObject(e) !== undefined: {
+        const providerError = normalizeProviderErrorObject(e)!;
+        return new MessageV2.APIError(providerError, { cause: e }).toObject();
+      }
       case e instanceof Error: {
         const message = e.message || e.toString();
         // Detect Bun socket connection errors (known Bun issue with 10s idle timeout)

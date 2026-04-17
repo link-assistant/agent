@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'bun:test';
-import { MessageV2 } from '../src/session/message-v2.ts';
+import { MessageV2 } from '../../src/session/message-v2.ts';
 
 describe('Stream Parse Error Handling', () => {
   // See: https://github.com/link-assistant/agent/issues/169
@@ -58,5 +58,37 @@ describe('Stream Parse Error Handling', () => {
     const result = MessageV2.fromError(error, { providerID: 'test' });
 
     expect(result.name).toBe('UnknownError');
+  });
+
+  test('provider stream 524 errors are classified as retryable API errors (#264)', () => {
+    const result = MessageV2.fromError(
+      {
+        code: 524,
+        message: 'Provider returned error',
+        metadata: { error_type: 'unmapped' },
+      },
+      { providerID: 'openrouter' }
+    );
+
+    expect(result.name).toBe('APIError');
+    expect(result.data.statusCode).toBe(524);
+    expect(result.data.isRetryable).toBe(true);
+    expect(result.data.responseBody).toContain('Provider returned error');
+  });
+
+  test('provider stream 400 errors are not marked retryable', () => {
+    const result = MessageV2.fromError(
+      {
+        error: {
+          code: '400',
+          message: 'Bad provider request',
+        },
+      },
+      { providerID: 'openrouter' }
+    );
+
+    expect(result.name).toBe('APIError');
+    expect(result.data.statusCode).toBe(400);
+    expect(result.data.isRetryable).toBe(false);
   });
 });
