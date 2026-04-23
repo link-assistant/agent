@@ -38,6 +38,12 @@ source of truth for the timeline and the Agent-CLI-only explanation requested
 in the PR discussion; this README keeps the higher-level findings and fix
 plan.
 
+For an exhaustive line-by-line walk-through of the two Agent CLI patches in
+this PR (`normalizeProviderErrorObject` and `isUsageDataTypeError`), plus a
+side-by-side comparison with how sst/opencode (upstream), google-gemini/
+gemini-cli, openai/codex, and the Vercel AI SDK handle the same concerns,
+see [`code-deep-dive.md`](code-deep-dive.md).
+
 ## Why Agent CLI Could Not Finish The Task (Agent CLI Logic Only)
 
 Ignoring the wrapper and the auto-restart controller entirely, three
