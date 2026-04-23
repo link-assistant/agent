@@ -1,7 +1,8 @@
 # Key Log Excerpts
 
 This file points to the most relevant local log lines. The full logs remain in
-`logs/`.
+`logs/`. For per-session reconstruction (tool calls, git activity, exit
+reasons, line numbers) see [`sessions.md`](sessions.md).
 
 ## Initial Branch Creation And Push
 
