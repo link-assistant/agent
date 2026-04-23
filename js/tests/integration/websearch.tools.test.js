@@ -11,7 +11,7 @@ async function runOpenCode(input) {
   return new Promise((resolve, reject) => {
     const proc = spawn(
       'opencode',
-      ['run', '--format', 'json', '--model', 'opencode/kimi-k2.5-free'],
+      ['run', '--format', 'json', '--model', 'opencode/minimax-m2.5-free'],
       {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, LINK_ASSISTANT_AGENT_EXPERIMENTAL_EXA: 'true' },

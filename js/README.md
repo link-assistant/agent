@@ -195,6 +195,9 @@ echo "hi" | agent
 
 # Other free models (in order of recommendation)
 echo "hi" | agent --model opencode/minimax-m2.5-free
+echo "hi" | agent --model opencode/ling-2.6-flash-free
+echo "hi" | agent --model opencode/hy3-preview-free
+echo "hi" | agent --model opencode/nemotron-3-super-free
 echo "hi" | agent --model opencode/gpt-5-nano
 echo "hi" | agent --model opencode/big-pickle
 

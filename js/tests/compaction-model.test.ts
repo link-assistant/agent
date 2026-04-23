@@ -305,9 +305,9 @@ describe('contextDiagnostics with compaction model', () => {
 });
 
 describe('CLI defaults', () => {
-  test('default model is opencode/nemotron-3-super-free', async () => {
+  test('default model is opencode/minimax-m2.5-free', async () => {
     const { DEFAULT_MODEL } = await import('../src/cli/defaults');
-    expect(DEFAULT_MODEL).toBe('opencode/nemotron-3-super-free');
+    expect(DEFAULT_MODEL).toBe('opencode/minimax-m2.5-free');
   });
 
   test('default compaction model is opencode/gpt-5-nano', async () => {
@@ -318,7 +318,7 @@ describe('CLI defaults', () => {
   test('default compaction models cascade is a links notation sequence', async () => {
     const { DEFAULT_COMPACTION_MODELS } = await import('../src/cli/defaults');
     expect(DEFAULT_COMPACTION_MODELS).toBe(
-      '(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)'
+      '(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)'
     );
   });
 
@@ -375,7 +375,7 @@ describe('CompactionModelConfig with cascade', () => {
         { providerID: 'opencode', modelID: 'gpt-5-nano', useSameModel: false },
         {
           providerID: 'opencode',
-          modelID: 'nemotron-3-super-free',
+          modelID: 'minimax-m2.5-free',
           useSameModel: true,
         },
       ],

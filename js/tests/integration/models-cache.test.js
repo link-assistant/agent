@@ -65,7 +65,7 @@ describe('ModelsDev cache handling', () => {
  */
 describe('ModelsDev module', () => {
   test('ModelsDev.get() returns provider data', async () => {
-    const { ModelsDev } = await import('../src/provider/models.ts');
+    const { ModelsDev } = await import('../../src/provider/models.ts');
 
     // Get the models database
     const database = await ModelsDev.get();
@@ -83,25 +83,24 @@ describe('ModelsDev module', () => {
     expect(Object.keys(database['opencode'].models).length).toBeGreaterThan(0);
   });
 
-  test('opencode provider should have kimi-k2.5-free model', async () => {
-    const { ModelsDev } = await import('../src/provider/models.ts');
+  test('opencode provider should have MiniMax M2.5 Free model', async () => {
+    const { ModelsDev } = await import('../../src/provider/models.ts');
 
     // Get the models database
     const database = await ModelsDev.get();
 
-    // Check for kimi-k2.5-free model
+    // Check for the current default free OpenCode Zen model.
     const opencode = database['opencode'];
     expect(opencode).toBeTruthy();
 
-    // The model should exist (this is the bug we're fixing)
-    const kimiModel = opencode.models['kimi-k2.5-free'];
-    expect(kimiModel).toBeTruthy();
-    expect(kimiModel.name).toContain('Kimi');
-    expect(kimiModel.cost.input).toBe(0); // Should be free
+    const minimaxModel = opencode.models['minimax-m2.5-free'];
+    expect(minimaxModel).toBeTruthy();
+    expect(minimaxModel.name).toContain('MiniMax');
+    expect(minimaxModel.cost.input).toBe(0); // Should be free
   });
 
   test('opencode provider should have other free models', async () => {
-    const { ModelsDev } = await import('../src/provider/models.ts');
+    const { ModelsDev } = await import('../../src/provider/models.ts');
 
     // Get the models database
     const database = await ModelsDev.get();
@@ -117,8 +116,15 @@ describe('ModelsDev module', () => {
     // Should have multiple free models
     expect(freeModels.length).toBeGreaterThan(0);
 
-    // Some known free models that should exist
-    const expectedFreeModels = ['grok-code', 'gpt-5-nano', 'big-pickle'];
+    // Some known current free models that should exist.
+    const expectedFreeModels = [
+      'minimax-m2.5-free',
+      'ling-2.6-flash-free',
+      'hy3-preview-free',
+      'nemotron-3-super-free',
+      'gpt-5-nano',
+      'big-pickle',
+    ];
     for (const modelId of expectedFreeModels) {
       const model = opencode.models[modelId];
       if (model) {

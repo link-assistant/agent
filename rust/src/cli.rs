@@ -13,7 +13,7 @@ use crate::id::{ascending, Prefix};
 use crate::tool::{ToolContext, ToolRegistry};
 
 /// Default model used when no `--model` CLI argument is provided.
-pub const DEFAULT_MODEL: &str = "opencode/nemotron-3-super-free";
+pub const DEFAULT_MODEL: &str = "opencode/minimax-m2.5-free";
 
 /// Default compaction model used when no `--compaction-model` CLI argument is provided.
 /// gpt-5-nano has a 400K context window, larger than most free base models (~200K).
@@ -22,7 +22,7 @@ pub const DEFAULT_COMPACTION_MODEL: &str = "opencode/gpt-5-nano";
 /// Default compaction models cascade, ordered from smallest/cheapest context to largest.
 /// During compaction, the system tries each model in order.
 pub const DEFAULT_COMPACTION_MODELS: &str =
-    "(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)";
+    "(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)";
 
 /// Default compaction safety margin as a percentage of usable context window.
 /// Increased from 15% to 25% to reduce probability of context overflow errors.

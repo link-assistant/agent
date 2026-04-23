@@ -1,0 +1,60 @@
+{
+  "issue": {
+    "number": 266,
+    "title": "Update list of free models and set MiniMax M2.5 Free as default",
+    "url": "https://github.com/link-assistant/agent/issues/266",
+    "createdAt": "2026-04-23T21:31:48Z"
+  },
+  "checkedAt": "2026-04-23",
+  "sources": [
+    "https://opencode.ai/docs/zen/",
+    "https://opencode.ai/zen/v1/models",
+    "https://models.dev/api.json",
+    "https://github.com/anomalyco/models.dev"
+  ],
+  "opencodeFreeModels": [
+    {
+      "id": "opencode/minimax-m2.5-free",
+      "name": "MiniMax M2.5 Free",
+      "context": 204800,
+      "output": 131072,
+      "default": true
+    },
+    {
+      "id": "opencode/ling-2.6-flash-free",
+      "name": "Ling 2.6 Flash Free",
+      "context": 262100,
+      "output": 32800
+    },
+    {
+      "id": "opencode/hy3-preview-free",
+      "name": "Hy3 Preview Free",
+      "context": 256000,
+      "output": 64000
+    },
+    {
+      "id": "opencode/nemotron-3-super-free",
+      "name": "Nemotron 3 Super Free",
+      "context": 204800,
+      "output": 128000
+    },
+    {
+      "id": "opencode/gpt-5-nano",
+      "name": "GPT 5 Nano",
+      "context": 400000,
+      "output": 128000
+    },
+    {
+      "id": "opencode/big-pickle",
+      "name": "Big Pickle",
+      "context": 200000,
+      "output": 128000
+    }
+  ],
+  "excluded": [
+    {
+      "id": "opencode/trinity-large-preview-free",
+      "reason": "Listed by the Zen models endpoint but marked deprecated by models.dev and absent from the current OpenCode Zen free pricing rows."
+    }
+  ]
+}

@@ -104,7 +104,7 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
     // Test original OpenCode write tool
     const input = `{"message":"write file","tools":[{"name":"write","params":{"filePath":"${testFileName}","content":"Hello World\\nThis is a test file"}}]}`;
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
+      await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout
@@ -158,7 +158,7 @@ test('Agent-cli write tool produces 100% compatible JSON output with OpenCode', 
 
     // Get OpenCode output
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/kimi-k2.5-free`
+      await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout

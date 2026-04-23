@@ -117,32 +117,48 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
       const s = await Provider.state();
       const provider = s.providers[providerID];
       if (provider && !provider.info.models[modelID]) {
-        const availableModels = Object.keys(provider.info.models).slice(0, 10);
-        if (isDefaultModel) {
-          // Default model not in models.dev catalog — warn but proceed (#239)
-          // The provider may still accept it; models.dev can lag behind actual availability.
-          Log.Default.warn(() => ({
+        const liveInfo = await Provider.refreshLiveModelInfo(
+          providerID,
+          modelID
+        );
+        if (liveInfo) {
+          Log.Default.info(() => ({
             message:
-              'default model not found in models.dev catalog — proceeding anyway',
+              'model not found in models.dev catalog but found in provider live endpoint',
             providerID,
             modelID,
-            availableModels,
           }));
         } else {
-          // User explicitly specified provider/model — fail with a clear error (#231)
-          // Silent fallback caused kimi-k2.5-free to be routed to minimax-m2.5-free
-          Log.Default.error(() => ({
-            message:
-              'model not found in provider — refusing to proceed with explicit provider/model',
-            providerID,
-            modelID,
-            availableModels,
-          }));
-          throw new Error(
-            `Model "${modelID}" not found in provider "${providerID}". ` +
-              `Available models include: ${availableModels.join(', ')}. ` +
-              `Use --model ${providerID}/<model-id> with a valid model, or omit the provider prefix for auto-resolution.`
+          const availableModels = Object.keys(provider.info.models).slice(
+            0,
+            10
           );
+          if (isDefaultModel) {
+            // Default model not in models.dev catalog — warn but proceed (#239)
+            // The provider may still accept it; models.dev can lag behind actual availability.
+            Log.Default.warn(() => ({
+              message:
+                'default model not found in models.dev catalog — proceeding anyway',
+              providerID,
+              modelID,
+              availableModels,
+            }));
+          } else {
+            // User explicitly specified provider/model — fail with a clear error (#231)
+            // Silent fallback caused kimi-k2.5-free to be routed to minimax-m2.5-free
+            Log.Default.error(() => ({
+              message:
+                'model not found in provider — refusing to proceed with explicit provider/model',
+              providerID,
+              modelID,
+              availableModels,
+            }));
+            throw new Error(
+              `Model "${modelID}" not found in provider "${providerID}". ` +
+                `Available models include: ${availableModels.join(', ')}. ` +
+                `Use --model ${providerID}/<model-id> with a valid model, or omit the provider prefix for auto-resolution.`
+            );
+          }
         }
       }
     } catch (validationError) {

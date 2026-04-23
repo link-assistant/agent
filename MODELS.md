@@ -27,44 +27,46 @@ echo "hi" | agent --model opencode/gpt-5-nano
 
 Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by output price (lowest first) for best pricing visibility.
 
-| Model                                    | Model ID                      | Input  | Output | Cached Read | Cached Write |
-| ---------------------------------------- | ----------------------------- | ------ | ------ | ----------- | ------------ |
+| Model                                    | Model ID                         | Input    | Output   | Cached Read | Cached Write |
+| ---------------------------------------- | -------------------------------- | -------- | -------- | ----------- | ------------ |
 | **Free Models (Output: $0.00)**          |
-| Nemotron 3 Super Free (default)          | `opencode/nemotron-3-super-free` | Free | Free   | Free        | -            |
-| MiniMax M2.5 Free                        | `opencode/minimax-m2.5-free`  | Free   | Free   | Free        | -            |
-| GPT 5 Nano                               | `opencode/gpt-5-nano`         | Free   | Free   | Free        | -            |
-| Big Pickle                               | `opencode/big-pickle`         | Free   | Free   | Free        | -            |
+| MiniMax M2.5 Free (default)              | `opencode/minimax-m2.5-free`     | Free     | Free     | Free        | -            |
+| Ling 2.6 Flash Free                      | `opencode/ling-2.6-flash-free`   | Free     | Free     | Free        | -            |
+| Hy3 Preview Free                         | `opencode/hy3-preview-free`      | Free     | Free     | Free        | -            |
+| Nemotron 3 Super Free                    | `opencode/nemotron-3-super-free` | Free     | Free     | Free        | -            |
+| GPT 5 Nano                               | `opencode/gpt-5-nano`            | Free     | Free     | Free        | -            |
+| Big Pickle                               | `opencode/big-pickle`            | Free     | Free     | Free        | -            |
 | **Discontinued Free Models**             |
-| ~~Qwen 3.6 Plus Free~~                   | `opencode/qwen3.6-plus-free`  | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
-| ~~Kimi K2.5 Free~~                       | `opencode/kimi-k2.5-free`     | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
-| ~~Grok Code Fast 1~~                     | `opencode/grok-code`          | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
-| ~~MiniMax M2.1 Free~~                    | `opencode/minimax-m2.1-free`  | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
-| ~~GLM 4.7 Free~~                         | `opencode/glm-4.7-free`       | ~~Free~~ | ~~Free~~ | ~~Free~~ | -         |
+| ~~Qwen 3.6 Plus Free~~                   | `opencode/qwen3.6-plus-free`     | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~Kimi K2.5 Free~~                       | `opencode/kimi-k2.5-free`        | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~Grok Code Fast 1~~                     | `opencode/grok-code`             | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~MiniMax M2.1 Free~~                    | `opencode/minimax-m2.1-free`     | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~GLM 4.7 Free~~                         | `opencode/glm-4.7-free`          | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
 | **Paid Models (sorted by output price)** |
-| Qwen3 Coder 480B                         | `opencode/qwen3-coder-480b` | $0.45  | $1.50  | -           | -            |
-| GLM 4.6                                  | `opencode/glm-4-6`          | $0.60  | $2.20  | $0.10       | -            |
-| Kimi K2                                  | `opencode/kimi-k2`          | $0.60  | $2.50  | $0.36       | -            |
-| Claude Haiku 3.5                         | `opencode/claude-haiku-3-5` | $0.80  | $4.00  | $0.08       | $1.00        |
-| Claude Haiku 4.5                         | `opencode/haiku`            | $1.00  | $5.00  | $0.10       | $1.25        |
-| GPT 5.1                                  | `opencode/gpt-5-1`          | $1.25  | $10.00 | $0.125      | -            |
-| GPT 5.1 Codex                            | `opencode/gpt-5-1-codex`    | $1.25  | $10.00 | $0.125      | -            |
-| GPT 5                                    | `opencode/gpt-5`            | $1.25  | $10.00 | $0.125      | -            |
-| GPT 5 Codex                              | `opencode/gpt-5-codex`      | $1.25  | $10.00 | $0.125      | -            |
-| Gemini 3 Pro (≤ 200K tokens)             | `opencode/gemini-3-pro`     | $2.00  | $12.00 | $0.20       | -            |
-| Claude Sonnet 4.5 (≤ 200K tokens)        | `opencode/sonnet`           | $3.00  | $15.00 | $0.30       | $3.75        |
-| Claude Sonnet 4 (≤ 200K tokens)          | `opencode/claude-sonnet-4`  | $3.00  | $15.00 | $0.30       | $3.75        |
-| Gemini 3 Pro (> 200K tokens)             | `opencode/gemini-3-pro`     | $4.00  | $18.00 | $0.40       | -            |
-| Claude Sonnet 4.5 (> 200K tokens)        | `opencode/sonnet`           | $6.00  | $22.50 | $0.60       | $7.50        |
-| Claude Sonnet 4 (> 200K tokens)          | `opencode/claude-sonnet-4`  | $6.00  | $22.50 | $0.60       | $7.50        |
-| Claude Opus 4.1                          | `opencode/opus`             | $15.00 | $75.00 | $1.50       | $18.75       |
+| Qwen3 Coder 480B                         | `opencode/qwen3-coder-480b`      | $0.45    | $1.50    | -           | -            |
+| GLM 4.6                                  | `opencode/glm-4-6`               | $0.60    | $2.20    | $0.10       | -            |
+| Kimi K2                                  | `opencode/kimi-k2`               | $0.60    | $2.50    | $0.36       | -            |
+| Claude Haiku 3.5                         | `opencode/claude-haiku-3-5`      | $0.80    | $4.00    | $0.08       | $1.00        |
+| Claude Haiku 4.5                         | `opencode/haiku`                 | $1.00    | $5.00    | $0.10       | $1.25        |
+| GPT 5.1                                  | `opencode/gpt-5-1`               | $1.25    | $10.00   | $0.125      | -            |
+| GPT 5.1 Codex                            | `opencode/gpt-5-1-codex`         | $1.25    | $10.00   | $0.125      | -            |
+| GPT 5                                    | `opencode/gpt-5`                 | $1.25    | $10.00   | $0.125      | -            |
+| GPT 5 Codex                              | `opencode/gpt-5-codex`           | $1.25    | $10.00   | $0.125      | -            |
+| Gemini 3 Pro (≤ 200K tokens)             | `opencode/gemini-3-pro`          | $2.00    | $12.00   | $0.20       | -            |
+| Claude Sonnet 4.5 (≤ 200K tokens)        | `opencode/sonnet`                | $3.00    | $15.00   | $0.30       | $3.75        |
+| Claude Sonnet 4 (≤ 200K tokens)          | `opencode/claude-sonnet-4`       | $3.00    | $15.00   | $0.30       | $3.75        |
+| Gemini 3 Pro (> 200K tokens)             | `opencode/gemini-3-pro`          | $4.00    | $18.00   | $0.40       | -            |
+| Claude Sonnet 4.5 (> 200K tokens)        | `opencode/sonnet`                | $6.00    | $22.50   | $0.60       | $7.50        |
+| Claude Sonnet 4 (> 200K tokens)          | `opencode/claude-sonnet-4`       | $6.00    | $22.50   | $0.60       | $7.50        |
+| Claude Opus 4.1                          | `opencode/opus`                  | $15.00   | $75.00   | $1.50       | $18.75       |
 
 ## Default Model
 
-The default model is **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`), which is completely free and offers strong reasoning capabilities with a ~262K token context window (NVIDIA hybrid Mamba-Transformer architecture).
+The default model is **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`), which is completely free on OpenCode Zen for a limited time and offers a 204,800 token context window with 131,072 output tokens in current models.dev metadata.
 
 > **Note:** Qwen 3.6 Plus Free (`opencode/qwen3.6-plus-free`) was previously the default free model, but OpenCode Zen ended the free promotion in April 2026. The model now requires an OpenCode Go subscription. See [issue #242](https://github.com/link-assistant/agent/issues/242).
 
-> **Note:** MiniMax M2.5 Free (`opencode/minimax-m2.5-free`) was previously the default free model. See [issue #232](https://github.com/link-assistant/agent/issues/232).
+> **Note:** Nemotron 3 Super Free (`opencode/nemotron-3-super-free`) was previously the default free model. See [issue #242](https://github.com/link-assistant/agent/issues/242).
 
 > **Note:** Kimi K2.5 Free (`opencode/kimi-k2.5-free`) was previously the default free model, but it was removed from the OpenCode Zen provider in March 2026. See [Case Study #208](docs/case-studies/issue-208/README.md) for details.
 
@@ -72,30 +74,38 @@ The default model is **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`
 
 ### Free Models (in order of recommendation)
 
-1. **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`) - Default free model, NVIDIA hybrid Mamba-Transformer (~262K context, strong reasoning)
-2. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Strong general-purpose performance (~200K context)
-3. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable OpenAI-powered free option (~400K context)
-4. **Big Pickle** (`opencode/big-pickle`) - Stealth model, free during evaluation (~200K context)
+1. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Default free model, strong general-purpose performance (204,800 context)
+2. **Ling 2.6 Flash Free** (`opencode/ling-2.6-flash-free`) - Fast free open-weight model (262,100 context)
+3. **Hy3 Preview Free** (`opencode/hy3-preview-free`) - Preview free model with reasoning support (256,000 context)
+4. **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`) - NVIDIA free endpoint with strong reasoning (204,800 context)
+5. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable OpenAI-powered free option (400,000 context)
+6. **Big Pickle** (`opencode/big-pickle`) - Stealth model, free during evaluation (200,000 context)
 
-> **Note:** `opencode/qwen3.6-plus-free`, `opencode/kimi-k2.5-free`, `opencode/minimax-m2.1-free`, and `opencode/glm-4.7-free` are no longer available as free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
+> **Note:** `opencode/qwen3.6-plus-free`, `opencode/kimi-k2.5-free`, `opencode/minimax-m2.1-free`, and `opencode/glm-4.7-free` are no longer available as recommended free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
 
 ## Usage Examples
 
 ### Using the Default Model (Free)
 
 ```bash
-# Uses opencode/nemotron-3-super-free by default
+# Uses opencode/minimax-m2.5-free by default
 echo "hello" | agent
 ```
 
 ### Using Other Free Models
 
 ```bash
-# Nemotron 3 Super Free (default)
-echo "hello" | agent --model opencode/nemotron-3-super-free
-
-# MiniMax M2.5 Free
+# MiniMax M2.5 Free (default)
 echo "hello" | agent --model opencode/minimax-m2.5-free
+
+# Ling 2.6 Flash Free
+echo "hello" | agent --model opencode/ling-2.6-flash-free
+
+# Hy3 Preview Free
+echo "hello" | agent --model opencode/hy3-preview-free
+
+# Nemotron 3 Super Free
+echo "hello" | agent --model opencode/nemotron-3-super-free
 
 # GPT 5 Nano
 echo "hello" | agent --model opencode/gpt-5-nano
@@ -224,14 +234,14 @@ For more details, see the [OpenRouter Documentation](docs/openrouter.md).
 
 Kilo offers several free models that work without setting up an API key:
 
-| Model                     | Model ID                       | Context Window | Description                                          |
-| ------------------------- | ------------------------------ | -------------- | ---------------------------------------------------- |
-| **GLM-5 (recommended)**   | `kilo/glm-5-free`              | 202,752 tokens | Z.AI flagship model, matches Opus 4.5 on many tasks  |
-| GLM 4.5 Air               | `kilo/glm-4.5-air-free`        | 131,072 tokens | Free Z.AI model with agent-centric capabilities      |
-| MiniMax M2.5              | `kilo/minimax-m2.5-free`       | 204,800 tokens | Strong general-purpose performance (upgraded from M2.1) |
-| DeepSeek R1               | `kilo/deepseek-r1-free`        | 163,840 tokens | Advanced reasoning model                             |
-| Giga Potato               | `kilo/giga-potato-free`        | 256,000 tokens | Free evaluation model                                |
-| Trinity Large Preview     | `kilo/trinity-large-preview`   | 131,000 tokens | Arcee AI preview model                               |
+| Model                   | Model ID                     | Context Window | Description                                             |
+| ----------------------- | ---------------------------- | -------------- | ------------------------------------------------------- |
+| **GLM-5 (recommended)** | `kilo/glm-5-free`            | 202,752 tokens | Z.AI flagship model, matches Opus 4.5 on many tasks     |
+| GLM 4.5 Air             | `kilo/glm-4.5-air-free`      | 131,072 tokens | Free Z.AI model with agent-centric capabilities         |
+| MiniMax M2.5            | `kilo/minimax-m2.5-free`     | 204,800 tokens | Strong general-purpose performance (upgraded from M2.1) |
+| DeepSeek R1             | `kilo/deepseek-r1-free`      | 163,840 tokens | Advanced reasoning model                                |
+| Giga Potato             | `kilo/giga-potato-free`      | 256,000 tokens | Free evaluation model                                   |
+| Trinity Large Preview   | `kilo/trinity-large-preview` | 131,000 tokens | Arcee AI preview model                                  |
 
 > **Note:** `kilo/glm-4.7-free` and `kilo/minimax-m2.1-free` are no longer the recommended free models. Use `kilo/glm-4.5-air-free` and `kilo/minimax-m2.5-free` instead.
 
@@ -241,15 +251,15 @@ Kilo offers several free models that work without setting up an API key:
 
 GLM-5 is Z.AI's (Zhipu AI) flagship model with enhanced reasoning and coding capabilities:
 
-| Property           | Value                |
-| ------------------ | -------------------- |
-| Model ID           | `kilo/glm-5-free`    |
-| Context Window     | 202,752 tokens       |
-| Max Output Tokens  | 131,072 tokens       |
-| Function Calling   | Yes                  |
-| Tool Choice        | Yes                  |
-| Structured Outputs | Yes (JSON schema)    |
-| Reasoning Tokens   | Yes                  |
+| Property           | Value             |
+| ------------------ | ----------------- |
+| Model ID           | `kilo/glm-5-free` |
+| Context Window     | 202,752 tokens    |
+| Max Output Tokens  | 131,072 tokens    |
+| Function Calling   | Yes               |
+| Tool Choice        | Yes               |
+| Structured Outputs | Yes (JSON schema) |
+| Reasoning Tokens   | Yes               |
 
 ### Using Paid Models
 

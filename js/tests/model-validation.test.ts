@@ -190,14 +190,14 @@ describe('parseModelConfig - model argument handling (#196)', () => {
   });
 
   test('should always prefer CLI argument over yargs value', () => {
-    // Issue #196: Yargs under Bun may return default 'opencode/kimi-k2.5-free'
+    // Issue #196: Yargs under Bun may return the default model
     // even when user passed '--model opencode/glm-4.7-free'
     //
     // Before fix: only override yargs when mismatch detected
     // After fix: always use CLI value when available, regardless of match
     //
     // Code: if (cliModelArg) { modelArg = cliModelArg; }
-    const yargsModel = 'opencode/kimi-k2.5-free'; // yargs default
+    const yargsModel = 'opencode/minimax-m2.5-free'; // yargs default
     const cliModel = 'opencode/glm-4.7-free'; // actual CLI arg
 
     // The fix ensures cliModel is always used when available
@@ -211,8 +211,8 @@ describe('Integration scenarios - Issue #194', () => {
     // Original issue:
     // 1. User runs: agent --model glm-4.7-free
     // 2. glm-4.7-free is not found in any provider
-    // 3. System silently falls back to opencode/kimi-k2.5-free (wrong model!)
-    // 4. Kimi K2.5 makes tool calls but returns undefined finishReason
+    // 3. System silently falls back to the default model (wrong model!)
+    // 4. The default model makes tool calls but returns undefined finishReason
     // 5. toFinishReason converts undefined -> 'unknown'
     // 6. Loop exits because 'unknown' !== 'tool-calls'
     // 7. Agent terminates without executing any tasks
@@ -233,8 +233,8 @@ describe('Integration scenarios - Issue #194', () => {
     // 4. User can choose correct model
 
     // After fix - Scenario 2: Provider returns undefined finishReason
-    // 1. User runs: agent --model opencode/kimi-k2.5-free
-    // 2. Kimi K2.5 makes tool calls, returns undefined finishReason
+    // 1. User runs: agent --model opencode/minimax-m2.5-free
+    // 2. MiniMax M2.5 makes tool calls, returns undefined finishReason
     // 3. processor.ts: Detects pending tool calls -> infers 'tool-calls'
     // 4. Loop continues to execute tools
     // 5. Agent completes tasks successfully
@@ -287,9 +287,9 @@ describe('Integration scenarios - Issue #196', () => {
     // Timeline from real incident:
     // 1. User runs: solve --model glm-4.7-free
     // 2. Solve script executes: agent --model opencode/glm-4.7-free
-    // 3. Yargs under Bun parses --model but returns DEFAULT 'opencode/kimi-k2.5-free'
+    // 3. Yargs under Bun parses --model but returns the configured DEFAULT model
     // 4. getModelFromProcessArgv() should catch this but apparently returned null
-    // 5. Agent sends request to opencode with kimi-k2.5-free (wrong model!)
+    // 5. Agent sends request to opencode with the default model (wrong model!)
     // 6. Provider returns zero tokens with "reason: unknown"
     // 7. Agent exits silently without doing any work
 

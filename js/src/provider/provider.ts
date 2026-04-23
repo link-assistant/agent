@@ -18,6 +18,7 @@ import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';
 import { RetryFetch } from './retry-fetch';
 import { SSEUsageExtractor } from '../util/sse-usage-extractor';
+import { OpenCodeZen } from './opencode-zen';
 
 // Direct imports for bundled providers - these are pre-installed to avoid runtime installation hangs
 // @see https://github.com/link-assistant/agent/issues/173
@@ -1596,6 +1597,31 @@ export namespace Provider {
     return state().then((s) => s.providers[providerID]);
   }
 
+  async function getLiveModelInfo(providerID: string, modelID: string) {
+    if (providerID !== 'opencode') return undefined;
+    return OpenCodeZen.getLiveFreeModelInfo(modelID);
+  }
+
+  export async function refreshLiveModelInfo(
+    providerID: string,
+    modelID: string
+  ) {
+    const info = await getLiveModelInfo(providerID, modelID);
+    if (!info) return undefined;
+
+    const s = await state();
+    const provider = s.providers[providerID];
+    if (provider) {
+      provider.info.models[modelID] = info;
+      log.info(() => ({
+        message: 'model found in provider live model endpoint',
+        providerID,
+        modelID,
+      }));
+    }
+    return info;
+  }
+
   export async function getModel(providerID: string, modelID: string) {
     const key = `${providerID}/${modelID}`;
     const s = await state();
@@ -1658,6 +1684,19 @@ export namespace Provider {
             refreshError instanceof Error
               ? refreshError.message
               : String(refreshError),
+        }));
+      }
+    }
+
+    if (!isSyntheticProvider && !info) {
+      const liveInfo = await getLiveModelInfo(providerID, modelID);
+      if (liveInfo) {
+        provider.info.models[modelID] = liveInfo;
+        info = liveInfo;
+        log.info(() => ({
+          message: 'model found in provider live model endpoint',
+          providerID,
+          modelID,
         }));
       }
     }
@@ -1793,8 +1832,10 @@ export namespace Provider {
     }
     if (providerID === 'opencode' || providerID === 'local') {
       priority = [
-        'nemotron-3-super-free',
         'minimax-m2.5-free',
+        'ling-2.6-flash-free',
+        'hy3-preview-free',
+        'nemotron-3-super-free',
         'gpt-5-nano',
         'big-pickle',
       ];
@@ -1824,11 +1865,13 @@ export namespace Provider {
   }
 
   const priority = [
-    'nemotron-3-super-free',
-    'glm-5-free',
-    'minimax-m2.5-free',
-    'gpt-5-nano',
     'big-pickle',
+    'gpt-5-nano',
+    'nemotron-3-super-free',
+    'hy3-preview-free',
+    'ling-2.6-flash-free',
+    'minimax-m2.5-free',
+    'glm-5-free',
     'gpt-5',
     'claude-sonnet-4',
     'gemini-3-pro',
@@ -1907,8 +1950,8 @@ export namespace Provider {
    * Priority for free models:
    * 1. If model is uniquely available in one provider, use that provider
    * 2. If model is available in multiple providers, prioritize based on free model availability:
-   *    - kilo: glm-5-free, glm-4.5-air-free, minimax-m2.5-free, giga-potato-free, deepseek-r1-free (unique to Kilo)
-   *    - opencode: big-pickle, gpt-5-nano, nemotron-3-super-free (unique to OpenCode)
+   *    - kilo: glm-5-free, glm-4.5-air-free, giga-potato-free, deepseek-r1-free (unique to Kilo)
+   *    - opencode: minimax-m2.5-free, ling-2.6-flash-free, hy3-preview-free, big-pickle, gpt-5-nano, nemotron-3-super-free
    * 3. For shared models, prefer OpenCode first, then fall back to Kilo on rate limit
    *
    * @param modelID - Short model name without provider prefix
@@ -1924,7 +1967,6 @@ export namespace Provider {
     const kiloUniqueModels = [
       'glm-5-free',
       'glm-4.5-air-free',
-      'minimax-m2.5-free',
       'giga-potato-free',
       'trinity-large-preview',
       'deepseek-r1-free',
@@ -2060,8 +2102,7 @@ export namespace Provider {
    * If user specifies "kilo/deepseek-r1-free", no fallback will occur.
    */
   const SHARED_FREE_MODELS: Record<string, string[]> = {
-    // Currently no shared models between OpenCode and Kilo providers.
-    // Kilo models use different IDs than OpenCode models.
+    'minimax-m2.5-free': ['opencode', 'kilo'],
   };
 
   /**
