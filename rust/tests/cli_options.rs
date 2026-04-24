@@ -648,6 +648,24 @@ fn compaction_models_env_default() {
         ));
 }
 
+#[test]
+fn compaction_models_cli_overrides_env_default() {
+    agent_cmd()
+        .env(DEFAULT_COMPACTION_MODELS_ENV, "(env-compact-free same)")
+        .args([
+            "--dry-run",
+            "--verbose",
+            "--compaction-models",
+            "(model1 same)",
+            "-p",
+            "hello",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Compaction models: (model1 same)"))
+        .stdout(predicate::str::contains("(env-compact-free same)").not());
+}
+
 // ── Compaction safety margin option ──────────────────────────────────
 
 #[test]
@@ -683,6 +701,24 @@ fn compaction_safety_margin_env_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains("Compaction safety margin: 12%"));
+}
+
+#[test]
+fn compaction_safety_margin_cli_overrides_env_default() {
+    agent_cmd()
+        .env(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV, "12")
+        .args([
+            "--dry-run",
+            "--verbose",
+            "--compaction-safety-margin",
+            "25",
+            "-p",
+            "hello",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Compaction safety margin: 25%"))
+        .stdout(predicate::str::contains("Compaction safety margin: 12%").not());
 }
 
 // ── All options combined ─────────────────────────────────────────────

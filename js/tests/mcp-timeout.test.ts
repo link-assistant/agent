@@ -56,7 +56,7 @@ describe('MCP Tool Call Timeout', () => {
 
   describe('MCP timeout configuration schema', () => {
     test('McpLocal schema accepts tool_call_timeout', async () => {
-      const { Config } = await import('../src/config/config');
+      const { Config } = await import('../src/config/file-config');
 
       const validConfig = {
         type: 'local' as const,
@@ -72,7 +72,7 @@ describe('MCP Tool Call Timeout', () => {
     });
 
     test('McpLocal schema accepts tool_timeouts', async () => {
-      const { Config } = await import('../src/config/config');
+      const { Config } = await import('../src/config/file-config');
 
       const validConfig = {
         type: 'local' as const,
@@ -94,7 +94,7 @@ describe('MCP Tool Call Timeout', () => {
     });
 
     test('McpRemote schema accepts tool_call_timeout', async () => {
-      const { Config } = await import('../src/config/config');
+      const { Config } = await import('../src/config/file-config');
 
       const validConfig = {
         type: 'remote' as const,
@@ -110,7 +110,7 @@ describe('MCP Tool Call Timeout', () => {
     });
 
     test('McpRemote schema accepts tool_timeouts', async () => {
-      const { Config } = await import('../src/config/config');
+      const { Config } = await import('../src/config/file-config');
 
       const validConfig = {
         type: 'remote' as const,
@@ -130,7 +130,7 @@ describe('MCP Tool Call Timeout', () => {
     });
 
     test('tool_call_timeout must be positive integer', async () => {
-      const { Config } = await import('../src/config/config');
+      const { Config } = await import('../src/config/file-config');
 
       const invalidConfig = {
         type: 'local' as const,
@@ -143,7 +143,7 @@ describe('MCP Tool Call Timeout', () => {
     });
 
     test('tool_timeouts values must be positive integers', async () => {
-      const { Config } = await import('../src/config/config');
+      const { Config } = await import('../src/config/file-config');
 
       const invalidConfig = {
         type: 'local' as const,
@@ -178,7 +178,7 @@ describe('MCP Tool Call Timeout', () => {
 
 describe('Global MCP defaults configuration', () => {
   test('mcp_defaults schema accepts tool_call_timeout', async () => {
-    const { Config } = await import('../src/config/config');
+    const { Config } = await import('../src/config/file-config');
 
     const validConfig = {
       mcp_defaults: {
@@ -194,7 +194,7 @@ describe('Global MCP defaults configuration', () => {
   });
 
   test('mcp_defaults schema accepts max_tool_call_timeout', async () => {
-    const { Config } = await import('../src/config/config');
+    const { Config } = await import('../src/config/file-config');
 
     const validConfig = {
       mcp_defaults: {
@@ -210,7 +210,7 @@ describe('Global MCP defaults configuration', () => {
   });
 
   test('mcp_defaults schema accepts both timeout options', async () => {
-    const { Config } = await import('../src/config/config');
+    const { Config } = await import('../src/config/file-config');
 
     const validConfig = {
       mcp_defaults: {
@@ -228,7 +228,7 @@ describe('Global MCP defaults configuration', () => {
   });
 
   test('mcp_defaults timeouts must be positive integers', async () => {
-    const { Config } = await import('../src/config/config');
+    const { Config } = await import('../src/config/file-config');
 
     const invalidConfig = {
       mcp_defaults: {
@@ -241,7 +241,7 @@ describe('Global MCP defaults configuration', () => {
   });
 
   test('mcp_defaults max_tool_call_timeout must be positive integer', async () => {
-    const { Config } = await import('../src/config/config');
+    const { Config } = await import('../src/config/file-config');
 
     const invalidConfig = {
       mcp_defaults: {
@@ -256,7 +256,7 @@ describe('Global MCP defaults configuration', () => {
 
 describe('Full MCP configuration example', () => {
   test('complete config with all timeout options validates', async () => {
-    const { Config } = await import('../src/config/config');
+    const { Config } = await import('../src/config/file-config');
 
     // This represents the full configuration users might use
     const fullConfig = {
@@ -287,7 +287,7 @@ describe('Full MCP configuration example', () => {
   });
 
   test('complete config with global mcp_defaults validates', async () => {
-    const { Config } = await import('../src/config/config');
+    const { Config } = await import('../src/config/file-config');
 
     // This represents the full configuration with global defaults
     const fullConfig = {
