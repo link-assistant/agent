@@ -16,7 +16,7 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
   const defaultCompactionSafetyMarginPercent =
     getDefaultCompactionSafetyMarginPercent(defaultOptions);
 
-  return yargs
+  const parser = yargs
     .option('model', {
       type: 'string',
       description: 'Model to use in format providerID/modelID',
@@ -126,7 +126,19 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
       description:
         'When used with --resume or --continue, continue in the same session without forking to a new UUID.',
       default: false,
-    })
+    });
+
+  const normalizedParser =
+    typeof parser.middleware === 'function'
+      ? parser.middleware((argv) => {
+          if (argv.fork === false) {
+            argv['no-fork'] = true;
+            argv.noFork = true;
+          }
+        }, true)
+      : parser;
+
+  return normalizedParser
     .option('generate-title', {
       type: 'boolean',
       description:
