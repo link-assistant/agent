@@ -7,6 +7,12 @@ use link_assistant_agent::cli::{
     Args, InputMessage, DEFAULT_COMPACTION_MODEL, DEFAULT_COMPACTION_MODELS,
     DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT, DEFAULT_MODEL,
 };
+use link_assistant_agent::defaults::{
+    default_compaction_model_from_env, default_compaction_models_from_env,
+    default_compaction_safety_margin_percent_from_env, default_model_from_env,
+    default_model_parts_from_env, DEFAULT_COMPACTION_MODELS_ENV, DEFAULT_COMPACTION_MODEL_ENV,
+    DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV, DEFAULT_MODEL_ENV,
+};
 
 #[test]
 fn test_parse_json_input() {
@@ -344,4 +350,38 @@ fn test_default_compaction_models_matches_js() {
 #[test]
 fn test_default_compaction_safety_margin_matches_js() {
     assert_eq!(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT, 25);
+}
+
+#[test]
+fn test_default_model_can_be_overridden_by_env_reader() {
+    let model = default_model_from_env(|key| {
+        (key == DEFAULT_MODEL_ENV).then(|| "opencode/env-default-free".to_string())
+    });
+    assert_eq!(model, "opencode/env-default-free");
+}
+
+#[test]
+fn test_default_model_parts_are_importable_from_library() {
+    let parts = default_model_parts_from_env(|key| {
+        (key == DEFAULT_MODEL_ENV).then(|| "opencode/env-default-free".to_string())
+    });
+    assert_eq!(parts.provider_id, "opencode");
+    assert_eq!(parts.model_id, "env-default-free");
+}
+
+#[test]
+fn test_default_compaction_values_can_be_overridden_by_env_reader() {
+    let compaction_model = default_compaction_model_from_env(|key| {
+        (key == DEFAULT_COMPACTION_MODEL_ENV).then(|| "opencode/env-compact-free".to_string())
+    });
+    let compaction_models = default_compaction_models_from_env(|key| {
+        (key == DEFAULT_COMPACTION_MODELS_ENV).then(|| "(env-compact-free same)".to_string())
+    });
+    let compaction_safety_margin = default_compaction_safety_margin_percent_from_env(|key| {
+        (key == DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV).then(|| "12".to_string())
+    });
+
+    assert_eq!(compaction_model, "opencode/env-compact-free");
+    assert_eq!(compaction_models, "(env-compact-free same)");
+    assert_eq!(compaction_safety_margin, 12);
 }

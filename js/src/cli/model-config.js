@@ -8,9 +8,11 @@ import { Log } from '../util/log.ts';
 import {
   DEFAULT_PROVIDER_ID,
   DEFAULT_MODEL_ID,
-  DEFAULT_COMPACTION_MODEL,
-  DEFAULT_COMPACTION_MODELS,
-  DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
+  getDefaultModel,
+  getDefaultModelParts,
+  getDefaultCompactionModel,
+  getDefaultCompactionModels,
+  getDefaultCompactionSafetyMarginPercent,
 } from './defaults.ts';
 
 /**
@@ -20,12 +22,21 @@ import {
  * @param {function} outputStatus - Function to output status messages
  * @returns {Promise<{providerID: string, modelID: string}>}
  */
-export async function parseModelConfig(argv, outputError, outputStatus) {
+export async function parseModelConfig(
+  argv,
+  outputError,
+  outputStatus,
+  defaultOptions = {}
+) {
+  const defaultModel = getDefaultModel(defaultOptions);
+  const { providerID: defaultProviderID, modelID: defaultModelID } =
+    getDefaultModelParts(defaultOptions);
+
   // Safeguard: validate argv.model against process.argv to detect yargs/cache mismatch (#192, #196, #239)
   // This is critical because yargs under Bun may fail to parse --model correctly,
   // returning the default value instead of the user's CLI argument.
   const cliModelArg = getModelFromProcessArgv();
-  let modelArg = argv.model;
+  let modelArg = argv.model ?? defaultModel;
 
   // Diagnostic logging: always log raw argv sources when debugging model resolution (#239)
   // Bun global installs may have different process.argv structure (oven-sh/bun#22157)
@@ -54,7 +65,7 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     // Always use CLI value when available, even if it matches yargs
     // This ensures we use the actual CLI argument, not a cached/default yargs value
     modelArg = cliModelArg;
-  } else if (modelArg === `${DEFAULT_PROVIDER_ID}/${DEFAULT_MODEL_ID}`) {
+  } else if (modelArg === defaultModel) {
     // cliModelArg is null AND yargs returned the default — check if process.argv
     // actually contains --model to detect silent yargs/Bun mismatch (#239)
     const rawArgvStr = process.argv.join(' ');
@@ -74,7 +85,7 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
           typeof globalThis.Bun !== 'undefined' && globalThis.Bun.argv
             ? globalThis.Bun.argv
             : '(not available)',
-        defaultModel: `${DEFAULT_PROVIDER_ID}/${DEFAULT_MODEL_ID}`,
+        defaultModel,
       }));
     }
   }
@@ -111,7 +122,7 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
     // fail immediately instead of silently falling back to a different model.
     // However, if the model is the default (no --model CLI flag), warn but proceed (#239).
     // The models.dev API may lag behind the provider's actual model availability.
-    const isDefaultModel = !cliModelArg;
+    const isDefaultModel = !cliModelArg && modelArg === defaultModel;
     try {
       const { Provider } = await import('../provider/provider.ts');
       const s = await Provider.state();
@@ -193,7 +204,8 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
   const compactionModelResult = await parseCompactionModelConfig(
     argv,
     providerID,
-    modelID
+    modelID,
+    defaultOptions
   );
 
   // Handle --use-existing-claude-oauth option
@@ -222,7 +234,7 @@ export async function parseModelConfig(argv, outputError, outputStatus) {
 
     // If user specified the default model (DEFAULT_MODEL), switch to claude-oauth
     // If user explicitly specified kilo or another provider, warn but respect their choice
-    if (providerID === DEFAULT_PROVIDER_ID && modelID === DEFAULT_MODEL_ID) {
+    if (providerID === defaultProviderID && modelID === defaultModelID) {
       providerID = 'claude-oauth';
       modelID = 'claude-sonnet-4-5';
     } else if (!['claude-oauth', 'anthropic'].includes(providerID)) {
@@ -306,20 +318,28 @@ async function resolveCompactionModelEntry(
  * @see https://github.com/link-assistant/agent/issues/219
  * @see https://github.com/link-assistant/agent/issues/232
  */
-async function parseCompactionModelConfig(argv, baseProviderID, baseModelID) {
+async function parseCompactionModelConfig(
+  argv,
+  baseProviderID,
+  baseModelID,
+  defaultOptions = {}
+) {
+  const defaultCompactionSafetyMarginPercent =
+    getDefaultCompactionSafetyMarginPercent(defaultOptions);
+
   // Get safety margin from CLI
   const cliSafetyMarginArg = getCompactionSafetyMarginFromProcessArgv();
   const compactionSafetyMarginPercent = cliSafetyMarginArg
     ? parseInt(cliSafetyMarginArg, 10)
     : (argv['compaction-safety-margin'] ??
-      DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT);
+      defaultCompactionSafetyMarginPercent);
 
   // Check for --compaction-models (cascade) first — it overrides --compaction-model
   const cliCompactionModelsArg = getCompactionModelsFromProcessArgv();
   const compactionModelsArg =
     cliCompactionModelsArg ??
     argv['compaction-models'] ??
-    DEFAULT_COMPACTION_MODELS;
+    getDefaultCompactionModels(defaultOptions);
 
   // Parse the links notation sequence into an array of model names
   const modelNames = parseLinksNotationSequence(compactionModelsArg);
@@ -379,7 +399,7 @@ async function parseCompactionModelConfig(argv, baseProviderID, baseModelID) {
   const compactionModelArg =
     cliCompactionModelArg ??
     argv['compaction-model'] ??
-    DEFAULT_COMPACTION_MODEL;
+    getDefaultCompactionModel(defaultOptions);
 
   const resolved = await resolveCompactionModelEntry(
     compactionModelArg,

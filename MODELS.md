@@ -64,6 +64,8 @@ Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by
 
 The default model is **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`), which is completely free on OpenCode Zen for a limited time and offers a 204,800 token context window with 131,072 output tokens in current models.dev metadata.
 
+For test runs and automation, the default model can be overridden with `LINK_ASSISTANT_AGENT_DEFAULT_MODEL`; an explicit `--model` option still takes precedence. The compaction defaults have matching override variables: `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL`, `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODELS`, and `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT`.
+
 > **Note:** Qwen 3.6 Plus Free (`opencode/qwen3.6-plus-free`) was previously the default free model, but OpenCode Zen ended the free promotion in April 2026. The model now requires an OpenCode Go subscription. See [issue #242](https://github.com/link-assistant/agent/issues/242).
 
 > **Note:** Nemotron 3 Super Free (`opencode/nemotron-3-super-free`) was previously the default free model. See [issue #242](https://github.com/link-assistant/agent/issues/242).

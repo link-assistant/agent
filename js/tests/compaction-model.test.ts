@@ -306,17 +306,18 @@ describe('contextDiagnostics with compaction model', () => {
 
 describe('CLI defaults', () => {
   test('default model is opencode/minimax-m2.5-free', async () => {
-    const { DEFAULT_MODEL } = await import('../src/cli/defaults');
+    const { DEFAULT_MODEL } = await import('../src/config/defaults');
     expect(DEFAULT_MODEL).toBe('opencode/minimax-m2.5-free');
   });
 
   test('default compaction model is opencode/gpt-5-nano', async () => {
-    const { DEFAULT_COMPACTION_MODEL } = await import('../src/cli/defaults');
+    const { DEFAULT_COMPACTION_MODEL } = await import('../src/config/defaults');
     expect(DEFAULT_COMPACTION_MODEL).toBe('opencode/gpt-5-nano');
   });
 
   test('default compaction models cascade is a links notation sequence', async () => {
-    const { DEFAULT_COMPACTION_MODELS } = await import('../src/cli/defaults');
+    const { DEFAULT_COMPACTION_MODELS } =
+      await import('../src/config/defaults');
     expect(DEFAULT_COMPACTION_MODELS).toBe(
       '(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)'
     );
@@ -324,8 +325,71 @@ describe('CLI defaults', () => {
 
   test('default compaction safety margin is 25%', async () => {
     const { DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT } =
-      await import('../src/cli/defaults');
+      await import('../src/config/defaults');
     expect(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT).toBe(25);
+  });
+
+  test('default model can be overridden by options or env for tests', async () => {
+    const { DEFAULT_MODEL_ENV, getDefaultModel, getDefaultModelParts } =
+      await import('../src/config/defaults');
+
+    expect(
+      getDefaultModel({
+        env: { [DEFAULT_MODEL_ENV]: 'opencode/env-default-free' },
+      })
+    ).toBe('opencode/env-default-free');
+
+    expect(
+      getDefaultModel({
+        defaultModel: 'opencode/options-default-free',
+        env: { [DEFAULT_MODEL_ENV]: 'opencode/env-default-free' },
+      })
+    ).toBe('opencode/options-default-free');
+
+    expect(
+      getDefaultModelParts({
+        defaultModel: 'opencode/options-default-free',
+      })
+    ).toEqual({
+      providerID: 'opencode',
+      modelID: 'options-default-free',
+    });
+  });
+
+  test('run options use overridable defaults', async () => {
+    const {
+      DEFAULT_MODEL_ENV,
+      DEFAULT_COMPACTION_MODEL_ENV,
+      DEFAULT_COMPACTION_MODELS_ENV,
+      DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV,
+    } = await import('../src/config/defaults');
+    const { buildRunOptions } = await import('../src/cli/run-options.js');
+
+    const options: Record<string, any> = {};
+    const mockYargs = {
+      option(name: string, config: any) {
+        options[name] = config;
+        return mockYargs;
+      },
+    };
+
+    buildRunOptions(mockYargs, {
+      env: {
+        [DEFAULT_MODEL_ENV]: 'opencode/env-default-free',
+        [DEFAULT_COMPACTION_MODEL_ENV]: 'opencode/env-compact-free',
+        [DEFAULT_COMPACTION_MODELS_ENV]: '(env-compact-free same)',
+        [DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV]: '12',
+      },
+    });
+
+    expect(options['model'].default).toBe('opencode/env-default-free');
+    expect(options['compaction-model'].default).toBe(
+      'opencode/env-compact-free'
+    );
+    expect(options['compaction-models'].default).toBe(
+      '(env-compact-free same)'
+    );
+    expect(options['compaction-safety-margin'].default).toBe(12);
   });
 });
 

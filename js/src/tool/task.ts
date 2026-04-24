@@ -9,7 +9,7 @@ import { Agent } from '../agent/agent';
 import { SessionPrompt } from '../session/prompt';
 import { iife } from '../util/iife';
 import { defer } from '../util/defer';
-import { DEFAULT_PROVIDER_ID, DEFAULT_MODEL_ID } from '../cli/defaults';
+import { getDefaultModelParts } from '../cli/defaults';
 
 export const TaskTool = Tool.define('task', async () => {
   const agents = await Agent.list().then((x) =>
@@ -98,10 +98,11 @@ export const TaskTool = Tool.define('task', async () => {
         });
       });
 
+      const defaultModel = getDefaultModelParts();
       const model = agent.model ??
         parentModel ?? {
-          modelID: DEFAULT_MODEL_ID,
-          providerID: DEFAULT_PROVIDER_ID,
+          modelID: defaultModel.modelID,
+          providerID: defaultModel.providerID,
         };
 
       function cancel() {

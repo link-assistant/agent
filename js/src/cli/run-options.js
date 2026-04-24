@@ -1,20 +1,26 @@
 import {
-  DEFAULT_MODEL,
-  DEFAULT_COMPACTION_MODEL,
-  DEFAULT_COMPACTION_MODELS,
-  DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
+  getDefaultModel,
+  getDefaultCompactionModel,
+  getDefaultCompactionModels,
+  getDefaultCompactionSafetyMarginPercent,
 } from './defaults.ts';
 
 /**
  * Yargs builder for the default `run` command options.
  * Extracted from index.js to keep file size under 1000 lines.
  */
-export function buildRunOptions(yargs) {
+export function buildRunOptions(yargs, defaultOptions = {}) {
+  const defaultModel = getDefaultModel(defaultOptions);
+  const defaultCompactionModel = getDefaultCompactionModel(defaultOptions);
+  const defaultCompactionModels = getDefaultCompactionModels(defaultOptions);
+  const defaultCompactionSafetyMarginPercent =
+    getDefaultCompactionSafetyMarginPercent(defaultOptions);
+
   return yargs
     .option('model', {
       type: 'string',
       description: 'Model to use in format providerID/modelID',
-      default: DEFAULT_MODEL,
+      default: defaultModel,
     })
     .option('json-standard', {
       type: 'string',
@@ -153,7 +159,7 @@ export function buildRunOptions(yargs) {
       type: 'string',
       description:
         'Model to use for context compaction in format providerID/modelID. Use "same" to use the base model. Default: opencode/gpt-5-nano (free, 400K context). Overridden by --compaction-models if both are specified.',
-      default: DEFAULT_COMPACTION_MODEL,
+      default: defaultCompactionModel,
     })
     .option('compaction-models', {
       type: 'string',
@@ -161,13 +167,13 @@ export function buildRunOptions(yargs) {
         'Ordered cascade of compaction models in links notation sequence format: "(model1 model2 ... same)". ' +
         "Models are tried from smallest/cheapest context to largest. If used context exceeds a model's limit or its rate limit is reached, the next model is tried. " +
         'The special value "same" uses the base model. Overrides --compaction-model when specified.',
-      default: DEFAULT_COMPACTION_MODELS,
+      default: defaultCompactionModels,
     })
     .option('compaction-safety-margin', {
       type: 'number',
       description:
-        'Safety margin (%) of usable context window before triggering compaction. Only applies when the compaction model has equal or smaller context than the base model. Default: 15.',
-      default: DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
+        'Safety margin (%) of usable context window before triggering compaction. Only applies when the compaction model has equal or smaller context than the base model. Default: 25.',
+      default: defaultCompactionSafetyMarginPercent,
     })
     .option('temperature', {
       type: 'number',

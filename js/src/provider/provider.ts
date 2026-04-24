@@ -13,6 +13,7 @@ import { AuthPlugins } from '../auth/plugins';
 import { Instance } from '../project/instance';
 import { Global } from '../global';
 import { config, isVerbose } from '../config/config';
+import { getDefaultModel, getDefaultModelParts } from '../config/defaults';
 import { iife } from '../util/iife';
 import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';
@@ -1706,10 +1707,10 @@ export namespace Provider {
       // Check if this is the default model — if so, create synthetic info and proceed (#239).
       // The models.dev API can lag behind the provider's actual model availability.
       // For user-specified models, fail with a clear error (#231) to prevent silent substitution.
-      const { DEFAULT_PROVIDER_ID, DEFAULT_MODEL_ID } =
-        await import('../cli/defaults.ts');
+      const { providerID: defaultProviderID, modelID: defaultModelID } =
+        getDefaultModelParts();
       const isDefaultModel =
-        providerID === DEFAULT_PROVIDER_ID && modelID === DEFAULT_MODEL_ID;
+        providerID === defaultProviderID && modelID === defaultModelID;
       const availableInProvider = Object.keys(provider.info.models).slice(
         0,
         10
@@ -1903,6 +1904,15 @@ export namespace Provider {
     }
 
     if (cfg.model) return parseModel(cfg.model);
+
+    const configuredDefaultModel = getDefaultModel();
+    if (configuredDefaultModel) {
+      log.info(() => ({
+        message: 'using configured default model',
+        model: configuredDefaultModel,
+      }));
+      return parseModel(configuredDefaultModel);
+    }
 
     // Prefer opencode provider if available
     const providers = await list().then((val) => Object.values(val));
