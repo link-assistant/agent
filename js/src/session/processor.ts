@@ -52,6 +52,40 @@ export namespace SessionProcessor {
     }
   }
 
+  /**
+   * Detect AI SDK/provider usage-shape crashes.
+   *
+   * Some provider error streams end before a valid finish-step usage object is
+   * available. Depending on the provider adapter, that can surface as a
+   * TypeError while reading token fields instead of the original provider
+   * error. Treat it as retryable provider failure rather than a generic crash.
+   *
+   * See: https://github.com/link-assistant/agent/issues/264
+   */
+  export function isUsageDataTypeError(error: unknown): boolean {
+    const message =
+      error instanceof Error
+        ? `${error.name}: ${error.message}`
+        : typeof error === 'string'
+          ? error
+          : '';
+
+    if (!(error instanceof TypeError) && !message.startsWith('TypeError:')) {
+      return false;
+    }
+
+    return [
+      'input_tokens',
+      'output_tokens',
+      'usage.inputTokens',
+      'usage.outputTokens',
+      'inputTokens.total',
+      'outputTokens.total',
+      "reading 'inputTokens'",
+      "reading 'outputTokens'",
+    ].some((pattern) => message.includes(pattern));
+  }
+
   export type Info = Awaited<ReturnType<typeof create>>;
   export type Result = Awaited<ReturnType<Info['process']>>;
 
@@ -542,36 +576,33 @@ export namespace SessionProcessor {
           } catch (e) {
             log.error(() => ({ message: 'process', error: e }));
 
-            // Check for AI SDK usage-related TypeError (input_tokens undefined)
-            // This happens when providers return incomplete usage data
-            // See: https://github.com/link-assistant/agent/issues/152
-            if (
-              e instanceof TypeError &&
-              (e.message.includes('input_tokens') ||
-                e.message.includes('output_tokens') ||
-                e.message.includes("reading 'input_tokens'") ||
-                e.message.includes("reading 'output_tokens'"))
-            ) {
-              log.warn(() => ({
-                message:
-                  'Provider returned invalid usage data, continuing with zero usage',
-                errorMessage: e.message,
-                providerID: input.providerID,
-              }));
-              // Set default token values to prevent crash
-              input.assistantMessage.tokens = {
-                input: 0,
-                output: 0,
-                reasoning: 0,
-                cache: { read: 0, write: 0 },
-              };
-              // Continue processing instead of failing
-              continue;
-            }
-
-            const error = MessageV2.fromError(e, {
+            let error = MessageV2.fromError(e, {
               providerID: input.providerID,
             });
+
+            // Check for AI SDK usage-related TypeErrors. These usually come
+            // from provider adapters after malformed/incomplete usage data, so
+            // retry them with normal API-error backoff instead of surfacing a
+            // misleading UnknownError.
+            if (isUsageDataTypeError(e)) {
+              log.warn(() => ({
+                message:
+                  'provider returned invalid usage data; retrying as provider API error',
+                errorMessage: e instanceof Error ? e.message : String(e),
+                providerID: input.providerID,
+                issue: 'https://github.com/link-assistant/agent/issues/264',
+              }));
+              error = new MessageV2.APIError(
+                {
+                  message:
+                    e instanceof Error
+                      ? e.message
+                      : 'Provider returned invalid usage data',
+                  isRetryable: true,
+                },
+                { cause: e }
+              ).toObject();
+            }
 
             // Check if error is retryable (APIError, SocketConnectionError, TimeoutError)
             const isRetryableAPIError =

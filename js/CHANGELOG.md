@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.9
+
+### Patch Changes
+
+- ca75dcf: Classify provider stream status errors and usage-shape failures as retryable provider errors.
+
 ## 0.22.8
 
 ### Patch Changes
