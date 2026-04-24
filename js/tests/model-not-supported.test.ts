@@ -115,3 +115,37 @@ describe('isModelNotSupportedError (#208)', () => {
     );
   });
 });
+
+describe('isUsageDataTypeError (#264)', () => {
+  test('detects Bun-style usage.inputTokens.total TypeError from provider stream failure', () => {
+    const error = new TypeError(
+      "undefined is not an object (evaluating 'usage.inputTokens.total')"
+    );
+
+    expect(SessionProcessor.isUsageDataTypeError(error)).toBe(true);
+  });
+
+  test('detects Node-style inputTokens.total TypeError', () => {
+    const error = new TypeError(
+      "Cannot read properties of undefined (reading 'total'): usage.inputTokens.total"
+    );
+
+    expect(SessionProcessor.isUsageDataTypeError(error)).toBe(true);
+  });
+
+  test('keeps existing snake_case usage detection', () => {
+    const error = new TypeError(
+      "Cannot read properties of undefined (reading 'input_tokens')"
+    );
+
+    expect(SessionProcessor.isUsageDataTypeError(error)).toBe(true);
+  });
+
+  test('does not classify unrelated TypeErrors as usage data errors', () => {
+    expect(
+      SessionProcessor.isUsageDataTypeError(
+        new TypeError("Cannot read properties of undefined (reading 'foo')")
+      )
+    ).toBe(false);
+  });
+});

@@ -1,0 +1,934 @@
+Godot Engine v4.3.stable.mono.official.77dcf97d8 - https://godotengine.org
+
+ERROR: No loader found for resource: res://resources/translations/translations.csv (expected type: )
+   at: _load (core/io/resource_loader.cpp:291)
+ERROR: Failed to create an autoload, script 'res://Scripts/Autoload/GrenadeTimerHelper.cs' is not compiling.
+   at: _create_autoload (editor/editor_autoload_settings.cpp:417)
+ERROR: Failed to create an autoload, script 'res://Scripts/Autoload/ReplayManager.cs' is not compiling.
+   at: _create_autoload (editor/editor_autoload_settings.cpp:417)
+SCRIPT ERROR: Parse Error: Class "ProjectilePoolManager" hides an autoload singleton.
+          at: GDScript::reload (res://scripts/autoload/projectile_pool_manager.gd:2)
+ERROR: Failed to load script "res://scripts/autoload/projectile_pool_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+ERROR: Failed to create an autoload, script 'res://scripts/autoload/projectile_pool_manager.gd' is not compiling.
+   at: _create_autoload (editor/editor_autoload_settings.cpp:417)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://scripts/autoload/localization_settings.gd:100)
+ERROR: Failed to load script "res://scripts/autoload/localization_settings.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+ERROR: Failed to create an autoload, script 'res://scripts/autoload/localization_settings.gd' is not compiling.
+   at: _create_autoload (editor/editor_autoload_settings.cpp:417)
+ERROR: Unable to open file: res://.godot/imported/play.png-5c90e88e8136487a183a099d67a7de24.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:41)
+ERROR: Failed loading resource: res://.godot/imported/play.png-5c90e88e8136487a183a099d67a7de24.ctex. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Failed loading resource: res://addons/gut/gui/play.png. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Unable to open file: res://.godot/imported/arrow.png-2b5b2d838b5b3467cf300ac2da1630d9.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:41)
+ERROR: Failed loading resource: res://.godot/imported/arrow.png-2b5b2d838b5b3467cf300ac2da1630d9.ctex. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Failed loading resource: res://addons/gut/gui/arrow.png. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Unable to open file: res://.godot/imported/play.png-5c90e88e8136487a183a099d67a7de24.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:41)
+ERROR: Failed loading resource: res://.godot/imported/play.png-5c90e88e8136487a183a099d67a7de24.ctex. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Failed loading resource: res://addons/gut/gui/play.png. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Unable to open file: res://.godot/imported/red.png-47a557c3922e800f76686bc1a4ad0c3c.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:41)
+ERROR: Failed loading resource: res://.godot/imported/red.png-47a557c3922e800f76686bc1a4ad0c3c.ctex. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Failed loading resource: res://addons/gut/images/red.png. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Unable to open file: res://.godot/imported/green.png-e3a17091688e10a7013279b38edc7f8a.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:41)
+ERROR: Failed loading resource: res://.godot/imported/green.png-e3a17091688e10a7013279b38edc7f8a.ctex. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Failed loading resource: res://addons/gut/images/green.png. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Unable to open file: res://.godot/imported/yellow.png-b3cf3d463958a169d909273d3d742052.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:41)
+ERROR: Failed loading resource: res://.godot/imported/yellow.png-b3cf3d463958a169d909273d3d742052.ctex. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Failed loading resource: res://addons/gut/images/yellow.png. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR:  Config File "user://gut_temp_directory/gut_editor_config.json" does not exist.
+ERROR: Unable to open file: res://.godot/imported/red.png-47a557c3922e800f76686bc1a4ad0c3c.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:41)
+ERROR: Failed loading resource: res://.godot/imported/red.png-47a557c3922e800f76686bc1a4ad0c3c.ctex. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Failed loading resource: res://addons/gut/images/red.png. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+GUT got some new images that are not imported yet.  Please restart Godot.
+SCRIPT ERROR: Parse Error: Invalid operands to operator *, String and int.
+          at: GDScript::reload (res://experiments/test_asvk_casing_ejection.gd:37)
+SCRIPT ERROR: Parse Error: Invalid operands to operator *, String and int.
+          at: GDScript::reload (res://experiments/test_asvk_casing_ejection.gd:105)
+ERROR: Failed to load script "res://experiments/test_asvk_casing_ejection.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "get_global_mouse_position()" not found in base self.
+          at: GDScript::reload (res://experiments/test_final_validation.gd:165)
+ERROR: Failed to load script "res://experiments/test_final_validation.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: There is already a variable named "has_velocity" declared in this scope.
+          at: GDScript::reload (res://experiments/test_issue_393_fix.gd:75)
+ERROR: Failed to load script "res://experiments/test_issue_393_fix.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Invalid operands to operator *, String and int.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:12)
+SCRIPT ERROR: Parse Error: Invalid operands to operator +, String and Nil.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:12)
+SCRIPT ERROR: Parse Error: Invalid operands to operator *, String and int.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:15)
+SCRIPT ERROR: Parse Error: Invalid operands to operator +, Nil and String.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:15)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "weapon_data_name" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:73)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "expected" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:93)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "caliber_name" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:103)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "expected_caliber" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:119)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "weapon_data_path" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:131)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "caliber_path" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:135)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://experiments/test_issue_765_weapon_data_persistence.gd:126)
+ERROR: Failed to load script "res://experiments/test_issue_765_weapon_data_persistence.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Too many arguments for "GDPrint()" call. Expected at most 1 but received 4.
+          at: GDScript::reload (res://experiments/test_laser_lag.gd:37)
+SCRIPT ERROR: Parse Error: Too many arguments for "GDPrint()" call. Expected at most 1 but received 2.
+          at: GDScript::reload (res://experiments/test_laser_lag.gd:52)
+SCRIPT ERROR: Parse Error: Function "get_global_mouse_position()" not found in base self.
+          at: GDScript::reload (res://experiments/test_laser_lag.gd:75)
+SCRIPT ERROR: Parse Error: Too many arguments for "GDPrint()" call. Expected at most 1 but received 5.
+          at: GDScript::reload (res://experiments/test_laser_lag.gd:98)
+SCRIPT ERROR: Parse Error: Too many arguments for "GDPrint()" call. Expected at most 1 but received 2.
+          at: GDScript::reload (res://experiments/test_laser_lag.gd:149)
+SCRIPT ERROR: Parse Error: Too many arguments for "GDPrint()" call. Expected at most 1 but received 3.
+          at: GDScript::reload (res://experiments/test_laser_lag.gd:150)
+SCRIPT ERROR: Parse Error: Too many arguments for "GDPrint()" call. Expected at most 1 but received 3.
+          at: GDScript::reload (res://experiments/test_laser_lag.gd:151)
+ERROR: Failed to load script "res://experiments/test_laser_lag.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "get_global_mouse_position()" not found in base self.
+          at: GDScript::reload (res://experiments/test_laser_translation_lag.gd:112)
+SCRIPT ERROR: Parse Error: Function "get_global_mouse_position()" not found in base self.
+          at: GDScript::reload (res://experiments/test_laser_translation_lag.gd:149)
+ERROR: Failed to load script "res://experiments/test_laser_translation_lag.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Invalid operands to operator *, String and int.
+          at: GDScript::reload (res://experiments/test_projectile_pool.gd:28)
+SCRIPT ERROR: Parse Error: Invalid operands to operator *, String and int.
+          at: GDScript::reload (res://experiments/test_projectile_pool.gd:30)
+SCRIPT ERROR: Parse Error: Invalid operands to operator *, String and int.
+          at: GDScript::reload (res://experiments/test_projectile_pool.gd:57)
+SCRIPT ERROR: Parse Error: Invalid operands to operator *, String and int.
+          at: GDScript::reload (res://experiments/test_projectile_pool.gd:59)
+ERROR: Failed to load script "res://experiments/test_projectile_pool.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "loaded" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_silenced_pistol_ammo.gd:32)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "spare" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_silenced_pistol_ammo.gd:33)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "total" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_silenced_pistol_ammo.gd:34)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "test_passed" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://experiments/test_silenced_pistol_ammo.gd:40)
+ERROR: Failed to load script "res://experiments/test_silenced_pistol_ammo.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: There is already a parameter named "direction" declared in this scope.
+          at: GDScript::reload (res://experiments/test_translation_lag_focused.gd:121)
+ERROR: Failed to load script "res://experiments/test_translation_lag_focused.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "dir" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/projectiles/rpg_rocket.gd:425)
+SCRIPT ERROR: Compile Error: 
+          at: GDScript::reload (res://scripts/projectiles/bullet.gd:-1)
+ERROR: Failed to load script "res://scripts/projectiles/bullet.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+WARNING: res://scenes/effects/Casing.tscn:4 - ext_resource, invalid UID: uid://casing_rifle_sprite - using text path instead: res://assets/sprites/effects/casing_rifle.png
+     at: load (scene/resources/resource_format_text.cpp:453)
+WARNING: res://scenes/projectiles/FragGrenade.tscn:4 - ext_resource, invalid UID: uid://cfrag7qx4h3k5m2 - using text path instead: res://assets/sprites/weapons/frag_grenade.png
+     at: load (scene/resources/resource_format_text.cpp:453)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "spawn_pos" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/components/machine_gunner_component.gd:37)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "player_pos" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/components/machine_gunner_component.gd:87)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "raycast" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/components/machine_gunner_component.gd:90)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "cover_pos" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/components/machine_gunner_component.gd:94)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "is_hidden" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/components/machine_gunner_component.gd:97)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "dist_to_player" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/components/machine_gunner_component.gd:99)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "total_score" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/components/machine_gunner_component.gd:100)
+WARNING: res://scenes/projectiles/ChemicalGasGrenade.tscn:4 - ext_resource, invalid UID: uid://cagggas7qx4h3k5 - using text path instead: res://assets/sprites/weapons/aggression_gas_grenade.png
+     at: load (scene/resources/resource_format_text.cpp:453)
+SCRIPT ERROR: Compile Error: 
+          at: GDScript::reload (res://scripts/objects/enemy.gd:-1)
+ERROR: Failed to load script "res://scripts/objects/enemy.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+WARNING: res://resources/calibers/caliber_12p7x55.tres:4 - ext_resource, invalid UID: uid://casing_pistol_sprite - using text path instead: res://assets/sprites/effects/casing_pistol.png
+     at: load (scene/resources/resource_format_text.cpp:453)
+SCRIPT ERROR: Parse Error: Cannot find member "PRESET_BOTTOM_CENTER" in base "Control".
+          at: GDScript::reload (res://scripts/autoload/replay_system.gd:1234)
+ERROR: Failed to load script "res://scripts/autoload/replay_system.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "activated" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/characters/player.gd:3855)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "detonated" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/characters/player.gd:4177)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "placed" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/characters/player.gd:4185)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "detonated" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/characters/player.gd:4554)
+ERROR: Failed to load script "res://scripts/characters/player.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://scripts/components/player_loudspeaker_component.gd:244)
+ERROR: Failed to load script "res://scripts/components/player_loudspeaker_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://scripts/effects/flashlight_effect.gd:408)
+ERROR: Failed to load script "res://scripts/effects/flashlight_effect.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://scripts/levels/arena_level.gd:769)
+ERROR: Failed to load script "res://scripts/levels/arena_level.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "local_pos" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://scripts/levels/building_level.gd:2131)
+ERROR: Failed to load script "res://scripts/levels/building_level.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2150)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2150)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2151)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2154)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2155)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2156)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2157)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2158)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2160)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2160)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2161)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2162)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2163)
+SCRIPT ERROR: Parse Error: Identifier "_combo_tween" not declared in the current scope.
+          at: GDScript::reload (res://scripts/levels/roguelike_level.gd:2164)
+ERROR: Failed to load script "res://scripts/levels/roguelike_level.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Expression is of type "Area2D" so it can't be of type "Sprite2D".
+          at: GDScript::reload (res://scripts/objects/water_body.gd:251)
+ERROR: Failed to load script "res://scripts/objects/water_body.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+WARNING: res://resources/themes/neon_label_settings.tres:3 - ext_resource, invalid UID: uid://c3qneonfont01 - using text path instead: res://assets/fonts/neon/Comfortaa-Bold.ttf
+     at: load (scene/resources/resource_format_text.cpp:453)
+WARNING: res://resources/themes/neon_button_theme.tres:3 - ext_resource, invalid UID: uid://c3qneonfont01 - using text path instead: res://assets/fonts/neon/Comfortaa-Bold.ttf
+     at: load (scene/resources/resource_format_text.cpp:453)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_aggression_cloud_visual.gd:111)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_aggression_cloud_visual.gd:132)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_aggression_cloud_visual.gd:133)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_aggression_cloud_visual.gd:214)
+ERROR: Failed to load script "res://tests/unit/test_aggression_cloud_visual.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Member "velocity" redefined (original in native class 'CharacterBody2D')
+          at: GDScript::reload (res://tests/unit/test_aggression_component.gd:21)
+ERROR: Failed to load script "res://tests/unit/test_aggression_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_animated_score_screen.gd:344)
+ERROR: Failed to load script "res://tests/unit/test_animated_score_screen.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_armored_skin_shard.gd:157)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_armored_skin_shard.gd:214)
+ERROR: Failed to load script "res://tests/unit/test_armored_skin_shard.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_armory_menu.gd:226)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "get(StringName) -> Variant".
+          at: GDScript::reload (res://tests/unit/test_armory_menu.gd:905)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_armory_menu.gd:226)
+SCRIPT ERROR: Parse Error: The method "get()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_armory_menu.gd:905)
+ERROR: Failed to load script "res://tests/unit/test_armory_menu.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_armory_score_screen_highlight.gd:27)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_armory_score_screen_highlight.gd:27)
+ERROR: Failed to load script "res://tests/unit/test_armory_score_screen_highlight.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Expected statement, found "_" instead.
+          at: GDScript::reload (res://tests/unit/test_auto_reload.gd:481)
+ERROR: Failed to load script "res://tests/unit/test_auto_reload.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Value of type "RefCounted" cannot be assigned to a variable of type "Node".
+          at: GDScript::reload (res://tests/unit/test_bff_pendant.gd:913)
+SCRIPT ERROR: Parse Error: Value of type "RefCounted" cannot be assigned to a variable of type "Node".
+          at: GDScript::reload (res://tests/unit/test_bff_pendant.gd:928)
+SCRIPT ERROR: Parse Error: Value of type "RefCounted" cannot be assigned to a variable of type "Node".
+          at: GDScript::reload (res://tests/unit/test_bff_pendant.gd:929)
+SCRIPT ERROR: Parse Error: Value of type "RefCounted" cannot be assigned to a variable of type "Node".
+          at: GDScript::reload (res://tests/unit/test_bff_pendant.gd:945)
+SCRIPT ERROR: Parse Error: Value of type "RefCounted" cannot be assigned to a variable of type "Node".
+          at: GDScript::reload (res://tests/unit/test_bff_pendant.gd:972)
+SCRIPT ERROR: Parse Error: Value of type "RefCounted" cannot be assigned to a variable of type "Node".
+          at: GDScript::reload (res://tests/unit/test_bff_pendant.gd:975)
+ERROR: Failed to load script "res://tests/unit/test_bff_pendant.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "get(StringName) -> Variant".
+          at: GDScript::reload (res://tests/unit/test_bff_targeting_component.gd:20)
+SCRIPT ERROR: Parse Error: The method "get()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_bff_targeting_component.gd:20)
+ERROR: Failed to load script "res://tests/unit/test_bff_targeting_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_black_metal_lightning.gd:77)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_black_metal_lightning.gd:78)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_black_metal_lightning.gd:82)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_black_metal_lightning.gd:83)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_black_metal_lightning.gd:173)
+ERROR: Failed to load script "res://tests/unit/test_black_metal_lightning.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "expected_alpha" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:114)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "calculated_alpha" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:116)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "initial" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:122)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "decay" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:123)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "alpha_1" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:126)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "alpha_2" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:128)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "alpha_3" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:130)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "steps" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:139)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "last_step_index" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:140)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "expected_alpha" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:141)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "bad_component" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_bloody_feet_component.gd:152)
+ERROR: Failed to load script "res://tests/unit/test_bloody_feet_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_blood_effects.gd:716)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_blood_effects.gd:718)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_blood_effects.gd:723)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_blood_effects.gd:725)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_blood_effects.gd:735)
+ERROR: Failed to load script "res://tests/unit/test_blood_effects.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_breaching_charges_effect.gd:414)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_breaching_charges_effect.gd:475)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_breaching_charges_effect.gd:477)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_breaching_charges_effect.gd:830)
+ERROR: Failed to load script "res://tests/unit/test_breaching_charges_effect.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_breaker_bullet.gd:243)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_breaker_bullet.gd:268)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_breaker_bullet.gd:264)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_breaker_bullet.gd:279)
+ERROR: Failed to load script "res://tests/unit/test_breaker_bullet.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_breaker_shrapnel.gd:241)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_breaker_shrapnel.gd:380)
+ERROR: Failed to load script "res://tests/unit/test_breaker_shrapnel.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_bullet_hole.gd:142)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_bullet_hole.gd:144)
+ERROR: Failed to load script "res://tests/unit/test_bullet_hole.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_casing_explosion_reaction.gd:41)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "direction" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_casing_explosion_reaction.gd:128)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "impulse" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_casing_explosion_reaction.gd:143)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_casing_explosion_reaction.gd:41)
+ERROR: Failed to load script "res://tests/unit/test_casing_explosion_reaction.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_cinema_effects_manager.gd:1324)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_cinema_effects_manager.gd:1326)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_cinema_effects_manager.gd:1328)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_cinema_effects_manager.gd:1330)
+ERROR: Failed to load script "res://tests/unit/test_cinema_effects_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_cover_raycast_monitor.gd:29)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_cover_raycast_monitor.gd:29)
+ERROR: Failed to load script "res://tests/unit/test_cover_raycast_monitor.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_defensive_grenade.gd:35)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_defensive_grenade.gd:35)
+ERROR: Failed to load script "res://tests/unit/test_defensive_grenade.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_difficulty_manager.gd:616)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_difficulty_manager.gd:689)
+ERROR: Failed to load script "res://tests/unit/test_difficulty_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_drone_operator.gd:376)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_drone_operator.gd:383)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_drone_operator.gd:391)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_drone_operator.gd:401)
+ERROR: Failed to load script "res://tests/unit/test_drone_operator.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_effects.gd:395)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_effects.gd:396)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_effects.gd:397)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_effects.gd:398)
+ERROR: Failed to load script "res://tests/unit/test_effects.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy.gd:2288)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy.gd:2295)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy.gd:2306)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy.gd:2308)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_enemy.gd:326)
+ERROR: Failed to load script "res://tests/unit/test_enemy.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_enemy_flashlight_component.gd:168)
+ERROR: Failed to load script "res://tests/unit/test_enemy_flashlight_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_enemy_path_monitor.gd:31)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_enemy_path_monitor.gd:31)
+ERROR: Failed to load script "res://tests/unit/test_enemy_path_monitor.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_sniper_component.gd:81)
+ERROR: Failed to load script "res://tests/unit/test_enemy_sniper_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:150)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:200)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:206)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:212)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:218)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:224)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:230)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:238)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:246)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:254)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:262)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_enemy_spawner_1342.gd:426)
+ERROR: Failed to load script "res://tests/unit/test_enemy_spawner_1342.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:55)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:76)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:83)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:90)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:98)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:106)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:115)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:122)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:135)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:142)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:149)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:161)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:169)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:182)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:193)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:204)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:221)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:232)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:244)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:257)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:269)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:283)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:299)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:316)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:336)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:347)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:364)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:400)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:419)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:437)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:449)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:465)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy".
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:478)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_enemy_states.gd:55)
+ERROR: Failed to load script "res://tests/unit/test_enemy_states.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_experimental_sample_item_popup.gd:98)
+ERROR: Failed to load script "res://tests/unit/test_experimental_sample_item_popup.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_explosion_scorch_mark.gd:295)
+ERROR: Failed to load script "res://tests/unit/test_explosion_scorch_mark.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_flashlight_effect.gd:201)
+ERROR: Failed to load script "res://tests/unit/test_flashlight_effect.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "get(StringName) -> Variant".
+          at: GDScript::reload (res://tests/unit/test_force_field_tracer_trail.gd:37)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "set(StringName, Variant) -> void".
+          at: GDScript::reload (res://tests/unit/test_force_field_tracer_trail.gd:46)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "get(StringName) -> Variant".
+          at: GDScript::reload (res://tests/unit/test_force_field_tracer_trail.gd:73)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "set(StringName, Variant) -> void".
+          at: GDScript::reload (res://tests/unit/test_force_field_tracer_trail.gd:82)
+SCRIPT ERROR: Parse Error: The method "get()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_force_field_tracer_trail.gd:37)
+SCRIPT ERROR: Parse Error: The method "set()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_force_field_tracer_trail.gd:46)
+SCRIPT ERROR: Parse Error: The method "get()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_force_field_tracer_trail.gd:73)
+SCRIPT ERROR: Parse Error: The method "set()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_force_field_tracer_trail.gd:82)
+ERROR: Failed to load script "res://tests/unit/test_force_field_tracer_trail.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_force_field_visual.gd:380)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_force_field_visual.gd:382)
+ERROR: Failed to load script "res://tests/unit/test_force_field_visual.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_frag_grenade.gd:37)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_frag_grenade.gd:37)
+ERROR: Failed to load script "res://tests/unit/test_frag_grenade.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_grenade_avoidance_component.gd:747)
+SCRIPT ERROR: Parse Error: The method "force_raycast_update()" overrides a method from native class "RayCast2D". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_grenade_avoidance_component.gd:63)
+SCRIPT ERROR: Parse Error: The method "is_colliding()" overrides a method from native class "RayCast2D". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_grenade_avoidance_component.gd:67)
+SCRIPT ERROR: Parse Error: The method "get_collider()" overrides a method from native class "RayCast2D". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_grenade_avoidance_component.gd:70)
+ERROR: Failed to load script "res://tests/unit/test_grenade_avoidance_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_grenade_base.gd:395)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_grenade_base.gd:402)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_grenade_base.gd:652)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_grenade_base.gd:726)
+ERROR: Failed to load script "res://tests/unit/test_grenade_base.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_invisible_player_suppressive_fire.gd:349)
+ERROR: Failed to load script "res://tests/unit/test_invisible_player_suppressive_fire.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Preload file "res://scripts/weapons/csharp/Revolver.cs" does not exist.
+          at: GDScript::reload (res://tests/unit/test_issue_716_comprehensive.gd:17)
+ERROR: Failed to load script "res://tests/unit/test_issue_716_comprehensive.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Preload file "res://scripts/weapons/csharp/Revolver.cs" does not exist.
+          at: GDScript::reload (res://tests/unit/test_issue_716_integration.gd:15)
+SCRIPT ERROR: Parse Error: Preload file "res://scripts/weapons/csharp/Revolver.cs" does not exist.
+          at: GDScript::reload (res://tests/unit/test_issue_716_integration.gd:36)
+SCRIPT ERROR: Parse Error: Identifier "cock_result" not declared in the current scope.
+          at: GDScript::reload (res://tests/unit/test_issue_716_integration.gd:51)
+SCRIPT ERROR: Parse Error: Identifier "cock_result" not declared in the current scope.
+          at: GDScript::reload (res://tests/unit/test_issue_716_integration.gd:52)
+ERROR: Failed to load script "res://tests/unit/test_issue_716_integration.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Preload file "res://scripts/weapons/csharp/Revolver.cs" does not exist.
+          at: GDScript::reload (res://tests/unit/test_issue_716_verification.gd:23)
+ERROR: Failed to load script "res://tests/unit/test_issue_716_verification.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1157)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1158)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1159)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1160)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1161)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1162)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1214)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1215)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1216)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1217)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1218)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_last_chance_effects_manager.gd:1219)
+ERROR: Failed to load script "res://tests/unit/test_last_chance_effects_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The method "get()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_levels_menu_roguelike_exit.gd:30)
+ERROR: Failed to load script "res://tests/unit/test_levels_menu_roguelike_exit.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The member "Range" shadows a native class.
+          at: GDScript::reload (res://tests/unit/test_makarov_pm.gd:26)
+ERROR: Failed to load script "res://tests/unit/test_makarov_pm.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_mini_uzi_init.gd:50)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "get(StringName) -> Variant".
+          at: GDScript::reload (res://tests/unit/test_mini_uzi_init.gd:53)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_mini_uzi_init.gd:50)
+SCRIPT ERROR: Parse Error: The method "get()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_mini_uzi_init.gd:53)
+ERROR: Failed to load script "res://tests/unit/test_mini_uzi_init.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_pacifist_state.gd:32)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_pacifist_state.gd:32)
+ERROR: Failed to load script "res://tests/unit/test_pacifist_state.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1034)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1035)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1036)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1037)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1038)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1039)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1367)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1368)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1369)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1370)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1371)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_penultimate_hit_effects_manager.gd:1372)
+ERROR: Failed to load script "res://tests/unit/test_penultimate_hit_effects_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_power_fantasy_effects_manager.gd:40)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_power_fantasy_effects_manager.gd:40)
+ERROR: Failed to load script "res://tests/unit/test_power_fantasy_effects_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_radio_wave_effect.gd:226)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_radio_wave_effect.gd:228)
+ERROR: Failed to load script "res://tests/unit/test_radio_wave_effect.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_neq()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_revolver_initialization.gd:149)
+SCRIPT ERROR: Parse Error: Function "assert_neq()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_revolver_initialization.gd:173)
+ERROR: Failed to load script "res://tests/unit/test_revolver_initialization.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "is_valid" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_ricochet.gd:150)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "is_valid" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_ricochet.gd:166)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "is_valid" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_ricochet.gd:205)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "is_valid_545" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_ricochet.gd:222)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "is_valid_762" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_ricochet.gd:223)
+ERROR: Failed to load script "res://tests/unit/test_ricochet.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_roguelike_branching_map.gd:165)
+ERROR: Failed to load script "res://tests/unit/test_roguelike_branching_map.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_roguelike_isaac_improvements.gd:256)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_roguelike_isaac_improvements.gd:334)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_roguelike_isaac_improvements.gd:354)
+ERROR: Failed to load script "res://tests/unit/test_roguelike_isaac_improvements.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_roguelike_special_enemies.gd:202)
+ERROR: Failed to load script "res://tests/unit/test_roguelike_special_enemies.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "auto_free()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_rpg_obstacle_destruction.gd:421)
+SCRIPT ERROR: Parse Error: Function "auto_free()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_rpg_obstacle_destruction.gd:450)
+ERROR: Failed to load script "res://tests/unit/test_rpg_obstacle_destruction.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_rpg_rocket.gd:227)
+ERROR: Failed to load script "res://tests/unit/test_rpg_rocket.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_search_path_monitor.gd:29)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_search_path_monitor.gd:29)
+ERROR: Failed to load script "res://tests/unit/test_search_path_monitor.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_shield_hit_area.gd:60)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_shield_hit_area.gd:70)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_shield_hit_area.gd:60)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_shield_hit_area.gd:70)
+ERROR: Failed to load script "res://tests/unit/test_shield_hit_area.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_shrapnel.gd:369)
+ERROR: Failed to load script "res://tests/unit/test_shrapnel.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Member "velocity" redefined (original in native class 'CharacterBody2D')
+          at: GDScript::reload (res://tests/unit/test_sniper_aim_inertia.gd:74)
+SCRIPT ERROR: Parse Error: Function "assert_ge()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_sniper_aim_inertia.gd:36)
+SCRIPT ERROR: Parse Error: Function "assert_le()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_sniper_aim_inertia.gd:38)
+ERROR: Failed to load script "res://tests/unit/test_sniper_aim_inertia.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Invalid argument for "process_pursuing()" function: argument 3 should be "Node" but is "MockNode2D".
+          at: GDScript::reload (res://tests/unit/test_sniper_enemy_fix.gd:204)
+SCRIPT ERROR: Parse Error: Invalid argument for "process_pursuing()" function: argument 3 should be "Node" but is "MockNode2D".
+          at: GDScript::reload (res://tests/unit/test_sniper_enemy_fix.gd:215)
+SCRIPT ERROR: Parse Error: Invalid argument for "process_pursuing()" function: argument 3 should be "Node" but is "MockNode2D".
+          at: GDScript::reload (res://tests/unit/test_sniper_enemy_fix.gd:235)
+SCRIPT ERROR: Parse Error: Value of type "MockEnemy" cannot be assigned to a variable of type "Node2D".
+          at: GDScript::reload (res://tests/unit/test_sniper_enemy_fix.gd:191)
+ERROR: Failed to load script "res://tests/unit/test_sniper_enemy_fix.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "expected" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_sniper_laser_sight.gd:136)
+ERROR: Failed to load script "res://tests/unit/test_sniper_laser_sight.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The member "Range" shadows a native class.
+          at: GDScript::reload (res://tests/unit/test_sniper_rifle_loudness.gd:23)
+ERROR: Failed to load script "res://tests/unit/test_sniper_rifle_loudness.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_status_effects_manager.gd:39)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_status_effects_manager.gd:564)
+SCRIPT ERROR: Parse Error: The method "get_instance_id()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_status_effects_manager.gd:24)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_status_effects_manager.gd:39)
+SCRIPT ERROR: Parse Error: The method "get_instance_id()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_status_effects_manager.gd:549)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_status_effects_manager.gd:564)
+ERROR: Failed to load script "res://tests/unit/test_status_effects_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_tactical_group.gd:32)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_tactical_group.gd:78)
+SCRIPT ERROR: Parse Error: Invalid argument for "new()" function: argument 1 should be "Node2D" but is "MockEnemy2D".
+          at: GDScript::reload (res://tests/unit/test_tactical_group.gd:169)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_tactical_group.gd:32)
+SCRIPT ERROR: Parse Error: The method "get_instance_id()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_tactical_group.gd:35)
+ERROR: Failed to load script "res://tests/unit/test_tactical_group.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The method "get_instance_id()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_tactical_group_component.gd:21)
+ERROR: Failed to load script "res://tests/unit/test_tactical_group_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The method "get_instance_id()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_threat_sphere.gd:122)
+ERROR: Failed to load script "res://tests/unit/test_threat_sphere.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "test_revolver_condition_met_after_castle_f" has the same name as a previously declared function.
+          at: GDScript::reload (res://tests/unit/test_unlock_manager.gd:1127)
+ERROR: Failed to load script "res://tests/unit/test_unlock_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_vog_grenade.gd:20)
+SCRIPT ERROR: Parse Error: The function signature doesn't match the parent. Parent signature is "has_method(StringName) -> bool".
+          at: GDScript::reload (res://tests/unit/test_vog_grenade.gd:40)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_vog_grenade.gd:20)
+SCRIPT ERROR: Parse Error: The method "has_method()" overrides a method from native class "Object". This won't be called by the engine and may not work as expected. (Warning treated as error.)
+          at: GDScript::reload (res://tests/unit/test_vog_grenade.gd:40)
+ERROR: Failed to load script "res://tests/unit/test_vog_grenade.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_water_body.gd:170)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_water_body.gd:171)
+SCRIPT ERROR: Parse Error: Function "assert_gte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_water_body.gd:172)
+SCRIPT ERROR: Parse Error: Function "assert_lte()" not found in base self.
+          at: GDScript::reload (res://tests/unit/test_water_body.gd:173)
+ERROR: Failed to load script "res://tests/unit/test_water_body.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:410)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:417)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:424)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:431)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:438)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:445)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:454)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:463)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:476)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:484)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:494)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:504)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:513)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:520)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:527)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:534)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "config" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/unit/test_weapon_config_component.gd:541)
+ERROR: Failed to load script "res://tests/unit/test_weapon_config_component.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+WARNING: res://resources/calibers/caliber_9x19.tres:4 - ext_resource, invalid UID: uid://casing_pistol_sprite - using text path instead: res://assets/sprites/effects/casing_pistol.png
+     at: load (scene/resources/resource_format_text.cpp:453)
+WARNING: res://resources/calibers/caliber_9x18.tres:4 - ext_resource, invalid UID: uid://casing_pistol_sprite - using text path instead: res://assets/sprites/effects/casing_pistol.png
+     at: load (scene/resources/resource_format_text.cpp:453)
+WARNING: res://scenes/weapons/csharp/MakarovPM.tscn:7 - ext_resource, invalid UID: uid://makarov_pm_topdown - using text path instead: res://assets/sprites/weapons/makarov_pm_topdown.png
+     at: load (scene/resources/resource_format_text.cpp:453)
