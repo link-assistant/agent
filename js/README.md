@@ -605,13 +605,13 @@ bun run src/index.js
 
 ```bash
 # Run all tests
-bun test
+npm test
 
 # Run specific test file
-bun test tests/mcp.test.js
-bun test tests/websearch.tools.test.js
-bun test tests/batch.tools.test.js
-bun test tests/plaintext.input.test.js
+bun test ./tests/integration/mcp.js
+bun test ./tests/integration/websearch.tools.js
+bun test ./tests/integration/batch.tools.js
+bun test ./tests/integration/plaintext.input.js
 ```
 
 For detailed testing information including how to run tests manually and trigger CI tests, see [TESTING.md](../TESTING.md).

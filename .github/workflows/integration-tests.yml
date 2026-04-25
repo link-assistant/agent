@@ -48,7 +48,7 @@ jobs:
           if [ -n "${{ inputs.test_pattern }}" ]; then
             bun test "${{ inputs.test_pattern }}"
           else
-            bun test
+            bun test ./tests/integration/*.js
           fi
         working-directory: js
 
@@ -98,7 +98,7 @@ jobs:
           if [ -n "${{ inputs.test_pattern }}" ]; then
             bun test "${{ inputs.test_pattern }}"
           else
-            bun test
+            bun test ./tests/integration/*.js
           fi
         working-directory: js
 
