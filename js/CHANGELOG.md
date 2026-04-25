@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.22.10
+
+### Patch Changes
+
+- 1f2f739: Set `opencode/minimax-m2.5-free` as the default model again, update OpenCode Zen free model docs, and add a live Zen free-model fallback for models.dev lag.
+
 ## 0.22.9
 
 ### Patch Changes
