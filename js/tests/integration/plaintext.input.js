@@ -1,6 +1,9 @@
 import { test, expect, setDefaultTimeout } from 'bun:test';
 import { spawn } from 'child_process';
 import { join } from 'path';
+import { testDefaultModel } from './_defaults.js';
+
+const MODEL = testDefaultModel();
 
 // Increase default timeout to 60 seconds for these tests
 setDefaultTimeout(60000);
@@ -101,7 +104,7 @@ test('OpenCode handles plain text input (for comparison)', async () => {
   return new Promise((resolve, reject) => {
     const proc = spawn(
       'opencode',
-      ['run', '--format', 'json', '--model', 'opencode/minimax-m2.5-free'],
+      ['run', '--format', 'json', '--model', MODEL],
       {
         stdio: ['pipe', 'pipe', 'pipe'],
       }

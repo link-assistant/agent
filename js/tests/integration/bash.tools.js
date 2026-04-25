@@ -1,5 +1,8 @@
 import { test, expect } from 'bun:test';
 import { $ } from 'bun';
+import { testDefaultModel } from './_defaults.js';
+
+const MODEL = testDefaultModel();
 
 // Shared assertion function to validate OpenCode-compatible JSON structure
 function validateBashToolOutput(toolEvent, label) {
@@ -59,7 +62,7 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
 
   // Test original OpenCode bash tool
   const originalResult =
-    await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
+    await $`echo ${input} | opencode run --format json --model ${MODEL}`
       .quiet()
       .nothrow();
   const originalLines = originalResult.stdout
@@ -88,7 +91,7 @@ test('Agent-cli bash tool produces 100% compatible JSON output with OpenCode', a
 
   // Get OpenCode output
   const originalResult =
-    await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
+    await $`echo ${input} | opencode run --format json --model ${MODEL}`
       .quiet()
       .nothrow();
   const originalLines = originalResult.stdout

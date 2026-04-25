@@ -3,6 +3,9 @@ import { $ } from 'bun';
 import path from 'path';
 import fs from 'fs/promises';
 import os from 'os';
+import { testDefaultModel } from './_defaults.js';
+
+const MODEL = testDefaultModel();
 
 // Test configuration directory
 const testConfigDir = path.join(os.tmpdir(), `opencode-test-${Date.now()}`);
@@ -221,7 +224,7 @@ describe('MCP CLI Commands', () => {
       JSON.stringify(
         {
           $schema: 'https://opencode.ai/config.json',
-          model: 'opencode/minimax-m2.5-free',
+          model: MODEL,
           mcp: {
             'existing-server': {
               type: 'local',
@@ -248,7 +251,7 @@ describe('MCP CLI Commands', () => {
     const config = JSON.parse(configContent);
 
     // Check existing config is preserved
-    expect(config.model).toBe('opencode/minimax-m2.5-free');
+    expect(config.model).toBe(MODEL);
     expect(config.mcp['existing-server']).toBeDefined();
     expect(config.mcp['existing-server'].command).toEqual([
       'npx',

@@ -1,6 +1,9 @@
 import { test, expect, setDefaultTimeout } from 'bun:test';
 import { spawn } from 'child_process';
 import { join } from 'path';
+import { testDefaultModel } from './_defaults.js';
+
+const MODEL = testDefaultModel();
 
 // Increase default timeout to 60 seconds for these tests
 setDefaultTimeout(60000);
@@ -295,12 +298,12 @@ test('Both modes work with custom model parameter', async () => {
   const serverResult = await runAgentCli(input, [
     '--server=true',
     '--model',
-    'opencode/minimax-m2.5-free',
+    MODEL,
   ]);
   const noServerResult = await runAgentCli(input, [
     '--no-server',
     '--model',
-    'opencode/minimax-m2.5-free',
+    MODEL,
   ]);
 
   // Both should succeed

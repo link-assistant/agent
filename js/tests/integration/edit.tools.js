@@ -9,6 +9,9 @@ import {
   existsSync,
 } from 'fs';
 import { join } from 'path';
+import { testDefaultModel } from './_defaults.js';
+
+const MODEL = testDefaultModel();
 
 // Increase default timeout to 60 seconds for these tests
 setDefaultTimeout(60000);
@@ -135,7 +138,7 @@ test('Reference test: OpenCode edit tool produces expected JSON format', async (
     // Test original OpenCode edit tool
     const input = `{"message":"edit file","tools":[{"name":"edit","params":{"filePath":"${testFileName}","oldString":"Hello","newString":"Hi"}}]}`;
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
+      await $`echo ${input} | opencode run --format json --model ${MODEL}`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout
@@ -188,7 +191,7 @@ test('Agent-cli edit tool produces 100% compatible JSON output with OpenCode', a
     // Get OpenCode output
     const openCodeInput = `{"message":"edit file","tools":[{"name":"edit","params":{"filePath":"${openCodeFileName}","oldString":"Hello","newString":"Hi"}}]}`;
     const originalResult =
-      await $`echo ${openCodeInput} | opencode run --format json --model opencode/minimax-m2.5-free`
+      await $`echo ${openCodeInput} | opencode run --format json --model ${MODEL}`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout

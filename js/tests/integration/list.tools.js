@@ -3,6 +3,9 @@ import { $ } from 'bun';
 import { spawn } from 'child_process';
 import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
+import { testDefaultModel } from './_defaults.js';
+
+const MODEL = testDefaultModel();
 
 // Ensure tmp directory exists
 const TMP_DIR = join(process.cwd(), 'tmp');
@@ -146,7 +149,7 @@ test('Reference test: OpenCode tool produces expected JSON format', async () => 
     // Test original OpenCode list tool
     const input = `{"message":"list files","tools":[{"name":"list","params":{"path":"tmp"}}]}`;
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
+      await $`echo ${input} | opencode run --format json --model ${MODEL}`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout
@@ -202,7 +205,7 @@ test('Agent-cli list tool produces 100% compatible JSON output with OpenCode', a
 
     // Get OpenCode output
     const originalResult =
-      await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
+      await $`echo ${input} | opencode run --format json --model ${MODEL}`
         .quiet()
         .nothrow();
     const originalLines = originalResult.stdout

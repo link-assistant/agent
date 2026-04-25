@@ -1,6 +1,9 @@
 import { test, expect, describe, setDefaultTimeout } from 'bun:test';
 // @ts-ignore
 import { sh } from 'command-stream';
+import { testDefaultModel } from './_defaults.js';
+
+const MODEL = testDefaultModel();
 
 // Increase default timeout
 setDefaultTimeout(60000);
@@ -458,7 +461,7 @@ describe('Cache provider (unit tests)', () => {
 
     expect(model.specificationVersion).toBe('v2');
     expect(model.provider).toBe('link-assistant');
-    expect(model.modelId).toBe('opencode/minimax-m2.5-free');
+    expect(model.modelId).toBe(MODEL);
     expect(typeof model.doGenerate).toBe('function');
     expect(typeof model.doStream).toBe('function');
 

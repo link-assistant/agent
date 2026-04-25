@@ -2,6 +2,9 @@ import { test, expect, setDefaultTimeout } from 'bun:test';
 // @ts-ignore
 import { sh } from 'command-stream';
 import { $ } from 'bun';
+import { testDefaultModel } from './_defaults.js';
+
+const MODEL = testDefaultModel();
 
 // Increase default timeout to 60 seconds for these tests
 setDefaultTimeout(60000);
@@ -87,7 +90,7 @@ function validateBasicMessageOutput(events, label) {
 test('OpenCode reference: processes JSON input "hi" and produces JSON output', async () => {
   const input = '{"message":"hi"}';
   const opencodeResult =
-    await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
+    await $`echo ${input} | opencode run --format json --model ${MODEL}`
       .quiet()
       .nothrow();
   const opencodeLines = opencodeResult.stdout
@@ -116,7 +119,7 @@ test('Agent-cli produces 100% compatible JSON output with OpenCode', async () =>
 
   // Get OpenCode output
   const opencodeResult =
-    await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
+    await $`echo ${input} | opencode run --format json --model ${MODEL}`
       .quiet()
       .nothrow();
   const opencodeLines = opencodeResult.stdout
@@ -158,7 +161,7 @@ test('Agent-cli produces 100% compatible JSON output with OpenCode', async () =>
 test('OpenCode reference: processes plain text "2+2?" and produces JSON output', async () => {
   const input = '2+2?';
   const opencodeResult =
-    await $`echo ${input} | opencode run --format json --model opencode/minimax-m2.5-free`
+    await $`echo ${input} | opencode run --format json --model ${MODEL}`
       .quiet()
       .nothrow();
   const opencodeLines = opencodeResult.stdout
