@@ -10,7 +10,7 @@
  * here so a single change to `js/src/config/defaults.ts` (or a single
  * env-var override at run time) flows through every test in the tree.
  */
-export {
+import {
   DEFAULT_MODEL,
   DEFAULT_MODEL_ENV,
   DEFAULT_COMPACTION_MODEL,
@@ -25,7 +25,20 @@ export {
   getDefaultCompactionSafetyMarginPercent,
 } from '../../src/config/defaults.ts';
 
-import { getDefaultModel } from '../../src/config/defaults.ts';
+export {
+  DEFAULT_MODEL,
+  DEFAULT_MODEL_ENV,
+  DEFAULT_COMPACTION_MODEL,
+  DEFAULT_COMPACTION_MODEL_ENV,
+  DEFAULT_COMPACTION_MODELS,
+  DEFAULT_COMPACTION_MODELS_ENV,
+  DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT,
+  DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV,
+  getDefaultModel,
+  getDefaultCompactionModel,
+  getDefaultCompactionModels,
+  getDefaultCompactionSafetyMarginPercent,
+};
 
 /**
  * Resolve the default model string for tests, honoring the runtime env
