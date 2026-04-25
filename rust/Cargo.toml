@@ -75,6 +75,150 @@ path = "src/lib.rs"
 name = "agent"
 path = "src/main.rs"
 
+[[test]]
+name = "integration_bash_tools"
+path = "tests/integration/bash_tools.rs"
+
+[[test]]
+name = "integration_basic"
+path = "tests/integration/basic.rs"
+
+[[test]]
+name = "integration_batch_tools"
+path = "tests/integration/batch_tools.rs"
+
+[[test]]
+name = "integration_codesearch_tools"
+path = "tests/integration/codesearch_tools.rs"
+
+[[test]]
+name = "integration_dry_run"
+path = "tests/integration/dry_run.rs"
+
+[[test]]
+name = "integration_edit_tools"
+path = "tests/integration/edit_tools.rs"
+
+[[test]]
+name = "integration_generate_title"
+path = "tests/integration/generate_title.rs"
+
+[[test]]
+name = "integration_glob_tools"
+path = "tests/integration/glob_tools.rs"
+
+[[test]]
+name = "integration_google_cloudcode"
+path = "tests/integration/google_cloudcode.rs"
+
+[[test]]
+name = "integration_grep_tools"
+path = "tests/integration/grep_tools.rs"
+
+[[test]]
+name = "integration_json_standard_claude"
+path = "tests/integration/json_standard_claude.rs"
+
+[[test]]
+name = "integration_json_standard_opencode"
+path = "tests/integration/json_standard_opencode.rs"
+
+[[test]]
+name = "integration_list_tools"
+path = "tests/integration/list_tools.rs"
+
+[[test]]
+name = "integration_mcp"
+path = "tests/integration/mcp.rs"
+
+[[test]]
+name = "integration_models_cache"
+path = "tests/integration/models_cache.rs"
+
+[[test]]
+name = "integration_output_response_model"
+path = "tests/integration/output_response_model.rs"
+
+[[test]]
+name = "integration_plaintext_input"
+path = "tests/integration/plaintext_input.rs"
+
+[[test]]
+name = "integration_provider"
+path = "tests/integration/provider.rs"
+
+[[test]]
+name = "integration_read_image_validation_tools"
+path = "tests/integration/read_image_validation_tools.rs"
+
+[[test]]
+name = "integration_read_tools"
+path = "tests/integration/read_tools.rs"
+
+[[test]]
+name = "integration_resume"
+path = "tests/integration/resume.rs"
+
+[[test]]
+name = "integration_server_mode"
+path = "tests/integration/server_mode.rs"
+
+[[test]]
+name = "integration_socket_retry"
+path = "tests/integration/socket_retry.rs"
+
+[[test]]
+name = "integration_stdin_input_queue"
+path = "tests/integration/stdin_input_queue.rs"
+
+[[test]]
+name = "integration_stream_parse_error"
+path = "tests/integration/stream_parse_error.rs"
+
+[[test]]
+name = "integration_stream_timeout"
+path = "tests/integration/stream_timeout.rs"
+
+[[test]]
+name = "integration_system_message"
+path = "tests/integration/system_message.rs"
+
+[[test]]
+name = "integration_system_message_file"
+path = "tests/integration/system_message_file.rs"
+
+[[test]]
+name = "integration_task_tools"
+path = "tests/integration/task_tools.rs"
+
+[[test]]
+name = "integration_timeout_retry"
+path = "tests/integration/timeout_retry.rs"
+
+[[test]]
+name = "integration_todo_tools"
+path = "tests/integration/todo_tools.rs"
+
+[[test]]
+name = "integration_verbose_env_fallback"
+path = "tests/integration/verbose_env_fallback.rs"
+
+[[test]]
+name = "integration_verbose_hi"
+path = "tests/integration/verbose_hi.rs"
+
+[[test]]
+name = "integration_webfetch_tools"
+path = "tests/integration/webfetch_tools.rs"
+
+[[test]]
+name = "integration_websearch_tools"
+path = "tests/integration/websearch_tools.rs"
+
+[[test]]
+name = "integration_write_tools"
+path = "tests/integration/write_tools.rs"
+
 [profile.release]
 lto = true
 strip = true
