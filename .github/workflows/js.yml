@@ -134,7 +134,7 @@ jobs:
         working-directory: js
 
       - name: Run unit tests
-        run: bun test tests/json-standard-unit.test.js tests/process-name.test.js
+        run: bun test ./tests/json-standard-unit.js ./tests/process-name.js ./tests/cli.ts ./tests/cli_options.ts
         working-directory: js
 
       - name: Commit cached API responses
@@ -183,7 +183,7 @@ jobs:
         working-directory: js
 
       - name: Run verbose HTTP logging integration test
-        run: bun test tests/integration/verbose-hi.test.js
+        run: bun test ./tests/integration/verbose-hi.js
         working-directory: js
         timeout-minutes: 5
 

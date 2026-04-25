@@ -8,26 +8,14 @@ use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead};
 use std::path::PathBuf;
 
+pub use crate::defaults::{
+    default_compaction_model, default_compaction_models, default_compaction_safety_margin_percent,
+    default_model, DEFAULT_COMPACTION_MODEL, DEFAULT_COMPACTION_MODELS,
+    DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT, DEFAULT_MODEL,
+};
 use crate::error::{AgentError, Result};
 use crate::id::{ascending, Prefix};
 use crate::tool::{ToolContext, ToolRegistry};
-
-/// Default model used when no `--model` CLI argument is provided.
-pub const DEFAULT_MODEL: &str = "opencode/nemotron-3-super-free";
-
-/// Default compaction model used when no `--compaction-model` CLI argument is provided.
-/// gpt-5-nano has a 400K context window, larger than most free base models (~200K).
-pub const DEFAULT_COMPACTION_MODEL: &str = "opencode/gpt-5-nano";
-
-/// Default compaction models cascade, ordered from smallest/cheapest context to largest.
-/// During compaction, the system tries each model in order.
-pub const DEFAULT_COMPACTION_MODELS: &str =
-    "(big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)";
-
-/// Default compaction safety margin as a percentage of usable context window.
-/// Increased from 15% to 25% to reduce probability of context overflow errors.
-/// @see https://github.com/link-assistant/agent/issues/249
-pub const DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT: u32 = 25;
 
 /// Agent CLI - A minimal AI CLI agent compatible with OpenCode's JSON interface
 #[derive(Parser, Debug)]
@@ -35,7 +23,7 @@ pub const DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT: u32 = 25;
 #[command(author, version, about, long_about = None)]
 pub struct Args {
     /// Model to use in format providerID/modelID
-    #[arg(long, default_value = DEFAULT_MODEL)]
+    #[arg(long, default_value_t = default_model())]
     pub model: String,
 
     /// JSON output format standard: "opencode" (default) or "claude" (experimental)
@@ -158,18 +146,18 @@ pub struct Args {
 
     /// Model to use for context compaction in format providerID/modelID.
     /// Use "same" to use the base model.
-    #[arg(long, default_value = DEFAULT_COMPACTION_MODEL)]
+    #[arg(long, default_value_t = default_compaction_model())]
     pub compaction_model: String,
 
     /// Ordered cascade of compaction models in links notation sequence format.
     /// Models are tried from smallest/cheapest context to largest.
     /// The special value "same" uses the base model. Overrides --compaction-model when specified.
-    #[arg(long, default_value = DEFAULT_COMPACTION_MODELS)]
+    #[arg(long, default_value_t = default_compaction_models())]
     pub compaction_models: String,
 
     /// Safety margin (%) of usable context window before triggering compaction.
     /// Only applies when the compaction model has equal or smaller context than the base model.
-    #[arg(long, default_value_t = DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT)]
+    #[arg(long, default_value_t = default_compaction_safety_margin_percent())]
     pub compaction_safety_margin: u32,
 
     /// Override the temperature for model completions.

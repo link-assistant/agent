@@ -51,7 +51,8 @@ const log = Log.create({ service: 'resume' });
 export async function resolveResumeSession(argv, compactJson) {
   const resumeSessionID = argv.resume;
   const shouldContinue = argv.continue === true;
-  const noFork = argv['no-fork'] === true;
+  const noFork =
+    argv['no-fork'] === true || argv.noFork === true || argv.fork === false;
 
   // If neither --resume nor --continue is specified, return null to create new session
   if (!resumeSessionID && !shouldContinue) {

@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "bun run src/index.js",
-    "test": "bun test tests/*.test.js tests/*.test.ts",
-    "test:integration": "bun test tests/integration/basic.test.js",
+    "test": "bun test ./tests/*.js ./tests/*.ts",
+    "test:integration": "bun test ./tests/integration/basic.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

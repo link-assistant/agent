@@ -5,6 +5,10 @@
 //! Each option is tested via the compiled binary using assert_cmd.
 
 use assert_cmd::Command;
+use link_assistant_agent::defaults::{
+    DEFAULT_COMPACTION_MODELS_ENV, DEFAULT_COMPACTION_MODEL_ENV,
+    DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV, DEFAULT_MODEL_ENV,
+};
 use predicates::prelude::*;
 use std::io::Write;
 
@@ -17,13 +21,13 @@ fn agent_cmd() -> assert_cmd::Command {
 
 #[test]
 fn model_option_default() {
-    // Default model should be opencode/nemotron-3-super-free (matching JS).
+    // Default model should be opencode/minimax-m2.5-free (matching JS).
     agent_cmd()
         .args(["--dry-run", "--verbose", "-p", "hello"])
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Model: opencode/nemotron-3-super-free",
+            "Model: opencode/minimax-m2.5-free",
         ));
 }
 
@@ -41,6 +45,34 @@ fn model_option_custom() {
         .assert()
         .success()
         .stdout(predicate::str::contains("Model: opencode/gpt-5"));
+}
+
+#[test]
+fn model_option_env_default() {
+    agent_cmd()
+        .env(DEFAULT_MODEL_ENV, "opencode/env-default-free")
+        .args(["--dry-run", "--verbose", "-p", "hello"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Model: opencode/env-default-free"));
+}
+
+#[test]
+fn model_option_cli_overrides_env_default() {
+    agent_cmd()
+        .env(DEFAULT_MODEL_ENV, "opencode/env-default-free")
+        .args([
+            "--dry-run",
+            "--verbose",
+            "--model",
+            "opencode/gpt-5",
+            "-p",
+            "hello",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Model: opencode/gpt-5"))
+        .stdout(predicate::str::contains("opencode/env-default-free").not());
 }
 
 // ── JSON standard option ─────────────────────────────────────────────
@@ -545,6 +577,36 @@ fn compaction_model_custom() {
         .stdout(predicate::str::contains("Compaction model: same"));
 }
 
+#[test]
+fn compaction_model_env_default() {
+    agent_cmd()
+        .env(DEFAULT_COMPACTION_MODEL_ENV, "opencode/env-compact-free")
+        .args(["--dry-run", "--verbose", "-p", "hello"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Compaction model: opencode/env-compact-free",
+        ));
+}
+
+#[test]
+fn compaction_model_cli_overrides_env_default() {
+    agent_cmd()
+        .env(DEFAULT_COMPACTION_MODEL_ENV, "opencode/env-compact-free")
+        .args([
+            "--dry-run",
+            "--verbose",
+            "--compaction-model",
+            "same",
+            "-p",
+            "hello",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Compaction model: same"))
+        .stdout(predicate::str::contains("opencode/env-compact-free").not());
+}
+
 // ── Compaction models option ─────────────────────────────────────────
 
 #[test]
@@ -554,7 +616,7 @@ fn compaction_models_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Compaction models: (big-pickle minimax-m2.5-free nemotron-3-super-free gpt-5-nano same)",
+            "Compaction models: (big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)",
         ));
 }
 
@@ -572,6 +634,36 @@ fn compaction_models_custom() {
         .assert()
         .success()
         .stdout(predicate::str::contains("Compaction models: (model1 same)"));
+}
+
+#[test]
+fn compaction_models_env_default() {
+    agent_cmd()
+        .env(DEFAULT_COMPACTION_MODELS_ENV, "(env-compact-free same)")
+        .args(["--dry-run", "--verbose", "-p", "hello"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Compaction models: (env-compact-free same)",
+        ));
+}
+
+#[test]
+fn compaction_models_cli_overrides_env_default() {
+    agent_cmd()
+        .env(DEFAULT_COMPACTION_MODELS_ENV, "(env-compact-free same)")
+        .args([
+            "--dry-run",
+            "--verbose",
+            "--compaction-models",
+            "(model1 same)",
+            "-p",
+            "hello",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Compaction models: (model1 same)"))
+        .stdout(predicate::str::contains("(env-compact-free same)").not());
 }
 
 // ── Compaction safety margin option ──────────────────────────────────
@@ -599,6 +691,34 @@ fn compaction_safety_margin_custom() {
         .assert()
         .success()
         .stdout(predicate::str::contains("Compaction safety margin: 25%"));
+}
+
+#[test]
+fn compaction_safety_margin_env_default() {
+    agent_cmd()
+        .env(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV, "12")
+        .args(["--dry-run", "--verbose", "-p", "hello"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Compaction safety margin: 12%"));
+}
+
+#[test]
+fn compaction_safety_margin_cli_overrides_env_default() {
+    agent_cmd()
+        .env(DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT_ENV, "12")
+        .args([
+            "--dry-run",
+            "--verbose",
+            "--compaction-safety-margin",
+            "25",
+            "-p",
+            "hello",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Compaction safety margin: 25%"))
+        .stdout(predicate::str::contains("Compaction safety margin: 12%").not());
 }
 
 // ── All options combined ─────────────────────────────────────────────

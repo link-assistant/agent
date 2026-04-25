@@ -195,6 +195,9 @@ echo "hi" | agent
 
 # Other free models (in order of recommendation)
 echo "hi" | agent --model opencode/minimax-m2.5-free
+echo "hi" | agent --model opencode/ling-2.6-flash-free
+echo "hi" | agent --model opencode/hy3-preview-free
+echo "hi" | agent --model opencode/nemotron-3-super-free
 echo "hi" | agent --model opencode/gpt-5-nano
 echo "hi" | agent --model opencode/big-pickle
 
@@ -602,13 +605,13 @@ bun run src/index.js
 
 ```bash
 # Run all tests
-bun test
+npm test
 
 # Run specific test file
-bun test tests/mcp.test.js
-bun test tests/websearch.tools.test.js
-bun test tests/batch.tools.test.js
-bun test tests/plaintext.input.test.js
+bun test ./tests/integration/mcp.js
+bun test ./tests/integration/websearch.tools.js
+bun test ./tests/integration/batch.tools.js
+bun test ./tests/integration/plaintext.input.js
 ```
 
 For detailed testing information including how to run tests manually and trigger CI tests, see [TESTING.md](../TESTING.md).

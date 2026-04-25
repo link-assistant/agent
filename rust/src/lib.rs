@@ -4,6 +4,7 @@
 //! It provides the same functionality as the JavaScript/Bun version but runs as a native binary.
 
 pub mod cli;
+pub mod defaults;
 pub mod error;
 pub mod id;
 pub mod tool;

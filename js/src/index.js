@@ -488,7 +488,7 @@ async function runServerMode(
       });
     unsub = eventUnsub;
 
-    // Send message to session with specified model (default: opencode/grok-code)
+    // Send message to session with specified model
     const message = request.message || 'hi';
     const parts = [{ type: 'text', text: message }];
 
