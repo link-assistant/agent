@@ -232,7 +232,7 @@ export function outputInput(
   input: {
     raw: string;
     parsed?: unknown;
-    format?: 'json' | 'text';
+    format?: 'json' | 'text' | 'stream-json';
     [key: string]: unknown;
   },
   compact?: boolean

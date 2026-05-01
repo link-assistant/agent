@@ -8,7 +8,7 @@ import { Instance } from '../project/instance.ts';
 import { Bus } from '../bus/index.ts';
 import { Session } from '../session/index.ts';
 import { SessionPrompt } from '../session/prompt.ts';
-import { createEventHandler } from '../json-standard/index.ts';
+import { createEventHandler, serializeOutput } from '../json-standard/index.ts';
 import { createContinuousStdinReader } from './input-queue.js';
 import { Log } from '../util/log.ts';
 import { config } from '../config/config.ts';
@@ -39,6 +39,64 @@ export function getHasError() {
 
 // Logger for resume operations
 const log = Log.create({ service: 'resume' });
+
+function getInputFormat(argv) {
+  return argv['input-format'] || argv.inputFormat || 'text';
+}
+
+function outputConsumedInput({
+  message,
+  jsonStandard,
+  sessionID,
+  compactJson,
+}) {
+  const raw = message.raw || message.message || message.system || '';
+  if (
+    jsonStandard === 'claude' &&
+    message.kind === 'message' &&
+    message.format === 'stream-json'
+  ) {
+    process.stdout.write(
+      serializeOutput(
+        {
+          type: 'message',
+          timestamp: new Date().toISOString(),
+          session_id: sessionID,
+          role: 'user',
+          content: [{ type: 'text', text: message.message ?? '' }],
+        },
+        'claude'
+      )
+    );
+    return;
+  }
+
+  if (jsonStandard === 'claude') {
+    return;
+  }
+
+  outputInput(
+    {
+      raw,
+      parsed: message.parsed || message,
+      format: message.format || 'text',
+      kind: message.kind || 'message',
+    },
+    compactJson
+  );
+}
+
+function outputInputParseError(error, line, compactJson) {
+  hasError = true;
+  outputError(
+    {
+      errorType: 'ValidationError',
+      message: error instanceof Error ? error.message : String(error),
+      raw: line,
+    },
+    compactJson
+  );
+}
 
 /**
  * Resolve the session to use based on --resume, --continue, and --no-fork options.
@@ -200,8 +258,12 @@ export async function runContinuousServerMode(
 ) {
   // Check both CLI flag and environment variable for compact JSON mode
   const compactJson = argv['compact-json'] === true || config.compactJson;
+  const inputFormat = getInputFormat(argv);
   const isInteractive = argv.interactive !== false;
-  const autoMerge = argv['auto-merge-queued-messages'] !== false;
+  const autoMerge =
+    inputFormat === 'stream-json'
+      ? false
+      : argv['auto-merge-queued-messages'] !== false;
 
   // Start server like OpenCode does
   const server = Server.listen({ port: 0, hostname: '127.0.0.1' });
@@ -244,9 +306,23 @@ export async function runContinuousServerMode(
     // Track if we're currently processing a message
     let isProcessing = false;
     const pendingMessages = [];
+    let currentSystemMessage = systemMessage;
+    const currentAppendSystemMessage = appendSystemMessage;
 
     // Process messages from the queue
     const processMessage = async (message) => {
+      if (message.kind === 'interrupt') {
+        SessionPrompt.cancel(sessionID);
+        outputConsumedInput({ message, jsonStandard, sessionID, compactJson });
+        return;
+      }
+
+      if (message.kind === 'system') {
+        currentSystemMessage = message.system;
+        outputConsumedInput({ message, jsonStandard, sessionID, compactJson });
+        return;
+      }
+
       if (isProcessing) {
         pendingMessages.push(message);
         return;
@@ -255,16 +331,9 @@ export async function runContinuousServerMode(
       isProcessing = true;
 
       // Output input confirmation in JSON format
-      outputInput(
-        {
-          raw: message.raw || message.message,
-          parsed: message,
-          format: message.format || 'text',
-        },
-        compactJson
-      );
+      outputConsumedInput({ message, jsonStandard, sessionID, compactJson });
 
-      const messageText = message.message || 'hi';
+      const messageText = message.message ?? 'hi';
       const parts = [{ type: 'text', text: messageText }];
 
       // Create a promise to wait for this message to complete
@@ -290,8 +359,8 @@ export async function runContinuousServerMode(
             parts,
             model: { providerID, modelID },
             compactionModel,
-            system: systemMessage,
-            appendSystem: appendSystemMessage,
+            system: currentSystemMessage,
+            appendSystem: currentAppendSystemMessage,
             temperature,
           }),
         }
@@ -377,10 +446,14 @@ export async function runContinuousServerMode(
 
     // Create continuous stdin reader
     stdinReader = createContinuousStdinReader({
-      interactive: isInteractive,
+      interactive: inputFormat === 'stream-json' ? false : isInteractive,
       autoMerge,
+      inputFormat,
       onMessage: (message) => {
         processMessage(message);
+      },
+      onError: (error, line) => {
+        outputInputParseError(error, line, compactJson);
       },
     });
 
@@ -454,8 +527,12 @@ export async function runContinuousDirectMode(
 ) {
   // Check both CLI flag and environment variable for compact JSON mode
   const compactJson = argv['compact-json'] === true || config.compactJson;
+  const inputFormat = getInputFormat(argv);
   const isInteractive = argv.interactive !== false;
-  const autoMerge = argv['auto-merge-queued-messages'] !== false;
+  const autoMerge =
+    inputFormat === 'stream-json'
+      ? false
+      : argv['auto-merge-queued-messages'] !== false;
 
   let unsub = null;
   let stdinReader = null;
@@ -483,9 +560,23 @@ export async function runContinuousDirectMode(
     // Track if we're currently processing a message
     let isProcessing = false;
     const pendingMessages = [];
+    let currentSystemMessage = systemMessage;
+    const currentAppendSystemMessage = appendSystemMessage;
 
     // Process messages from the queue
     const processMessage = async (message) => {
+      if (message.kind === 'interrupt') {
+        SessionPrompt.cancel(sessionID);
+        outputConsumedInput({ message, jsonStandard, sessionID, compactJson });
+        return;
+      }
+
+      if (message.kind === 'system') {
+        currentSystemMessage = message.system;
+        outputConsumedInput({ message, jsonStandard, sessionID, compactJson });
+        return;
+      }
+
       if (isProcessing) {
         pendingMessages.push(message);
         return;
@@ -494,16 +585,9 @@ export async function runContinuousDirectMode(
       isProcessing = true;
 
       // Output input confirmation in JSON format
-      outputInput(
-        {
-          raw: message.raw || message.message,
-          parsed: message,
-          format: message.format || 'text',
-        },
-        compactJson
-      );
+      outputConsumedInput({ message, jsonStandard, sessionID, compactJson });
 
-      const messageText = message.message || 'hi';
+      const messageText = message.message ?? 'hi';
       const parts = [{ type: 'text', text: messageText }];
 
       // Create a promise to wait for this message to complete
@@ -525,8 +609,8 @@ export async function runContinuousDirectMode(
         parts,
         model: { providerID, modelID },
         compactionModel,
-        system: systemMessage,
-        appendSystem: appendSystemMessage,
+        system: currentSystemMessage,
+        appendSystem: currentAppendSystemMessage,
         temperature,
       }).catch((error) => {
         hasError = true;
@@ -610,10 +694,14 @@ export async function runContinuousDirectMode(
 
     // Create continuous stdin reader
     stdinReader = createContinuousStdinReader({
-      interactive: isInteractive,
+      interactive: inputFormat === 'stream-json' ? false : isInteractive,
       autoMerge,
+      inputFormat,
       onMessage: (message) => {
         processMessage(message);
+      },
+      onError: (error, line) => {
+        outputInputParseError(error, line, compactJson);
       },
     });
 

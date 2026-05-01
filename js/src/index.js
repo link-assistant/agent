@@ -36,6 +36,7 @@ import {
   runContinuousDirectMode,
   resolveResumeSession,
 } from './cli/continuous-mode.js';
+import { parseStreamJsonInput } from './cli/input-queue.js';
 import { createBusEventSubscription } from './cli/event-handler.js';
 import {
   outputStatus,
@@ -257,6 +258,19 @@ async function readSystemMessages(argv) {
   }
 
   return { systemMessage, appendSystemMessage };
+}
+
+function getInputFormat(argv) {
+  return argv['input-format'] || argv.inputFormat || 'text';
+}
+
+function getAcceptedInputFormats(inputFormat, isInteractive) {
+  if (inputFormat === 'stream-json') {
+    return ['Claude stream-json user frames'];
+  }
+  return isInteractive
+    ? ['JSON object with "message" field', 'Plain text']
+    : ['JSON object with "message" field'];
 }
 
 async function runAgentMode(argv, request) {
@@ -663,8 +677,15 @@ async function main() {
           // Check if stdin is a TTY (interactive terminal)
           if (process.stdin.isTTY) {
             // Enter interactive terminal mode with continuous listening
-            const isInteractive = argv.interactive !== false;
-            const autoMerge = argv['auto-merge-queued-messages'] !== false;
+            const inputFormat = getInputFormat(argv);
+            const isInteractive =
+              inputFormat === 'stream-json'
+                ? false
+                : argv.interactive !== false;
+            const autoMerge =
+              inputFormat === 'stream-json'
+                ? false
+                : argv['auto-merge-queued-messages'] !== false;
             const alwaysAcceptStdin = argv['always-accept-stdin'] !== false;
 
             // Exit if --no-always-accept-stdin is set (single message mode not supported in TTY)
@@ -688,10 +709,12 @@ async function main() {
                 message:
                   'Agent CLI in interactive terminal mode. Type your message and press Enter.',
                 hint: 'Press CTRL+C to exit. Use --help for options.',
-                acceptedFormats: isInteractive
-                  ? ['JSON object with "message" field', 'Plain text']
-                  : ['JSON object with "message" field'],
+                acceptedFormats: getAcceptedInputFormats(
+                  inputFormat,
+                  isInteractive
+                ),
                 options: {
+                  inputFormat,
                   interactive: isInteractive,
                   autoMergeQueuedMessages: autoMerge,
                   alwaysAcceptStdin,
@@ -707,8 +730,13 @@ async function main() {
           }
 
           // stdin is piped - enter stdin listening mode
-          const isInteractive = argv.interactive !== false;
-          const autoMerge = argv['auto-merge-queued-messages'] !== false;
+          const inputFormat = getInputFormat(argv);
+          const isInteractive =
+            inputFormat === 'stream-json' ? false : argv.interactive !== false;
+          const autoMerge =
+            inputFormat === 'stream-json'
+              ? false
+              : argv['auto-merge-queued-messages'] !== false;
           const alwaysAcceptStdin = argv['always-accept-stdin'] !== false;
 
           outputStatus(
@@ -719,10 +747,12 @@ async function main() {
                 ? 'Agent CLI in continuous listening mode. Accepts JSON and plain text input.'
                 : 'Agent CLI in single-message mode. Accepts JSON and plain text input.',
               hint: 'Press CTRL+C to exit. Use --help for options.',
-              acceptedFormats: isInteractive
-                ? ['JSON object with "message" field', 'Plain text']
-                : ['JSON object with "message" field'],
+              acceptedFormats: getAcceptedInputFormats(
+                inputFormat,
+                isInteractive
+              ),
               options: {
+                inputFormat,
                 interactive: isInteractive,
                 autoMergeQueuedMessages: autoMerge,
                 alwaysAcceptStdin,
@@ -757,27 +787,52 @@ async function main() {
 
           // Try to parse as JSON, if it fails treat it as plain text message
           let request;
-          try {
-            request = JSON.parse(trimmedInput);
-          } catch (_e) {
-            // Not JSON
-            if (!isInteractive) {
-              // In non-interactive mode, only accept JSON
+          if (inputFormat === 'stream-json') {
+            try {
+              const firstFrame = trimmedInput
+                .split(/\r?\n/)
+                .find((line) => line.trim());
+              request = parseStreamJsonInput(firstFrame || '');
+              if (request.kind !== 'message') {
+                throw new Error(
+                  `Expected stream-json user frame, received ${request.kind}`
+                );
+              }
+            } catch (error) {
               outputError(
                 {
                   errorType: 'ValidationError',
                   message:
-                    'Invalid JSON input. In non-interactive mode (--no-interactive), only JSON input is accepted.',
-                  hint: 'Use --interactive to accept plain text, or provide valid JSON: {"message": "your text"}',
+                    error instanceof Error ? error.message : String(error),
+                  hint: 'Provide one Claude stream-json user frame per line.',
                 },
                 compactJson
               );
               process.exit(1);
             }
-            // In interactive mode, treat as plain text message
-            request = {
-              message: trimmedInput,
-            };
+          } else {
+            try {
+              request = JSON.parse(trimmedInput);
+            } catch (_e) {
+              // Not JSON
+              if (!isInteractive) {
+                // In non-interactive mode, only accept JSON
+                outputError(
+                  {
+                    errorType: 'ValidationError',
+                    message:
+                      'Invalid JSON input. In non-interactive mode (--no-interactive), only JSON input is accepted.',
+                    hint: 'Use --interactive to accept plain text, or provide valid JSON: {"message": "your text"}',
+                  },
+                  compactJson
+                );
+                process.exit(1);
+              }
+              // In interactive mode, treat as plain text message
+              request = {
+                message: trimmedInput,
+              };
+            }
           }
 
           // Output input confirmation in JSON format
@@ -785,7 +840,12 @@ async function main() {
             {
               raw: trimmedInput,
               parsed: request,
-              format: isInteractive ? 'text' : 'json',
+              format:
+                inputFormat === 'stream-json'
+                  ? 'stream-json'
+                  : isInteractive
+                    ? 'text'
+                    : 'json',
             },
             compactJson
           );

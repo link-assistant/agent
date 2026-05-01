@@ -29,6 +29,19 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
       default: 'opencode',
       choices: ['opencode', 'claude'],
     })
+    .option('output-format', {
+      type: 'string',
+      description:
+        'Claude-compatible output format alias: "json" (OpenCode JSON) or "stream-json" (Claude NDJSON)',
+      choices: ['json', 'stream-json'],
+    })
+    .option('input-format', {
+      type: 'string',
+      description:
+        'Input format: "text" (default) or Claude-compatible "stream-json" JSONL frames',
+      default: 'text',
+      choices: ['text', 'stream-json'],
+    })
     .option('system-message', {
       type: 'string',
       description: 'Full override of the system message',
@@ -134,6 +147,13 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
           if (argv.fork === false) {
             argv['no-fork'] = true;
             argv.noFork = true;
+          }
+          if (argv.outputFormat === 'stream-json') {
+            argv['json-standard'] = 'claude';
+            argv.jsonStandard = 'claude';
+          } else if (argv.outputFormat === 'json') {
+            argv['json-standard'] = 'opencode';
+            argv.jsonStandard = 'opencode';
           }
         }, true)
       : parser;
