@@ -30,6 +30,14 @@ pub struct Args {
     #[arg(long, default_value = "opencode", value_parser = ["opencode", "claude"])]
     pub json_standard: String,
 
+    /// Claude-compatible output format alias: "json" or "stream-json"
+    #[arg(long, value_parser = ["json", "stream-json"])]
+    pub output_format: Option<String>,
+
+    /// Input format: "text" (default) or Claude-compatible "stream-json" JSONL frames
+    #[arg(long, default_value = "text", value_parser = ["text", "stream-json"])]
+    pub input_format: String,
+
     /// Full override of the system message
     #[arg(long)]
     pub system_message: Option<String>,
@@ -174,6 +182,15 @@ impl Args {
     /// Effective server mode: defaults to true, --no-server sets to false
     pub fn server(&self) -> bool {
         !self.no_server
+    }
+
+    /// Effective JSON output standard after applying --output-format aliases.
+    pub fn effective_json_standard(&self) -> &str {
+        match self.output_format.as_deref() {
+            Some("stream-json") => "claude",
+            Some("json") => "opencode",
+            _ => self.json_standard.as_str(),
+        }
     }
 
     /// Effective auto-merge: defaults to true, --no-auto-merge-queued-messages sets to false
@@ -495,7 +512,7 @@ async fn run_with_input(
             &OutputEvent::Text {
                 timestamp: timestamp_ms(),
                 session_id: session_id.clone(),
-                text: format!("JSON standard: {}", args.json_standard),
+                text: format!("JSON standard: {}", args.effective_json_standard()),
             },
             args.compact_json,
         );

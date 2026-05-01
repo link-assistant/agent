@@ -5,11 +5,13 @@
 export class InputQueue {
   constructor(options = {}) {
     this.queue = [];
+    this.inputFormat = options.inputFormat || 'text';
     this.autoMerge = options.autoMerge !== false; // enabled by default
     this.mergeDelayMs = options.mergeDelayMs || 50; // delay to wait for more lines
     this.pendingLines = [];
     this.mergeTimer = null;
     this.onMessage = options.onMessage || (() => {});
+    this.onError = options.onError || (() => {});
     this.interactive = options.interactive !== false; // enabled by default
   }
 
@@ -22,6 +24,10 @@ export class InputQueue {
     const trimmed = input.trim();
     if (!trimmed) {
       return null;
+    }
+
+    if (this.inputFormat === 'stream-json') {
+      return parseStreamJsonInput(trimmed);
     }
 
     try {
@@ -43,6 +49,11 @@ export class InputQueue {
    * @param {string} line - Input line
    */
   addLine(line) {
+    if (this.inputFormat === 'stream-json') {
+      this.queueLine(line);
+      return;
+    }
+
     if (!this.interactive && !line.trim().startsWith('{')) {
       // In non-interactive mode, only accept JSON
       return;
@@ -54,11 +65,7 @@ export class InputQueue {
       this.scheduleMerge();
     } else {
       // No merging, queue immediately
-      const parsed = this.parseInput(line);
-      if (parsed) {
-        this.queue.push(parsed);
-        this.notifyMessage(parsed);
-      }
+      this.queueLine(line);
     }
   }
 
@@ -131,12 +138,169 @@ export class InputQueue {
   }
 
   /**
+   * Notify listener of an input parse error
+   * @param {Error} error - Parse error
+   * @param {string} line - Raw input line
+   */
+  notifyError(error, line) {
+    if (this.onError) {
+      this.onError(error, line);
+    }
+  }
+
+  /**
+   * Parse and enqueue one complete input line
+   * @param {string} line - Raw input line
+   */
+  queueLine(line) {
+    try {
+      const parsed = this.parseInput(line);
+      if (parsed) {
+        this.queue.push(parsed);
+        this.notifyMessage(parsed);
+      }
+    } catch (error) {
+      this.notifyError(error, line);
+    }
+  }
+
+  /**
    * Get queue size
    * @returns {number}
    */
   size() {
     return this.queue.length;
   }
+}
+
+function extractContentText(content) {
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    const parts = [];
+    for (const part of content) {
+      if (typeof part === 'string') {
+        parts.push(part);
+      } else if (part && typeof part === 'object') {
+        if (typeof part.text === 'string') {
+          parts.push(part.text);
+        } else if (typeof part.content === 'string') {
+          parts.push(part.content);
+        }
+      }
+    }
+    return parts.length > 0 ? parts.join('\n') : null;
+  }
+
+  if (content && typeof content === 'object') {
+    if (typeof content.text === 'string') {
+      return content.text;
+    }
+    if ('content' in content) {
+      return extractContentText(content.content);
+    }
+  }
+
+  return null;
+}
+
+function extractFrameText(frame) {
+  if (typeof frame.message === 'string') {
+    return frame.message;
+  }
+
+  if (frame.message && typeof frame.message === 'object') {
+    const messageText = extractContentText(frame.message.content);
+    if (messageText !== null) {
+      return messageText;
+    }
+    if (typeof frame.message.text === 'string') {
+      return frame.message.text;
+    }
+  }
+
+  const contentText = extractContentText(frame.content);
+  if (contentText !== null) {
+    return contentText;
+  }
+
+  if (typeof frame.text === 'string') {
+    return frame.text;
+  }
+
+  return null;
+}
+
+/**
+ * Parse one Claude-compatible stream-json input frame.
+ * @param {string} input - One JSONL frame
+ * @returns {object} Normalized queue message
+ */
+export function parseStreamJsonInput(input) {
+  let frame;
+  try {
+    frame = JSON.parse(input);
+  } catch (error) {
+    throw new Error(
+      `Invalid stream-json input frame: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+
+  if (!frame || typeof frame !== 'object' || Array.isArray(frame)) {
+    throw new Error('Invalid stream-json input frame: expected JSON object');
+  }
+
+  const type = frame.type;
+
+  if (type === 'interrupt') {
+    return {
+      kind: 'interrupt',
+      raw: input,
+      parsed: frame,
+      format: 'stream-json',
+      inputType: type,
+    };
+  }
+
+  if (type === 'system') {
+    const system = extractFrameText(frame);
+    if (system === null) {
+      throw new Error(
+        'Invalid stream-json system frame: expected content text'
+      );
+    }
+    return {
+      kind: 'system',
+      system,
+      raw: input,
+      parsed: frame,
+      format: 'stream-json',
+      inputType: type,
+    };
+  }
+
+  if (type === 'user' || type === 'user_prompt' || type === undefined) {
+    const message = extractFrameText(frame);
+    if (message === null) {
+      throw new Error(
+        'Invalid stream-json user frame: expected message content text'
+      );
+    }
+    return {
+      kind: 'message',
+      message,
+      raw: input,
+      parsed: frame,
+      format: 'stream-json',
+      inputType: type || 'message',
+    };
+  }
+
+  throw new Error(`Unsupported stream-json input frame type: ${String(type)}`);
 }
 
 /**

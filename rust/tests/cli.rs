@@ -26,6 +26,8 @@ fn test_args_defaults() {
     let args = Args::parse_from(["agent"]);
     assert_eq!(args.model, DEFAULT_MODEL);
     assert_eq!(args.json_standard, "opencode");
+    assert_eq!(args.input_format, "text");
+    assert!(args.output_format.is_none());
     assert!(args.server());
     assert!(!args.verbose);
     assert!(!args.dry_run);
@@ -106,6 +108,32 @@ fn test_args_model() {
 fn test_args_json_standard_claude() {
     let args = Args::parse_from(["agent", "--json-standard", "claude"]);
     assert_eq!(args.json_standard, "claude");
+}
+
+#[test]
+fn test_args_input_format_stream_json() {
+    let args = Args::parse_from(["agent", "--input-format", "stream-json"]);
+    assert_eq!(args.input_format, "stream-json");
+}
+
+#[test]
+fn test_args_output_format_stream_json() {
+    let args = Args::parse_from(["agent", "--output-format", "stream-json"]);
+    assert_eq!(args.output_format, Some("stream-json".to_string()));
+    assert_eq!(args.effective_json_standard(), "claude");
+}
+
+#[test]
+fn test_args_output_format_json_maps_to_opencode() {
+    let args = Args::parse_from([
+        "agent",
+        "--json-standard",
+        "claude",
+        "--output-format",
+        "json",
+    ]);
+    assert_eq!(args.output_format, Some("json".to_string()));
+    assert_eq!(args.effective_json_standard(), "opencode");
 }
 
 #[test]
@@ -290,6 +318,10 @@ fn test_args_all_options_combined() {
         "opencode/gpt-5",
         "--json-standard",
         "claude",
+        "--input-format",
+        "stream-json",
+        "--output-format",
+        "stream-json",
         "--system-message",
         "Be helpful",
         "--verbose",
@@ -313,6 +345,9 @@ fn test_args_all_options_combined() {
     ]);
     assert_eq!(args.model, "opencode/gpt-5");
     assert_eq!(args.json_standard, "claude");
+    assert_eq!(args.input_format, "stream-json");
+    assert_eq!(args.output_format, Some("stream-json".to_string()));
+    assert_eq!(args.effective_json_standard(), "claude");
     assert_eq!(args.system_message, Some("Be helpful".to_string()));
     assert!(args.verbose);
     assert!(args.dry_run);

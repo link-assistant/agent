@@ -65,6 +65,8 @@ describe('cli', () => {
     const args = await parseArgs([]);
     expect(args.model).toBe(DEFAULT_MODEL);
     expect(args.jsonStandard).toBe('opencode');
+    expect(args.inputFormat).toBe('text');
+    expect(args.outputFormat).toBeUndefined();
     expect(args.server).toBe(true);
     expect(args.verbose).toBe(false);
     expect(args.dryRun).toBe(false);
@@ -136,6 +138,28 @@ describe('cli', () => {
   test('test_args_json_standard_claude', async () => {
     const args = await parseArgs(['--json-standard', 'claude']);
     expect(args.jsonStandard).toBe('claude');
+  });
+
+  test('test_args_input_format_stream_json', async () => {
+    const args = await parseArgs(['--input-format', 'stream-json']);
+    expect(args.inputFormat).toBe('stream-json');
+  });
+
+  test('test_args_output_format_stream_json_maps_to_claude', async () => {
+    const args = await parseArgs(['--output-format', 'stream-json']);
+    expect(args.outputFormat).toBe('stream-json');
+    expect(args.jsonStandard).toBe('claude');
+  });
+
+  test('test_args_output_format_json_maps_to_opencode', async () => {
+    const args = await parseArgs([
+      '--json-standard',
+      'claude',
+      '--output-format',
+      'json',
+    ]);
+    expect(args.outputFormat).toBe('json');
+    expect(args.jsonStandard).toBe('opencode');
   });
 
   test('test_args_system_message', async () => {
@@ -293,6 +317,10 @@ describe('cli', () => {
       'opencode/gpt-5',
       '--json-standard',
       'claude',
+      '--input-format',
+      'stream-json',
+      '--output-format',
+      'stream-json',
       '--system-message',
       'Be helpful',
       '--verbose',
@@ -317,6 +345,8 @@ describe('cli', () => {
 
     expect(args.model).toBe('opencode/gpt-5');
     expect(args.jsonStandard).toBe('claude');
+    expect(args.inputFormat).toBe('stream-json');
+    expect(args.outputFormat).toBe('stream-json');
     expect(args.systemMessage).toBe('Be helpful');
     expect(args.verbose).toBe(true);
     expect(args.dryRun).toBe(true);

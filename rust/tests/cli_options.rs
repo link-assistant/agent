@@ -111,6 +111,57 @@ fn json_standard_rejects_invalid() {
         .stderr(predicate::str::contains("invalid value"));
 }
 
+#[test]
+fn input_format_stream_json_accepted() {
+    agent_cmd()
+        .args(["--dry-run", "--input-format", "stream-json", "-p", "hello"])
+        .assert()
+        .success();
+}
+
+#[test]
+fn input_format_rejects_invalid() {
+    agent_cmd()
+        .args(["--dry-run", "--input-format", "json", "-p", "hello"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("invalid value"));
+}
+
+#[test]
+fn output_format_stream_json_maps_to_claude() {
+    agent_cmd()
+        .args([
+            "--dry-run",
+            "--verbose",
+            "--output-format",
+            "stream-json",
+            "-p",
+            "hello",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("JSON standard: claude"));
+}
+
+#[test]
+fn output_format_json_maps_to_opencode() {
+    agent_cmd()
+        .args([
+            "--dry-run",
+            "--verbose",
+            "--json-standard",
+            "claude",
+            "--output-format",
+            "json",
+            "-p",
+            "hello",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("JSON standard: opencode"));
+}
+
 // ── System message options ───────────────────────────────────────────
 
 #[test]
@@ -732,6 +783,10 @@ fn all_options_accepted_together() {
             "opencode/gpt-5",
             "--json-standard",
             "claude",
+            "--input-format",
+            "stream-json",
+            "--output-format",
+            "stream-json",
             "--system-message",
             "Be helpful",
             "--verbose",

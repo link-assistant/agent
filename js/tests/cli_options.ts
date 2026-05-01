@@ -80,6 +80,39 @@ describe('cli_options', () => {
     expect(argv.jsonStandard).toBe('claude');
   });
 
+  test('input_format_default', async () => {
+    const argv = await parseRunOptions([]);
+    expect(argv.inputFormat).toBe('text');
+  });
+
+  test('input_format_stream_json', async () => {
+    const argv = await parseRunOptions(['--input-format', 'stream-json']);
+    expect(argv.inputFormat).toBe('stream-json');
+  });
+
+  test('input_format_rejects_invalid', async () => {
+    await expect(parseRunOptions(['--input-format', 'json'])).rejects.toThrow(
+      'Invalid values'
+    );
+  });
+
+  test('output_format_stream_json_maps_to_claude', async () => {
+    const argv = await parseRunOptions(['--output-format', 'stream-json']);
+    expect(argv.outputFormat).toBe('stream-json');
+    expect(argv.jsonStandard).toBe('claude');
+  });
+
+  test('output_format_json_maps_to_opencode', async () => {
+    const argv = await parseRunOptions([
+      '--json-standard',
+      'claude',
+      '--output-format',
+      'json',
+    ]);
+    expect(argv.outputFormat).toBe('json');
+    expect(argv.jsonStandard).toBe('opencode');
+  });
+
   test('json_standard_rejects_invalid', async () => {
     await expect(parseRunOptions(['--json-standard', 'xml'])).rejects.toThrow(
       'Invalid values'
@@ -373,6 +406,10 @@ describe('cli_options', () => {
       'opencode/gpt-5',
       '--json-standard',
       'claude',
+      '--input-format',
+      'stream-json',
+      '--output-format',
+      'stream-json',
       '--system-message',
       'Be helpful',
       '--verbose',
@@ -409,6 +446,8 @@ describe('cli_options', () => {
 
     expect(argv.model).toBe('opencode/gpt-5');
     expect(argv.jsonStandard).toBe('claude');
+    expect(argv.inputFormat).toBe('stream-json');
+    expect(argv.outputFormat).toBe('stream-json');
     expect(argv.systemMessage).toBe('Be helpful');
     expect(argv.verbose).toBe(true);
     expect(argv.dryRun).toBe(true);
