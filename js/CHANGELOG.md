@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.23.0
+
+### Minor Changes
+
+- 3627542: Add Claude-compatible `--input-format stream-json` stdin frames and `--output-format stream-json` alias with user-prompt replay acknowledgements.
+
 ## 0.22.10
 
 ### Patch Changes
