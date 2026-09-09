@@ -833,9 +833,19 @@ export namespace SessionPrompt {
       };
 
       if (step === 1) {
-        SessionSummary.summarize({
+        // Fire-and-forget on purpose: the summary runs alongside the turn. The
+        // `void` marks that, and the `.catch` keeps a summarization failure
+        // from becoming an unhandled rejection that would exit the process and
+        // abort this turn. See: https://github.com/link-assistant/agent/issues/304
+        void SessionSummary.summarize({
           sessionID: sessionID,
           messageID: lastUser.id,
+        }).catch((error) => {
+          log.warn(() => ({
+            message: 'session summarization failed',
+            sessionID,
+            error: error instanceof Error ? error.message : String(error),
+          }));
         });
       }
 
