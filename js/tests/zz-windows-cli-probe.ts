@@ -161,7 +161,7 @@ async function probe(
 describe('windows CLI entry-point probe (temporary, #304)', () => {
   test('probe I: awaiting main() at the CLI entry point', async () => {
     const original = await Bun.file('src/index.js').text();
-    const patched = original.replace(/\nmain\(\);\n?$/, '\nawait main();\n');
+    const patched = original.replace(/\r?\nmain\(\);\s*$/, '\nawait main();\n');
     if (patched === original) throw new Error('entry point pattern not found');
     const patchedPath = 'src/index.windows-probe.js';
     await Bun.write(patchedPath, patched);
