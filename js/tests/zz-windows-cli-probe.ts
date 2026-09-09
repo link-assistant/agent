@@ -10,9 +10,14 @@
  *          Windows — Config.get, ModelsDev.get and Provider.state all settle in
  *          under half a second. So the stall needs the CLI entry point, whose
  *          one extra ingredient is stdin.
- * Round 3 (this one): compare stdin delivery methods — a closed Uint8Array
- *          stdin (what the failing test does), a shell pipe, and `-p` which
- *          bypasses stdin entirely.
+ * Round 3: all three stdin delivery methods (closed Uint8Array, shell pipe and
+ *          `-p`, which bypasses stdin entirely) stall identically, so stdin is
+ *          not the ingredient. Every run stops inside the global config
+ *          `loadFile` sequence.
+ * Round 4 (this one): is the process deadlocking, or is the event loop simply
+ *          draining while a promise is pending? Import the CLI entry point
+ *          under a ref'd timer that keeps the loop alive and see whether the
+ *          turn completes.
  */
 import { describe, expect, test, setDefaultTimeout } from 'bun:test';
 import { createServer } from 'node:http';
@@ -150,32 +155,71 @@ async function probe(
   }
 }
 
-describe('windows CLI stdin probe (temporary, #304)', () => {
-  test('probe E: closed Uint8Array stdin', async () => {
-    await probe('PROBE_E', () => ({
-      cmd: ['bun', 'run', ...CLI_ARGS, '--no-always-accept-stdin'],
-      stdin: new TextEncoder().encode('say hi\n'),
-    }));
-    expect(true).toBe(true);
-  });
+const KEEP_ALIVE_SCRIPT = `
+  const t0 = Date.now();
+  const mark = (m) => console.log('PH ' + m + ' t=' + (Date.now() - t0));
+  process.on('exit', (code) => mark('exit code=' + code));
 
-  test('probe F: -p bypasses stdin', async () => {
-    await probe('PROBE_F', () => ({
-      cmd: ['bun', 'run', ...CLI_ARGS, '--disable-stdin', '-p', 'say hi'],
-    }));
-    expect(true).toBe(true);
-  });
+  // Keep the event loop busy for 20s: if the CLI only stalls because nothing
+  // holds the loop open, this makes the turn run to completion.
+  const tick = setInterval(() => mark('tick'), 1000);
+  const giveUp = setTimeout(() => {
+    mark('giving-up');
+    process.exit(7);
+  }, 20000);
 
-  test('probe G: shell pipe into stdin', async () => {
-    await probe('PROBE_G', () => ({
-      cmd: [
-        'bash',
-        '-c',
-        `echo "say hi" | bun run ${CLI_ARGS.map((a) => `'${a}'`).join(
-          ' '
-        )} --no-always-accept-stdin`,
-      ],
-    }));
+  process.argv = [process.argv[0], 'src/index.js', ...JSON.parse(process.env.PROBE_CLI_ARGS)];
+  mark('importing-cli');
+  await import('./src/index.js');
+  mark('cli-imported');
+`;
+
+describe('windows CLI keep-alive probe (temporary, #304)', () => {
+  test('probe H: CLI entry point under a ref\'d keep-alive timer', async () => {
+    const provider = await startCooperativeProvider();
+    try {
+      const proc = Bun.spawn({
+        cmd: ['bun', '--eval', KEEP_ALIVE_SCRIPT],
+        cwd: process.cwd(),
+        stdout: 'pipe',
+        stderr: 'pipe',
+        env: {
+          ...process.env,
+          PROBE_CLI_ARGS: JSON.stringify([
+            '--model',
+            'formalai/formal-ai',
+            '--no-server',
+            '--output-format',
+            'stream-json',
+            '--disable-stdin',
+            '-p',
+            'say hi',
+          ]),
+          LINK_ASSISTANT_AGENT_COMPACT_JSON: '1',
+          LINK_ASSISTANT_AGENT_CONFIG_CONTENT: '{}',
+          LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODELS: '(same)',
+          FORMAL_AI_API_KEY: 'local-test-token',
+          FORMAL_AI_BASE_URL: provider.baseURL,
+        },
+      });
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ]);
+      console.log(
+        `PROBE_H platform=${process.platform} exit=${exitCode} requests=${JSON.stringify(
+          provider.requests
+        )} hasResult=${stdout.includes('"type":"result"')}\nmarks:\n${stdout
+          .split('\n')
+          .filter((line) => line.startsWith('PH '))
+          .join('\n')}\nstdout tail:\n${stdout.slice(
+          -1500
+        )}\nstderr tail:\n${stderr.slice(-1500)}\nPROBE_H_END`
+      );
+    } finally {
+      await provider.close();
+    }
     expect(true).toBe(true);
   });
 });
