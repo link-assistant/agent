@@ -971,4 +971,9 @@ async function main() {
   }
 }
 
-main();
+// Awaited on purpose: everything the CLI does happens inside this promise, and
+// on Windows nothing else holds the process open while startup waits on async
+// filesystem I/O — the event loop drains and Bun exits 0 mid-run, so the CLI
+// prints its startup logs, never contacts the provider and reports success.
+// See: https://github.com/link-assistant/agent/issues/306
+await main();
