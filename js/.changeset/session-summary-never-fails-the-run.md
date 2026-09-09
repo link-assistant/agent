@@ -13,3 +13,11 @@ aborted the still-streaming turn, which then emitted no `result` event.
 failure is logged as a warning — the title `generateText` call carries the same
 `.catch` the body-summary call already had, and both call sites mark the
 fire-and-forget with `void` and a handler.
+
+The same defect class is fixed one level up: `src/index.js` ended in a floating
+`main();`, so the whole run lived in a promise nobody awaited. On Linux and
+macOS the pending filesystem I/O of startup keeps Bun's event loop alive; on
+Windows it does not — the loop drained mid-startup and the process exited 0
+after printing its startup logs, without ever contacting the provider or
+emitting a result. Awaiting `main()` keeps the process alive for as long as the
+run takes.
