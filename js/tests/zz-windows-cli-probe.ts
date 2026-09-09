@@ -14,10 +14,13 @@
  *          `-p`, which bypasses stdin entirely) stall identically, so stdin is
  *          not the ingredient. Every run stops inside the global config
  *          `loadFile` sequence.
- * Round 4 (this one): is the process deadlocking, or is the event loop simply
- *          draining while a promise is pending? Import the CLI entry point
- *          under a ref'd timer that keeps the loop alive and see whether the
- *          turn completes.
+ * Round 4: not a deadlock. Under a ref'd keep-alive timer the very same CLI
+ *          entry point runs the turn to completion on windows-latest
+ *          (requests=["stream","non-stream"], a result event, exit 0 after
+ *          ~4.1s). Without it the process exits 0 in ~60ms. So the event loop
+ *          drains while startup is still pending on async filesystem I/O.
+ * Round 5 (this one): `src/index.js` ends in a floating `main();`. Does
+ *          awaiting it keep the process alive on Windows?
  */
 import { describe, expect, test, setDefaultTimeout } from 'bun:test';
 import { createServer } from 'node:http';
@@ -155,70 +158,46 @@ async function probe(
   }
 }
 
-const KEEP_ALIVE_SCRIPT = `
-  const t0 = Date.now();
-  const mark = (m) => console.log('PH ' + m + ' t=' + (Date.now() - t0));
-  process.on('exit', (code) => mark('exit code=' + code));
-
-  // Keep the event loop busy for 20s: if the CLI only stalls because nothing
-  // holds the loop open, this makes the turn run to completion.
-  const tick = setInterval(() => mark('tick'), 1000);
-  const giveUp = setTimeout(() => {
-    mark('giving-up');
-    process.exit(7);
-  }, 20000);
-
-  process.argv = [process.argv[0], 'src/index.js', ...JSON.parse(process.env.PROBE_CLI_ARGS)];
-  mark('importing-cli');
-  await import('./src/index.js');
-  mark('cli-imported');
-`;
-
-describe('windows CLI keep-alive probe (temporary, #304)', () => {
-  test('probe H: CLI entry point under a ref\'d keep-alive timer', async () => {
-    const provider = await startCooperativeProvider();
+describe('windows CLI entry-point probe (temporary, #304)', () => {
+  test('probe I: awaiting main() at the CLI entry point', async () => {
+    const original = await Bun.file('src/index.js').text();
+    const patched = original.replace(/\nmain\(\);\n?$/, '\nawait main();\n');
+    if (patched === original) throw new Error('entry point pattern not found');
+    const patchedPath = 'src/index.windows-probe.js';
+    await Bun.write(patchedPath, patched);
     try {
-      const proc = Bun.spawn({
-        cmd: ['bun', '--eval', KEEP_ALIVE_SCRIPT],
-        cwd: process.cwd(),
-        stdout: 'pipe',
-        stderr: 'pipe',
-        env: {
-          ...process.env,
-          PROBE_CLI_ARGS: JSON.stringify([
-            '--model',
-            'formalai/formal-ai',
-            '--no-server',
-            '--output-format',
-            'stream-json',
-            '--disable-stdin',
-            '-p',
-            'say hi',
-          ]),
-          LINK_ASSISTANT_AGENT_COMPACT_JSON: '1',
-          LINK_ASSISTANT_AGENT_CONFIG_CONTENT: '{}',
-          LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODELS: '(same)',
-          FORMAL_AI_API_KEY: 'local-test-token',
-          FORMAL_AI_BASE_URL: provider.baseURL,
-        },
-      });
-      const [stdout, stderr, exitCode] = await Promise.all([
-        new Response(proc.stdout).text(),
-        new Response(proc.stderr).text(),
-        proc.exited,
-      ]);
-      console.log(
-        `PROBE_H platform=${process.platform} exit=${exitCode} requests=${JSON.stringify(
-          provider.requests
-        )} hasResult=${stdout.includes('"type":"result"')}\nmarks:\n${stdout
-          .split('\n')
-          .filter((line) => line.startsWith('PH '))
-          .join('\n')}\nstdout tail:\n${stdout.slice(
-          -1500
-        )}\nstderr tail:\n${stderr.slice(-1500)}\nPROBE_H_END`
-      );
+      await probe('PROBE_I_PATCHED', () => ({
+        cmd: [
+          'bun',
+          'run',
+          patchedPath,
+          '--model',
+          'formalai/formal-ai',
+          '--no-server',
+          '--output-format',
+          'stream-json',
+          '--disable-stdin',
+          '-p',
+          'say hi',
+        ],
+      }));
+      await probe('PROBE_I_CONTROL', () => ({
+        cmd: [
+          'bun',
+          'run',
+          'src/index.js',
+          '--model',
+          'formalai/formal-ai',
+          '--no-server',
+          '--output-format',
+          'stream-json',
+          '--disable-stdin',
+          '-p',
+          'say hi',
+        ],
+      }));
     } finally {
-      await provider.close();
+      await Bun.file(patchedPath).unlink();
     }
     expect(true).toBe(true);
   });
