@@ -25,11 +25,29 @@ export namespace SessionSummary {
       messageID: z.string(),
     }),
     async (input) => {
-      const all = await Session.messages({ sessionID: input.sessionID });
-      await Promise.all([
-        summarizeSession({ sessionID: input.sessionID, messages: all }),
-        summarizeMessage({ messageID: input.messageID, messages: all }),
-      ]);
+      // Summarization is a side quest: its whole product is a session title, a
+      // body and a diff stat, and it runs concurrently with the turn it
+      // describes. Neither caller awaits it, so a rejection escaping this
+      // function has no handler anywhere and becomes an `unhandledRejection`,
+      // which exits the process with status 1 and aborts the streaming turn.
+      // A failed title must never be a failed run.
+      // See: https://github.com/link-assistant/agent/issues/304
+      try {
+        const all = await Session.messages({ sessionID: input.sessionID });
+        await Promise.all([
+          summarizeSession({ sessionID: input.sessionID, messages: all }),
+          summarizeMessage({ messageID: input.messageID, messages: all }),
+        ]);
+      } catch (error) {
+        log.warn(() => ({
+          message: 'session summarization failed',
+          hint: 'The turn is unaffected; only the session summary is missing',
+          sessionID: input.sessionID,
+          messageID: input.messageID,
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        }));
+      }
     }
   );
 
@@ -202,20 +220,34 @@ export namespace SessionSummary {
         ],
         headers: model.info.headers,
         model: model.language,
-      });
-
-      if (isVerbose()) {
-        log.info(() => ({
-          message: 'title API response received',
+      }).catch((err) => {
+        // A provider that resolves a model but errors on the request must cost
+        // the run its title, not its exit status.
+        // See: https://github.com/link-assistant/agent/issues/304
+        log.warn(() => ({
+          message: 'title API call failed',
           providerID: model.providerID,
           modelID: model.modelID,
-          titleLength: result.text.length,
-          usage: result.usage,
+          error: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
         }));
+        return undefined;
+      });
+
+      if (result) {
+        if (isVerbose()) {
+          log.info(() => ({
+            message: 'title API response received',
+            providerID: model.providerID,
+            modelID: model.modelID,
+            titleLength: result.text.length,
+            usage: result.usage,
+          }));
+        }
+        log.info(() => ({ message: 'title', title: result.text }));
+        userMsg.summary.title = result.text;
+        await Session.updateMessage(userMsg);
       }
-      log.info(() => ({ message: 'title', title: result.text }));
-      userMsg.summary.title = result.text;
-      await Session.updateMessage(userMsg);
     }
 
     if (

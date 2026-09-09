@@ -508,9 +508,20 @@ export namespace SessionProcessor {
                     }
                     snapshot = undefined;
                   }
-                  SessionSummary.summarize({
+                  // Fire-and-forget on purpose, and guarded: a summarization
+                  // failure must not become an unhandled rejection that exits
+                  // the process while this stream is still being processed.
+                  // See: https://github.com/link-assistant/agent/issues/304
+                  void SessionSummary.summarize({
                     sessionID: input.sessionID,
                     messageID: input.assistantMessage.parentID,
+                  }).catch((error) => {
+                    log.warn(() => ({
+                      message: 'session summarization failed',
+                      sessionID: input.sessionID,
+                      error:
+                        error instanceof Error ? error.message : String(error),
+                    }));
                   });
                   break;
 
