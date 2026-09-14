@@ -42,6 +42,12 @@ export namespace ModelsDev {
         context: z.number(),
         output: z.number(),
       }),
+      unlimited: z
+        .boolean()
+        .optional()
+        .describe(
+          'Model has no context limit. Compaction and session summarization are skipped for it. Also set by writing `limit.context: null` in a provider model override.'
+        ),
       modalities: z
         .object({
           input: z.array(z.enum(['text', 'audio', 'image', 'video', 'pdf'])),
@@ -58,6 +64,26 @@ export namespace ModelsDev {
       ref: 'Model',
     });
   export type Model = z.infer<typeof Model>;
+
+  /**
+   * Whether a model declares that it has no context window to run out of.
+   *
+   * An operator states this per model in the config, either as
+   * `"unlimited": true` or as `"limit": { "context": null }` — the two are
+   * normalized to the same flag when the config is merged into the model
+   * database.
+   *
+   * Compaction and session summarization both exist to keep a conversation
+   * inside a context window. For a model without one they have no work to do,
+   * so they are skipped instead of spending a secondary API call per turn.
+   *
+   * @see https://github.com/link-assistant/agent/issues/307
+   */
+  export function hasUnlimitedContext(
+    model: { unlimited?: boolean } | undefined | null
+  ): boolean {
+    return model?.unlimited === true;
+  }
 
   export const Provider = z
     .object({

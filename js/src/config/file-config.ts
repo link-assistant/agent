@@ -834,7 +834,22 @@ export namespace Config {
           ModelsDev.Provider.partial()
             .extend({
               models: z
-                .record(z.string(), ModelsDev.Model.partial())
+                .record(
+                  z.string(),
+                  ModelsDev.Model.partial().extend({
+                    // `context: null` states that the model has no context
+                    // window to run out of, which turns off compaction and
+                    // session summarization for it (#307). `output` is
+                    // optional here so `{ "context": null }` alone is a valid
+                    // override.
+                    limit: z
+                      .object({
+                        context: z.number().nullable().optional(),
+                        output: z.number().optional(),
+                      })
+                      .optional(),
+                  })
+                )
                 .optional(),
               options: z
                 .object({

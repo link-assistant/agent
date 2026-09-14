@@ -7,7 +7,7 @@ import { MessageV2 } from './message-v2';
 import { SystemPrompt } from './system';
 import { Bus } from '../bus';
 import z from 'zod';
-import type { ModelsDev } from '../provider/models';
+import { ModelsDev } from '../provider/models';
 import { SessionPrompt } from './prompt';
 import { config, isVerbose } from '../config/config';
 import { Token } from '../util/token';
@@ -135,6 +135,8 @@ export namespace SessionCompaction {
     estimatedInputTokens?: number;
   }) {
     if (config.disableAutocompact) return false;
+    // A model without a context window can never overflow it (#307).
+    if (ModelsDev.hasUnlimitedContext(input.model)) return false;
     const baseModelContextLimit = input.model.limit.context;
     if (baseModelContextLimit === 0) return false;
     const providerCount =
@@ -193,6 +195,7 @@ export namespace SessionCompaction {
     compactionModel?: CompactionModelConfig;
     compactionModelContextLimit?: number;
   }): MessageV2.ContextDiagnostics | undefined {
+    if (ModelsDev.hasUnlimitedContext(input.model)) return undefined;
     const contextLimit = input.model.limit.context;
     if (contextLimit === 0) return undefined;
     const outputLimit =
