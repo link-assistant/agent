@@ -142,6 +142,24 @@ export function getDefaultCompactionModel(
   );
 }
 
+/**
+ * Report where the effective default compaction model came from.
+ *
+ * Same contract as `getDefaultModelSource`: `'config'` when an operator set
+ * `defaultOptions.defaultCompactionModel` or
+ * `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL`, `'default'` when the
+ * built-in `DEFAULT_COMPACTION_MODEL` applies. Only a built-in default may be
+ * narrowed to the configured model's provider (#307).
+ */
+export function getDefaultCompactionModelSource(
+  options: DefaultConfigOptions = {}
+): 'config' | 'default' {
+  const env = options.env ?? process.env;
+  if (optionString(options.defaultCompactionModel)) return 'config';
+  if (envString(env, DEFAULT_COMPACTION_MODEL_ENV)) return 'config';
+  return 'default';
+}
+
 export function getDefaultCompactionModels(
   options: DefaultConfigOptions = {}
 ): string {
@@ -151,6 +169,20 @@ export function getDefaultCompactionModels(
     envString(env, DEFAULT_COMPACTION_MODELS_ENV) ??
     DEFAULT_COMPACTION_MODELS
   );
+}
+
+/**
+ * Report where the effective default compaction cascade came from.
+ *
+ * @see getDefaultCompactionModelSource
+ */
+export function getDefaultCompactionModelsSource(
+  options: DefaultConfigOptions = {}
+): 'config' | 'default' {
+  const env = options.env ?? process.env;
+  if (optionString(options.defaultCompactionModels)) return 'config';
+  if (envString(env, DEFAULT_COMPACTION_MODELS_ENV)) return 'config';
+  return 'default';
 }
 
 export function getDefaultCompactionSafetyMarginPercent(

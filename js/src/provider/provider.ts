@@ -1138,11 +1138,21 @@ export namespace Provider {
             ...existing?.options,
             ...model.options,
           },
-          limit: model.limit ??
-            existing?.limit ?? {
-              context: 0,
-              output: 0,
-            },
+          limit: iife(() => {
+            const limit = model.limit ?? existing?.limit;
+            if (!limit) return { context: 0, output: 0 };
+            // `context: null` is the config spelling of "no context limit";
+            // the arithmetic downstream keeps reading 0 as "no window to
+            // check", and the capability itself travels in `unlimited` (#307).
+            return {
+              context: limit.context ?? 0,
+              output: limit.output ?? existing?.limit?.output ?? 0,
+            };
+          }),
+          unlimited:
+            model.unlimited ??
+            (model.limit && model.limit.context === null ? true : undefined) ??
+            existing?.unlimited,
           modalities: model.modalities ??
             existing?.modalities ?? {
               input: ['text'],

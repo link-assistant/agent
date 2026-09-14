@@ -67,6 +67,12 @@ The default model is **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`), which
 
 For test runs and automation, the default model can be overridden with `LINK_ASSISTANT_AGENT_DEFAULT_MODEL`; an explicit `--model` option still takes precedence. The compaction defaults have matching override variables: `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL`, `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODELS`, and `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT`.
 
+### Models for Compaction and Session Summaries
+
+Compaction and session summaries use the compaction model (`--compaction-model`, `--compaction-models`), not the model running the turn. The shipped default cascade names OpenCode models; when `--model` points at another provider, entries from other providers are dropped so those secondary calls inherit `--model` instead of calling a provider you may hold no credentials for. A compaction model you name yourself is always used as written. See [issue #307](https://github.com/link-assistant/agent/issues/307).
+
+A model that has no context window to run out of can say so in the provider config, as `"limit": { "context": null }` or `"unlimited": true` on the model. Compaction, context diagnostics, and session summarization are all skipped for such a model — no `--no-summarize-session` needed.
+
 > **Note:** Qwen 3.6 Plus Free (`opencode/qwen3.6-plus-free`) was previously the default free model, but OpenCode Zen ended the free promotion in April 2026. The model now requires an OpenCode Go subscription. See [issue #242](https://github.com/link-assistant/agent/issues/242).
 
 > **Note:** Nemotron 3 Super Free (`opencode/nemotron-3-super-free`) was previously the default free model. See [issue #242](https://github.com/link-assistant/agent/issues/242).

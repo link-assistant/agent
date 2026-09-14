@@ -96,6 +96,51 @@ For persistent config, you can still override the built-in provider:
 }
 ```
 
+## Secondary Calls: Compaction and Session Summaries
+
+Besides the turn itself, Agent makes two kinds of secondary model calls: context compaction, and the session summary that produces a title and a short description. Both use the compaction model.
+
+The shipped compaction default names OpenCode models. When `--model` points at another provider — Formal AI included — those entries are dropped and the secondary calls use `--model` instead, so a Formal AI run never contacts OpenCode. Naming a compaction model yourself keeps whatever you wrote:
+
+```bash
+# Secondary calls go to Formal AI, like the turn itself.
+agent --model formal-ai -p "hi"
+
+# Secondary calls go where you sent them.
+agent --model formal-ai --compaction-model opencode/gpt-5-nano -p "hi"
+```
+
+### Turning Summaries Off for a Model Without a Context Limit
+
+Compaction and summarization exist to keep a conversation inside a context window. A model that has none has no use for either, and an integrator should not have to remember `--no-summarize-session` on every run. Declare the capability once in the provider config, as `"context": null`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "formal-ai": {
+      "models": {
+        "formal-ai": {
+          "limit": { "context": null }
+        }
+      }
+    }
+  }
+}
+```
+
+`"unlimited": true` on the model is the same statement:
+
+```json
+{
+  "provider": {
+    "formal-ai": { "models": { "formal-ai": { "unlimited": true } } }
+  }
+}
+```
+
+With either spelling, Agent skips compaction, reports no context diagnostics, and makes no summarization call for that model. The local part of the summary — the per-message diff stat — is still recorded, because it costs no API call.
+
 ## `formal-ai with` and `with-formal-ai`
 
 Formal AI also ships wrapper commands for other CLIs:
@@ -143,6 +188,10 @@ export FORMAL_AI_API_KEY="local-test-token"
 ### No tool calls are produced
 
 Start the server with `--agent-mode`. Agent mode makes Formal AI emit tool calls for requests such as listing files, while Agent remains responsible for deciding whether tools are allowed.
+
+### The log shows HTTP 400 from `opencode` during a Formal AI run
+
+`"OpenCode's free tier can only be used in OpenCode"` came from the session summary and compaction reusing the shipped OpenCode compaction default. Since Agent 0.26.3 those defaults follow `--model`, so upgrading is the fix; on older versions, pass `--compaction-models '(same)'` or `--no-summarize-session`.
 
 ### `link-assistant/formal-ai` does not select Formal AI in Agent
 

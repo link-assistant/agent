@@ -14,6 +14,7 @@ import { Instance } from '../project/instance';
 import { Storage } from '../storage/storage';
 import { Bus } from '../bus';
 import { config, isVerbose } from '../config/config';
+import { ModelsDev } from '../provider/models';
 import { Token } from '../util/token';
 
 export namespace SessionSummary {
@@ -112,6 +113,25 @@ export namespace SessionSummary {
     const assistantMsg = messages.find((m) => m.info.role === 'assistant')!
       .info as MessageV2.Assistant;
 
+    // Summarization keeps a conversation inside a context window. A model that
+    // declares it has none has nothing to summarize for, so the secondary call
+    // is skipped rather than spent — an integrator running such a model no
+    // longer has to pass --no-summarize-session.
+    // See: https://github.com/link-assistant/agent/issues/307
+    const baseModel = await Provider.getModel(
+      assistantMsg.providerID,
+      assistantMsg.modelID
+    ).catch(() => null);
+    if (baseModel && ModelsDev.hasUnlimitedContext(baseModel.info)) {
+      log.info(() => ({
+        message: 'session summarization skipped for an unlimited-context model',
+        hint: 'The model declares `unlimited: true` (or `limit.context: null`); the diff stat is still recorded',
+        providerID: assistantMsg.providerID,
+        modelID: assistantMsg.modelID,
+      }));
+      return;
+    }
+
     // Use the compaction model (--compaction-model, e.g. gpt-5-nano) for summarization
     // to avoid doubling rate-limit pressure on the main model.
     // If the compaction model is unavailable, fall back to the main model.
@@ -145,10 +165,7 @@ export namespace SessionSummary {
           ? 'Compaction model unavailable, falling back to main model'
           : 'Using same model as --model (no compaction model configured)',
       }));
-      model = await Provider.getModel(
-        assistantMsg.providerID,
-        assistantMsg.modelID
-      ).catch(() => null);
+      model = baseModel;
     }
     if (!model) {
       log.info(() => ({

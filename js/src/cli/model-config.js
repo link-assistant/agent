@@ -12,7 +12,9 @@ import {
   getDefaultModelParts,
   getDefaultModelSource,
   getDefaultCompactionModel,
+  getDefaultCompactionModelSource,
   getDefaultCompactionModels,
+  getDefaultCompactionModelsSource,
   getDefaultCompactionSafetyMarginPercent,
 } from './defaults.ts';
 import { outputModelResolved } from './model-resolution.ts';
@@ -357,12 +359,71 @@ async function resolveCompactionModelEntry(
 }
 
 /**
+ * Narrow a built-in compaction default to the provider the run was pointed at.
+ *
+ * The shipped cascade names OpenCode models, because the shipped base model is
+ * an OpenCode one. A run launched with `--model formalai/formal-ai` inherited
+ * that cascade unchanged, so compaction — and the session summary, which reuses
+ * the compaction model — called a provider the operator may hold no credentials
+ * for. Every one of those calls fails, and the failures read as the run having
+ * failed.
+ *
+ * Only the *built-in* defaults are narrowed, and only for a run pointed away
+ * from the built-in default provider. A cascade the operator named
+ * (`--compaction-model`, `--compaction-models`, or the
+ * `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL*` env vars) is an explicit
+ * choice and is left alone, cross-provider or not; and a run on the shipped
+ * provider keeps the shipped cascade, whose extra entries are the rate-limit
+ * fallbacks it was written for.
+ *
+ * @param {{providerID: string, modelID: string, useSameModel: boolean}[]} entries
+ * @param {string} baseProviderID Provider of the model that runs the turns
+ * @param {string} baseModelID Model that runs the turns
+ * @returns {{providerID: string, modelID: string, useSameModel: boolean}[]}
+ * @see https://github.com/link-assistant/agent/issues/307
+ */
+function inheritBaseProvider(entries, baseProviderID, baseModelID) {
+  const kept = entries.filter(
+    (entry) => entry.useSameModel || entry.providerID === baseProviderID
+  );
+  const dropped = entries.filter((entry) => !kept.includes(entry));
+  if (dropped.length === 0) {
+    return entries;
+  }
+
+  const inherited =
+    kept.length > 0
+      ? kept
+      : [
+          {
+            providerID: baseProviderID,
+            modelID: baseModelID,
+            useSameModel: true,
+          },
+        ];
+
+  Log.Default.info(() => ({
+    message: 'default compaction models narrowed to the configured provider',
+    hint: 'Secondary calls (compaction, session summary) inherit --model unless a compaction model is named explicitly',
+    baseProviderID,
+    baseModelID,
+    dropped: dropped.map((entry) => `${entry.providerID}/${entry.modelID}`),
+    kept: inherited.map((entry) =>
+      entry.useSameModel ? 'same' : `${entry.providerID}/${entry.modelID}`
+    ),
+  }));
+
+  return inherited;
+}
+
+/**
  * Parse compaction model config from argv.
  * Supports both --compaction-model (single) and --compaction-models (cascade).
  * When --compaction-models is specified, it overrides --compaction-model.
  * The special value "same" means use the base model for compaction.
  * @see https://github.com/link-assistant/agent/issues/219
  * @see https://github.com/link-assistant/agent/issues/232
+ * @see https://github.com/link-assistant/agent/issues/307
  */
 async function parseCompactionModelConfig(
   argv,
@@ -425,9 +486,18 @@ async function parseCompactionModelConfig(
       }
     }
 
+    // A cascade nobody asked for must not reach across providers (#307).
+    const usingBuiltInCascade =
+      compactionModelsSource === 'default' &&
+      getDefaultCompactionModelsSource(defaultOptions) === 'default' &&
+      baseProviderID !== DEFAULT_PROVIDER_ID;
+    const cascade = usingBuiltInCascade
+      ? inheritBaseProvider(compactionModels, baseProviderID, baseModelID)
+      : compactionModels;
+
     Log.Default.info(() => ({
       message: 'compaction models cascade configured',
-      models: compactionModels.map((m) =>
+      models: cascade.map((m) =>
         m.useSameModel ? 'same' : `${m.providerID}/${m.modelID}`
       ),
       source: compactionModelsSource,
@@ -435,7 +505,7 @@ async function parseCompactionModelConfig(
 
     // Use the first model as the primary compaction model (for backward compatibility)
     // The full cascade is stored in compactionModels array
-    const primary = compactionModels[0] || {
+    const primary = cascade[0] || {
       providerID: baseProviderID,
       modelID: baseModelID,
       useSameModel: true,
@@ -446,16 +516,21 @@ async function parseCompactionModelConfig(
       modelID: primary.modelID,
       useSameModel: primary.useSameModel,
       compactionSafetyMarginPercent,
-      compactionModels,
+      compactionModels: cascade,
     };
   }
 
   // Fallback to single --compaction-model
   const cliCompactionModelArg = getCompactionModelFromProcessArgv();
+  const defaultCompactionModel = getDefaultCompactionModel(defaultOptions);
+  const compactionModelSource =
+    cliCompactionModelArg ||
+    (argv['compaction-model'] &&
+      argv['compaction-model'] !== defaultCompactionModel)
+      ? 'cli'
+      : 'default';
   const compactionModelArg =
-    cliCompactionModelArg ??
-    argv['compaction-model'] ??
-    getDefaultCompactionModel(defaultOptions);
+    cliCompactionModelArg ?? argv['compaction-model'] ?? defaultCompactionModel;
 
   const resolved = await resolveCompactionModelEntry(
     compactionModelArg,
@@ -463,23 +538,33 @@ async function parseCompactionModelConfig(
     baseModelID
   );
 
+  // Same rule as the cascade: an unrequested default follows --model (#307).
+  const usingBuiltInCompactionModel =
+    compactionModelSource === 'default' &&
+    getDefaultCompactionModelSource(defaultOptions) === 'default' &&
+    baseProviderID !== DEFAULT_PROVIDER_ID;
+  const [entry] = usingBuiltInCompactionModel
+    ? inheritBaseProvider([resolved], baseProviderID, baseModelID)
+    : [resolved];
+
   Log.Default.info(() => ({
     message: 'using single compaction model',
-    compactionProviderID: resolved.providerID,
-    compactionModelID: resolved.modelID,
-    useSameModel: resolved.useSameModel,
+    compactionProviderID: entry.providerID,
+    compactionModelID: entry.modelID,
+    useSameModel: entry.useSameModel,
+    source: compactionModelSource,
   }));
 
   return {
-    providerID: resolved.providerID,
-    modelID: resolved.modelID,
-    useSameModel: resolved.useSameModel,
+    providerID: entry.providerID,
+    modelID: entry.modelID,
+    useSameModel: entry.useSameModel,
     compactionSafetyMarginPercent,
     compactionModels: [
       {
-        providerID: resolved.providerID,
-        modelID: resolved.modelID,
-        useSameModel: resolved.useSameModel,
+        providerID: entry.providerID,
+        modelID: entry.modelID,
+        useSameModel: entry.useSameModel,
       },
     ],
   };
