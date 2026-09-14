@@ -184,13 +184,13 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
     .option('summarize-session', {
       type: 'boolean',
       description:
-        'Generate AI session summaries (default: true). Use --no-summarize-session to disable.',
+        'Generate AI session summaries (default: true). Use --no-summarize-session to disable. Automatically off for a model declared as having no context limit (`unlimited: true` or `limit.context: null` in the provider config).',
       default: true,
     })
     .option('compaction-model', {
       type: 'string',
       description:
-        'Model to use for context compaction in format providerID/modelID. Use "same" to use the base model. Default: opencode/gpt-5-nano (free, 400K context). Overridden by --compaction-models if both are specified.',
+        'Model to use for context compaction and session summaries, in format providerID/modelID. Use "same" to use the base model. Default: opencode/gpt-5-nano (free, 400K context), which falls back to the --model model when --model points at another provider. Overridden by --compaction-models if both are specified.',
       default: defaultCompactionModel,
     })
     .option('compaction-models', {
@@ -198,7 +198,8 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
       description:
         'Ordered cascade of compaction models in links notation sequence format: "(model1 model2 ... same)". ' +
         "Models are tried from smallest/cheapest context to largest. If used context exceeds a model's limit or its rate limit is reached, the next model is tried. " +
-        'The special value "same" uses the base model. Overrides --compaction-model when specified.',
+        'The special value "same" uses the base model. Overrides --compaction-model when specified. ' +
+        'The default cascade is OpenCode-specific: when --model points at another provider, its entries from other providers are dropped so secondary calls inherit --model. A cascade given explicitly is used as written.',
       default: defaultCompactionModels,
     })
     .option('compaction-safety-margin', {
