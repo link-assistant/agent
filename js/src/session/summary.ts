@@ -165,10 +165,7 @@ export namespace SessionSummary {
           ? 'Compaction model unavailable, falling back to main model'
           : 'Using same model as --model (no compaction model configured)',
       }));
-      model = await Provider.getModel(
-        assistantMsg.providerID,
-        assistantMsg.modelID
-      ).catch(() => null);
+      model = baseModel;
     }
     if (!model) {
       log.info(() => ({
