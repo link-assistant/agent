@@ -1,5 +1,11 @@
 # @link-assistant/agent
 
+## 0.26.5
+
+### Patch Changes
+
+- b08900b: Emit one complete `stream-json` tool-use event and one terminal tool result for each tool call.
+
 ## 0.26.4
 
 ### Patch Changes
