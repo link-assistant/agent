@@ -57,8 +57,17 @@ export namespace ClaudeOAuth {
         refreshToken: z.string(),
         expiresAt: z.number(),
         scopes: z.array(z.string()).optional(),
-        subscriptionType: z.string().optional(),
-        rateLimitTier: z.string().optional(),
+        // Claude Code writes null when subscription metadata is unavailable.
+        // Normalize that JSON representation to the same value as an omitted
+        // optional field while keeping every other non-string value invalid.
+        subscriptionType: z
+          .string()
+          .nullish()
+          .transform((value) => value ?? undefined),
+        rateLimitTier: z
+          .string()
+          .nullish()
+          .transform((value) => value ?? undefined),
       })
       .optional(),
   });
