@@ -5,6 +5,7 @@ import {
 } from '../src/cli/event-handler.js';
 import { Bus } from '../src/bus/index.ts';
 import { Instance } from '../src/project/instance.ts';
+import { createEventHandler } from '../src/json-standard/index.ts';
 import { SessionStatus } from '../src/session/status.ts';
 
 describe('createBusEventSubscription', () => {
@@ -125,5 +126,170 @@ describe('outputBusEvent error events (issue #289)', () => {
 
     const error = outputs.find((event) => event.type === 'error');
     expect(error.message).toBe('Tool execution failed');
+  });
+});
+
+describe('stream-json tool lifecycle (issue #310)', () => {
+  function toolUpdate(state, id = 'prt_read') {
+    return {
+      type: 'message.part.updated',
+      properties: {
+        part: {
+          id,
+          sessionID: 'ses_tool_lifecycle',
+          messageID: 'msg_tool_lifecycle',
+          type: 'tool',
+          callID: `call_${id}`,
+          tool: 'read',
+          state,
+        },
+      },
+    };
+  }
+
+  function captureClaudeLifecycle(states, id) {
+    const output = [];
+    const originalWrite = process.stdout.write;
+    const originalErrorWrite = process.stderr.write;
+    const capture = (chunk) => {
+      output.push(String(chunk));
+      return true;
+    };
+    process.stdout.write = capture;
+    process.stderr.write = capture;
+
+    try {
+      const eventHandler = createEventHandler('claude', 'ses_tool_lifecycle');
+      for (const state of states) {
+        outputBusEvent({
+          event: toolUpdate(state, id),
+          sessionID: 'ses_tool_lifecycle',
+          eventHandler,
+          onError() {},
+        });
+      }
+    } finally {
+      process.stdout.write = originalWrite;
+      process.stderr.write = originalErrorWrite;
+    }
+
+    return output.map((line) => JSON.parse(line));
+  }
+
+  test('emits one full-input tool_use and one terminal tool_result', () => {
+    const input = { filePath: 'Cargo.toml', limit: 1 };
+    const events = captureClaudeLifecycle([
+      { status: 'pending', input: {}, raw: '' },
+      { status: 'running', input, time: { start: 100 } },
+      {
+        status: 'completed',
+        input,
+        output: '[package]',
+        title: 'Cargo.toml',
+        metadata: {},
+        time: { start: 100, end: 200 },
+      },
+    ]);
+
+    expect(events).toHaveLength(2);
+    expect(events[0]).toEqual(
+      expect.objectContaining({
+        type: 'tool_use',
+        name: 'read',
+        input,
+        tool_use_id: 'prt_read',
+      })
+    );
+    expect(events[1]).toEqual(
+      expect.objectContaining({
+        type: 'tool_result',
+        output: '[package]',
+        status: 'success',
+        tool_use_id: 'prt_read',
+      })
+    );
+  });
+
+  test('emits a running zero-argument tool with empty input', () => {
+    const events = captureClaudeLifecycle(
+      [
+        { status: 'pending', input: {}, raw: '' },
+        { status: 'running', input: {}, time: { start: 100 } },
+        {
+          status: 'completed',
+          input: {},
+          output: 'done',
+          title: 'Done',
+          metadata: {},
+          time: { start: 100, end: 200 },
+        },
+      ],
+      'prt_zero'
+    );
+
+    expect(events.map((event) => event.type)).toEqual([
+      'tool_use',
+      'tool_result',
+    ]);
+    expect(events[0].input).toEqual({});
+    expect(events[0].tool_use_id).toBe('prt_zero');
+    expect(events[1].tool_use_id).toBe('prt_zero');
+  });
+
+  test('deduplicates populated pending and running snapshots', () => {
+    const input = { filePath: 'README.md' };
+    const events = captureClaudeLifecycle(
+      [
+        { status: 'pending', input, raw: '{"filePath":"README.md"}' },
+        { status: 'running', input, time: { start: 100 } },
+        {
+          status: 'completed',
+          input,
+          output: '# Agent',
+          title: 'README.md',
+          metadata: {},
+          time: { start: 100, end: 200 },
+        },
+      ],
+      'prt_populated_pending'
+    );
+
+    expect(events.map((event) => event.type)).toEqual([
+      'tool_use',
+      'tool_result',
+    ]);
+    expect(events[0].input).toEqual(input);
+    expect(events[0].tool_use_id).toBe('prt_populated_pending');
+    expect(events[1].tool_use_id).toBe('prt_populated_pending');
+  });
+
+  test('emits one terminal error result for a failed tool', () => {
+    const input = { filePath: 'missing.txt' };
+    const events = captureClaudeLifecycle(
+      [
+        { status: 'pending', input: {}, raw: '' },
+        { status: 'running', input, time: { start: 100 } },
+        {
+          status: 'error',
+          input,
+          error: 'File not found',
+          time: { start: 100, end: 200 },
+        },
+      ],
+      'prt_error'
+    );
+
+    expect(events.map((event) => event.type)).toEqual([
+      'tool_use',
+      'tool_result',
+    ]);
+    expect(events[1]).toEqual(
+      expect.objectContaining({
+        type: 'tool_result',
+        output: 'File not found',
+        status: 'error',
+        tool_use_id: 'prt_error',
+      })
+    );
   });
 });
