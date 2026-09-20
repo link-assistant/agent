@@ -96,6 +96,7 @@ export function outputBusEvent({
           type: 'error',
           timestamp: Date.now(),
           sessionID,
+          part,
           message: errorText(stateError, 'Tool execution failed'),
           error: stateError || 'Tool execution failed',
         });

@@ -28,6 +28,7 @@ export interface OpenCodeEvent {
   timestamp: number;
   sessionID: string;
   part?: Record<string, unknown>;
+  message?: string;
   error?: string | Record<string, unknown>;
 }
 
@@ -116,12 +117,44 @@ export function convertOpenCodeToClaude(
     case 'tool_use':
       if (event.part && event.part.state) {
         const state = event.part.state as Record<string, unknown>;
+        const input = state.input || {};
+        const status = state.status as string | undefined;
+
+        // A newly-created pending part has not received its parsed arguments
+        // yet. Populated pending parts are retained for compatibility with
+        // producers that publish the complete call in their first snapshot.
+        if (
+          status === 'pending' &&
+          typeof input === 'object' &&
+          input !== null &&
+          Object.keys(input).length === 0
+        ) {
+          return null;
+        }
+
+        if (status === 'completed') {
+          return {
+            type: 'tool_result',
+            timestamp,
+            session_id,
+            tool_use_id: event.part.id as string,
+            output: state.output as string,
+            status: 'success',
+          };
+        }
+
+        // outputBusEvent follows an errored tool snapshot with an error event
+        // carrying the same part, which is converted to the terminal result.
+        if (status === 'error') {
+          return null;
+        }
+
         return {
           type: 'tool_use',
           timestamp,
           session_id,
           name: (event.part.tool as string) || 'unknown',
-          input: state.input || {},
+          input,
           tool_use_id: event.part.id as string,
         };
       }
@@ -144,6 +177,21 @@ export function convertOpenCodeToClaude(
       };
 
     case 'error':
+      if (event.part?.type === 'tool' && event.part.state) {
+        const state = event.part.state as Record<string, unknown>;
+        return {
+          type: 'tool_result',
+          timestamp,
+          session_id,
+          tool_use_id: event.part.id as string,
+          output:
+            event.message ||
+            (typeof state.error === 'string'
+              ? state.error
+              : 'Tool execution failed'),
+          status: 'error',
+        };
+      }
       return {
         type: 'result',
         timestamp,
@@ -173,6 +221,8 @@ export function createEventHandler(
 ) {
   const startTime = Date.now();
   const { model } = options;
+  const emittedToolUseIds = new Set<string>();
+  const emittedToolResultIds = new Set<string>();
 
   return {
     /**
@@ -184,6 +234,14 @@ export function createEventHandler(
       if (standard === 'claude') {
         const claudeEvent = convertOpenCodeToClaude(event, startTime, model);
         if (claudeEvent) {
+          if (claudeEvent.type === 'tool_use' && claudeEvent.tool_use_id) {
+            if (emittedToolUseIds.has(claudeEvent.tool_use_id)) return;
+            emittedToolUseIds.add(claudeEvent.tool_use_id);
+          }
+          if (claudeEvent.type === 'tool_result' && claudeEvent.tool_use_id) {
+            if (emittedToolResultIds.has(claudeEvent.tool_use_id)) return;
+            emittedToolResultIds.add(claudeEvent.tool_use_id);
+          }
           outputStream.write(serializeOutput(claudeEvent, standard));
         }
       } else {
