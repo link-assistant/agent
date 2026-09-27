@@ -39,7 +39,7 @@ describe('HostConfigHint.detect (#314)', () => {
     );
     expect(hint).toBeDefined();
     expect(hint!.xdgConfigHome).toBe('/tmp/host-generated');
-    expect(hint!.realConfigHome).toBe('/home/caller/.config');
+    expect(hint!.realConfigHome).toBe(path.join(home, '.config'));
     for (const name of HostConfigHint.CONFIG_ENV_VARS) {
       expect(hint!.hint).toContain(name);
     }
@@ -151,6 +151,18 @@ async function startToolCallingProvider(command: string) {
       }),
   };
 }
+
+/**
+ * A tool command that runs the same under `sh` and Windows `cmd`: a Bun
+ * one-liner with no shell expansion, `%` or double quotes inside.
+ */
+const bunEval = (code: string) => `"${process.execPath}" -e "${code}"`;
+
+/** Print the caller's gh config as the tool sees it, or NO_GH_CONFIG. */
+const readGhConfig = bunEval(
+  "const f = require('path').join(process.env.XDG_CONFIG_HOME, 'gh', 'hosts.yml'); " +
+    "try { console.log(require('fs').readFileSync(f, 'utf8')) } catch { console.log('NO_GH_CONFIG') }"
+);
 
 /** A config dir holding a provider that exists nowhere else. */
 function writeHostConfigDir(
@@ -281,7 +293,7 @@ describe('LINK_ASSISTANT_AGENT_CONFIG_DIR as the host contract (#314)', () => {
 
     try {
       const run = await runHostedTurn({
-        command: 'cat "$XDG_CONFIG_HOME/gh/hosts.yml"',
+        command: readGhConfig,
         env: { XDG_CONFIG_HOME: callerConfigHome },
       });
 
@@ -309,8 +321,7 @@ describe('LINK_ASSISTANT_AGENT_CONFIG_DIR as the host contract (#314)', () => {
 
     try {
       const run = await runHostedTurn({
-        command:
-          'cat "$XDG_CONFIG_HOME/gh/hosts.yml" 2>/dev/null || echo NO_GH_CONFIG',
+        command: readGhConfig,
         // The caller's config home was `callerConfigHome`; the host swaps
         // it for its own directory to deliver the agent config.
         relocateXdgTo: relocated,
@@ -347,7 +358,9 @@ describe('LINK_ASSISTANT_AGENT_CONFIG_DIR as the host contract (#314)', () => {
     "bash in a session configured by the dir sees the caller's gh auth",
     async () => {
       const run = await runHostedTurn({
-        command: 'gh auth status >/dev/null 2>&1; echo "GH_AUTH_EXIT=$?"',
+        command: bunEval(
+          "console.log('GH_AUTH_EXIT=' + require('child_process').spawnSync('gh', ['auth', 'status']).status)"
+        ),
       });
       expect(run.exitCode, run.context).toBe(0);
       expect(run.toolOutput, run.context).toContain('GH_AUTH_EXIT=0');
