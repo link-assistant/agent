@@ -208,15 +208,16 @@ See [js/README.md](js/README.md#mcp-model-context-protocol-support) for full MCP
 
 ## Documentation
 
-| Document                               | Description                               |
-| -------------------------------------- | ----------------------------------------- |
-| [MODELS.md](MODELS.md)                 | Available models, providers, and pricing  |
-| [docs/formal-ai.md](docs/formal-ai.md) | Formal AI local server setup              |
-| [TOOLS.md](TOOLS.md)                   | Complete tool documentation               |
-| [EXAMPLES.md](EXAMPLES.md)             | Usage examples for each tool              |
-| [TESTING.md](TESTING.md)               | Testing guide                             |
-| [js/README.md](js/README.md)           | JavaScript/Bun implementation (full docs) |
-| [rust/README.md](rust/README.md)       | Rust implementation                       |
+| Document                                             | Description                               |
+| ---------------------------------------------------- | ----------------------------------------- |
+| [MODELS.md](MODELS.md)                               | Available models, providers, and pricing  |
+| [docs/formal-ai.md](docs/formal-ai.md)               | Formal AI local server setup              |
+| [docs/host-integration.md](docs/host-integration.md) | Supplying config from an embedding host   |
+| [TOOLS.md](TOOLS.md)                                 | Complete tool documentation               |
+| [EXAMPLES.md](EXAMPLES.md)                           | Usage examples for each tool              |
+| [TESTING.md](TESTING.md)                             | Testing guide                             |
+| [js/README.md](js/README.md)                         | JavaScript/Bun implementation (full docs) |
+| [rust/README.md](rust/README.md)                     | Rust implementation                       |
 
 ## Files
 
