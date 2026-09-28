@@ -373,7 +373,7 @@ describe('CompactionModelConfig with cascade', () => {
 });
 
 describe('compaction model cascade logging', () => {
-  test('does not emit provider error logs for unresolvable default cascade entries', async () => {
+  test('does not resolve or log default cascade entries outside the --model provider (#313)', async () => {
     const configContent = JSON.stringify({
       $schema: 'https://opencode.ai/config.json',
       disabled_providers: [
@@ -473,10 +473,13 @@ describe('compaction model cascade logging', () => {
         log.message === 'skipping unresolvable compaction model in cascade'
     );
 
-    expect(skippedCascadeModels.length).toBeGreaterThan(0);
-    expect(skippedCascadeModels.every((log) => log.level === 'debug')).toBe(
-      true
-    );
+    // The built-in cascade is narrowed to formalai before resolution, so the
+    // models it names are never looked up and nothing is logged about them
+    // (#313).
+    expect(skippedCascadeModels).toEqual([]);
+    expect(
+      logs.filter((log) => log.error === 'ProviderModelNotFoundError')
+    ).toEqual([]);
     expect(
       logs.some(
         (log) =>

@@ -359,6 +359,52 @@ async function resolveCompactionModelEntry(
 }
 
 /**
+ * Resolve a built-in cascade entry against the run's own provider only.
+ *
+ * The built-in cascade is narrowed to the configured provider anyway (#307),
+ * so resolving its short names across the whole provider registry only to
+ * drop the result afterwards was wasted work — and it logged records such as
+ * `{"providerID":"opencode","message":"resolved short model name"}` that a
+ * host reads as the run using OpenCode (#313). Only the base provider's own
+ * catalog is consulted here; any other provider is never looked up.
+ *
+ * @returns {Promise<{providerID: string, modelID: string, useSameModel: boolean} | null>}
+ *   the entry, or `null` when the base provider does not serve it
+ * @see https://github.com/link-assistant/agent/issues/313
+ */
+async function resolveEntryWithinProvider(
+  modelArg,
+  baseProviderID,
+  baseModelID
+) {
+  if (modelArg.toLowerCase() === 'same') {
+    return {
+      providerID: baseProviderID,
+      modelID: baseModelID,
+      useSameModel: true,
+    };
+  }
+
+  if (modelArg.includes('/')) {
+    const parts = modelArg.split('/');
+    if (parts[0] !== baseProviderID) {
+      return null;
+    }
+    return {
+      providerID: parts[0],
+      modelID: parts.slice(1).join('/'),
+      useSameModel: false,
+    };
+  }
+
+  const { Provider } = await import('../provider/provider.ts');
+  if (!(await Provider.hasModel(baseProviderID, modelArg))) {
+    return null;
+  }
+  return { providerID: baseProviderID, modelID: modelArg, useSameModel: false };
+}
+
+/**
  * Narrow a built-in compaction default to the provider the run was pointed at.
  *
  * The shipped cascade names OpenCode models, because the shipped base model is
@@ -376,19 +422,17 @@ async function resolveCompactionModelEntry(
  * provider keeps the shipped cascade, whose extra entries are the rate-limit
  * fallbacks it was written for.
  *
- * @param {{providerID: string, modelID: string, useSameModel: boolean}[]} entries
+ * @param {{providerID: string, modelID: string, useSameModel: boolean}[]} kept
+ *   Entries served by the base provider
+ * @param {string[]} dropped Default entries, as written, that were left out
  * @param {string} baseProviderID Provider of the model that runs the turns
  * @param {string} baseModelID Model that runs the turns
  * @returns {{providerID: string, modelID: string, useSameModel: boolean}[]}
  * @see https://github.com/link-assistant/agent/issues/307
  */
-function inheritBaseProvider(entries, baseProviderID, baseModelID) {
-  const kept = entries.filter(
-    (entry) => entry.useSameModel || entry.providerID === baseProviderID
-  );
-  const dropped = entries.filter((entry) => !kept.includes(entry));
+function inheritBaseProvider(kept, dropped, baseProviderID, baseModelID) {
   if (dropped.length === 0) {
-    return entries;
+    return kept;
   }
 
   const inherited =
@@ -407,7 +451,9 @@ function inheritBaseProvider(entries, baseProviderID, baseModelID) {
     hint: 'Secondary calls (compaction, session summary) inherit --model unless a compaction model is named explicitly',
     baseProviderID,
     baseModelID,
-    dropped: dropped.map((entry) => `${entry.providerID}/${entry.modelID}`),
+    // The names as written in the default: they were never resolved, so they
+    // say nothing about which provider would have served them (#313).
+    dropped,
     kept: inherited.map((entry) =>
       entry.useSameModel ? 'same' : `${entry.providerID}/${entry.modelID}`
     ),
@@ -459,9 +505,30 @@ async function parseCompactionModelConfig(
   const modelNames = parseLinksNotationSequence(compactionModelsArg);
 
   if (modelNames.length > 0) {
-    // Resolve each model in the cascade
+    // A cascade nobody asked for must not reach across providers (#307), and
+    // is not even resolved against other providers (#313).
+    const builtInCascade =
+      compactionModelsSource === 'default' &&
+      getDefaultCompactionModelsSource(defaultOptions) === 'default';
+    const usingBuiltInCascade =
+      builtInCascade && baseProviderID !== DEFAULT_PROVIDER_ID;
+
     const compactionModels = [];
+    const unavailable = [];
     for (const name of modelNames) {
+      if (usingBuiltInCascade) {
+        const entry = await resolveEntryWithinProvider(
+          name,
+          baseProviderID,
+          baseModelID
+        );
+        if (entry) {
+          compactionModels.push(entry);
+        } else {
+          unavailable.push(name);
+        }
+        continue;
+      }
       try {
         const resolved = await resolveCompactionModelEntry(
           name,
@@ -474,6 +541,12 @@ async function parseCompactionModelConfig(
           useSameModel: resolved.useSameModel,
         });
       } catch (err) {
+        // A model nobody asked for is not an error worth a record of its
+        // own (#313); the summary below lists it.
+        if (builtInCascade) {
+          unavailable.push(name);
+          continue;
+        }
         const logSkip =
           compactionModelsSource === 'default'
             ? Log.Default.debug
@@ -486,13 +559,13 @@ async function parseCompactionModelConfig(
       }
     }
 
-    // A cascade nobody asked for must not reach across providers (#307).
-    const usingBuiltInCascade =
-      compactionModelsSource === 'default' &&
-      getDefaultCompactionModelsSource(defaultOptions) === 'default' &&
-      baseProviderID !== DEFAULT_PROVIDER_ID;
     const cascade = usingBuiltInCascade
-      ? inheritBaseProvider(compactionModels, baseProviderID, baseModelID)
+      ? inheritBaseProvider(
+          compactionModels,
+          unavailable,
+          baseProviderID,
+          baseModelID
+        )
       : compactionModels;
 
     Log.Default.info(() => ({
@@ -501,6 +574,9 @@ async function parseCompactionModelConfig(
         m.useSameModel ? 'same' : `${m.providerID}/${m.modelID}`
       ),
       source: compactionModelsSource,
+      ...(unavailable.length > 0 && !usingBuiltInCascade
+        ? { unavailable }
+        : {}),
     }));
 
     // Use the first model as the primary compaction model (for backward compatibility)
@@ -543,9 +619,17 @@ async function parseCompactionModelConfig(
     compactionModelSource === 'default' &&
     getDefaultCompactionModelSource(defaultOptions) === 'default' &&
     baseProviderID !== DEFAULT_PROVIDER_ID;
-  const [entry] = usingBuiltInCompactionModel
-    ? inheritBaseProvider([resolved], baseProviderID, baseModelID)
-    : [resolved];
+  const [entry] =
+    usingBuiltInCompactionModel &&
+    !resolved.useSameModel &&
+    resolved.providerID !== baseProviderID
+      ? inheritBaseProvider(
+          [],
+          [compactionModelArg],
+          baseProviderID,
+          baseModelID
+        )
+      : [resolved];
 
   Log.Default.info(() => ({
     message: 'using single compaction model',

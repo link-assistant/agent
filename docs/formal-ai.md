@@ -96,6 +96,8 @@ For persistent config, you can still override the built-in provider:
 }
 ```
 
+A host that generates this config for the CLI should pass it through `LINK_ASSISTANT_AGENT_CONFIG_DIR`, `LINK_ASSISTANT_AGENT_CONFIG` or `LINK_ASSISTANT_AGENT_CONFIG_CONTENT`, not by relocating `XDG_CONFIG_HOME` — see [Host Integration](host-integration.md).
+
 ## Secondary Calls: Compaction and Session Summaries
 
 Besides the turn itself, Agent makes two kinds of secondary model calls: context compaction, and the session summary that produces a title and a short description. Both use the compaction model.

@@ -38,6 +38,14 @@ import { createGroq } from '@ai-sdk/groq';
 
 export namespace Provider {
   const log = Log.create({ service: 'provider' });
+  /**
+   * Catalog lookups — which providers are installed, which provider a short
+   * model name would map to — describe candidates, not the model a run uses.
+   * They are logged under their own service and never carry `providerID` /
+   * `modelID` fields, which stream consumers read as the run's model identity
+   * (#313). The active model is attested by the `model_resolved` event.
+   */
+  const registryLog = Log.create({ service: 'provider-registry' });
 
   /**
    * Bundled providers - these are pre-installed and imported statically
@@ -1235,8 +1243,11 @@ export namespace Provider {
         delete providers[providerID];
         continue;
       }
-      log.info(() => ({ message: 'found', providerID }));
     }
+    registryLog.info(() => ({
+      message: 'providers available',
+      available: Object.keys(providers),
+    }));
 
     return {
       models,
@@ -1696,6 +1707,15 @@ export namespace Provider {
     return state().then((s) => s.providers[providerID]);
   }
 
+  /**
+   * Whether a provider's catalog lists a model. Looks at that one provider
+   * only and logs nothing (#313).
+   */
+  export async function hasModel(providerID: string, modelID: string) {
+    const provider = await getProvider(providerID);
+    return Boolean(provider?.info.models[modelID]);
+  }
+
   async function getLiveModelInfo(providerID: string, modelID: string) {
     if (providerID !== 'opencode') return undefined;
     return OpenCodeZen.getLiveFreeModelInfo(modelID);
@@ -2084,9 +2104,10 @@ export namespace Provider {
     if (kiloUniqueModels.includes(modelID)) {
       const kiloProvider = s.providers['kilo'];
       if (kiloProvider && kiloProvider.info.models[modelID]) {
-        log.info(() => ({
+        registryLog.info(() => ({
           message: 'resolved short model name to kilo (unique)',
-          modelID,
+          name: modelID,
+          candidate: `kilo/${modelID}`,
         }));
         return { providerID: 'kilo', modelID };
       }
@@ -2095,9 +2116,10 @@ export namespace Provider {
     if (modelID === 'formal-ai') {
       const formalAiProvider = s.providers['formal-ai'];
       if (formalAiProvider && formalAiProvider.info.models[modelID]) {
-        log.info(() => ({
+        registryLog.info(() => ({
           message: 'resolved short model name to formal-ai (canonical)',
-          modelID,
+          name: modelID,
+          candidate: `formal-ai/${modelID}`,
         }));
         return { providerID: 'formal-ai', modelID };
       }
@@ -2117,10 +2139,10 @@ export namespace Provider {
 
     if (matchingProviders.length === 1) {
       const providerID = matchingProviders[0];
-      log.info(() => ({
+      registryLog.info(() => ({
         message: 'resolved short model name (single match)',
-        modelID,
-        providerID,
+        name: modelID,
+        candidate: `${providerID}/${modelID}`,
       }));
       return { providerID, modelID };
     }
@@ -2128,9 +2150,10 @@ export namespace Provider {
     // Multiple providers have this model - prefer OpenCode for shared free models
     // This follows the convention that opencode is the primary free provider
     if (matchingProviders.includes('opencode')) {
-      log.info(() => ({
+      registryLog.info(() => ({
         message: 'resolved short model name to opencode (multiple providers)',
-        modelID,
+        name: modelID,
+        candidate: `opencode/${modelID}`,
         availableProviders: matchingProviders,
       }));
       return { providerID: 'opencode', modelID };
@@ -2138,10 +2161,10 @@ export namespace Provider {
 
     // Fallback to first matching provider
     const providerID = matchingProviders[0];
-    log.info(() => ({
+    registryLog.info(() => ({
       message: 'resolved short model name (fallback)',
-      modelID,
-      providerID,
+      name: modelID,
+      candidate: `${providerID}/${modelID}`,
       availableProviders: matchingProviders,
     }));
     return { providerID, modelID };

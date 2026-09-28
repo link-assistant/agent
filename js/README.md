@@ -347,6 +347,8 @@ Commands:
 
 See [docs/stdin-mode.md](../docs/stdin-mode.md) for comprehensive stdin mode documentation.
 
+Hosts that embed the CLI supply configuration through `LINK_ASSISTANT_AGENT_CONFIG_DIR`, `LINK_ASSISTANT_AGENT_CONFIG` or `LINK_ASSISTANT_AGENT_CONFIG_CONTENT` — never by relocating `XDG_CONFIG_HOME`, which would also hide `gh`/`git` credentials from the agent's tool calls. See [docs/host-integration.md](../docs/host-integration.md).
+
 ### JSON Output Standards
 
 The agent supports two JSON output format standards via the `--json-standard` option:
@@ -773,6 +775,7 @@ For full documentation, see the [main README](../README.md) in the repository ro
 - [Tools Reference](../TOOLS.md)
 - [Usage Examples](../EXAMPLES.md)
 - [Testing Guide](../TESTING.md)
+- [Host Integration](../docs/host-integration.md) — supplying config via `LINK_ASSISTANT_AGENT_CONFIG_DIR`, `LINK_ASSISTANT_AGENT_CONFIG` and `LINK_ASSISTANT_AGENT_CONFIG_CONTENT`
 
 ## License
 

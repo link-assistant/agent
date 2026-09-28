@@ -169,9 +169,15 @@ test('unselected Claude discovery emits no error for null metadata', async () =>
       }
     });
 
+  // Discovery ran and found formalai (the registry lists candidates by name,
+  // not as `providerID` fields — #313).
   expect(
     logs.some(
-      (log) => log.service === 'provider' && log.providerID === 'formalai'
+      (log) =>
+        log.service === 'provider-registry' &&
+        log.message === 'providers available' &&
+        Array.isArray(log.available) &&
+        log.available.includes('formalai')
     )
   ).toBe(true);
   expect(

@@ -7,6 +7,7 @@ import {
   getConfigSnapshot,
 } from './config/config.ts';
 import { setProcessName } from './cli/process-name.ts';
+import { HostConfigHint } from './config/host-config-hint.ts';
 setProcessName('agent');
 import { Server } from './server/server.ts';
 import { Instance } from './project/instance.ts';
@@ -908,6 +909,13 @@ async function main() {
           source: 'lino-arguments (CLI args > env vars > .lenv > defaults)',
           config: getConfigSnapshot(),
         }));
+
+        // A host that relocates XDG_CONFIG_HOME to deliver agent config also
+        // hides gh/git credentials from the agent's tool calls (#314).
+        const hostConfigHint = HostConfigHint.detect();
+        if (hostConfigHint) {
+          Log.Default.warn(() => hostConfigHint);
+        }
 
         // Global fetch monkey-patch for verbose HTTP logging (#221).
         if (!globalThis.__agentVerboseFetchInstalled) {
