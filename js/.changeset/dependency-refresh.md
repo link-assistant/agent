@@ -3,3 +3,5 @@
 ---
 
 Update JavaScript dependencies to current releases and migrate the local providers to AI SDK 7's Language Model V4 interface. Keep the two OpenTUI peer dependencies pinned to compatible versions until upstream supports their latest releases.
+
+Allow npm registry propagation for five minutes and complete interrupted GitHub release steps for a version already published to npm.

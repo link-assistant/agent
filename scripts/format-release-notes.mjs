@@ -29,6 +29,7 @@ const PACKAGE_NAME = '@link-assistant/agent';
 // Load dependencies through the shared use-m loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
+import { hasFormattedNpmBadge, npmVersionBadge } from './release-badge.mjs';
 
 // Import link-foundation libraries
 const { $ } = await useModule('command-stream');
@@ -82,8 +83,10 @@ try {
 
   const currentBody = releaseData.body || '';
 
-  // Skip if already formatted (has shields.io badge image)
-  if (currentBody.includes('img.shields.io')) {
+  // Skip only when the expected version badge is in the formatted footer.
+  const versionWithoutV = version.replace(/^v/, '');
+  const npmBadge = npmVersionBadge(PACKAGE_NAME, versionWithoutV);
+  if (hasFormattedNpmBadge(currentBody, npmBadge)) {
     console.log('ℹ️ Release notes already formatted');
     process.exit(0);
   }
@@ -188,9 +191,6 @@ try {
   }
 
   // Build formatted release notes
-  const versionWithoutV = version.replace(/^v/, '');
-  const npmBadge = `[![npm version](https://img.shields.io/badge/npm-${versionWithoutV}-blue.svg)](https://www.npmjs.com/package/${PACKAGE_NAME}/v/${versionWithoutV})`;
-
   let formattedBody = `${cleanDescription}`;
 
   // Add PR link if available

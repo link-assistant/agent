@@ -237,6 +237,7 @@ async function main() {
     });
     console.log(`Package to publish: ${packageName}`);
     console.log(`Current version to publish: ${currentVersion}`);
+    setOutput('published_version', currentVersion);
 
     // Check if this version is already published on npm
     console.log(
@@ -263,7 +264,7 @@ async function main() {
     // The publish command is retried only when the publish itself failed.
     // A verification miss is registry propagation lag, not a publish failure,
     // so it is handled by bounded polling and never triggers a republish.
-    const { success, error } = await publishWithRetry({
+    const { success, error, publishCommandSucceeded } = await publishWithRetry({
       publish: () => runPublishCommand($, jsRoot, originalCwd),
       verify: () => verifyPublished(packageName, currentVersion),
       maxRetries: MAX_RETRIES,
@@ -271,6 +272,14 @@ async function main() {
       sleepFn: sleep,
       log: (message) => console.log(message),
     });
+
+    // A successful publish command is evidence that npm accepted the package,
+    // even if registry verification later times out. Keep it visible to the
+    // always-running workflow summary when this step exits non-zero.
+    if (publishCommandSucceeded) {
+      setOutput('publish_command_succeeded', 'true');
+      setOutput('published_version', currentVersion);
+    }
 
     if (success) {
       setOutput('published', 'true');
