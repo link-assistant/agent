@@ -517,21 +517,31 @@ describe('JS release recovery', () => {
 });
 
 describe('JS release workflow wiring', () => {
-  test('resumes existing versions and writes a summary after failures', () => {
-    const workflow = readFileSync(
+  test('resumes existing versions and writes a summary with LF and CRLF', () => {
+    const workflowSource = readFileSync(
       new URL('../../.github/workflows/js.yml', import.meta.url),
       'utf8'
     );
-    const releaseJob = workflow
-      .split('\n  release:\n')[1]
-      .split('\n  instant-release:\n')[0];
-    expect(releaseJob).toContain('git checkout -B main origin/main');
-    expect(workflow).toContain('run: node scripts/recover-js-release.mjs');
-    expect(workflow).toContain("steps.recover.outputs.needs_publish == 'true'");
-    expect(workflow.match(/name: Summarize JS release outcome/g)).toHaveLength(
-      2
-    );
-    expect(workflow.match(/if: always\(\)/g)?.length).toBeGreaterThanOrEqual(2);
+    for (const source of [
+      workflowSource.replace(/\r\n/g, '\n'),
+      workflowSource.replace(/\r?\n/g, '\r\n'),
+    ]) {
+      const workflow = source.replace(/\r\n/g, '\n');
+      const releaseJob = workflow
+        .split('\n  release:\n')[1]
+        .split('\n  instant-release:\n')[0];
+      expect(releaseJob).toContain('git checkout -B main origin/main');
+      expect(workflow).toContain('run: node scripts/recover-js-release.mjs');
+      expect(workflow).toContain(
+        "steps.recover.outputs.needs_publish == 'true'"
+      );
+      expect(
+        workflow.match(/name: Summarize JS release outcome/g)
+      ).toHaveLength(2);
+      expect(workflow.match(/if: always\(\)/g)?.length).toBeGreaterThanOrEqual(
+        2
+      );
+    }
   });
 });
 
