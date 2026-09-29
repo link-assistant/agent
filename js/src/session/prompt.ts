@@ -15,7 +15,7 @@ import {
   type Tool as AITool,
   tool,
   wrapLanguageModel,
-  stepCountIs,
+  isStepCount,
   jsonSchema,
 } from 'ai';
 import { SessionCompaction } from './compaction';
@@ -1011,10 +1011,10 @@ export namespace SessionPrompt {
             model.providerID,
             params.options
           ),
-          stopWhen: stepCountIs(1),
+          stopWhen: isStepCount(1),
           temperature: params.temperature,
           topP: params.topP,
-          system: system.map((content) => ({ role: 'system', content })),
+          instructions: system.map((content) => ({ role: 'system', content })),
           messages: safeModelMessages,
           tools: model.info?.tool_call === false ? undefined : tools,
           model: wrapLanguageModel({
@@ -1058,6 +1058,9 @@ export namespace SessionPrompt {
   }) {
     if (input.model) {
       return input.model;
+    }
+    if (config.dryRun) {
+      return Provider.defaultModel();
     }
     if (input.agent.model) {
       return input.agent.model;
@@ -1942,7 +1945,7 @@ export namespace SessionPrompt {
         small.providerID,
         options
       ),
-      system: safeTitleSystemMessages.map((content) => ({
+      instructions: safeTitleSystemMessages.map((content) => ({
         role: 'system',
         content,
       })),

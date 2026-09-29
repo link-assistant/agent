@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.10.1] - 2026-09-29
+
+### Changed
+
+- Update all direct Rust dependencies to their latest releases and adapt identifier generation to rand 0.10.
+
 ## [0.10.0] - 2026-07-31
 
 ### Fixed
