@@ -12,7 +12,8 @@
  * failure.
  */
 
-export const DEFAULT_VERIFY_ATTEMPTS = 7;
+// 2 + 4 + 8 + 16 + (9 * 30) seconds = five minutes of polling.
+export const DEFAULT_VERIFY_ATTEMPTS = 13;
 export const DEFAULT_VERIFY_INITIAL_DELAY = 2000;
 export const DEFAULT_VERIFY_MAX_DELAY = 30000;
 
@@ -156,7 +157,7 @@ function verificationOutcome(verified, registryLabel) {
  * @param {Function} [options.sleepFn]
  * @param {Function} [options.log]
  * @param {object} [options.verifyOptions]
- * @returns {Promise<{success: boolean, error: Error|null, publishAttempts: number}>}
+ * @returns {Promise<{success: boolean, error: Error|null, publishAttempts: number, publishCommandSucceeded: boolean}>}
  */
 export async function publishWithRetry({
   publish,
@@ -186,13 +187,19 @@ export async function publishWithRetry({
       return {
         ...verificationOutcome(verified, registryLabel),
         publishAttempts,
+        publishCommandSucceeded: success,
       };
     }
 
     lastError = error;
 
     if (error?.nonRetryable) {
-      return { success: false, error, publishAttempts };
+      return {
+        success: false,
+        error,
+        publishAttempts,
+        publishCommandSucceeded: false,
+      };
     }
 
     if (attempt < maxRetries) {
@@ -208,5 +215,6 @@ export async function publishWithRetry({
     error:
       lastError || new Error(`Failed to publish after ${maxRetries} attempts`),
     publishAttempts,
+    publishCommandSucceeded: false,
   };
 }

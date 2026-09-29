@@ -326,6 +326,12 @@ jobs:
       - name: Update npm for OIDC trusted publishing
         run: node scripts/setup-npm.mjs
 
+      - name: Recover an incomplete GitHub release
+        id: recover
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/recover-js-release.mjs
+
       - name: Check for changesets
         id: check_changesets
         run: |
@@ -344,22 +350,38 @@ jobs:
         run: node scripts/version-and-commit.mjs --mode changeset
 
       - name: Publish to npm
-        # Run if version was committed OR if a previous attempt already committed (for re-runs)
-        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
+        # Also resume a version commit whose prior publish attempt never completed.
+        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true' || steps.recover.outputs.needs_publish == 'true'
         id: publish
         run: bash scripts/run-with-budget-warning.sh 600 "npm publish" node scripts/publish-to-npm.mjs --should-pull
 
       - name: Create GitHub Release
         if: steps.publish.outputs.published == 'true'
+        id: create_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/create-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --prefix "js-"
 
       - name: Format GitHub release notes
         if: steps.publish.outputs.published == 'true'
+        id: format_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/format-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "js-"
+
+      - name: Summarize JS release outcome
+        if: always()
+        env:
+          RELEASE_PUBLISHED: ${{ steps.publish.outputs.published || (steps.publish.outcome == 'skipped' && steps.recover.outputs.published) }}
+          PUBLISH_COMMAND_SUCCEEDED: ${{ steps.publish.outputs.publish_command_succeeded }}
+          RELEASE_RECOVERED: ${{ steps.recover.outputs.recovered }}
+          RELEASE_ALREADY_COMPLETE: ${{ steps.recover.outputs.complete }}
+          RELEASE_VERSION: ${{ steps.publish.outputs.published_version || steps.recover.outputs.current_version }}
+          RECOVER_OUTCOME: ${{ steps.recover.outcome }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          CREATE_OUTCOME: ${{ steps.create_release.outcome }}
+          FORMAT_OUTCOME: ${{ steps.format_release.outcome }}
+        run: node scripts/js-release-summary.mjs
 
   # Manual Instant Release - triggered via workflow_dispatch with instant mode
   # This job is in js.yml because npm trusted publishing
@@ -410,15 +432,28 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.publish.outputs.published == 'true'
+        id: create_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/create-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --prefix "js-"
 
       - name: Format GitHub release notes
         if: steps.publish.outputs.published == 'true'
+        id: format_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/format-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "js-"
+
+      - name: Summarize JS release outcome
+        if: always()
+        env:
+          RELEASE_PUBLISHED: ${{ steps.publish.outputs.published }}
+          PUBLISH_COMMAND_SUCCEEDED: ${{ steps.publish.outputs.publish_command_succeeded }}
+          RELEASE_VERSION: ${{ steps.publish.outputs.published_version }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          CREATE_OUTCOME: ${{ steps.create_release.outcome }}
+          FORMAT_OUTCOME: ${{ steps.format_release.outcome }}
+        run: node scripts/js-release-summary.mjs
 
   # Manual Changeset PR - creates a pull request with the changeset for review
   changeset-pr:

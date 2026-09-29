@@ -11,6 +11,8 @@
  */
 
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { URL } from 'node:url';
 
 import {
   formatNpmPackageVersion,
@@ -32,6 +34,14 @@ import {
 } from '../../scripts/crates-registry.mjs';
 import { isNonRetryableFailure } from '../../scripts/publish-failure-classifier.mjs';
 import {
+  findVersionCommit,
+  recoverJsRelease,
+} from '../../scripts/recover-js-release.mjs';
+import { jsReleaseSummary } from '../../scripts/js-release-summary.mjs';
+import {
+  DEFAULT_VERIFY_ATTEMPTS,
+  DEFAULT_VERIFY_INITIAL_DELAY,
+  DEFAULT_VERIFY_MAX_DELAY,
   isAlreadyPublishedError,
   publishWithRetry,
   waitForVersionOnRegistry,
@@ -207,6 +217,60 @@ describe('publish failure classification', () => {
 });
 
 describe('waitForVersionOnRegistry', () => {
+  test('allows at least five minutes of npm propagation', async () => {
+    let elapsed = 0;
+    const attempts = [];
+
+    const found = await waitForVersionOnRegistry({
+      verify: async () => {
+        attempts.push(elapsed);
+        return false;
+      },
+      sleepFn: async (delay) => {
+        elapsed += delay;
+      },
+      log: noLog,
+    });
+
+    expect(found).toBe(false);
+    expect(elapsed).toBeGreaterThanOrEqual(300_000);
+    expect(attempts).toHaveLength(DEFAULT_VERIFY_ATTEMPTS);
+    expect(attempts[0]).toBe(DEFAULT_VERIFY_INITIAL_DELAY);
+    expect(attempts.at(-1) - attempts.at(-2)).toBeLessThanOrEqual(
+      DEFAULT_VERIFY_MAX_DELAY
+    );
+  });
+
+  test('waits through a registry 404 for 20 seconds, then succeeds', async () => {
+    let elapsed = 0;
+    let checks = 0;
+    const fetchFn = async () => {
+      checks++;
+      return elapsed < 20_000
+        ? { ok: false, status: 404 }
+        : {
+            ok: true,
+            status: 200,
+            json: async () => ({ versions: { '0.26.6': {} } }),
+          };
+    };
+
+    expect(
+      await waitForVersionOnRegistry({
+        verify: () =>
+          isPackageVersionPublished('@link-assistant/agent', '0.26.6', {
+            fetchFn,
+          }),
+        sleepFn: async (delay) => {
+          elapsed += delay;
+        },
+        log: noLog,
+      })
+    ).toBe(true);
+    expect(elapsed).toBe(30_000);
+    expect(checks).toBe(4);
+  });
+
   test('polls until the version appears', async () => {
     let calls = 0;
     const verify = async () => ++calls >= 3;
@@ -330,7 +394,7 @@ describe('publishWithRetry', () => {
   test('reports a terminal verification failure without republishing', async () => {
     let publishes = 0;
 
-    const { success, error } = await publishWithRetry({
+    const { success, error, publishCommandSucceeded } = await publishWithRetry({
       publish: async () => {
         publishes++;
         return { success: true, output: '' };
@@ -345,6 +409,130 @@ describe('publishWithRetry', () => {
     expect(publishes).toBe(1);
     expect(error.verificationFailed).toBe(true);
     expect(error.nonRetryable).toBe(true);
+    expect(publishCommandSucceeded).toBe(true);
+  });
+});
+
+describe('JS release recovery', () => {
+  test('tags the exact version commit during late recovery', () => {
+    const oldSha = 'a'.repeat(40);
+    const versionSha = 'b'.repeat(40);
+    const log = `${oldSha}\0fix: later change\n${versionSha}\0${'0.26.6'}\n`;
+    expect(findVersionCommit(log, '0.26.6')).toBe(versionSha);
+    expect(() => findVersionCommit(log, '0.26.7')).toThrow(
+      /No version commit found/
+    );
+  });
+
+  test('dry run: an npm version without a GitHub release completes the post-steps', async () => {
+    const calls = [];
+    const state = await recoverJsRelease({
+      isPublished: async () => {
+        calls.push('npm: 0.26.6 visible');
+        return true;
+      },
+      getRelease: async () => {
+        calls.push('GitHub release: missing');
+        return null;
+      },
+      onPublished: () => calls.push('record published version'),
+      createRelease: async () => calls.push('create tag and GitHub release'),
+      formatRelease: async () => calls.push('format changelog notes'),
+    });
+
+    expect(state).toBe('recovered');
+    expect(calls).toEqual([
+      'npm: 0.26.6 visible',
+      'GitHub release: missing',
+      'record published version',
+      'create tag and GitHub release',
+      'format changelog notes',
+    ]);
+  });
+
+  test('resumes formatting when release creation succeeded earlier', async () => {
+    const calls = [];
+    const state = await recoverJsRelease({
+      isPublished: async () => true,
+      getRelease: async () => ({ body: 'Unformatted changelog notes' }),
+      createRelease: async () => calls.push('create'),
+      formatRelease: async () => calls.push('format'),
+    });
+
+    expect(state).toBe('recovered');
+    expect(calls).toEqual(['format']);
+  });
+
+  test('does not republish a completed release', async () => {
+    const state = await recoverJsRelease({
+      isPublished: async () => true,
+      getRelease: async () => ({ body: 'img.shields.io' }),
+      createRelease: async () => {
+        throw new Error('unexpected create');
+      },
+      formatRelease: async () => {
+        throw new Error('unexpected format');
+      },
+    });
+    expect(state).toBe('complete');
+  });
+
+  test('leaves a version missing from npm for the publish step', async () => {
+    const state = await recoverJsRelease({
+      isPublished: async () => false,
+      getRelease: async () => {
+        throw new Error('unexpected release lookup');
+      },
+      createRelease: async () => {
+        throw new Error('unexpected create');
+      },
+      formatRelease: async () => {
+        throw new Error('unexpected format');
+      },
+    });
+    expect(state).toBe('needs_publish');
+  });
+});
+
+describe('JS release workflow wiring', () => {
+  test('resumes existing versions and writes a summary after failures', () => {
+    const workflow = readFileSync(
+      new URL('../../.github/workflows/js.yml', import.meta.url),
+      'utf8'
+    );
+    expect(workflow).toContain('run: node scripts/recover-js-release.mjs');
+    expect(workflow).toContain("steps.recover.outputs.needs_publish == 'true'");
+    expect(workflow.match(/name: Summarize JS release outcome/g)).toHaveLength(
+      2
+    );
+    expect(workflow.match(/if: always\(\)/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('JS release summary', () => {
+  test('distinguishes npm acceptance with failed post-steps from no publish', () => {
+    expect(
+      jsReleaseSummary({
+        publishCommandSucceeded: true,
+        publishOutcome: 'failure',
+        version: '0.26.6',
+      })
+    ).toContain('Published to npm; post-publish steps incomplete');
+    expect(
+      jsReleaseSummary({ published: true, createOutcome: 'failure' })
+    ).toContain('Published to npm; post-publish steps incomplete');
+    expect(jsReleaseSummary({ publishOutcome: 'failure' })).toContain(
+      'Not published to npm'
+    );
+  });
+
+  test('reports recovered releases as complete', () => {
+    expect(
+      jsReleaseSummary({ published: true, recovered: true, version: '0.26.6' })
+    ).toContain('GitHub release completed');
+    expect(
+      jsReleaseSummary({ alreadyComplete: true, version: '0.26.6' })
+    ).toContain('Already published to npm; GitHub release complete');
   });
 });
 
