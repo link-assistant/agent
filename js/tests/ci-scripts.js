@@ -447,11 +447,28 @@ describe('JS release recovery', () => {
     expect(state).toBe('recovered');
     expect(calls).toEqual([
       'npm: 0.26.6 visible',
-      'GitHub release: missing',
       'record published version',
+      'GitHub release: missing',
       'create tag and GitHub release',
       'format changelog notes',
     ]);
+  });
+
+  test('records npm publication when the GitHub release lookup fails', async () => {
+    const calls = [];
+    await expect(
+      recoverJsRelease({
+        expectedBadge: badge,
+        isPublished: async () => true,
+        onPublished: () => calls.push('record published version'),
+        getRelease: async () => {
+          throw new Error('GitHub API unavailable');
+        },
+        createRelease: async () => calls.push('create'),
+        formatRelease: async () => calls.push('format'),
+      })
+    ).rejects.toThrow('GitHub API unavailable');
+    expect(calls).toEqual(['record published version']);
   });
 
   test('resumes formatting when release creation succeeded earlier', async () => {

@@ -50,14 +50,14 @@ export async function recoverJsRelease({
     return 'needs_publish';
   }
 
+  // Record npm's state before any GitHub call. This output remains available
+  // to the workflow summary if release lookup or later post-steps fail.
+  onPublished();
   const release = await getRelease();
   if (release?.body && hasFormattedNpmBadge(release.body, expectedBadge)) {
     return 'complete';
   }
 
-  // Record npm's state before the post-publish calls. This output remains
-  // available to the workflow summary if either call fails.
-  onPublished();
   if (!release) {
     await createRelease();
   }
