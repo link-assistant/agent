@@ -1,5 +1,5 @@
 import z from 'zod';
-import { spawn } from 'child_process';
+import { $, raw } from 'command-stream';
 import { Tool } from './tool';
 import DESCRIPTION from './bash.txt';
 import { Branding } from '../branding';
@@ -7,16 +7,12 @@ import { Log } from '../util/log';
 import { Instance } from '../project/instance';
 import { lazy } from '../util/lazy';
 import { Language } from 'web-tree-sitter';
-import { $ } from 'bun';
-import { Filesystem } from '../util/filesystem';
 import { Permission } from '../permission';
 import { fileURLToPath } from 'url';
 
 const MAX_OUTPUT_LENGTH = 30_000;
 const DEFAULT_TIMEOUT = 1 * 60 * 1000;
 const MAX_TIMEOUT = 10 * 60 * 1000;
-const SIGKILL_TIMEOUT_MS = 200;
-
 export const log = Log.create({ service: 'bash-tool' });
 
 const resolveWasm = (asset: string) => {
@@ -113,15 +109,20 @@ export const BashTool = Tool.define('bash', {
       });
     }
 
-    const proc = spawn(params.command, {
-      shell: true,
+    const timeoutSignal = AbortSignal.timeout(timeout);
+    const signal = AbortSignal.any([ctx.abort, timeoutSignal]);
+    // This tool receives a shell command, so preserve its operators and quoting
+    // after the permission check above.
+    const command = $({
       cwd: Instance.directory,
-      env: {
-        ...process.env,
-      },
-      stdio: ['ignore', 'pipe', 'pipe'],
-      detached: process.platform !== 'win32',
-    });
+      env: { ...process.env },
+      signal,
+      killSignal: 'SIGTERM',
+      killGrace: 200,
+      mirror: false,
+      capture: true,
+      stdin: 'ignore',
+    })`${raw(params.command)}`;
 
     let output = '';
 
@@ -133,101 +134,31 @@ export const BashTool = Tool.define('bash', {
       },
     });
 
-    const append = (chunk: Buffer) => {
-      output += chunk.toString();
-      ctx.metadata({
-        metadata: {
-          output,
-          description: params.description,
-        },
-      });
-    };
-
-    proc.stdout?.on('data', append);
-    proc.stderr?.on('data', append);
-
-    let timedOut = false;
-    let aborted = false;
-    let exited = false;
-
-    const killTree = async () => {
-      const pid = proc.pid;
-      if (!pid || exited) {
-        return;
-      }
-
-      if (process.platform === 'win32') {
-        await new Promise<void>((resolve) => {
-          const killer = spawn('taskkill', ['/pid', String(pid), '/f', '/t'], {
-            stdio: 'ignore',
-          });
-          killer.once('exit', resolve);
-          killer.once('error', resolve);
+    let exit: number | null = null;
+    for await (const chunk of command.stream()) {
+      if (chunk.type === 'exit') {
+        exit = chunk.code;
+      } else {
+        output += chunk.data.toString();
+        ctx.metadata({
+          metadata: {
+            output,
+            description: params.description,
+          },
         });
-        return;
       }
-
-      try {
-        process.kill(-pid, 'SIGTERM');
-        await Bun.sleep(SIGKILL_TIMEOUT_MS);
-        if (!exited) {
-          process.kill(-pid, 'SIGKILL');
-        }
-      } catch (_e) {
-        proc.kill('SIGTERM');
-        await Bun.sleep(SIGKILL_TIMEOUT_MS);
-        if (!exited) {
-          proc.kill('SIGKILL');
-        }
-      }
-    };
-
-    if (ctx.abort.aborted) {
-      aborted = true;
-      await killTree();
     }
-
-    const abortHandler = () => {
-      aborted = true;
-      void killTree();
-    };
-
-    ctx.abort.addEventListener('abort', abortHandler, { once: true });
-
-    const timeoutTimer = setTimeout(() => {
-      timedOut = true;
-      void killTree();
-    }, timeout);
-
-    await new Promise<void>((resolve, reject) => {
-      const cleanup = () => {
-        clearTimeout(timeoutTimer);
-        ctx.abort.removeEventListener('abort', abortHandler);
-      };
-
-      proc.once('exit', () => {
-        exited = true;
-        cleanup();
-        resolve();
-      });
-
-      proc.once('error', (error) => {
-        exited = true;
-        cleanup();
-        reject(error);
-      });
-    });
 
     if (output.length > MAX_OUTPUT_LENGTH) {
       output = output.slice(0, MAX_OUTPUT_LENGTH);
       output += '\n\n(Output was truncated due to length limit)';
     }
 
-    if (timedOut) {
+    if (timeoutSignal.aborted) {
       output += `\n\n(Command timed out after ${timeout} ms)`;
     }
 
-    if (aborted) {
+    if (ctx.abort.aborted) {
       output += '\n\n(Command was aborted)';
     }
 
@@ -235,7 +166,7 @@ export const BashTool = Tool.define('bash', {
       title: params.command,
       metadata: {
         output,
-        exit: proc.exitCode,
+        exit,
         description: params.description,
       },
       output,
