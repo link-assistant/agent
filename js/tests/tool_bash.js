@@ -141,7 +141,12 @@ describe('bash tool command execution', () => {
       expect(result.output).toContain('(Command timed out after 600 ms)');
       await checkTreeStopped(heartbeat, result.output);
     } finally {
-      rmSync(directory, { recursive: true, force: true });
+      rmSync(directory, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 100,
+      });
     }
   });
 
@@ -165,7 +170,12 @@ describe('bash tool command execution', () => {
       expect(result.output).toContain('(Command was aborted)');
       await checkTreeStopped(heartbeat, result.output);
     } finally {
-      rmSync(directory, { recursive: true, force: true });
+      rmSync(directory, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 100,
+      });
     }
   });
 });
