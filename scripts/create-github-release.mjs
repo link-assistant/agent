@@ -41,10 +41,15 @@ const config = makeConfig({
         type: 'string',
         default: getenv('PREFIX', ''),
         describe: 'Tag prefix (e.g., "js-" or "rust-")',
+      })
+      .option('target-commitish', {
+        type: 'string',
+        default: getenv('TARGET_COMMITISH', ''),
+        describe: 'Commit to tag when creating a missing release',
       }),
 });
 
-const { releaseVersion: version, repository, prefix } = config;
+const { releaseVersion: version, repository, prefix, targetCommitish } = config;
 
 if (!version || !repository) {
   console.error('Error: Missing required arguments');
@@ -105,6 +110,7 @@ try {
     tag_name: tag,
     name: releaseName,
     body: releaseNotes,
+    ...(targetCommitish ? { target_commitish: targetCommitish } : {}),
   });
 
   try {
