@@ -16,7 +16,9 @@ export function parsePackageInfo(
   try {
     packageJson = JSON.parse(packageJsonContent);
   } catch (error) {
-    throw new Error(`Could not parse ${packageJsonPath}: ${error.message}`);
+    throw new Error(`Could not parse ${packageJsonPath}: ${error.message}`, {
+      cause: error,
+    });
   }
 
   if (typeof packageJson.name !== 'string' || packageJson.name.trim() === '') {

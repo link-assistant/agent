@@ -222,10 +222,10 @@ export namespace SessionSummary {
           model.providerID,
           {}
         ),
-        // The system prompt belongs in `system`, not in `messages`: the AI SDK
+        // The system prompt belongs in `instructions`, not in `messages`: the AI SDK
         // warns that a system message inside `messages` enables prompt
         // injection, and providers are free to treat it as ordinary content.
-        system: systemPrompts.map((content) => ({
+        instructions: systemPrompts.map((content) => ({
           role: 'system' as const,
           content,
         })),

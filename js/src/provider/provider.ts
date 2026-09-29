@@ -730,9 +730,9 @@ export namespace Provider {
     'link-assistant': async () => {
       // Echo provider is always available - no external dependencies needed
       return {
-        autoload: config.dryRun, // Auto-load only in dry-run mode
+        autoload: true, // Also available through --model link-assistant/echo
         async getModel(_sdk: any, modelID: string) {
-          // Return our custom echo model that implements LanguageModelV1
+          // Return our custom AI SDK language model.
           return createEchoModel(modelID);
         },
         options: {},
@@ -762,7 +762,7 @@ export namespace Provider {
           const [providerId, ...modelParts] = parts;
           const actualModelId = modelParts.join('/');
 
-          // Return our custom cache model that implements LanguageModelV1
+          // Return our custom AI SDK language model.
           return createCacheModel(providerId, actualModelId);
         },
         options: {},
@@ -1772,8 +1772,16 @@ export namespace Provider {
     const isSyntheticProvider =
       providerID === 'link-assistant' || providerID === 'link-assistant/cache';
 
-    // For synthetic providers, we don't need model info from the database
-    let info = isSyntheticProvider ? null : provider.info.models[modelID];
+    // Synthetic models still need metadata for context limits and accounting.
+    let info =
+      provider.info.models[modelID] ??
+      (isSyntheticProvider
+        ? {
+            ...s.providers['link-assistant'].info.models.echo,
+            id: modelID,
+            name: modelID,
+          }
+        : undefined);
     if (!isSyntheticProvider && !info) {
       // Model not in provider's known list - try refreshing the cache first (#200)
       // This handles stale bundled data or expired cache (1-hour TTL)
