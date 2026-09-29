@@ -1,0 +1,70 @@
+name: Dependency Freshness
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'js/package.json'
+      - 'js/package-lock.json'
+      - 'rust/Cargo.toml'
+      - 'rust/Cargo.lock'
+      - '.github/workflows/dependency-freshness.yml'
+  pull_request:
+    paths:
+      - 'js/package.json'
+      - 'js/package-lock.json'
+      - 'rust/Cargo.toml'
+      - 'rust/Cargo.lock'
+      - '.github/workflows/dependency-freshness.yml'
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  npm-outdated:
+    name: npm outdated
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-npm-outdated
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.x'
+          cache: npm
+          cache-dependency-path: js/package-lock.json
+      - name: Install dependencies from the committed lockfile
+        working-directory: js
+        run: npm ci --legacy-peer-deps --ignore-scripts
+      - name: Fail if a direct dependency has a newer release
+        working-directory: js
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node ../scripts/check-npm-freshness.mjs
+
+  cargo-outdated:
+    name: cargo outdated
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-cargo-outdated
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+      - uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: cargo-outdated@0.19.0
+      - name: Fail if a direct dependency has a newer release
+        working-directory: rust
+        run: cargo outdated --root-deps-only --exit-code 1
