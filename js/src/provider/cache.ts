@@ -15,7 +15,11 @@
  * @see https://github.com/link-foundation/lino-objects-codec
  */
 
-import type { LanguageModelV2, LanguageModelV2CallOptions } from 'ai';
+import type {
+  LanguageModelV4,
+  LanguageModelV4CallOptions,
+  LanguageModelV4GenerateResult,
+} from '@ai-sdk/provider';
 import { Log } from '../util/log';
 import { createEchoModel } from './echo';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
@@ -33,7 +37,7 @@ const CACHE_ROOT = join(__dirname, '../../data/api-cache');
  * Generate a cache key from the prompt
  */
 function generateCacheKey(
-  prompt: LanguageModelV2CallOptions['prompt']
+  prompt: LanguageModelV4CallOptions['prompt']
 ): string {
   // Simple hash of the prompt content
   const content = JSON.stringify(prompt);
@@ -64,14 +68,43 @@ function generatePartId(): string {
 /**
  * Load cached response from file using Links Notation format
  */
-function loadCachedResponse(filePath: string): any | null {
+function loadCachedResponse(
+  filePath: string
+): LanguageModelV4GenerateResult | null {
   try {
     if (!existsSync(filePath)) {
       return null;
     }
     const content = readFileSync(filePath, 'utf8');
     // Decode from Links Notation format
-    return decode({ notation: content });
+    const cached = decode({ notation: content });
+    // Existing .lino files may contain AI SDK 6 responses. Normalize their
+    // finish reason and usage so they remain usable by AI SDK 7.
+    if (typeof cached?.finishReason === 'string') {
+      const promptTokens = cached.usage?.promptTokens ?? 0;
+      const completionTokens = cached.usage?.completionTokens ?? 0;
+      return {
+        ...cached,
+        finishReason: {
+          unified: cached.finishReason,
+          raw: cached.finishReason,
+        },
+        usage: {
+          inputTokens: {
+            total: promptTokens,
+            noCache: promptTokens,
+            cacheRead: 0,
+            cacheWrite: 0,
+          },
+          outputTokens: {
+            total: completionTokens,
+            text: completionTokens,
+            reasoning: 0,
+          },
+        },
+      };
+    }
+    return cached;
   } catch (error: any) {
     log.warn('Failed to load cached response', {
       filePath,
@@ -104,21 +137,21 @@ function saveCachedResponse(filePath: string, response: any): void {
 
 /**
  * Creates a cache language model that stores/retrieves responses
- * Implements LanguageModelV2 interface for AI SDK 6.x compatibility
+ * Implements the AI SDK 7 language model interface.
  */
 export function createCacheModel(
   providerId: string,
   modelId: string
-): LanguageModelV2 {
-  const model: LanguageModelV2 = {
-    specificationVersion: 'v2',
+): LanguageModelV4 {
+  const model: LanguageModelV4 = {
+    specificationVersion: 'v4',
     provider: 'link-assistant',
     modelId: `${providerId}/${modelId}`,
 
     // No external URLs are supported by this synthetic provider
     supportedUrls: {},
 
-    async doGenerate(options: LanguageModelV2CallOptions) {
+    async doGenerate(options: LanguageModelV4CallOptions) {
       const cacheKey = generateCacheKey(options.prompt);
       const cachePath = getCachePath(providerId, modelId, cacheKey);
 
@@ -144,7 +177,7 @@ export function createCacheModel(
       return response;
     },
 
-    async doStream(options: LanguageModelV2CallOptions) {
+    async doStream(options: LanguageModelV4CallOptions) {
       const cacheKey = generateCacheKey(options.prompt);
       const cachePath = getCachePath(providerId, modelId, cacheKey);
 
@@ -163,7 +196,7 @@ export function createCacheModel(
           cached.content?.[0]?.text || cached.text || 'Cached response';
         const textPartId = generatePartId();
 
-        // Create a ReadableStream with LanguageModelV2StreamPart format
+        // Create a ReadableStream with LanguageModelV4StreamPart format.
         const stream = new ReadableStream({
           async start(controller) {
             // Emit text-start
@@ -195,10 +228,19 @@ export function createCacheModel(
             // Emit finish event
             controller.enqueue({
               type: 'finish',
-              finishReason: 'stop',
+              finishReason: { unified: 'stop', raw: 'stop' },
               usage: cached.usage || {
-                promptTokens: Math.ceil(echoText.length / 4),
-                completionTokens: Math.ceil(echoText.length / 4),
+                inputTokens: {
+                  total: Math.ceil(echoText.length / 4),
+                  noCache: Math.ceil(echoText.length / 4),
+                  cacheRead: 0,
+                  cacheWrite: 0,
+                },
+                outputTokens: {
+                  total: Math.ceil(echoText.length / 4),
+                  text: Math.ceil(echoText.length / 4),
+                  reasoning: 0,
+                },
               },
               providerMetadata: undefined,
             });
@@ -211,7 +253,6 @@ export function createCacheModel(
           stream,
           request: undefined,
           response: undefined,
-          warnings: [],
         };
       }
 
@@ -237,7 +278,7 @@ export function createCacheModel(
  */
 export function createCacheProvider(options?: { name?: string }) {
   return {
-    languageModel(modelId: string): LanguageModelV2 {
+    languageModel(modelId: string): LanguageModelV4 {
       // Parse provider/model from modelId like "opencode/grok-code"
       const parts = modelId.split('/');
       if (parts.length < 2) {

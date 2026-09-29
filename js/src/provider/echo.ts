@@ -14,7 +14,10 @@
  *   Input: "How are you?" -> Output: "How are you?"
  */
 
-import type { LanguageModelV2, LanguageModelV2CallOptions } from 'ai';
+import type {
+  LanguageModelV4,
+  LanguageModelV4CallOptions,
+} from '@ai-sdk/provider';
 import { Log } from '../util/log';
 
 const log = Log.create({ service: 'provider.echo' });
@@ -23,7 +26,7 @@ const log = Log.create({ service: 'provider.echo' });
  * Extract text content from the prompt messages
  */
 function extractTextFromPrompt(
-  prompt: LanguageModelV2CallOptions['prompt']
+  prompt: LanguageModelV4CallOptions['prompt']
 ): string {
   const textParts: string[] = [];
 
@@ -52,18 +55,18 @@ function generatePartId(): string {
 
 /**
  * Creates an echo language model that echoes back the user's input
- * Implements LanguageModelV2 interface for AI SDK 6.x compatibility
+ * Implements the AI SDK 7 language model interface.
  */
-export function createEchoModel(modelId: string = 'echo'): LanguageModelV2 {
-  const model: LanguageModelV2 = {
-    specificationVersion: 'v2',
+export function createEchoModel(modelId: string = 'echo'): LanguageModelV4 {
+  const model: LanguageModelV4 = {
+    specificationVersion: 'v4',
     provider: 'link-assistant',
     modelId,
 
     // No external URLs are supported by this synthetic provider
     supportedUrls: {},
 
-    async doGenerate(options: LanguageModelV2CallOptions) {
+    async doGenerate(options: LanguageModelV4CallOptions) {
       const echoText = extractTextFromPrompt(options.prompt);
       log.info('echo generate', { modelId, echoText });
 
@@ -78,10 +81,19 @@ export function createEchoModel(modelId: string = 'echo'): LanguageModelV2 {
             text: echoText,
           },
         ],
-        finishReason: 'stop' as const,
+        finishReason: { unified: 'stop' as const, raw: 'stop' },
         usage: {
-          promptTokens,
-          completionTokens,
+          inputTokens: {
+            total: promptTokens,
+            noCache: promptTokens,
+            cacheRead: 0,
+            cacheWrite: 0,
+          },
+          outputTokens: {
+            total: completionTokens,
+            text: completionTokens,
+            reasoning: 0,
+          },
         },
         warnings: [],
         providerMetadata: undefined,
@@ -90,7 +102,7 @@ export function createEchoModel(modelId: string = 'echo'): LanguageModelV2 {
       };
     },
 
-    async doStream(options: LanguageModelV2CallOptions) {
+    async doStream(options: LanguageModelV4CallOptions) {
       const echoText = extractTextFromPrompt(options.prompt);
       log.info('echo stream', { modelId, echoText });
 
@@ -100,8 +112,7 @@ export function createEchoModel(modelId: string = 'echo'): LanguageModelV2 {
 
       const textPartId = generatePartId();
 
-      // Create a ReadableStream with LanguageModelV2StreamPart format
-      // V2 format uses: text-start -> text-delta (with delta) -> text-end -> finish
+      // Stream text-start -> text-delta -> text-end -> finish.
       const stream = new ReadableStream({
         async start(controller) {
           // Emit text-start
@@ -133,10 +144,19 @@ export function createEchoModel(modelId: string = 'echo'): LanguageModelV2 {
           // Emit finish event with usage information
           controller.enqueue({
             type: 'finish',
-            finishReason: 'stop',
+            finishReason: { unified: 'stop', raw: 'stop' },
             usage: {
-              promptTokens,
-              completionTokens,
+              inputTokens: {
+                total: promptTokens,
+                noCache: promptTokens,
+                cacheRead: 0,
+                cacheWrite: 0,
+              },
+              outputTokens: {
+                total: completionTokens,
+                text: completionTokens,
+                reasoning: 0,
+              },
             },
             providerMetadata: undefined,
           });
@@ -149,7 +169,6 @@ export function createEchoModel(modelId: string = 'echo'): LanguageModelV2 {
         stream,
         request: undefined,
         response: undefined,
-        warnings: [],
       };
     },
   };
@@ -162,7 +181,7 @@ export function createEchoModel(modelId: string = 'echo'): LanguageModelV2 {
  */
 export function createEchoProvider(options?: { name?: string }) {
   return {
-    languageModel(modelId: string): LanguageModelV2 {
+    languageModel(modelId: string): LanguageModelV4 {
       return createEchoModel(modelId);
     },
     textEmbeddingModel() {

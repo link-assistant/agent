@@ -42,7 +42,7 @@ async function startFakeProvider() {
       body += chunk;
     });
     request.on('end', () => {
-      let parsed = {};
+      let parsed;
       try {
         parsed = JSON.parse(body);
       } catch {
