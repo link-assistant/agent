@@ -414,6 +414,9 @@ describe('publishWithRetry', () => {
 });
 
 describe('JS release recovery', () => {
+  const badge =
+    '[![npm version](https://img.shields.io/badge/npm-0.26.6-blue.svg)](https://www.npmjs.com/package/@link-assistant/agent/v/0.26.6)';
+
   test('tags the exact version commit during late recovery', () => {
     const oldSha = 'a'.repeat(40);
     const versionSha = 'b'.repeat(40);
@@ -427,6 +430,7 @@ describe('JS release recovery', () => {
   test('dry run: an npm version without a GitHub release completes the post-steps', async () => {
     const calls = [];
     const state = await recoverJsRelease({
+      expectedBadge: badge,
       isPublished: async () => {
         calls.push('npm: 0.26.6 visible');
         return true;
@@ -453,6 +457,7 @@ describe('JS release recovery', () => {
   test('resumes formatting when release creation succeeded earlier', async () => {
     const calls = [];
     const state = await recoverJsRelease({
+      expectedBadge: badge,
       isPublished: async () => true,
       getRelease: async () => ({ body: 'Unformatted changelog notes' }),
       createRelease: async () => calls.push('create'),
@@ -465,8 +470,9 @@ describe('JS release recovery', () => {
 
   test('does not republish a completed release', async () => {
     const state = await recoverJsRelease({
+      expectedBadge: badge,
       isPublished: async () => true,
-      getRelease: async () => ({ body: 'img.shields.io' }),
+      getRelease: async () => ({ body: `Changelog\n\n---\n\n${badge}\n` }),
       createRelease: async () => {
         throw new Error('unexpected create');
       },
@@ -477,8 +483,24 @@ describe('JS release recovery', () => {
     expect(state).toBe('complete');
   });
 
+  test('formats a release with misleading badge text', async () => {
+    const calls = [];
+    const state = await recoverJsRelease({
+      expectedBadge: badge,
+      isPublished: async () => true,
+      getRelease: async () => ({
+        body: 'See https://img.shields.io.evil.test',
+      }),
+      createRelease: async () => calls.push('create'),
+      formatRelease: async () => calls.push('format'),
+    });
+    expect(state).toBe('recovered');
+    expect(calls).toEqual(['format']);
+  });
+
   test('leaves a version missing from npm for the publish step', async () => {
     const state = await recoverJsRelease({
+      expectedBadge: badge,
       isPublished: async () => false,
       getRelease: async () => {
         throw new Error('unexpected release lookup');

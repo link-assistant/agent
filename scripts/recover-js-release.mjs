@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { isPackageVersionPublished } from './npm-registry.mjs';
+import { hasFormattedNpmBadge, npmVersionBadge } from './release-badge.mjs';
 
 const execFile = promisify(execFileCallback);
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -30,6 +31,7 @@ export function findVersionCommit(log, version) {
  * @param {Function} options.getRelease - returns release data or null
  * @param {Function} options.createRelease
  * @param {Function} options.formatRelease
+ * @param {string} options.expectedBadge
  * @param {Function} [options.onPublished]
  * @returns {Promise<'needs_publish'|'complete'|'recovered'>}
  */
@@ -38,14 +40,18 @@ export async function recoverJsRelease({
   getRelease,
   createRelease,
   formatRelease,
+  expectedBadge,
   onPublished = () => {},
 }) {
+  if (!expectedBadge) {
+    throw new Error('Expected npm version badge is required');
+  }
   if (!(await isPublished())) {
     return 'needs_publish';
   }
 
   const release = await getRelease();
-  if (release?.body?.includes('img.shields.io')) {
+  if (release?.body && hasFormattedNpmBadge(release.body, expectedBadge)) {
     return 'complete';
   }
 
@@ -86,6 +92,7 @@ async function main() {
   ];
 
   const state = await recoverJsRelease({
+    expectedBadge: npmVersionBadge(name, version),
     isPublished: () => isPackageVersionPublished(name, version),
     getRelease: async () => {
       try {
