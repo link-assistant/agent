@@ -313,6 +313,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      # A rerun checks out the original trigger SHA. The version bump may have
+      # already reached main, so use its package.json and changelog for recovery.
+      - name: Sync release checkout to current main
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:

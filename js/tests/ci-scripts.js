@@ -500,6 +500,10 @@ describe('JS release workflow wiring', () => {
       new URL('../../.github/workflows/js.yml', import.meta.url),
       'utf8'
     );
+    const releaseJob = workflow
+      .split('\n  release:\n')[1]
+      .split('\n  instant-release:\n')[0];
+    expect(releaseJob).toContain('git checkout -B main origin/main');
     expect(workflow).toContain('run: node scripts/recover-js-release.mjs');
     expect(workflow).toContain("steps.recover.outputs.needs_publish == 'true'");
     expect(workflow.match(/name: Summarize JS release outcome/g)).toHaveLength(
