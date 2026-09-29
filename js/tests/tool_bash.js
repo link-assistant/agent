@@ -60,6 +60,18 @@ async function checkTreeStopped(heartbeat, output) {
   }
 }
 
+function cleanProcessTreeFixture(directory) {
+  try {
+    rmSync(directory, { recursive: true, force: true });
+  } catch (error) {
+    // A surviving Windows descendant can lock its working directory. Keep
+    // the lifecycle assertion as the test failure in that case.
+    if (process.platform !== 'win32' || error.code !== 'EBUSY') {
+      throw error;
+    }
+  }
+}
+
 afterEach(async () => {
   await Instance.disposeAll();
 });
@@ -141,12 +153,7 @@ describe('bash tool command execution', () => {
       expect(result.output).toContain('(Command timed out after 600 ms)');
       await checkTreeStopped(heartbeat, result.output);
     } finally {
-      rmSync(directory, {
-        recursive: true,
-        force: true,
-        maxRetries: 10,
-        retryDelay: 100,
-      });
+      cleanProcessTreeFixture(directory);
     }
   });
 
@@ -170,12 +177,7 @@ describe('bash tool command execution', () => {
       expect(result.output).toContain('(Command was aborted)');
       await checkTreeStopped(heartbeat, result.output);
     } finally {
-      rmSync(directory, {
-        recursive: true,
-        force: true,
-        maxRetries: 10,
-        retryDelay: 100,
-      });
+      cleanProcessTreeFixture(directory);
     }
   });
 });
