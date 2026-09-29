@@ -54,7 +54,7 @@ const describe = (value) => {
   if (type !== 'object' && type !== 'function') {
     return type;
   }
-  let keys = [];
+  let keys;
   try {
     keys = Object.keys(value);
   } catch {

@@ -275,7 +275,8 @@ export function parseStreamJsonInput(input) {
     throw new Error(
       `Invalid stream-json input frame: ${
         error instanceof Error ? error.message : String(error)
-      }`
+      }`,
+      { cause: error }
     );
   }
 

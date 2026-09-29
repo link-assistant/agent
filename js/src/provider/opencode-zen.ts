@@ -90,8 +90,7 @@ export namespace OpenCodeZen {
     }
 
     const body = (await response.json().catch(() => undefined)) as
-      | { data?: Array<{ id?: unknown }> }
-      | undefined;
+      { data?: Array<{ id?: unknown }> } | undefined;
     const rows = Array.isArray(body?.data) ? body.data : [];
     return new Set(
       rows

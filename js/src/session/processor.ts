@@ -116,7 +116,7 @@ export namespace SessionProcessor {
             let reasoningMap: Record<string, MessageV2.ReasoningPart> = {};
             const stream = fn();
 
-            for await (const value of stream.fullStream) {
+            for await (const value of stream.stream) {
               input.abort.throwIfAborted();
               switch (value.type) {
                 case 'start':

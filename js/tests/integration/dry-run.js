@@ -217,10 +217,7 @@ describe('Echo provider (dry-run mode)', () => {
     expect(textEvents.length > 0).toBeTruthy();
 
     // Validate event structure
-    for (const event of events) {
-      if (event.type === 'status') {
-        continue;
-      } // Skip status messages
+    for (const event of [...startEvents, ...finishEvents, ...textEvents]) {
       expect(typeof event.type).toBe('string');
       expect(typeof event.timestamp).toBe('number');
       expect(typeof event.sessionID).toBe('string');
@@ -371,22 +368,22 @@ describe('Echo provider (dry-run mode)', () => {
  * Tests the echo provider directly without going through the CLI
  */
 describe('Echo provider (unit tests)', () => {
-  test('createEchoModel returns a valid LanguageModelV2', async () => {
-    const { createEchoModel } = await import('../src/provider/echo.ts');
+  test('createEchoModel returns a valid LanguageModelV4', async () => {
+    const { createEchoModel } = await import('../../src/provider/echo.ts');
 
     const model = createEchoModel('test-echo');
 
-    expect(model.specificationVersion).toBe('v2');
+    expect(model.specificationVersion).toBe('v4');
     expect(model.provider).toBe('link-assistant');
     expect(model.modelId).toBe('test-echo');
     expect(typeof model.doGenerate).toBe('function');
     expect(typeof model.doStream).toBe('function');
 
-    console.log('\n✅ createEchoModel returns a valid LanguageModelV2');
+    console.log('\n✅ createEchoModel returns a valid LanguageModelV4');
   });
 
   test('doGenerate echoes back user message', async () => {
-    const { createEchoModel } = await import('../src/provider/echo.ts');
+    const { createEchoModel } = await import('../../src/provider/echo.ts');
 
     const model = createEchoModel('test-echo');
     const prompt = [
@@ -402,13 +399,13 @@ describe('Echo provider (unit tests)', () => {
     expect(result.content.length).toBeGreaterThan(0);
     expect(result.content[0].type).toBe('text');
     expect(result.content[0].text).toBe('Echo this message');
-    expect(result.finishReason).toBe('stop');
+    expect(result.finishReason.unified).toBe('stop');
 
     console.log('\n✅ doGenerate echoes back user message');
   });
 
   test('doStream produces proper stream events', async () => {
-    const { createEchoModel } = await import('../src/provider/echo.ts');
+    const { createEchoModel } = await import('../../src/provider/echo.ts');
 
     const model = createEchoModel('test-echo');
     const prompt = [
@@ -454,22 +451,22 @@ describe('Echo provider (unit tests)', () => {
  * Tests the cache provider directly without going through the CLI
  */
 describe('Cache provider (unit tests)', () => {
-  test('createCacheModel returns a valid LanguageModelV2', async () => {
-    const { createCacheModel } = await import('../src/provider/cache.ts');
+  test('createCacheModel returns a valid LanguageModelV4', async () => {
+    const { createCacheModel } = await import('../../src/provider/cache.ts');
 
     const model = createCacheModel('opencode', 'minimax-m2.5-free');
 
-    expect(model.specificationVersion).toBe('v2');
+    expect(model.specificationVersion).toBe('v4');
     expect(model.provider).toBe('link-assistant');
     expect(model.modelId).toBe(MODEL);
     expect(typeof model.doGenerate).toBe('function');
     expect(typeof model.doStream).toBe('function');
 
-    console.log('\n✅ createCacheModel returns a valid LanguageModelV2');
+    console.log('\n✅ createCacheModel returns a valid LanguageModelV4');
   });
 
   test('cache provider generates and caches responses', async () => {
-    const { createCacheModel } = await import('../src/provider/cache.ts');
+    const { createCacheModel } = await import('../../src/provider/cache.ts');
 
     const model = createCacheModel('opencode', 'minimax-m2.5-free');
     const prompt = [
@@ -497,7 +494,7 @@ describe('Cache provider (unit tests)', () => {
   });
 
   test('cache provider streams cached responses', async () => {
-    const { createCacheModel } = await import('../src/provider/cache.ts');
+    const { createCacheModel } = await import('../../src/provider/cache.ts');
 
     const model = createCacheModel('opencode', 'minimax-m2.5-free');
     const prompt = [

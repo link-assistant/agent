@@ -100,6 +100,10 @@ export async function parseModelConfig(
     }
   }
 
+  if (argv['dry-run'] && !cliModelArg && modelArg === defaultModel) {
+    modelArg = 'link-assistant/echo';
+  }
+
   // Attestation inputs (#295): record what was requested, and where it came
   // from, before resolution can rewrite the effective model. `argv.model` is
   // only treated as a request when it differs from the default, because yargs

@@ -63,7 +63,7 @@ describe('AI SDK warning-free multi-turn requests', () => {
     for (let turn = 0; turn < 2; turn++) {
       const result = streamText({
         model,
-        system: 'You are a test assistant.',
+        instructions: 'You are a test assistant.',
         messages: [{ role: 'user', content: `Turn ${turn + 1}` }],
       });
       expect(await result.text).toBe('ok');
@@ -108,22 +108,20 @@ async function captureWarnings(run: () => Promise<unknown>) {
   console.warn = mock((...args: unknown[]) =>
     warnings.push(args.map(String).join(' '))
   );
-  await run();
-  console.warn = originalWarn;
+  try {
+    await run();
+  } finally {
+    console.warn = originalWarn;
+  }
   return warnings.join('\n');
 }
 
-const SYSTEM_IN_MESSAGES_WARNING = 'System messages in the prompt or messages';
-
 // Regression guard for issue #301: every CI run of the summary and agent code
-// paths printed "System messages in the prompt or messages fields can be a
-// security risk because they may enable prompt injection attacks. Use the
-// system option instead when possible." The tests below pin both halves of
-// that finding - the old shape warns, and the shape src/session/summary.ts and
-// src/agent/agent.ts now use does not.
-describe('system prompts are passed through the system option', () => {
-  test('system messages inside messages still warn', async () => {
-    const warnings = await captureWarnings(() =>
+// paths printed warnings about system messages in the messages field.
+// AI SDK 7 rejects that shape and accepts top-level instructions.
+describe('system prompts are passed through the instructions option', () => {
+  test('system messages inside messages are rejected', async () => {
+    await expect(
       generateText({
         model: testModel(),
         messages: [
@@ -131,16 +129,14 @@ describe('system prompts are passed through the system option', () => {
           { role: 'user', content: 'Summarize this.' },
         ],
       })
-    );
-
-    expect(warnings).toContain(SYSTEM_IN_MESSAGES_WARNING);
+    ).rejects.toThrow('System messages are not allowed');
   });
 
-  test('generateText with the system option is warning-free', async () => {
+  test('generateText with instructions is warning-free', async () => {
     const warnings = await captureWarnings(() =>
       generateText({
         model: testModel(),
-        system: [
+        instructions: [
           { role: 'system' as const, content: 'You are a test assistant.' },
         ],
         messages: [{ role: 'user' as const, content: 'Summarize this.' }],
@@ -153,18 +149,18 @@ describe('system prompts are passed through the system option', () => {
   // generateObject against this mock provider also warns about an unsupported
   // "responseFormat" - a provider capability warning, not a prompt shape one -
   // so this test asserts only on the prompt injection warning.
-  test('generateObject with the system option does not warn about prompt injection', async () => {
+  test('generateObject with instructions does not warn about prompt injection', async () => {
     const warnings = await captureWarnings(() =>
       generateObject({
         model: testModel('{"answer":"ok"}'),
         schema: z.object({ answer: z.string() }),
-        system: [
+        instructions: [
           { role: 'system' as const, content: 'You are a test assistant.' },
         ],
         prompt: [{ role: 'user' as const, content: 'Answer this.' }],
       })
     );
 
-    expect(warnings).not.toContain(SYSTEM_IN_MESSAGES_WARNING);
+    expect(warnings).not.toContain('System messages in the prompt or messages');
   });
 });

@@ -387,7 +387,7 @@ export namespace SessionCompaction {
         headers: model.info.headers,
         abortSignal: input.abort,
         tools: model.info.tool_call ? {} : undefined,
-        system: system.map((content) => ({ role: 'system', content })),
+        instructions: system.map((content) => ({ role: 'system', content })),
         messages: [
           ...safeModelMessages,
           {

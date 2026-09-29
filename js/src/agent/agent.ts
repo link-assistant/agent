@@ -138,10 +138,10 @@ export namespace Agent {
     const existing = await list();
     const result = await generateObject({
       temperature: 0.3,
-      // The system prompt belongs in `system`, not in `prompt`: the AI SDK
+      // The system prompt belongs in `instructions`, not in `prompt`: the AI SDK
       // warns that a system message inside the prompt enables prompt
       // injection, and providers are free to treat it as ordinary content.
-      system: system.map((content) => ({
+      instructions: system.map((content) => ({
         role: 'system' as const,
         content,
       })),
