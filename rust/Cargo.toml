@@ -11,61 +11,61 @@ categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
 # CLI argument parsing
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.6.7", features = ["derive"] }
 
 # Async runtime
-tokio = { version = "1.41", features = ["full"] }
+tokio = { version = "1.53.1", features = ["full"] }
 
 # JSON serialization
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
 
 # HTTP client (for API calls)
-reqwest = { version = "0.12", features = ["json", "stream"] }
+reqwest = { version = "0.13.5", features = ["json", "stream"] }
 
 # Path and file handling
-walkdir = "2.5"
-glob = "0.3"
-regex = "1.11"
-ignore = "0.4"
+walkdir = "2.5.0"
+glob = "0.3.4"
+regex = "1.13.1"
+ignore = "0.4.33"
 
 # Error handling
-thiserror = "2.0"
-anyhow = "1.0"
+thiserror = "2.0.21"
+anyhow = "1.0.104"
 
 # Unique identifiers
-ulid = "1.1"
-uuid = { version = "1.11", features = ["v4"] }
+ulid = "3.0.0"
+uuid = { version = "1.26.1", features = ["v4"] }
 
 # Time handling
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4.45", features = ["serde"] }
 
 # Logging
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
 
 # Environment variables
-dotenvy = "0.15"
+dotenvy = "0.15.7"
 
 # Process execution
-which = "7.0"
+which = "8.0.6"
 
 # Diff utilities
-similar = "2.6"
+similar = "3.2.0"
 
 # Async traits
-async-trait = "0.1"
+async-trait = "0.1.92"
 
 # Random number generation
-rand = "0.8"
+rand = "0.10.3"
 
 # Base64 encoding
-base64 = "0.22"
+base64 = "0.23.1"
 
 [dev-dependencies]
-tempfile = "3.14"
-assert_cmd = "2.0"
-predicates = "3.1"
+tempfile = "3.27.0"
+assert_cmd = "2.2.2"
+predicates = "3.1.4"
 
 [lib]
 name = "link_assistant_agent"

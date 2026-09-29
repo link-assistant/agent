@@ -4,7 +4,7 @@
 //! the JavaScript implementation's Identifier module. IDs can be generated
 //! in ascending or descending order for different use cases.
 
-use rand::Rng;
+use rand::RngExt;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -43,10 +43,10 @@ const ID_LENGTH: usize = 26;
 /// Generate a random base62 string of the given length
 fn random_base62(length: usize) -> String {
     const CHARS: &[u8] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     (0..length)
         .map(|_| {
-            let idx = rng.gen_range(0..62);
+            let idx = rng.random_range(0..62);
             CHARS[idx] as char
         })
         .collect()
