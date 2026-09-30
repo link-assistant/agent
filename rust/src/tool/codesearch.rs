@@ -173,6 +173,7 @@ impl Tool for CodeSearchTool {
                 if let Ok(parsed) = serde_json::from_str::<McpCodeResponse>(data) {
                     if let Some(content) = parsed.result.content.first() {
                         return Ok(ToolResult {
+                            is_error: false,
                             title: format!("Code search: {}", params.query),
                             output: content.text.clone(),
                             metadata: json!({}),
@@ -184,6 +185,7 @@ impl Tool for CodeSearchTool {
         }
 
         Ok(ToolResult {
+            is_error: false,
             title: format!("Code search: {}", params.query),
             output: "No code snippets or documentation found. Please try a different query, be more specific about the library or programming concept, or check the spelling of framework names.".to_string(),
             metadata: json!({}),

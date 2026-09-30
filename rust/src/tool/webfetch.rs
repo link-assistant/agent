@@ -181,6 +181,7 @@ impl Tool for WebFetchTool {
         };
 
         Ok(ToolResult {
+            is_error: false,
             title,
             output,
             metadata: json!({}),

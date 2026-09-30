@@ -200,6 +200,7 @@ impl Tool for ReadTool {
             .join("\n");
 
         Ok(ToolResult {
+            is_error: false,
             title,
             output,
             metadata: json!({
@@ -347,6 +348,7 @@ async fn read_image(
     };
 
     Ok(ToolResult {
+        is_error: false,
         title: title.to_string(),
         output: "Image read successfully".to_string(),
         metadata: json!({

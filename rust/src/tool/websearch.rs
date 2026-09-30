@@ -193,6 +193,7 @@ impl Tool for WebSearchTool {
                 if let Ok(parsed) = serde_json::from_str::<McpSearchResponse>(data) {
                     if let Some(content) = parsed.result.content.first() {
                         return Ok(ToolResult {
+                            is_error: false,
                             title: format!("Web search: {}", params.query),
                             output: content.text.clone(),
                             metadata: json!({}),
@@ -204,6 +205,7 @@ impl Tool for WebSearchTool {
         }
 
         Ok(ToolResult {
+            is_error: false,
             title: format!("Web search: {}", params.query),
             output: "No search results found. Please try a different query.".to_string(),
             metadata: json!({}),
