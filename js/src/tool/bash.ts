@@ -28,13 +28,18 @@ const resolveWasm = (asset: string) => {
 
 const parser = lazy(async () => {
   const { Parser } = await import('web-tree-sitter');
-  const { default: treeWasm } = await import(
-    'web-tree-sitter/tree-sitter.wasm' as string,
-    {
-      with: { type: 'wasm' },
-    }
-  );
-  const treePath = resolveWasm(treeWasm);
+  // web-tree-sitter renamed its runtime WASM in 0.26. Resolve the current
+  // export while retaining 0.25 compatibility until OpenTUI lifts its peer pin.
+  let treePath: string;
+  try {
+    treePath = resolveWasm(
+      import.meta.resolve('web-tree-sitter/web-tree-sitter.wasm')
+    );
+  } catch {
+    treePath = resolveWasm(
+      import.meta.resolve('web-tree-sitter/tree-sitter.wasm')
+    );
+  }
   await Parser.init({
     locateFile() {
       return treePath;
