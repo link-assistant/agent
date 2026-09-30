@@ -123,6 +123,7 @@ impl Tool for TodoWriteTool {
         let output = serde_json::to_string_pretty(&params.todos).unwrap_or_default();
 
         Ok(ToolResult {
+            is_error: false,
             title: format!("{} todos", pending_count),
             output,
             metadata: json!({
@@ -164,6 +165,7 @@ impl Tool for TodoReadTool {
         let output = serde_json::to_string_pretty(&todos).unwrap_or_default();
 
         Ok(ToolResult {
+            is_error: false,
             title: format!("{} todos", pending_count),
             output,
             metadata: json!({

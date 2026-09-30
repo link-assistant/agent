@@ -172,9 +172,9 @@ impl Tool for BatchTool {
                     Ok(result) => {
                         results.push(BatchCallResult {
                             tool: call.tool.clone(),
-                            success: true,
+                            success: !result.is_error,
+                            error: result.is_error.then(|| result.output.clone()),
                             output: Some(result.output),
-                            error: None,
                         });
                     }
                     Err(e) => {
@@ -222,6 +222,7 @@ impl Tool for BatchTool {
             .collect();
 
         Ok(ToolResult {
+            is_error: failed > 0,
             title: format!("Batch execution ({}/{} successful)", successful, total),
             output: output_message,
             metadata: json!({

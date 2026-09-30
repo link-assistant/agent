@@ -80,6 +80,7 @@ impl Tool for WriteTool {
         fs::write(&filepath, &params.content).await?;
 
         Ok(ToolResult {
+            is_error: false,
             title,
             output: String::new(),
             metadata: json!({

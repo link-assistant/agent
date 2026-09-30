@@ -202,6 +202,7 @@ async function runHostedTurn(options: {
   command: string;
   env?: Record<string, string | undefined>;
   relocateXdgTo?: string;
+  jsonStandard?: 'opencode' | 'claude';
 }) {
   const provider = await startToolCallingProvider(options.command);
   const configDir = options.relocateXdgTo
@@ -240,6 +241,8 @@ async function runHostedTurn(options: {
         '--verbose',
         '--no-always-accept-stdin',
         '--no-server',
+        '--json-standard',
+        options.jsonStandard ?? 'opencode',
       ],
       cwd: process.cwd(),
       stdin: new TextEncoder().encode('check gh\n'),
@@ -366,4 +369,58 @@ describe('LINK_ASSISTANT_AGENT_CONFIG_DIR as the host contract (#314)', () => {
       expect(run.toolOutput, run.context).toContain('GH_AUTH_EXIT=0');
     }
   );
+});
+
+describe('process failures reach the provider and stream-json (#317)', () => {
+  test('exit 4 is visible to an OpenAI-compatible provider and keeps metadata', async () => {
+    const run = await runHostedTurn({
+      command: bunEval(
+        "console.log('Please run gh auth login'); process.exit(4)"
+      ),
+    });
+    expect(run.exitCode, run.context).toBe(0);
+    expect(run.toolOutput, run.context).toBe(
+      'Exit code 4\nPlease run gh auth login\n'
+    );
+    const failed = run.records.find(
+      (record) =>
+        record.part?.type === 'tool' && record.part.state?.status === 'error'
+    );
+    expect(failed?.part.state.error, run.context).toBe(run.toolOutput);
+    expect(failed?.part.state.metadata.exit, run.context).toBe(4);
+  });
+
+  test('Claude stream-json flags a quiet command failure', async () => {
+    const run = await runHostedTurn({
+      command: bunEval('process.exit(1)'),
+      jsonStandard: 'claude',
+    });
+    expect(run.exitCode, run.context).toBe(0);
+    expect(run.toolOutput, run.context).toBe('Exit code 1\n');
+    const results = run.records.filter(
+      (record) => record.type === 'tool_result'
+    );
+    expect(results, run.context).toHaveLength(1);
+    expect(results[0], run.context).toMatchObject({
+      status: 'error',
+      output: 'Exit code 1',
+    });
+  });
+
+  test('a successful command retains its provider output and stream status', async () => {
+    const run = await runHostedTurn({
+      command: bunEval("console.log('hello')"),
+      jsonStandard: 'claude',
+    });
+    expect(run.exitCode, run.context).toBe(0);
+    expect(run.toolOutput, run.context).toBe('hello\n');
+    const results = run.records.filter(
+      (record) => record.type === 'tool_result'
+    );
+    expect(results, run.context).toHaveLength(1);
+    expect(results[0], run.context).toMatchObject({
+      status: 'success',
+      output: 'hello\n',
+    });
+  });
 });

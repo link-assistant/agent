@@ -11,6 +11,7 @@ import { $ } from 'bun';
 import { Filesystem } from '../util/filesystem';
 import { Permission } from '../permission';
 import { fileURLToPath } from 'url';
+import { processResult } from './process-result';
 
 const MAX_OUTPUT_LENGTH = 30_000;
 const DEFAULT_TIMEOUT = 1 * 60 * 1000;
@@ -154,10 +155,11 @@ export const BashTool = Tool.define('bash', {
     let timedOut = false;
     let aborted = false;
     let exited = false;
+    let closed = false;
 
     const killTree = async () => {
       const pid = proc.pid;
-      if (!pid || exited) {
+      if (!pid || closed) {
         return;
       }
 
@@ -175,7 +177,9 @@ export const BashTool = Tool.define('bash', {
       try {
         process.kill(-pid, 'SIGTERM');
         await Bun.sleep(SIGKILL_TIMEOUT_MS);
-        if (!exited) {
+        // The shell may exit before a child that ignores SIGTERM. The
+        // process group still needs SIGKILL until its output pipes close.
+        if (!closed) {
           process.kill(-pid, 'SIGKILL');
         }
       } catch (_e) {
@@ -186,11 +190,6 @@ export const BashTool = Tool.define('bash', {
         }
       }
     };
-
-    if (ctx.abort.aborted) {
-      aborted = true;
-      await killTree();
-    }
 
     const abortHandler = () => {
       aborted = true;
@@ -204,7 +203,7 @@ export const BashTool = Tool.define('bash', {
       void killTree();
     }, timeout);
 
-    await new Promise<void>((resolve, reject) => {
+    const completion = new Promise<void>((resolve, reject) => {
       const cleanup = () => {
         clearTimeout(timeoutTimer);
         ctx.abort.removeEventListener('abort', abortHandler);
@@ -212,6 +211,12 @@ export const BashTool = Tool.define('bash', {
 
       proc.once('exit', () => {
         exited = true;
+      });
+
+      // close follows exit after stdout/stderr have drained. Install these
+      // listeners before killing an already-aborted process.
+      proc.once('close', () => {
+        closed = true;
         cleanup();
         resolve();
       });
@@ -222,6 +227,9 @@ export const BashTool = Tool.define('bash', {
         reject(error);
       });
     });
+
+    if (ctx.abort.aborted) abortHandler();
+    await completion;
 
     if (output.length > MAX_OUTPUT_LENGTH) {
       output = output.slice(0, MAX_OUTPUT_LENGTH);
@@ -236,14 +244,34 @@ export const BashTool = Tool.define('bash', {
       output += '\n\n(Command was aborted)';
     }
 
+    const result = processResult({
+      output,
+      exit: proc.exitCode,
+      signal: proc.signalCode,
+      timedOut,
+      aborted,
+    });
+
+    log.debug(() => ({
+      message: 'command finished',
+      exit: proc.exitCode,
+      signal: proc.signalCode,
+      timedOut,
+      aborted,
+      isError: result.isError,
+    }));
+
     return {
       title: params.command,
       metadata: {
         output,
         exit: proc.exitCode,
+        signal: proc.signalCode,
+        timedOut,
+        aborted,
         description: params.description,
       },
-      output,
+      ...result,
     };
   },
 });

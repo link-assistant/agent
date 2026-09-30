@@ -112,6 +112,7 @@ impl Tool for MultiEditTool {
         let metadata_results: Vec<Value> = results.iter().map(|r| r.metadata.clone()).collect();
 
         Ok(ToolResult {
+            is_error: false,
             title,
             output: last_output,
             metadata: json!({

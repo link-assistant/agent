@@ -96,6 +96,7 @@ impl Tool for EditTool {
             let diff = create_diff("", &params.new_string, &filepath.to_string_lossy());
 
             return Ok(ToolResult {
+                is_error: false,
                 title,
                 output: String::new(),
                 metadata: json!({
@@ -151,6 +152,7 @@ impl Tool for EditTool {
         }
 
         Ok(ToolResult {
+            is_error: false,
             title,
             output: String::new(),
             metadata: json!({

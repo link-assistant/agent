@@ -128,10 +128,11 @@ impl Tool for BashTool {
                 }
 
                 if exit_code != 0 {
-                    output.push_str(&format!("\n(exit code: {})", exit_code));
+                    output = format!("Exit code {}\n{}", exit_code, output);
                 }
 
                 Ok(ToolResult {
+                    is_error: exit_code != 0,
                     title,
                     output: output.clone(),
                     metadata: json!({
@@ -144,10 +145,25 @@ impl Tool for BashTool {
                 })
             }
             Ok(Err(e)) => Err(AgentError::tool_execution("bash", e.to_string())),
-            Err(_) => Err(AgentError::tool_execution(
-                "bash",
-                format!("Command timed out after {}ms", timeout_ms),
-            )),
+            Err(_) => {
+                let output = format!(
+                    "Exit code unavailable\nCommand timed out after {}ms",
+                    timeout_ms
+                );
+                Ok(ToolResult {
+                    is_error: true,
+                    title,
+                    output: output.clone(),
+                    metadata: json!({
+                        "exitCode": null,
+                        "exit": null,
+                        "output": output,
+                        "command": params.command,
+                        "timedOut": true,
+                    }),
+                    attachments: None,
+                })
+            }
         }
     }
 }
@@ -163,6 +179,7 @@ async fn execute_command(
         .current_dir(working_dir)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
+        .kill_on_drop(true)
         .spawn()?;
 
     let mut stdout = String::new();

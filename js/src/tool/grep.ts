@@ -62,7 +62,7 @@ export const GrepTool = Tool.define('grep', {
     }
 
     if (exitCode !== 0) {
-      throw new Error(`ripgrep failed: ${errorOutput}`);
+      throw new Error(`Exit code ${exitCode}\nripgrep failed: ${errorOutput}`);
     }
 
     const matches = [];

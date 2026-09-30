@@ -338,6 +338,8 @@ export namespace MessageV2 {
       status: z.literal('error'),
       input: z.record(z.string(), z.any()),
       error: z.string(),
+      title: z.string().optional(),
+      attachments: FilePart.array().optional(),
       metadata: z.record(z.string(), z.any()).optional(),
       time: z.object({
         start: z.number(),
@@ -734,7 +736,10 @@ export namespace MessageV2 {
               type: 'step-start',
             });
           if (part.type === 'tool') {
-            if (part.state.status === 'completed') {
+            if (
+              part.state.status === 'completed' ||
+              part.state.status === 'error'
+            ) {
               if (part.state.attachments?.length) {
                 result.push({
                   id: Identifier.ascending('message'),
@@ -753,6 +758,8 @@ export namespace MessageV2 {
                   ],
                 });
               }
+            }
+            if (part.state.status === 'completed') {
               assistantMessage.parts.push({
                 type: ('tool-' + part.tool) as `tool-${string}`,
                 state: 'output-available',

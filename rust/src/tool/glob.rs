@@ -113,6 +113,7 @@ impl Tool for GlobTool {
             .collect();
 
         Ok(ToolResult {
+            is_error: false,
             title,
             output: output.join("\n"),
             metadata: json!({

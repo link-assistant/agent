@@ -55,6 +55,58 @@ async fn test_bash_exit_code() {
     let result = tool.execute(params, &ctx).await.unwrap();
 
     assert_eq!(result.metadata["exitCode"], 42);
+    assert!(result.output.starts_with("Exit code 42\n"));
+    assert_eq!(serde_json::to_value(&result).unwrap()["isError"], true);
+}
+
+#[tokio::test]
+async fn test_quiet_process_status() {
+    let temp = TempDir::new().unwrap();
+    let ctx = create_context(temp.path());
+    let failure = BashTool
+        .execute(json!({"command": "false"}), &ctx)
+        .await
+        .unwrap();
+    assert_eq!(failure.output, "Exit code 1\n");
+    assert_eq!(failure.metadata["exit"], 1);
+    assert_eq!(serde_json::to_value(&failure).unwrap()["isError"], true);
+    let success = BashTool
+        .execute(json!({"command": "true"}), &ctx)
+        .await
+        .unwrap();
+    assert_eq!(success.output, "");
+    assert_eq!(serde_json::to_value(&success).unwrap()["isError"], false);
+}
+
+#[tokio::test]
+async fn test_timeout_status() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "exec sleep 2", "timeout": 50}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert!(result.output.starts_with("Exit code unavailable\n"));
+    assert!(result.output.contains("timed out after 50ms"));
+    assert_eq!(result.metadata["exit"], serde_json::Value::Null);
+    assert_eq!(serde_json::to_value(&result).unwrap()["isError"], true);
+}
+
+#[tokio::test]
+async fn test_batch_process_failure() {
+    let temp = TempDir::new().unwrap();
+    let result = link_assistant_agent::tool::batch::BatchTool
+        .execute(
+            json!({"tool_calls": [{"tool": "bash", "parameters": {"command": "false"}}]}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result.metadata["successful"], 0);
+    assert_eq!(result.metadata["failed"], 1);
+    assert_eq!(serde_json::to_value(&result).unwrap()["isError"], true);
 }
 
 #[tokio::test]

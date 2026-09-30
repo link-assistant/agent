@@ -19,6 +19,7 @@ import { SessionStatus } from './status';
 import { config, isVerbose } from '../config/config';
 import { SessionCompaction } from './compaction';
 import { SSEUsageExtractor } from '../util/sse-usage-extractor';
+import { Tool } from '../tool/tool';
 
 export namespace SessionProcessor {
   const DOOM_LOOP_THRESHOLD = 3;
@@ -233,18 +234,13 @@ export namespace SessionProcessor {
                   if (match && match.state.status === 'running') {
                     await Session.updatePart({
                       ...match,
-                      state: {
-                        status: 'completed',
+                      state: Tool.toState(value.output, {
                         input: value.input,
-                        output: value.output.output,
-                        metadata: value.output.metadata,
-                        title: value.output.title,
                         time: {
                           start: match.state.time.start,
                           end: Date.now(),
                         },
-                        attachments: value.output.attachments,
-                      },
+                      }),
                     });
 
                     delete toolcalls[value.toolCallId];

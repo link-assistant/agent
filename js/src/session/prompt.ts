@@ -48,6 +48,8 @@ import { fn } from '../util/fn';
 import { SessionProcessor } from './processor';
 import { TaskTool } from '../tool/task';
 import { SessionStatus } from './status';
+import { Tool } from '../tool/tool';
+import { processResult } from '../tool/process-result';
 
 export namespace SessionPrompt {
   const log = Log.create({ service: 'session.prompt' });
@@ -1198,12 +1200,7 @@ export namespace SessionPrompt {
           });
           return result;
         },
-        toModelOutput(result) {
-          return {
-            type: 'text',
-            value: result.output,
-          };
-        },
+        toModelOutput: Tool.toModelOutput,
       });
     }
 
@@ -1260,14 +1257,10 @@ export namespace SessionPrompt {
           output: textParts.join('\n\n'),
           attachments,
           content: result.content, // directly return content to preserve ordering when outputting to model
+          isError: result.isError,
         };
       };
-      item.toModelOutput = (result) => {
-        return {
-          type: 'text',
-          value: result.output,
-        };
-      };
+      item.toModelOutput = Tool.toModelOutput;
       tools[key] = item;
     }
     return tools;
@@ -1723,20 +1716,29 @@ export namespace SessionPrompt {
     msg.time.completed = Date.now();
     await Session.updateMessage(msg);
     if (part.state.status === 'running') {
-      part.state = {
-        status: 'completed',
-        time: {
-          ...part.state.time,
-          end: Date.now(),
+      part.state = Tool.toState(
+        {
+          title: '',
+          ...processResult({
+            output,
+            exit: proc.exitCode,
+            signal: proc.signalCode,
+          }),
+          metadata: {
+            output,
+            exit: proc.exitCode,
+            signal: proc.signalCode,
+            description: '',
+          },
         },
-        input: part.state.input,
-        title: '',
-        metadata: {
-          output,
-          description: '',
-        },
-        output,
-      };
+        {
+          time: {
+            ...part.state.time,
+            end: Date.now(),
+          },
+          input: part.state.input,
+        }
+      );
       await Session.updatePart(part);
     }
     return { info: msg, parts: [part] };
@@ -1794,7 +1796,11 @@ export namespace SessionPrompt {
       const results = await Promise.all(
         shell.map(async ([, cmd]) => {
           try {
-            return await $`${{ raw: cmd }}`.nothrow().text();
+            const result = await $`${{ raw: cmd }}`.nothrow();
+            return processResult({
+              output: result.text(),
+              exit: result.exitCode,
+            }).output;
           } catch (error) {
             return `Error executing command: ${error instanceof Error ? error.message : String(error)}`;
           }
