@@ -73,9 +73,11 @@ try {
       assert.doesNotMatch(installed.stderr, /incorrect peer dependency/);
       assert.equal(peers.status, 0, 'the pinned package must have valid peers');
     } else {
-      assert.match(
-        installed.stderr,
-        new RegExp(`incorrect peer dependency "web-tree-sitter@${version}"`)
+      assert.ok(
+        installed.stderr.includes(
+          `incorrect peer dependency "web-tree-sitter@${version}"`
+        ),
+        'the newer runtime must reproduce the OpenTUI peer warning'
       );
       assert.notEqual(peers.status, 0, 'OpenTUI still requires the older peer');
       assert.match(peers.stderr, /invalid: web-tree-sitter@/);
