@@ -19,6 +19,8 @@ The regression tests were run before implementation: seven JavaScript process te
 ## Automated verification
 
 ```sh
+bun experiments/issue-322/verify-bash-parser.mjs
+
 cd js
 bun test ./tests/process-tool-status.ts ./tests/host-config-contract.ts ./tests/event-handler.js ./tests/json-standard-unit.js
 npm run check
@@ -36,3 +38,9 @@ cargo test --locked --all-features
 The initial PR security audit also failed independently of this issue: `brace-expansion` in the committed npm lockfile had high-severity advisories. Refreshing the affected transitive versions clears the workflow's high-severity threshold. The existing low-severity Babel/OpenTUI advisory remains below that threshold; its suggested automatic fix would downgrade a direct dependency. No forced dependency downgrade was applied.
 
 The dependency freshness run on September 30 also required newly published patches for the AI SDK packages, OpenTUI, and Hono. Both JavaScript lockfiles were refreshed for those patch releases, and the complete JavaScript suite was rerun. The documented compatibility pins for Solid and web-tree-sitter remain in place.
+
+## Integration with the latest default branch
+
+PR #326 landed overlapping dependency updates and a bash parser change after this fix was implemented. Resolve the lockfile conflicts with the newer default-branch resolutions, which include the required direct patches and patched brace-expansion and ip-address versions. Preserve the parser's support for both WASM filenames alongside the process-status fix, and keep its permission enforcement tests and packed-package CI check.
+
+The branch also includes the subsequent 0.26.9 release commit. A separate process-status patch changeset records this fix without modifying the default branch's dependency release entry. The combined implementation passes 829 JavaScript tests (four existing todo), all 436 Rust tests, and four packed bash parser tests with each of web-tree-sitter 0.25.10 and 0.27.0.
