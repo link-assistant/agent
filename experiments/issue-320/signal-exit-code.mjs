@@ -2,9 +2,14 @@
 // a signal reports exit code 0, and the result has no documented field with the
 // terminating signal. Node's child_process reports exitCode null with
 // signalCode SIGTERM/SIGKILL for the same commands.
-// Run from js/: bun ../experiments/issue-320/signal-exit-code.mjs
-import { ProcessRunner } from 'command-stream/process-runner';
+// Run: node experiments/issue-320/signal-exit-code.mjs (or bun)
 import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
+
+const require = createRequire(
+  new URL('../../js/package.json', import.meta.url)
+);
+const { ProcessRunner } = require('command-stream/process-runner');
 
 function nodeSpawn(command) {
   return new Promise((resolve) => {

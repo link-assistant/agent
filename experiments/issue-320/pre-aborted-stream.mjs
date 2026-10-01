@@ -2,8 +2,13 @@
 // options is already aborted. setupExternalAbortSignal() kills and finishes the
 // runner synchronously inside _startAsync(), before stream() subscribes to the
 // 'end' and 'exit' events, so the iterator waits forever.
-// Run from js/: bun ../experiments/issue-320/pre-aborted-stream.mjs
-import { $ } from 'command-stream';
+// Run: node experiments/issue-320/pre-aborted-stream.mjs (or bun)
+import { createRequire } from 'node:module';
+
+const require = createRequire(
+  new URL('../../js/package.json', import.meta.url)
+);
+const { $ } = require('command-stream');
 
 const started = Date.now();
 const watchdog = setTimeout(() => {
