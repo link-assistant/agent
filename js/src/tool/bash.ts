@@ -17,6 +17,19 @@ const MAX_TIMEOUT = 10 * 60 * 1000;
 const KILL_SIGNAL = 'SIGTERM';
 export const log = Log.create({ service: 'bash-tool' });
 
+// command-stream 1.3.0 signals only the shell on Windows, which has no process
+// groups, so the shell's descendants keep running
+// (link-foundation/command-stream#205). taskkill /t walks the tree from the
+// shell, so it must run before the shell itself is stopped.
+const killWindowsTree = async (pid: number | undefined) => {
+  if (!pid) return;
+  // A failed taskkill resolves with its exit code; the runner is stopped next.
+  await new ProcessRunner(
+    { mode: 'exec', file: 'taskkill', args: ['/pid', String(pid), '/f', '/t'] },
+    { mirror: false, capture: false, stdin: 'ignore' }
+  ).catch(() => {});
+};
+
 const resolveWasm = (asset: string) => {
   if (asset.startsWith('file://')) return fileURLToPath(asset);
   if (asset.startsWith('/') || /^[a-z]:/i.test(asset)) return asset;
@@ -137,6 +150,11 @@ export const BashTool = Tool.define('bash', {
     // (link-foundation/command-stream#207).
     // A cancelled command does not need to start at all.
     if (!cancel.aborted) {
+      // On Windows the runner is stopped only after taskkill has stopped the
+      // shell's process tree.
+      const stop =
+        process.platform === 'win32' ? new AbortController() : undefined;
+
       // The file/args shell form spawns the command string through Node's
       // platform shell, as `spawn(command, { shell: true })` does. A command
       // string spec would route simple commands and pipelines through
@@ -146,7 +164,7 @@ export const BashTool = Tool.define('bash', {
         {
           cwd: Instance.directory,
           env: { ...process.env },
-          signal: cancel,
+          signal: stop?.signal ?? cancel,
           killSignal: KILL_SIGNAL,
           killGrace: 200,
           mirror: false,
@@ -154,6 +172,11 @@ export const BashTool = Tool.define('bash', {
           stdin: 'ignore',
         }
       );
+
+      const stopTree = () => {
+        void killWindowsTree(command.child?.pid).finally(() => stop?.abort());
+      };
+      if (stop) cancel.addEventListener('abort', stopTree, { once: true });
 
       for await (const chunk of command.stream()) {
         if (chunk.type === 'exit') {
@@ -168,6 +191,8 @@ export const BashTool = Tool.define('bash', {
           });
         }
       }
+
+      cancel.removeEventListener('abort', stopTree);
 
       // command-stream reports a shell that died from a signal as exit 0
       // (link-foundation/command-stream#208).
