@@ -1,5 +1,5 @@
 import z from 'zod';
-import { spawn } from 'child_process';
+import { ProcessRunner } from 'command-stream/process-runner';
 import { Tool } from './tool';
 import DESCRIPTION from './bash.txt';
 import { Branding } from '../branding';
@@ -7,8 +7,6 @@ import { Log } from '../util/log';
 import { Instance } from '../project/instance';
 import { lazy } from '../util/lazy';
 import { Language } from 'web-tree-sitter';
-import { $ } from 'bun';
-import { Filesystem } from '../util/filesystem';
 import { Permission } from '../permission';
 import { fileURLToPath } from 'url';
 import { processResult } from './process-result';
@@ -16,9 +14,21 @@ import { processResult } from './process-result';
 const MAX_OUTPUT_LENGTH = 30_000;
 const DEFAULT_TIMEOUT = 1 * 60 * 1000;
 const MAX_TIMEOUT = 10 * 60 * 1000;
-const SIGKILL_TIMEOUT_MS = 200;
-
+const KILL_SIGNAL = 'SIGTERM';
 export const log = Log.create({ service: 'bash-tool' });
+
+// command-stream 1.3.0 signals only the shell on Windows, which has no process
+// groups, so the shell's descendants keep running
+// (link-foundation/command-stream#205). taskkill /t walks the tree from the
+// shell, so it must run before the shell itself is stopped.
+const killWindowsTree = async (pid: number | undefined) => {
+  if (!pid) return;
+  // A failed taskkill resolves with its exit code; the runner is stopped next.
+  await new ProcessRunner(
+    { mode: 'exec', file: 'taskkill', args: ['/pid', String(pid), '/f', '/t'] },
+    { mirror: false, capture: false, stdin: 'ignore' }
+  ).catch(() => {});
+};
 
 const resolveWasm = (asset: string) => {
   if (asset.startsWith('file://')) return fileURLToPath(asset);
@@ -119,15 +129,8 @@ export const BashTool = Tool.define('bash', {
       });
     }
 
-    const proc = spawn(params.command, {
-      shell: true,
-      cwd: Instance.directory,
-      env: {
-        ...process.env,
-      },
-      stdio: ['ignore', 'pipe', 'pipe'],
-      detached: process.platform !== 'win32',
-    });
+    const timeoutSignal = AbortSignal.timeout(timeout);
+    const cancel = AbortSignal.any([ctx.abort, timeoutSignal]);
 
     let output = '';
 
@@ -139,97 +142,74 @@ export const BashTool = Tool.define('bash', {
       },
     });
 
-    const append = (chunk: Buffer) => {
-      output += chunk.toString();
-      ctx.metadata({
-        metadata: {
-          output,
-          description: params.description,
-        },
-      });
-    };
+    let exit: number | null = null;
+    let signal: string | null = null;
 
-    proc.stdout?.on('data', append);
-    proc.stderr?.on('data', append);
+    // command-stream 1.3.0 finishes a runner whose signal is already aborted
+    // before stream() subscribes to its end event, so the iterator never ends
+    // (link-foundation/command-stream#207).
+    // A cancelled command does not need to start at all.
+    if (!cancel.aborted) {
+      // On Windows the runner is stopped only after taskkill has stopped the
+      // shell's process tree.
+      const stop =
+        process.platform === 'win32' ? new AbortController() : undefined;
 
-    let timedOut = false;
-    let aborted = false;
-    let exited = false;
-    let closed = false;
-
-    const killTree = async () => {
-      const pid = proc.pid;
-      if (!pid || closed) {
-        return;
-      }
-
-      if (process.platform === 'win32') {
-        await new Promise<void>((resolve) => {
-          const killer = spawn('taskkill', ['/pid', String(pid), '/f', '/t'], {
-            stdio: 'ignore',
-          });
-          killer.once('exit', resolve);
-          killer.once('error', resolve);
-        });
-        return;
-      }
-
-      try {
-        process.kill(-pid, 'SIGTERM');
-        await Bun.sleep(SIGKILL_TIMEOUT_MS);
-        // The shell may exit before a child that ignores SIGTERM. The
-        // process group still needs SIGKILL until its output pipes close.
-        if (!closed) {
-          process.kill(-pid, 'SIGKILL');
+      // The file/args shell form spawns the command string through Node's
+      // platform shell, as `spawn(command, { shell: true })` does. A command
+      // string spec would route simple commands and pipelines through
+      // command-stream's JavaScript builtins (`ls`, `exit`, `cd`, ...) instead.
+      const command = new ProcessRunner(
+        { mode: 'shell', file: params.command, args: [] },
+        {
+          cwd: Instance.directory,
+          env: { ...process.env },
+          signal: stop?.signal ?? cancel,
+          killSignal: KILL_SIGNAL,
+          killGrace: 200,
+          mirror: false,
+          capture: true,
+          stdin: 'ignore',
         }
-      } catch (_e) {
-        proc.kill('SIGTERM');
-        await Bun.sleep(SIGKILL_TIMEOUT_MS);
-        if (!exited) {
-          proc.kill('SIGKILL');
-        }
-      }
-    };
+      );
 
-    const abortHandler = () => {
-      aborted = true;
-      void killTree();
-    };
-
-    ctx.abort.addEventListener('abort', abortHandler, { once: true });
-
-    const timeoutTimer = setTimeout(() => {
-      timedOut = true;
-      void killTree();
-    }, timeout);
-
-    const completion = new Promise<void>((resolve, reject) => {
-      const cleanup = () => {
-        clearTimeout(timeoutTimer);
-        ctx.abort.removeEventListener('abort', abortHandler);
+      const stopTree = () => {
+        void killWindowsTree(command.child?.pid).finally(() => stop?.abort());
       };
+      if (stop) cancel.addEventListener('abort', stopTree, { once: true });
 
-      proc.once('exit', () => {
-        exited = true;
-      });
+      for await (const chunk of command.stream()) {
+        if (chunk.type === 'exit') {
+          exit = chunk.code;
+        } else {
+          output += chunk.data.toString();
+          ctx.metadata({
+            metadata: {
+              output,
+              description: params.description,
+            },
+          });
+        }
+      }
 
-      // close follows exit after stdout/stderr have drained. Install these
-      // listeners before killing an already-aborted process.
-      proc.once('close', () => {
-        closed = true;
-        cleanup();
-        resolve();
-      });
+      cancel.removeEventListener('abort', stopTree);
 
-      proc.once('error', (error) => {
-        exited = true;
-        cleanup();
-        reject(error);
-      });
-    });
+      // command-stream reports a shell that died from a signal as exit 0
+      // (link-foundation/command-stream#208).
+      // Its result keeps the native child, which has the signal name.
+      const finished = command.result as {
+        child?: { signalCode?: string | null };
+      } | null;
+      signal = finished?.child?.signalCode ?? null;
+    }
 
-    if (ctx.abort.aborted) abortHandler();
-    await completion;
+    const timedOut = timeoutSignal.aborted;
+    const aborted = ctx.abort.aborted;
+    // command-stream settles a cancelled command as soon as it sends the kill
+    // signal and reports a synthesized 128 + signal code. The real exit status
+    // is unavailable, as it is when the shell itself dies from a signal.
+    if (timedOut || aborted) signal = KILL_SIGNAL;
+    if (signal) exit = null;
 
     if (output.length > MAX_OUTPUT_LENGTH) {
       output = output.slice(0, MAX_OUTPUT_LENGTH);
@@ -246,16 +226,16 @@ export const BashTool = Tool.define('bash', {
 
     const result = processResult({
       output,
-      exit: proc.exitCode,
-      signal: proc.signalCode,
+      exit,
+      signal,
       timedOut,
       aborted,
     });
 
     log.debug(() => ({
       message: 'command finished',
-      exit: proc.exitCode,
-      signal: proc.signalCode,
+      exit,
+      signal,
       timedOut,
       aborted,
       isError: result.isError,
@@ -265,8 +245,8 @@ export const BashTool = Tool.define('bash', {
       title: params.command,
       metadata: {
         output,
-        exit: proc.exitCode,
-        signal: proc.signalCode,
+        exit,
+        signal,
         timedOut,
         aborted,
         description: params.description,
