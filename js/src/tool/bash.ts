@@ -133,7 +133,8 @@ export const BashTool = Tool.define('bash', {
     let signal: string | null = null;
 
     // command-stream 1.3.0 finishes a runner whose signal is already aborted
-    // before stream() subscribes to its end event, so the iterator never ends.
+    // before stream() subscribes to its end event, so the iterator never ends
+    // (link-foundation/command-stream#207).
     // A cancelled command does not need to start at all.
     if (!cancel.aborted) {
       // The file/args shell form spawns the command string through Node's
@@ -168,7 +169,8 @@ export const BashTool = Tool.define('bash', {
         }
       }
 
-      // command-stream reports a shell that died from a signal as exit 0.
+      // command-stream reports a shell that died from a signal as exit 0
+      // (link-foundation/command-stream#208).
       // Its result keeps the native child, which has the signal name.
       const finished = command.result as {
         child?: { signalCode?: string | null };
