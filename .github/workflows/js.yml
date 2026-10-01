@@ -8,12 +8,14 @@ on:
       - 'js/**'
       - 'scripts/**'
       - '.github/workflows/js.yml'
+      - 'experiments/issue-322/**'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - 'js/**'
       - 'scripts/**'
       - '.github/workflows/js.yml'
+      - 'experiments/issue-322/**'
   workflow_dispatch:
     inputs:
       release_mode:
@@ -193,6 +195,10 @@ jobs:
       - name: Run unit tests
         run: bash ../scripts/run-with-budget-warning.sh 600 "Bun test suite" bun run test
         working-directory: js
+
+      - name: Verify packed bash tool with both tree-sitter runtimes
+        if: matrix.os == 'ubuntu-latest'
+        run: bun experiments/issue-322/verify-bash-parser.mjs
 
       - name: Commit cached API responses
         # Only commit on the primary OS to avoid conflicts

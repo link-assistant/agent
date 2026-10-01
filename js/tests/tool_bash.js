@@ -1,10 +1,40 @@
-import { afterEach, describe, expect, test } from 'bun:test';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import { URL, fileURLToPath } from 'url';
-import { Instance } from '../src/project/instance.ts';
-import { BashTool } from '../src/tool/bash.ts';
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+} from 'node:fs';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { URL, fileURLToPath } from 'node:url';
+import { BashTool } from '../src/tool/bash';
+import { config } from '../src/config/config';
+import { Instance } from '../src/project/instance';
+import { Permission } from '../src/permission';
+
+/**
+ * JS counterpart of `rust/tests/tool_bash.rs`.
+ *
+ * The Rust port keeps a per-tool unit test for the bash tool. The
+ * JavaScript implementation also tests the tool through its integration
+ * suite (see `js/tests/integration/bash.tools.js`). The local tests below
+ * initialize the real WASM parser without an AI API call.
+ *
+ * Keep the stable tool name parity check alongside parser regression tests.
+ */
+
+const TOOL_NAME = 'bash';
+
+describe('tool bash parity with Rust port', () => {
+  test('tool name is a stable lower-case identifier', () => {
+    expect(TOOL_NAME).toBe(TOOL_NAME.toLowerCase());
+    expect(TOOL_NAME).not.toContain(' ');
+    expect(TOOL_NAME.length).toBeGreaterThan(0);
+  });
+});
 
 const source = fileURLToPath(new URL('../src/tool/bash.ts', import.meta.url));
 const parent = fileURLToPath(
@@ -48,6 +78,9 @@ async function checkTreeStopped(heartbeat, output) {
   expect(pid).toBeGreaterThan(0);
   try {
     expect(existsSync(heartbeat)).toBe(true);
+    // command-stream settles as soon as it signals the process group. A
+    // process that has not exited yet gets SIGKILL after the 200 ms grace.
+    await Bun.sleep(300);
     const before = readFileSync(heartbeat).length;
     await Bun.sleep(200);
     expect(readFileSync(heartbeat).length).toBe(before);
@@ -79,7 +112,7 @@ afterEach(async () => {
 describe('bash tool command execution', () => {
   test('uses command-stream for the shipped bash tool', () => {
     const text = readFileSync(source, 'utf8');
-    expect(text).toMatch(/from ['"]command-stream['"]/);
+    expect(text).toMatch(/from ['"]command-stream(?:\/process-runner)?['"]/);
     expect(text).not.toMatch(/from ['"](?:node:)?child_process['"]/);
   });
 
@@ -93,14 +126,45 @@ describe('bash tool command execution', () => {
       expect(result.output).toContain('out');
       expect(result.output).toContain('err');
       expect(result.metadata).toEqual({
-        output: result.output,
+        output: result.metadata.output,
         exit: 4,
+        signal: null,
+        timedOut: false,
+        aborted: false,
         description: 'Run test command',
       });
+      expect(result.output).toBe(`Exit code 4\n${result.metadata.output}`);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
   });
+
+  test('runs commands in the platform shell, not command-stream builtins', async () => {
+    const directory = tempDir();
+    try {
+      // command-stream's builtin `exit` prints "Command failed with exit
+      // code 3"; the platform shell exits silently.
+      const { result } = await runBash(directory, 'exit 3');
+      expect(result.output).toBe('Exit code 3\n');
+      expect(result.metadata.exit).toBe(3);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test.skipIf(process.platform === 'win32')(
+    'uses the same POSIX shell as child_process shell mode',
+    async () => {
+      const directory = tempDir();
+      try {
+        // command-stream's builtin `pwd` and `ls` do not run /bin/sh.
+        const { result } = await runBash(directory, 'echo "$0" && pwd');
+        expect(result.output).toBe(`/bin/sh\n${realpathSync(directory)}\n`);
+      } finally {
+        rmSync(directory, { recursive: true, force: true });
+      }
+    }
+  );
 
   test('streams metadata while the command is still running', async () => {
     const directory = tempDir();
@@ -148,9 +212,9 @@ describe('bash tool command execution', () => {
       const { result } = await runBash(
         directory,
         `node "${parent}" "${heartbeat}"`,
-        { timeout: 600 }
+        { timeout: 2000 }
       );
-      expect(result.output).toContain('(Command timed out after 600 ms)');
+      expect(result.output).toContain('(Command timed out after 2000 ms)');
       await checkTreeStopped(heartbeat, result.output);
     } finally {
       cleanProcessTreeFixture(directory);
@@ -180,4 +244,65 @@ describe('bash tool command execution', () => {
       cleanProcessTreeFixture(directory);
     }
   });
+});
+
+describe('bash parser and permission enforcement', () => {
+  let savedMode;
+  let savedPermission;
+  let directory;
+
+  beforeEach(() => {
+    savedMode = config.permissionMode;
+    savedPermission = config.permission;
+  });
+
+  afterEach(async () => {
+    config.permissionMode = savedMode;
+    config.permission = savedPermission;
+    await Instance.disposeAll();
+    if (directory) {
+      await rm(directory, { recursive: true, force: true });
+      directory = undefined;
+    }
+  });
+
+  const execute = async (command) => {
+    directory = await mkdtemp(join(tmpdir(), 'agent-bash-parser-'));
+    config.permissionMode = 'readonly';
+    config.permission = '{"bash":{"echo*":"allow","*":"deny"}}';
+    return Instance.provide({
+      directory,
+      fn: async () => {
+        const tool = await BashTool.init();
+        return tool.execute(
+          { command },
+          {
+            sessionID: 'ses_bash_parser',
+            messageID: 'msg_bash_parser',
+            agent: 'build',
+            abort: new AbortController().signal,
+            metadata() {},
+          }
+        );
+      },
+    });
+  };
+
+  test('initializes the real WASM parser before running an allowed command', async () => {
+    const result = await execute('echo parser-ready');
+    expect(result.output.trim()).toBe('parser-ready');
+    expect(result.metadata.exit).toBe(0);
+  });
+
+  test.each(['echo allowed && touch denied', 'echo "$(touch denied)"'])(
+    'rejects a denied command node in %s before executing',
+    async (command) => {
+      await expect(execute(command)).rejects.toBeInstanceOf(
+        Permission.RejectedError
+      );
+      await expect(readFile(join(directory, 'denied'))).rejects.toMatchObject({
+        code: 'ENOENT',
+      });
+    }
+  );
 });

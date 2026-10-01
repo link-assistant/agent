@@ -101,21 +101,18 @@ export const BatchTool = Tool.define('batch', async () => {
             type: 'tool',
             tool: call.tool,
             callID: partID,
-            state: {
-              status: 'completed',
+            state: Tool.toState(result, {
               input: call.parameters,
-              output: result.output,
-              title: result.title,
-              metadata: result.metadata,
-              attachments: result.attachments,
               time: {
                 start: callStartTime,
                 end: Date.now(),
               },
-            },
+            }),
           });
 
-          return { success: true as const, tool: call.tool, result };
+          return result.isError
+            ? { success: false as const, tool: call.tool, error: result.output }
+            : { success: true as const, tool: call.tool, result };
         } catch (error) {
           await Session.updatePart({
             id: partID,
@@ -179,6 +176,7 @@ export const BatchTool = Tool.define('batch', async () => {
       return {
         title: `Batch execution (${successfulCalls}/${results.length} successful)`,
         output: outputMessage,
+        isError: failedCalls > 0,
         attachments: results
           .filter((result) => result.success)
           .flatMap((r) => r.result.attachments ?? []),

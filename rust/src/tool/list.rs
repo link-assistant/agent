@@ -177,6 +177,7 @@ impl Tool for ListTool {
         };
 
         Ok(ToolResult {
+            is_error: false,
             title: display_title,
             output,
             metadata: json!({

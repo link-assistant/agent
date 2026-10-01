@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.10.2] - 2026-09-30
+
+### Fixed
+
+- Prefix failed shell command output with its exit status and expose `isError` while retaining exit metadata. Report timeouts as failed results with an unavailable exit status and terminate the dropped process.
+- Count failed command results correctly in batch execution and propagate the batch error flag.
+
 ## [0.10.1] - 2026-09-29
 
 ### Changed

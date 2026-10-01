@@ -31,6 +31,9 @@ pub use context::ToolContext;
 /// Result returned by a tool execution
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ToolResult {
+    /// Execution failed even though the tool returned output and metadata.
+    #[serde(default, rename = "isError")]
+    pub is_error: bool,
     /// Short title describing what the tool did
     pub title: String,
     /// Main output text

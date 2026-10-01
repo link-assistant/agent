@@ -189,6 +189,7 @@ impl Tool for GrepTool {
         }
 
         Ok(ToolResult {
+            is_error: false,
             title,
             output: results.join("\n"),
             metadata: json!({

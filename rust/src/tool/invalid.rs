@@ -52,6 +52,7 @@ impl Tool for InvalidTool {
             .map_err(|e| AgentError::invalid_arguments("invalid", e.to_string()))?;
 
         Ok(ToolResult {
+            is_error: false,
             title: "Invalid Tool".to_string(),
             output: format!(
                 "The arguments provided to the tool are invalid: {}",

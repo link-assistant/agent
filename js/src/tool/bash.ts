@@ -1,5 +1,5 @@
 import z from 'zod';
-import { $, raw } from 'command-stream';
+import { ProcessRunner } from 'command-stream/process-runner';
 import { Tool } from './tool';
 import DESCRIPTION from './bash.txt';
 import { Branding } from '../branding';
@@ -9,10 +9,12 @@ import { lazy } from '../util/lazy';
 import { Language } from 'web-tree-sitter';
 import { Permission } from '../permission';
 import { fileURLToPath } from 'url';
+import { processResult } from './process-result';
 
 const MAX_OUTPUT_LENGTH = 30_000;
 const DEFAULT_TIMEOUT = 1 * 60 * 1000;
 const MAX_TIMEOUT = 10 * 60 * 1000;
+const KILL_SIGNAL = 'SIGTERM';
 export const log = Log.create({ service: 'bash-tool' });
 
 const resolveWasm = (asset: string) => {
@@ -24,13 +26,18 @@ const resolveWasm = (asset: string) => {
 
 const parser = lazy(async () => {
   const { Parser } = await import('web-tree-sitter');
-  const { default: treeWasm } = await import(
-    'web-tree-sitter/tree-sitter.wasm' as string,
-    {
-      with: { type: 'wasm' },
-    }
-  );
-  const treePath = resolveWasm(treeWasm);
+  // web-tree-sitter renamed its runtime WASM in 0.26. Resolve the current
+  // export while retaining 0.25 compatibility until OpenTUI lifts its peer pin.
+  let treePath: string;
+  try {
+    treePath = resolveWasm(
+      import.meta.resolve('web-tree-sitter/web-tree-sitter.wasm')
+    );
+  } catch {
+    treePath = resolveWasm(
+      import.meta.resolve('web-tree-sitter/tree-sitter.wasm')
+    );
+  }
   await Parser.init({
     locateFile() {
       return treePath;
@@ -110,19 +117,7 @@ export const BashTool = Tool.define('bash', {
     }
 
     const timeoutSignal = AbortSignal.timeout(timeout);
-    const signal = AbortSignal.any([ctx.abort, timeoutSignal]);
-    // This tool receives a shell command, so preserve its operators and quoting
-    // after the permission check above.
-    const command = $({
-      cwd: Instance.directory,
-      env: { ...process.env },
-      signal,
-      killSignal: 'SIGTERM',
-      killGrace: 200,
-      mirror: false,
-      capture: true,
-      stdin: 'ignore',
-    })`${raw(params.command)}`;
+    const cancel = AbortSignal.any([ctx.abort, timeoutSignal]);
 
     let output = '';
 
@@ -135,41 +130,101 @@ export const BashTool = Tool.define('bash', {
     });
 
     let exit: number | null = null;
-    for await (const chunk of command.stream()) {
-      if (chunk.type === 'exit') {
-        exit = chunk.code;
-      } else {
-        output += chunk.data.toString();
-        ctx.metadata({
-          metadata: {
-            output,
-            description: params.description,
-          },
-        });
+    let signal: string | null = null;
+
+    // command-stream 1.3.0 finishes a runner whose signal is already aborted
+    // before stream() subscribes to its end event, so the iterator never ends.
+    // A cancelled command does not need to start at all.
+    if (!cancel.aborted) {
+      // The file/args shell form spawns the command string through Node's
+      // platform shell, as `spawn(command, { shell: true })` does. A command
+      // string spec would route simple commands and pipelines through
+      // command-stream's JavaScript builtins (`ls`, `exit`, `cd`, ...) instead.
+      const command = new ProcessRunner(
+        { mode: 'shell', file: params.command, args: [] },
+        {
+          cwd: Instance.directory,
+          env: { ...process.env },
+          signal: cancel,
+          killSignal: KILL_SIGNAL,
+          killGrace: 200,
+          mirror: false,
+          capture: true,
+          stdin: 'ignore',
+        }
+      );
+
+      for await (const chunk of command.stream()) {
+        if (chunk.type === 'exit') {
+          exit = chunk.code;
+        } else {
+          output += chunk.data.toString();
+          ctx.metadata({
+            metadata: {
+              output,
+              description: params.description,
+            },
+          });
+        }
       }
+
+      // command-stream reports a shell that died from a signal as exit 0.
+      // Its result keeps the native child, which has the signal name.
+      const finished = command.result as {
+        child?: { signalCode?: string | null };
+      } | null;
+      signal = finished?.child?.signalCode ?? null;
     }
+
+    const timedOut = timeoutSignal.aborted;
+    const aborted = ctx.abort.aborted;
+    // command-stream settles a cancelled command as soon as it sends the kill
+    // signal and reports a synthesized 128 + signal code. The real exit status
+    // is unavailable, as it is when the shell itself dies from a signal.
+    if (timedOut || aborted) signal = KILL_SIGNAL;
+    if (signal) exit = null;
 
     if (output.length > MAX_OUTPUT_LENGTH) {
       output = output.slice(0, MAX_OUTPUT_LENGTH);
       output += '\n\n(Output was truncated due to length limit)';
     }
 
-    if (timeoutSignal.aborted) {
+    if (timedOut) {
       output += `\n\n(Command timed out after ${timeout} ms)`;
     }
 
-    if (ctx.abort.aborted) {
+    if (aborted) {
       output += '\n\n(Command was aborted)';
     }
+
+    const result = processResult({
+      output,
+      exit,
+      signal,
+      timedOut,
+      aborted,
+    });
+
+    log.debug(() => ({
+      message: 'command finished',
+      exit,
+      signal,
+      timedOut,
+      aborted,
+      isError: result.isError,
+    }));
 
     return {
       title: params.command,
       metadata: {
         output,
         exit,
+        signal,
+        timedOut,
+        aborted,
         description: params.description,
       },
-      output,
+      ...result,
     };
   },
 });
