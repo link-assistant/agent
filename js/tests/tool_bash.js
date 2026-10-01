@@ -5,6 +5,7 @@ import {
   readFileSync,
   realpathSync,
   rmSync,
+  writeFileSync,
 } from 'node:fs';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -37,12 +38,35 @@ describe('tool bash parity with Rust port', () => {
 });
 
 const source = fileURLToPath(new URL('../src/tool/bash.ts', import.meta.url));
-const parent = fileURLToPath(
-  new URL(
-    '../../experiments/issue-320/process-tree-parent.mjs',
-    import.meta.url
-  )
+
+// The packed-package check (experiments/issue-322/verify-bash-parser.mjs)
+// copies only this file, so each test writes the process-tree fixture. The
+// parent starts a child that appends to the heartbeat file every 20 ms, prints
+// the child's PID, and keeps running until it is killed.
+const PROCESS_TREE_PARENT = `import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { setTimeout as sleep } from 'node:timers/promises';
+
+const heartbeat = process.argv[2];
+const child = spawn(
+  process.execPath,
+  [
+    '-e',
+    'setInterval(() => require("node:fs").appendFileSync(process.argv[1], "x"), 20)',
+    heartbeat,
+  ],
+  { stdio: 'ignore' }
 );
+while (!existsSync(heartbeat)) await sleep(10);
+console.log('CHILD_PID=' + child.pid);
+setInterval(() => {}, 1000);
+`;
+
+function processTreeCommand(directory, heartbeat) {
+  const parent = join(directory, 'process-tree-parent.mjs');
+  writeFileSync(parent, PROCESS_TREE_PARENT);
+  return `node "${parent}" "${heartbeat}"`;
+}
 
 async function runBash(directory, command, options = {}) {
   const updates = [];
@@ -211,7 +235,7 @@ describe('bash tool command execution', () => {
     try {
       const { result } = await runBash(
         directory,
-        `node "${parent}" "${heartbeat}"`,
+        processTreeCommand(directory, heartbeat),
         { timeout: 2000 }
       );
       expect(result.output).toContain('(Command timed out after 2000 ms)');
@@ -228,7 +252,7 @@ describe('bash tool command execution', () => {
     try {
       const { result } = await runBash(
         directory,
-        `node "${parent}" "${heartbeat}"`,
+        processTreeCommand(directory, heartbeat),
         {
           controller,
           onMetadata(output) {
