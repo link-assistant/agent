@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(
   new URL('../../js/package.json', import.meta.url)
 );
-const { $, raw } = require('command-stream');
+const { ProcessRunner } = require('command-stream/process-runner');
 
 function original(command, cwd) {
   return new Promise((resolve, reject) => {
@@ -21,7 +21,12 @@ function original(command, cwd) {
 }
 
 async function replacement(command, cwd) {
-  const cmd = $({ cwd, mirror: false, stdin: 'ignore' })`${raw(command)}`;
+  // Same invocation as js/src/tool/bash.ts: the file/args shell form runs
+  // the string through the platform shell instead of command-stream builtins.
+  const cmd = new ProcessRunner(
+    { mode: 'shell', file: command, args: [] },
+    { cwd, mirror: false, capture: true, stdin: 'ignore' }
+  );
   let output = '';
   let code = null;
   for await (const chunk of cmd.stream()) {
@@ -40,6 +45,10 @@ const cases = [
   'for x in a b; do echo "$x"; done',
   'echo *.txt',
   'export ISSUE320_TEST=ok; echo "$ISSUE320_TEST"',
+  // command-stream's `$` routes these to JavaScript builtins.
+  'exit 3',
+  'ls missing-entry',
+  'echo "$0"',
 ];
 
 const directory = mkdtempSync(join(tmpdir(), 'issue-320-shell-'));
