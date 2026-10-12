@@ -1,22 +1,25 @@
 # Agent #322: prepare the bash parser while OpenTUI remains blocked
 
-Checked on 2026-09-30. This work addresses Agent's parser migration; it does not
-complete [Agent #322](https://github.com/link-assistant/agent/issues/322).
+Rechecked on 2026-10-12. Agent's parser supports both runtime versions, while
+OpenTUI's compatibility upgrade remains tracked by
+[OpenTUI #1550](https://github.com/anomalyco/opentui/issues/1550).
 
 ## Upstream blocker
 
-The latest `@opentui/core` and `@opentui/solid` releases are 0.5.13. Core still
+The latest `@opentui/core` and `@opentui/solid` releases are 0.6.1. Core still
 declares `web-tree-sitter: "0.25.10"` as an exact peer and its published worker
 still resolves `web-tree-sitter/tree-sitter.wasm`. The latest `web-tree-sitter`,
-0.27.0, exports `web-tree-sitter/web-tree-sitter.wasm` instead.
+0.27.1, exports `web-tree-sitter/web-tree-sitter.wasm` instead.
 
 The [upstream maintainer's response](https://github.com/anomalyco/opentui/issues/1201#issuecomment-4806912949)
 confirms that 0.26+ has additional breaking changes and is unsupported. The
 [proposed filename fallback](https://github.com/anomalyco/opentui/pull/1203)
 was closed without merging. Changing only Agent's WASM path cannot fix OpenTUI's
-worker or peer contract. Keep the exact 0.25.10 dependency and the open #322 URL
-in `dependencyPins`; #322 must stay open until a compatible upstream release
-passes the full acceptance criteria.
+worker or peer contract. Keep the exact 0.25.10 dependency and the open
+[upstream compatibility tracker](https://github.com/anomalyco/opentui/issues/1550)
+in `dependencyPins`. Agent #322 was closed, so it no longer justifies an
+exception in the freshness gate. Remove the pin only after a compatible
+upstream release passes the full acceptance criteria.
 
 Check the published metadata again with:
 
@@ -35,7 +38,7 @@ bun experiments/issue-322/verify-bash-parser.mjs
 ```
 
 The script packs the current source into temporary packages with 0.25.10 and
-0.27.0, installs each in a fresh Bun project, checks its peers with `npm ls`, and
+0.27.1, installs each in a fresh Bun project, checks its peers with `npm ls`, and
 runs `js/tests/tool_bash.js` against the installed package. Only the temporary
 package's `web-tree-sitter` declaration changes. It leaves the repository's pin
 and lockfiles untouched and removes the temporary projects on exit. The same
@@ -49,7 +52,7 @@ before creating the target file. No AI credentials or network model calls are
 needed; package installation requires registry access.
 
 The production 0.25.10 package installs without incorrect-peer warnings and
-`npm ls web-tree-sitter --all` succeeds. The experimental 0.27.0 package still
+`npm ls web-tree-sitter --all` succeeds. The experimental 0.27.1 package still
 warns about the OpenTUI peer and `npm ls` reports `ELSPROBLEMS`. Those failures are
 expected evidence of the remaining blocker, not a claim of OpenTUI compatibility.
 

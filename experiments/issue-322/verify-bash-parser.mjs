@@ -20,7 +20,7 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const workspace = mkdtempSync(join(tmpdir(), 'agent-tree-sitter-'));
 const versions = process.argv.slice(2);
 if (versions.length === 0) {
-  versions.push('0.25.10', '0.27.0');
+  versions.push('0.25.10', '0.27.1');
 }
 
 const run = (command, args, cwd, allowFailure = false) => {
