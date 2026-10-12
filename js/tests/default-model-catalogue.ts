@@ -210,6 +210,8 @@ describe('Kilo defaults after merging #329', () => {
     await expect(
       checkDefaultModels({ fetchFn, warn: (s) => warnings.push(s) })
     ).rejects.toThrow('Unavailable shipped models: kilo/nemotron-3-super-free');
-    expect(warnings.some((s) => s.includes(kiloURL))).toBe(true);
+    expect(warnings).toEqual([
+      `Catalogue unavailable: ${kiloURL}: invalid or empty model catalog`,
+    ]);
   });
 });
