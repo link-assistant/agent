@@ -1,0 +1,97 @@
+{
+  "checkedAt": "2026-10-12",
+  "sources": [
+    "https://opencode.ai/zen/v1/models",
+    "https://models.dev/api.json"
+  ],
+  "models": [
+    {
+      "id": "big-pickle",
+      "servedByZen": true,
+      "modelsDevStatus": null,
+      "context": 200000,
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cache_read": 0,
+        "cache_write": 0
+      }
+    },
+    {
+      "id": "minimax-m2.5-free",
+      "servedByZen": false,
+      "modelsDevStatus": "deprecated",
+      "context": 204800,
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cache_read": 0
+      }
+    },
+    {
+      "id": "nemotron-3-super-free",
+      "servedByZen": false,
+      "modelsDevStatus": "deprecated",
+      "context": 204800,
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cache_read": 0
+      }
+    },
+    {
+      "id": "hy3-preview-free",
+      "servedByZen": false,
+      "modelsDevStatus": "deprecated",
+      "context": 256000,
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cache_read": 0
+      }
+    },
+    {
+      "id": "ling-2.6-flash-free",
+      "servedByZen": false,
+      "modelsDevStatus": "deprecated",
+      "context": 262100,
+      "cost": {
+        "input": 0,
+        "output": 0
+      }
+    },
+    {
+      "id": "gpt-5-nano",
+      "servedByZen": true,
+      "modelsDevStatus": null,
+      "context": 400000,
+      "cost": {
+        "input": 0.05,
+        "output": 0.4,
+        "cache_read": 0.005
+      }
+    },
+    {
+      "id": "ling-3.1-flash-free",
+      "servedByZen": true,
+      "modelsDevStatus": null,
+      "context": 262144,
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cache_read": 0
+      }
+    },
+    {
+      "id": "nemotron-3.5-lightning-free",
+      "servedByZen": true,
+      "modelsDevStatus": null,
+      "context": 262144,
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cache_read": 0
+      }
+    }
+  ]
+}

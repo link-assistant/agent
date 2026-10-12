@@ -43,7 +43,7 @@ bun test ./js/tests/integration/bash.tools.js
 
 ### Why Integration Tests Are Separate
 
-The default AI model (`minimax-m2.5-free`) has strict rate limits. Running multiple integration tests in bulk will exhaust the rate limit quota, causing tests to fail or wait for hours.
+Free models, including the `big-pickle` default, can have strict rate limits or provider access restrictions. Running multiple integration tests in bulk can exhaust the rate limit quota, causing tests to fail or wait for hours. See [Free Models](FREE_MODELS.md) for current catalogue and access notes.
 
 All integration tests pass `--no-retry-on-rate-limits` to the agent CLI to fail fast instead of waiting when rate limited.
 
