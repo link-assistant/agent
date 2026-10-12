@@ -244,7 +244,7 @@ For more details, see the [OpenRouter Documentation](docs/openrouter.md).
 
 ### Free Models
 
-Kilo authentication is required for inference even when token pricing is zero. Run `agent auth login` and choose Kilo Gateway, or set `KILO_API_KEY`.
+Kilo authentication is recommended for reliable inference even when token pricing is zero. Run `agent auth login` and choose Kilo Gateway, or set `KILO_API_KEY`. Anonymous access is subject to gateway restrictions.
 
 | Model                          | Agent model ID                     | Context   | Agent output limit |
 | ------------------------------ | ---------------------------------- | --------- | ------------------ |

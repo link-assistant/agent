@@ -449,7 +449,7 @@ export namespace Provider {
      * Kilo provider - access to AI models through Kilo Gateway
      * Uses OpenRouter-compatible API at https://api.kilo.ai/api/openrouter
      *
-     * Authentication required: run `agent auth login` and select "Kilo Gateway"
+     * Authentication recommended: run `agent auth login` and select "Kilo Gateway"
      * For API key authentication, set KILO_API_KEY environment variable
      *
      * Free Nemotron models are listed in Kilo.FREE_MODELS.
