@@ -225,7 +225,7 @@ jobs:
           fi
 
   # Verbose HTTP logging integration test - verifies --verbose mode logs HTTP traffic
-  # This is the ONLY real-API test in CI/CD. Uses free-tier model (opencode/minimax-m2.5-free)
+  # This is the ONLY real-API test in CI/CD. Uses free-tier model (kilo/nemotron-3-super-free)
   # to verify HTTP request/response logging works end-to-end.
   # Runs only on ubuntu-latest to conserve free API limits.
   # See: https://github.com/link-assistant/agent/issues/221
@@ -256,6 +256,8 @@ jobs:
         run: bun test ./tests/integration/verbose-hi.js
         working-directory: js
         timeout-minutes: 5
+        env:
+          KILO_API_KEY: ${{ secrets.KILO_API_KEY }}
 
   # Verify the published dependency graph installs without peer warnings.
   package-install:

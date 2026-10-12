@@ -20,6 +20,7 @@ import { createCacheModel } from './cache';
 import { RetryFetch } from './retry-fetch';
 import { SSEUsageExtractor } from '../util/sse-usage-extractor';
 import { OpenCodeZen } from './opencode-zen';
+import { Kilo } from './kilo';
 
 // Direct imports for bundled providers - these are pre-installed to avoid runtime installation hangs
 // @see https://github.com/link-assistant/agent/issues/173
@@ -445,18 +446,13 @@ export namespace Provider {
       };
     },
     /**
-     * Kilo provider - access to 500+ AI models through Kilo Gateway
+     * Kilo provider - access to AI models through Kilo Gateway
      * Uses OpenRouter-compatible API at https://api.kilo.ai/api/openrouter
      *
      * Authentication required: run `agent auth login` and select "Kilo Gateway"
      * For API key authentication, set KILO_API_KEY environment variable
      *
-     * Free models available after authentication:
-     * - GLM-5 (z-ai/glm-5) - Free limited time, flagship Z.AI model
-     * - GLM 4.7 (z-ai/glm-4.7:free) - Free, agent-centric model
-     * - Kimi K2.5 (moonshot/kimi-k2.5:free) - Free, agentic capabilities
-     * - MiniMax M2.1 (minimax/m2.1:free) - Free, general-purpose
-     * - Giga Potato (giga-potato:free) - Free evaluation model
+     * Free Nemotron models are listed in Kilo.FREE_MODELS.
      *
      * @see https://kilo.ai/docs/gateway
      * @see https://kilo.ai/docs/advanced-usage/free-and-budget-models
@@ -932,174 +928,24 @@ export namespace Provider {
       models: {}, // Models are dynamically created based on the provider/model syntax
     };
 
-    // Add Kilo provider for access to 500+ AI models through Kilo Gateway
-    // Free models available: GLM-5, GLM 4.7, Kimi K2.5, MiniMax M2.1, Giga Potato
-    // @see https://kilo.ai/docs/gateway
-    // @see https://github.com/link-assistant/agent/issues/159
-    database['kilo'] = {
+    // Remove withdrawn Zen entries even when models.dev has a stale cache.
+    // Operator model overrides are applied below and remain authoritative.
+    if (database.opencode) {
+      for (const id of OpenCodeZen.DEPRECATED_FREE_MODEL_IDS) {
+        delete database.opencode.models[id];
+      }
+      for (const id of Object.keys(OpenCodeZen.FREE_MODEL_OVERRIDES)) {
+        database.opencode.models[id] = OpenCodeZen.freeModelInfo(id);
+      }
+    }
+
+    database.kilo = {
       id: 'kilo',
       name: 'Kilo Gateway',
       npm: '@openrouter/ai-sdk-provider',
       api: 'https://api.kilo.ai/api/openrouter',
       env: ['KILO_API_KEY'],
-      models: {
-        // GLM-5 - Flagship Z.AI model, free tier
-        // Kilo API model ID: z-ai/glm-5:free (NOT z-ai/glm-5 which is paid)
-        'glm-5-free': {
-          id: 'z-ai/glm-5:free',
-          name: 'GLM-5 (Free)',
-          release_date: '2026-02-11',
-          attachment: false,
-          reasoning: true,
-          temperature: true,
-          tool_call: true,
-          cost: {
-            input: 0,
-            output: 0,
-            cache_read: 0,
-            cache_write: 0,
-          },
-          limit: {
-            context: 202800,
-            output: 131072,
-          },
-          modalities: {
-            input: ['text'],
-            output: ['text'],
-          },
-          options: {},
-        },
-        // GLM 4.5 Air - Free Z.AI model (replaces non-existent glm-4.7:free)
-        // Kilo API model ID: z-ai/glm-4.5-air:free
-        'glm-4.5-air-free': {
-          id: 'z-ai/glm-4.5-air:free',
-          name: 'GLM 4.5 Air (Free)',
-          release_date: '2026-01-15',
-          attachment: false,
-          reasoning: true,
-          temperature: true,
-          tool_call: true,
-          cost: {
-            input: 0,
-            output: 0,
-            cache_read: 0,
-            cache_write: 0,
-          },
-          limit: {
-            context: 131072,
-            output: 96000,
-          },
-          modalities: {
-            input: ['text'],
-            output: ['text'],
-          },
-          options: {},
-        },
-        // MiniMax M2.5 - General-purpose, free (upgraded from M2.1)
-        // Kilo API model ID: minimax/minimax-m2.5:free
-        'minimax-m2.5-free': {
-          id: 'minimax/minimax-m2.5:free',
-          name: 'MiniMax M2.5 (Free)',
-          release_date: '2026-01-01',
-          attachment: false,
-          reasoning: true,
-          temperature: true,
-          tool_call: true,
-          cost: {
-            input: 0,
-            output: 0,
-            cache_read: 0,
-            cache_write: 0,
-          },
-          limit: {
-            context: 204800,
-            output: 131072,
-          },
-          modalities: {
-            input: ['text'],
-            output: ['text'],
-          },
-          options: {},
-        },
-        // Giga Potato - Free evaluation model
-        // Kilo API model ID: giga-potato (no :free suffix)
-        'giga-potato-free': {
-          id: 'giga-potato',
-          name: 'Giga Potato (Free)',
-          release_date: '2026-01-01',
-          attachment: true,
-          reasoning: true,
-          temperature: true,
-          tool_call: true,
-          cost: {
-            input: 0,
-            output: 0,
-            cache_read: 0,
-            cache_write: 0,
-          },
-          limit: {
-            context: 256000,
-            output: 32000,
-          },
-          modalities: {
-            input: ['text', 'image'],
-            output: ['text'],
-          },
-          options: {},
-        },
-        // Trinity Large Preview - Preview model from Arcee AI
-        // Kilo API model ID: arcee-ai/trinity-large-preview:free
-        'trinity-large-preview': {
-          id: 'arcee-ai/trinity-large-preview:free',
-          name: 'Trinity Large Preview (Free)',
-          release_date: '2026-01-01',
-          attachment: false,
-          reasoning: false,
-          temperature: true,
-          tool_call: true,
-          cost: {
-            input: 0,
-            output: 0,
-            cache_read: 0,
-            cache_write: 0,
-          },
-          limit: {
-            context: 131000,
-            output: 65536,
-          },
-          modalities: {
-            input: ['text'],
-            output: ['text'],
-          },
-          options: {},
-        },
-        // DeepSeek R1 - Reasoning model, free
-        // Kilo API model ID: deepseek/deepseek-r1-0528:free
-        'deepseek-r1-free': {
-          id: 'deepseek/deepseek-r1-0528:free',
-          name: 'DeepSeek R1 (Free)',
-          release_date: '2025-05-28',
-          attachment: false,
-          reasoning: true,
-          temperature: true,
-          tool_call: false,
-          cost: {
-            input: 0,
-            output: 0,
-            cache_read: 0,
-            cache_write: 0,
-          },
-          limit: {
-            context: 163840,
-            output: 163840,
-          },
-          modalities: {
-            input: ['text'],
-            output: ['text'],
-          },
-          options: {},
-        },
-      },
+      models: structuredClone(Kilo.FREE_MODELS),
     };
 
     for (const [providerID, provider] of configProviders) {
@@ -1794,7 +1640,13 @@ export namespace Provider {
         await ModelsDev.refresh();
         const freshDB = await ModelsDev.get();
         const freshProvider = freshDB[providerID];
-        if (freshProvider?.models[modelID]) {
+        if (
+          freshProvider?.models[modelID] &&
+          !(
+            providerID === 'opencode' &&
+            OpenCodeZen.DEPRECATED_FREE_MODEL_IDS.has(modelID)
+          )
+        ) {
           // Model found after refresh - update provider info and use it
           provider.info.models[modelID] = freshProvider.models[modelID];
           info = freshProvider.models[modelID];
@@ -1958,23 +1810,10 @@ export namespace Provider {
       priority = priority.filter((m) => m !== 'claude-haiku-4.5');
     }
     if (providerID === 'opencode' || providerID === 'local') {
-      priority = [
-        'minimax-m2.5-free',
-        'ling-2.6-flash-free',
-        'hy3-preview-free',
-        'nemotron-3-super-free',
-        'gpt-5-nano',
-        'big-pickle',
-      ];
+      priority = Object.keys(OpenCodeZen.FREE_MODEL_OVERRIDES);
     }
     if (providerID === 'kilo') {
-      priority = [
-        'glm-5-free',
-        'glm-4.5-air-free',
-        'minimax-m2.5-free',
-        'deepseek-r1-free',
-        'giga-potato-free',
-      ];
+      priority = Object.keys(Kilo.FREE_MODELS);
     }
     for (const item of priority) {
       for (const model of Object.keys(provider.info.models)) {
@@ -1994,11 +1833,9 @@ export namespace Provider {
   const priority = [
     'big-pickle',
     'gpt-5-nano',
+    'nemotron-3.5-lightning-free',
+    'nemotron-3-ultra-free',
     'nemotron-3-super-free',
-    'hy3-preview-free',
-    'ling-2.6-flash-free',
-    'minimax-m2.5-free',
-    'glm-5-free',
     'gpt-5',
     'claude-sonnet-4',
     'gemini-3-pro',
@@ -2083,12 +1920,9 @@ export namespace Provider {
    * Resolve a short model name (without provider prefix) to the appropriate provider.
    * This function finds which provider should handle a model when no explicit provider is specified.
    *
-   * Priority for free models:
-   * 1. If model is uniquely available in one provider, use that provider
-   * 2. If model is available in multiple providers, prioritize based on free model availability:
-   *    - kilo: glm-5-free, glm-4.5-air-free, giga-potato-free, deepseek-r1-free (unique to Kilo)
-   *    - opencode: minimax-m2.5-free, ling-2.6-flash-free, hy3-preview-free, big-pickle, gpt-5-nano, nemotron-3-super-free
-   * 3. For shared models, prefer OpenCode first, then fall back to Kilo on rate limit
+   * Built-in Kilo free aliases prefer Kilo, including aliases also served by
+   * Zen, whose free tier is restricted to OpenCode clients. Other short names
+   * resolve against available provider catalogs.
    *
    * @param modelID - Short model name without provider prefix
    * @returns Provider ID that should handle this model, or undefined if not found
@@ -2098,25 +1932,9 @@ export namespace Provider {
   ): Promise<{ providerID: string; modelID: string } | undefined> {
     const s = await state();
 
-    // Define model-to-provider mappings for free models
-    // Models unique to Kilo (GLM models from Z.AI are only free on Kilo)
-    const kiloUniqueModels = [
-      'glm-5-free',
-      'glm-4.5-air-free',
-      'giga-potato-free',
-      'trinity-large-preview',
-      'deepseek-r1-free',
-    ];
-
-    // Check if it's a Kilo-unique model
-    if (kiloUniqueModels.includes(modelID)) {
-      const kiloProvider = s.providers['kilo'];
-      if (kiloProvider && kiloProvider.info.models[modelID]) {
-        registryLog.info(() => ({
-          message: 'resolved short model name to kilo (unique)',
-          name: modelID,
-          candidate: `kilo/${modelID}`,
-        }));
+    if (Object.hasOwn(Kilo.FREE_MODELS, modelID)) {
+      const kiloProvider = s.providers.kilo;
+      if (kiloProvider?.info.models[modelID]) {
         return { providerID: 'kilo', modelID };
       }
     }
@@ -2187,8 +2005,8 @@ export namespace Provider {
    * or a clear error explaining why it's not available.
    *
    * Examples:
-   * - "kilo/glm-5-free" -> { providerID: "kilo", modelID: "glm-5-free" }
-   * - "glm-5-free" -> { providerID: "kilo", modelID: "glm-5-free" } (resolved)
+   * - "kilo/nemotron-3-super-free" -> { providerID: "kilo", modelID: "nemotron-3-super-free" }
+   * - "nemotron-3-super-free" -> { providerID: "kilo", modelID: "nemotron-3-super-free" } (resolved)
    * - "big-pickle" -> { providerID: "opencode", modelID: "big-pickle" } (resolved)
    * - "nonexistent-model" -> throws ModelNotFoundError
    *
@@ -2249,10 +2067,10 @@ export namespace Provider {
    * When one provider hits rate limits, the system can try an alternative.
    *
    * Note: This is only used for models without explicit provider specification.
-   * If user specifies "kilo/deepseek-r1-free", no fallback will occur.
+   * If user specifies "kilo/nemotron-3-super-free", no fallback will occur.
    */
   const SHARED_FREE_MODELS: Record<string, string[]> = {
-    'minimax-m2.5-free': ['opencode', 'kilo'],
+    'nemotron-3.5-lightning-free': ['kilo', 'opencode'],
   };
 
   /**
@@ -2260,7 +2078,7 @@ export namespace Provider {
    * This function returns a list of alternative providers that offer the same model.
    *
    * Note: This only returns alternatives for models without explicit provider specification.
-   * If the original request had an explicit provider (like "kilo/deepseek-r1-free"), this returns empty array.
+   * If the original request had an explicit provider (like "kilo/nemotron-3-super-free"), this returns empty array.
    *
    * @param modelID - The model ID to find alternatives for
    * @param failedProviderID - The provider that failed

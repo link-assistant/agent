@@ -1,146 +1,77 @@
 # Free Models
 
-This document lists all free AI models currently supported by the agent. Free models require no API key and are available for immediate use.
+The agent's default is **Nemotron 3 Super on Kilo Gateway**. For reliable gateway access, run `agent auth login` and select Kilo Gateway, or set `KILO_API_KEY`. Anonymous access is subject to gateway restrictions.
 
-> **Last Updated:** April 2026
+> **Last checked:** October 12, 2026 against the [Kilo model catalog](https://api.kilo.ai/api/gateway/models) and [OpenCode Zen model catalog](https://opencode.ai/zen/v1/models).
 
 ## Quick Start
 
-Use any free model with the `--model` flag:
-
 ```bash
-echo "hello" | agent --model opencode/minimax-m2.5-free
+agent auth login # Select Kilo Gateway
+# Or: export KILO_API_KEY=your_api_key_here
+echo "hello" | agent
+echo "hello" | agent --model kilo/nemotron-3-super-free
 ```
-
-## OpenCode Zen Free Models
-
-[OpenCode Zen](https://opencode.ai/docs/zen/) offers curated, tested models. These free models require no authentication:
-
-| Model                 | Model ID                         | Context Window | Description                                       |
-| --------------------- | -------------------------------- | -------------- | ------------------------------------------------- |
-| MiniMax M2.5 Free     | `opencode/minimax-m2.5-free`     | 204,800        | **Default.** Strong general-purpose performance   |
-| Ling 2.6 Flash Free   | `opencode/ling-2.6-flash-free`   | 262,100        | Fast free open-weight model                       |
-| Hy3 Preview Free      | `opencode/hy3-preview-free`      | 256,000        | Preview free model with reasoning support         |
-| Nemotron 3 Super Free | `opencode/nemotron-3-super-free` | 204,800        | NVIDIA free endpoint with strong reasoning        |
-| GPT 5 Nano            | `opencode/gpt-5-nano`            | 400,000        | OpenAI-powered free option and compaction default |
-| Big Pickle            | `opencode/big-pickle`            | 200,000        | Stealth model, free during evaluation period      |
-
-Source note: checked on April 23, 2026 against [OpenCode Zen](https://opencode.ai/docs/zen/), `https://opencode.ai/zen/v1/models`, and [models.dev](https://models.dev/api.json). The Zen models endpoint currently also lists `trinity-large-preview-free`, but models.dev marks it deprecated, so it is not recommended here.
-
-### Usage Examples
-
-```bash
-# MiniMax M2.5 Free (default)
-echo "hello" | agent --model opencode/minimax-m2.5-free
-
-# Ling 2.6 Flash Free
-echo "hello" | agent --model opencode/ling-2.6-flash-free
-
-# Hy3 Preview Free
-echo "hello" | agent --model opencode/hy3-preview-free
-
-# Nemotron 3 Super Free
-echo "hello" | agent --model opencode/nemotron-3-super-free
-
-# GPT 5 Nano
-echo "hello" | agent --model opencode/gpt-5-nano
-
-# Big Pickle
-echo "hello" | agent --model opencode/big-pickle
-```
-
----
 
 ## Kilo Gateway Free Models
 
-[Kilo Gateway](https://kilo.ai/docs/gateway) provides access to 500+ AI models. These free models require no API key:
+These are the maintained built-in aliases. The gateway may offer additional models.
 
-| Model                 | Model ID                     | Context Window | Description                             |
-| --------------------- | ---------------------------- | -------------- | --------------------------------------- |
-| GLM-5                 | `kilo/glm-5-free`            | 202,752 tokens | **Recommended.** Z.AI flagship model    |
-| GLM 4.5 Air           | `kilo/glm-4.5-air-free`      | 131,072 tokens | Free Z.AI model with agent capabilities |
-| MiniMax M2.5          | `kilo/minimax-m2.5-free`     | 204,800 tokens | Strong general-purpose performance      |
-| DeepSeek R1           | `kilo/deepseek-r1-free`      | 163,840 tokens | Advanced reasoning model                |
-| Giga Potato           | `kilo/giga-potato-free`      | 256,000 tokens | Free evaluation model                   |
-| Trinity Large Preview | `kilo/trinity-large-preview` | 131,000 tokens | Arcee AI preview model                  |
+| Model                          | Agent model ID                     | Gateway ID                               | Context   | Agent output limit |
+| ------------------------------ | ---------------------------------- | ---------------------------------------- | --------- | ------------------ |
+| **Nemotron 3 Super (default)** | `kilo/nemotron-3-super-free`       | `nvidia/nemotron-3-super-120b-a12b:free` | 262,144   | 32,768             |
+| Nemotron 3 Ultra               | `kilo/nemotron-3-ultra-free`       | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 | 65,536             |
+| Nemotron 3.5 Lightning         | `kilo/nemotron-3.5-lightning-free` | `nvidia/nemotron-3.5-lightning:free`     | 1,000,000 | 65,536             |
 
-### Usage Examples
+All three support reasoning and tool calls with zero input/output cost. Super's output limit is conservatively capped at 32,768 in Agent.
 
 ```bash
-# GLM-5 (recommended for Kilo)
-echo "hello" | agent --model kilo/glm-5-free
-
-# GLM 4.5 Air
-echo "hello" | agent --model kilo/glm-4.5-air-free
-
-# MiniMax M2.5
-echo "hello" | agent --model kilo/minimax-m2.5-free
-
-# DeepSeek R1 (reasoning)
-echo "hello" | agent --model kilo/deepseek-r1-free
-
-# Giga Potato
-echo "hello" | agent --model kilo/giga-potato-free
+echo "hello" | agent --model kilo/nemotron-3-ultra-free
+echo "hello" | agent --model kilo/nemotron-3.5-lightning-free
 ```
 
----
+The default compaction cascade is:
 
-## Discontinued Free Models
+```text
+(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)
+```
 
-The following models were previously free but are no longer available:
+Session titles and summaries use the resolved compaction model, falling back to the session model if it cannot be loaded. The default single compaction model is also `kilo/nemotron-3-super-free`. Explicit `--model` runs on other providers inherit that provider for secondary calls; explicitly configured compaction models remain authoritative. See [issue #307](https://github.com/link-assistant/agent/issues/307).
 
-| Model               | Former Model ID              | Status                                                                                                                                          |
-| ------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Qwen 3.6 Plus Free  | `opencode/qwen3.6-plus-free` | Free promotion ended (April 2026) — now requires OpenCode Go subscription. See [issue #242](https://github.com/link-assistant/agent/issues/242) |
-| Kimi K2.5 Free      | `opencode/kimi-k2.5-free`    | Removed from OpenCode Zen (March 2026) — see [issue #208](https://github.com/link-assistant/agent/issues/208)                                   |
-| Grok Code Fast 1    | `opencode/grok-code`         | Discontinued January 2026                                                                                                                       |
-| MiniMax M2.1 Free   | `opencode/minimax-m2.1-free` | Replaced by `opencode/minimax-m2.5-free`                                                                                                        |
-| GLM 4.7 Free        | `opencode/glm-4.7-free`      | No longer free on OpenCode Zen                                                                                                                  |
-| Kimi K2.5 (Kilo)    | `kilo/kimi-k2.5-free`        | Replaced by other Kilo free models                                                                                                              |
-| MiniMax M2.1 (Kilo) | `kilo/minimax-m2.1-free`     | Replaced by `kilo/minimax-m2.5-free`                                                                                                            |
+## OpenCode Zen Free Tier
 
----
+Zen's catalog still lists free endpoints, including these maintained entries:
 
-## Choosing Between Providers
+| Model                  | Model ID                               | Context   |
+| ---------------------- | -------------------------------------- | --------- |
+| Big Pickle             | `opencode/big-pickle`                  | 200,000   |
+| Nemotron 3.5 Lightning | `opencode/nemotron-3.5-lightning-free` | 1,000,000 |
 
-### Use OpenCode Zen when:
+**Zen restricts free inference to OpenCode clients.** Agent calls can receive HTTP 403 `FreeTierError` even when an ID is present in the catalog. Agent reports this restriction and does not retry it. These endpoints are excluded from Agent's defaults; use authenticated Kilo or a paid provider instead. See [issue #327](https://github.com/link-assistant/agent/issues/327#issuecomment-6040047705).
 
-- You want the most tested and reliable free models
-- You prefer `minimax-m2.5-free` as the default with a 204,800 token context window
-- You need a simple, curated list of models
+## Withdrawn Entries
 
-### Use Kilo Gateway when:
+The following former built-ins have been removed rather than silently remapped to a different model:
 
-- You want access to GLM-5 (currently free, limited time)
-- You need larger context windows (up to 256,000 tokens)
-- You want more free model options
+- Zen: `nemotron-3-super-free`, `nemotron-3-ultra-free`, `minimax-m2.5-free`, `hy3-preview-free`, `ling-2.6-flash-free`.
+- Kilo: `glm-5-free`, `glm-4.5-air-free`, `minimax-m2.5-free`, `giga-potato-free`, `trinity-large-preview`, `deepseek-r1-free`.
 
-### Model Routing
+Earlier withdrawals include Zen's `qwen3.6-plus-free`, `kimi-k2.5-free`, `grok-code`, `minimax-m2.1-free`, and `glm-4.7-free`. `opencode/gpt-5-nano` appears in today's catalog but is no longer advertised as a free compaction default. Availability alone does not establish free pricing.
 
-The agent intelligently routes model requests:
+## Model Routing and Drift Checks
 
-- `nemotron-3-super-free` without provider prefix → OpenCode Zen (`opencode/nemotron-3-super-free`)
-- `minimax-m2.5-free` without provider prefix → OpenCode Zen (`opencode/minimax-m2.5-free`)
-- `ling-2.6-flash-free` without provider prefix → OpenCode Zen (`opencode/ling-2.6-flash-free`)
-- `hy3-preview-free` without provider prefix → OpenCode Zen (`opencode/hy3-preview-free`)
-- `big-pickle` without provider prefix → OpenCode Zen (`opencode/big-pickle`)
-- `kilo/minimax-m2.5-free` explicitly → Kilo Gateway
+The short names `nemotron-3-super-free`, `nemotron-3-ultra-free`, and `nemotron-3.5-lightning-free` resolve to Kilo. An explicit provider prefix selects that provider.
 
----
+```bash
+cd js
+npm run check:model-drift
+```
 
-## Privacy Notes
-
-Free models may have different data usage policies:
-
-- **OpenCode Zen free models:** During their free period, collected data may be used to improve the models
-- **Kilo Gateway free models:** Check [Kilo's privacy policy](https://kilo.ai/privacy) for details
-
-For production or sensitive use cases, consider using paid models with explicit zero-retention policies.
-
----
+The **Free Model Drift** workflow runs daily, on relevant pull requests, and manually. It checks exact gateway IDs for Kilo aliases and maintained Zen IDs against both live catalogs, fails on withdrawals or unavailable/malformed catalogs, and saves diagnostics as an artifact. It checks availability; authentication, client restrictions, pricing, and successful inference are separate concerns.
 
 ## More Information
 
 - [Full Models Documentation](MODELS.md)
-- [OpenCode Zen Documentation](https://opencode.ai/docs/zen/)
 - [Kilo Gateway Documentation](docs/kilo.md)
+- [Kilo Privacy Policy](https://kilo.ai/privacy)
+- [OpenCode Zen Documentation](https://opencode.ai/docs/zen/)

@@ -20,11 +20,11 @@
 
 > This is the JavaScript/Bun implementation. See also the [Rust implementation](../rust/README.md).
 
-This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json --model opencode/minimax-m2.5-free` mode with:
+This is an MVP implementation of an OpenCode-compatible CLI agent, focused on maximum efficiency and unrestricted execution. We reproduce OpenCode's `run --format json` mode with:
 
-- ✅ **JSON Input/Output**: Compatible with `opencode run --format json --model opencode/minimax-m2.5-free`
+- ✅ **JSON Input/Output**: Compatible with `opencode run --format json`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
-- ✅ **Flexible Model Selection**: Defaults to free OpenCode Zen MiniMax M2.5 Free, supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Formal AI](../docs/formal-ai.md), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
+- ✅ **Flexible Model Selection**: Defaults to free Kilo Nemotron 3 Super (Kilo authentication recommended), supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Formal AI](../docs/formal-ai.md), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
 - ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
 - ✅ **Full Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
@@ -169,7 +169,7 @@ echo '{"message":"hi"}' | agent
 **With custom model:**
 
 ```bash
-echo "hi" | agent --model opencode/minimax-m2.5-free
+echo "hi" | agent --model kilo/nemotron-3-super-free
 ```
 
 ### More Examples
@@ -190,16 +190,13 @@ echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"ls -
 **Using different models:**
 
 ```bash
-# Default model (free MiniMax M2.5)
+# Default model (free Nemotron 3 Super)
 echo "hi" | agent
 
-# Other free models (in order of recommendation)
-echo "hi" | agent --model opencode/minimax-m2.5-free
-echo "hi" | agent --model opencode/ling-2.6-flash-free
-echo "hi" | agent --model opencode/hy3-preview-free
-echo "hi" | agent --model opencode/nemotron-3-super-free
-echo "hi" | agent --model opencode/gpt-5-nano
-echo "hi" | agent --model opencode/big-pickle
+# Built-in free models (authenticate with agent auth login or KILO_API_KEY)
+echo "hi" | agent --model kilo/nemotron-3-super-free
+echo "hi" | agent --model kilo/nemotron-3-ultra-free
+echo "hi" | agent --model kilo/nemotron-3.5-lightning-free
 
 # Formal AI local server
 echo "hi" | agent --model formal-ai
@@ -288,7 +285,7 @@ agent [options]
 
 Options:
   --model                        Model to use in format providerID/modelID
-                                 Default: opencode/minimax-m2.5-free
+                                 Default: kilo/nemotron-3-super-free
   --json-standard                JSON output format standard
                                  Choices: "opencode" (default), "claude" (experimental)
   --output-format                Alias for JSON output format

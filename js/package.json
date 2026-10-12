@@ -17,6 +17,7 @@
     "format": "prettier --write . ../scripts",
     "format:check": "prettier --check . ../scripts",
     "check:file-size": "node ../scripts/check-file-size.mjs",
+    "check:model-drift": "bun ../scripts/check-model-drift.mjs",
     "check": "npm run lint && npm run format:check && npm run check:file-size",
     "prepare": "cd .. && husky || true",
     "changeset": "changeset",

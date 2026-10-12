@@ -21,13 +21,13 @@ fn agent_cmd() -> assert_cmd::Command {
 
 #[test]
 fn model_option_default() {
-    // Default model should be opencode/minimax-m2.5-free (matching JS).
+    // Default model should be kilo/nemotron-3-super-free (matching JS).
     agent_cmd()
         .args(["--dry-run", "--verbose", "-p", "hello"])
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Model: opencode/minimax-m2.5-free",
+            "Model: kilo/nemotron-3-super-free",
         ));
 }
 
@@ -608,7 +608,7 @@ fn compaction_model_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Compaction model: opencode/gpt-5-nano",
+            "Compaction model: kilo/nemotron-3-super-free",
         ));
 }
 
@@ -667,7 +667,7 @@ fn compaction_models_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Compaction models: (big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)",
+            "Compaction models: (kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)",
         ));
 }
 

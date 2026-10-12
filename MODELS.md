@@ -1,13 +1,13 @@
 # Models
 
-This agent supports multiple model providers. By default, it uses models from the [OpenCode Zen](https://opencode.ai/docs/zen/) subscription service. Additionally, you can use models directly from providers like [Groq](https://groq.com/) by setting the appropriate API key.
+This agent supports multiple model providers. By default, it uses the free Nemotron 3 Super model on [Kilo Gateway](docs/kilo.md). Kilo authentication is recommended for reliable access. Additionally, you can use models directly from providers like [Groq](https://groq.com/) by setting the appropriate API key.
 
 ## Supported Providers
 
 | Provider     | Format                          | API Key Env Variable         | Documentation                                      |
 | ------------ | ------------------------------- | ---------------------------- | -------------------------------------------------- |
-| OpenCode Zen | `opencode/<model-id>`           | N/A (public for free models) | [OpenCode Zen](https://opencode.ai/docs/zen/)      |
-| Kilo Gateway | `kilo/<model-id>`               | N/A (public for free models) | [Kilo Gateway Documentation](docs/kilo.md)         |
+| OpenCode Zen | `opencode/<model-id>`           | `OPENCODE_API_KEY` (paid)    | [OpenCode Zen](https://opencode.ai/docs/zen/)      |
+| Kilo Gateway | `kilo/<model-id>`               | `KILO_API_KEY` or Kilo login | [Kilo Gateway Documentation](docs/kilo.md)         |
 | Formal AI    | `formal-ai`                     | `FORMAL_AI_API_KEY`          | [Formal AI Documentation](docs/formal-ai.md)       |
 | Anthropic    | `anthropic/<model-id>`          | `ANTHROPIC_API_KEY`          | [Anthropic Docs](https://docs.anthropic.com/)      |
 | Claude OAuth | `claude-oauth/<model-id>`       | `CLAUDE_CODE_OAUTH_TOKEN`    | [Claude OAuth Documentation](docs/claude-oauth.md) |
@@ -21,61 +21,59 @@ This agent supports multiple model providers. By default, it uses models from th
 All models are accessed using the format `<provider>/<model-id>`. Use the `--model` option to specify which model to use:
 
 ```bash
-echo "hi" | agent --model opencode/gpt-5-nano
+echo "hi" | agent --model kilo/nemotron-3-super-free
 ```
 
 ## OpenCode Zen Pricing
 
+Zen's free tier is restricted to OpenCode clients; catalog presence does not guarantee Agent access. Agent does not retry HTTP 403 `FreeTierError`. See [Free Models](FREE_MODELS.md).
+
 Below are the prices per 1M tokens for OpenCode Zen models. Models are sorted by output price (lowest first) for best pricing visibility.
 
-| Model                                    | Model ID                         | Input    | Output   | Cached Read | Cached Write |
-| ---------------------------------------- | -------------------------------- | -------- | -------- | ----------- | ------------ |
+| Model                                    | Model ID                               | Input    | Output   | Cached Read | Cached Write |
+| ---------------------------------------- | -------------------------------------- | -------- | -------- | ----------- | ------------ |
 | **Free Models (Output: $0.00)**          |
-| MiniMax M2.5 Free (default)              | `opencode/minimax-m2.5-free`     | Free     | Free     | Free        | -            |
-| Ling 2.6 Flash Free                      | `opencode/ling-2.6-flash-free`   | Free     | Free     | Free        | -            |
-| Hy3 Preview Free                         | `opencode/hy3-preview-free`      | Free     | Free     | Free        | -            |
-| Nemotron 3 Super Free                    | `opencode/nemotron-3-super-free` | Free     | Free     | Free        | -            |
-| GPT 5 Nano                               | `opencode/gpt-5-nano`            | Free     | Free     | Free        | -            |
-| Big Pickle                               | `opencode/big-pickle`            | Free     | Free     | Free        | -            |
+| Nemotron 3.5 Lightning Free              | `opencode/nemotron-3.5-lightning-free` | Free     | Free     | Free        | -            |
+| Big Pickle                               | `opencode/big-pickle`                  | Free     | Free     | Free        | -            |
 | **Discontinued Free Models**             |
-| ~~Qwen 3.6 Plus Free~~                   | `opencode/qwen3.6-plus-free`     | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
-| ~~Kimi K2.5 Free~~                       | `opencode/kimi-k2.5-free`        | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
-| ~~Grok Code Fast 1~~                     | `opencode/grok-code`             | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
-| ~~MiniMax M2.1 Free~~                    | `opencode/minimax-m2.1-free`     | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
-| ~~GLM 4.7 Free~~                         | `opencode/glm-4.7-free`          | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~Qwen 3.6 Plus Free~~                   | `opencode/qwen3.6-plus-free`           | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~Kimi K2.5 Free~~                       | `opencode/kimi-k2.5-free`              | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~Grok Code Fast 1~~                     | `opencode/grok-code`                   | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~MiniMax M2.1 Free~~                    | `opencode/minimax-m2.1-free`           | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
+| ~~GLM 4.7 Free~~                         | `opencode/glm-4.7-free`                | ~~Free~~ | ~~Free~~ | ~~Free~~    | -            |
 | **Paid Models (sorted by output price)** |
-| Qwen3 Coder 480B                         | `opencode/qwen3-coder-480b`      | $0.45    | $1.50    | -           | -            |
-| GLM 4.6                                  | `opencode/glm-4-6`               | $0.60    | $2.20    | $0.10       | -            |
-| Kimi K2                                  | `opencode/kimi-k2`               | $0.60    | $2.50    | $0.36       | -            |
-| Claude Haiku 3.5                         | `opencode/claude-haiku-3-5`      | $0.80    | $4.00    | $0.08       | $1.00        |
-| Claude Haiku 4.5                         | `opencode/haiku`                 | $1.00    | $5.00    | $0.10       | $1.25        |
-| GPT 5.1                                  | `opencode/gpt-5-1`               | $1.25    | $10.00   | $0.125      | -            |
-| GPT 5.1 Codex                            | `opencode/gpt-5-1-codex`         | $1.25    | $10.00   | $0.125      | -            |
-| GPT 5                                    | `opencode/gpt-5`                 | $1.25    | $10.00   | $0.125      | -            |
-| GPT 5 Codex                              | `opencode/gpt-5-codex`           | $1.25    | $10.00   | $0.125      | -            |
-| Gemini 3 Pro (≤ 200K tokens)             | `opencode/gemini-3-pro`          | $2.00    | $12.00   | $0.20       | -            |
-| Claude Sonnet 4.5 (≤ 200K tokens)        | `opencode/sonnet`                | $3.00    | $15.00   | $0.30       | $3.75        |
-| Claude Sonnet 4 (≤ 200K tokens)          | `opencode/claude-sonnet-4`       | $3.00    | $15.00   | $0.30       | $3.75        |
-| Gemini 3 Pro (> 200K tokens)             | `opencode/gemini-3-pro`          | $4.00    | $18.00   | $0.40       | -            |
-| Claude Sonnet 4.5 (> 200K tokens)        | `opencode/sonnet`                | $6.00    | $22.50   | $0.60       | $7.50        |
-| Claude Sonnet 4 (> 200K tokens)          | `opencode/claude-sonnet-4`       | $6.00    | $22.50   | $0.60       | $7.50        |
-| Claude Opus 4.1                          | `opencode/opus`                  | $15.00   | $75.00   | $1.50       | $18.75       |
+| Qwen3 Coder 480B                         | `opencode/qwen3-coder-480b`            | $0.45    | $1.50    | -           | -            |
+| GLM 4.6                                  | `opencode/glm-4-6`                     | $0.60    | $2.20    | $0.10       | -            |
+| Kimi K2                                  | `opencode/kimi-k2`                     | $0.60    | $2.50    | $0.36       | -            |
+| Claude Haiku 3.5                         | `opencode/claude-haiku-3-5`            | $0.80    | $4.00    | $0.08       | $1.00        |
+| Claude Haiku 4.5                         | `opencode/haiku`                       | $1.00    | $5.00    | $0.10       | $1.25        |
+| GPT 5.1                                  | `opencode/gpt-5-1`                     | $1.25    | $10.00   | $0.125      | -            |
+| GPT 5.1 Codex                            | `opencode/gpt-5-1-codex`               | $1.25    | $10.00   | $0.125      | -            |
+| GPT 5                                    | `opencode/gpt-5`                       | $1.25    | $10.00   | $0.125      | -            |
+| GPT 5 Codex                              | `opencode/gpt-5-codex`                 | $1.25    | $10.00   | $0.125      | -            |
+| Gemini 3 Pro (≤ 200K tokens)             | `opencode/gemini-3-pro`                | $2.00    | $12.00   | $0.20       | -            |
+| Claude Sonnet 4.5 (≤ 200K tokens)        | `opencode/sonnet`                      | $3.00    | $15.00   | $0.30       | $3.75        |
+| Claude Sonnet 4 (≤ 200K tokens)          | `opencode/claude-sonnet-4`             | $3.00    | $15.00   | $0.30       | $3.75        |
+| Gemini 3 Pro (> 200K tokens)             | `opencode/gemini-3-pro`                | $4.00    | $18.00   | $0.40       | -            |
+| Claude Sonnet 4.5 (> 200K tokens)        | `opencode/sonnet`                      | $6.00    | $22.50   | $0.60       | $7.50        |
+| Claude Sonnet 4 (> 200K tokens)          | `opencode/claude-sonnet-4`             | $6.00    | $22.50   | $0.60       | $7.50        |
+| Claude Opus 4.1                          | `opencode/opus`                        | $15.00   | $75.00   | $1.50       | $18.75       |
 
 ## Default Model
 
-The default model is **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`), which is completely free on OpenCode Zen for a limited time and offers a 204,800 token context window with 131,072 output tokens in current models.dev metadata.
+The default model is **Nemotron 3 Super Free** (`kilo/nemotron-3-super-free`), with a 262,144 token context window and a conservative 32,768 token output cap. Authenticate with `agent auth login` (Kilo Gateway) or set `KILO_API_KEY`. Its exact gateway ID is `nvidia/nemotron-3-super-120b-a12b:free`.
 
 For test runs and automation, the default model can be overridden with `LINK_ASSISTANT_AGENT_DEFAULT_MODEL`; an explicit `--model` option still takes precedence. The compaction defaults have matching override variables: `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL`, `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODELS`, and `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT`.
 
 ### Models for Compaction and Session Summaries
 
-Compaction and session summaries use the compaction model (`--compaction-model`, `--compaction-models`), not the model running the turn. The shipped default cascade names OpenCode models; when `--model` points at another provider, entries from other providers are dropped so those secondary calls inherit `--model` instead of calling a provider you may hold no credentials for. A compaction model you name yourself is always used as written. See [issue #307](https://github.com/link-assistant/agent/issues/307).
+Compaction and session summaries use the compaction model (`--compaction-model`, `--compaction-models`), not the model running the turn. The shipped default cascade starts with Kilo Nemotron 3 Super, then Ultra and 3.5 Lightning, followed by `same`; when `--model` points at another provider, entries from other providers are dropped so those secondary calls inherit `--model` instead of calling a provider you may hold no credentials for. A compaction model you name yourself is always used as written. See [issue #307](https://github.com/link-assistant/agent/issues/307).
 
 A model that has no context window to run out of can say so in the provider config, as `"limit": { "context": null }` or `"unlimited": true` on the model. Compaction, context diagnostics, and session summarization are all skipped for such a model — no `--no-summarize-session` needed.
 
 > **Note:** Qwen 3.6 Plus Free (`opencode/qwen3.6-plus-free`) was previously the default free model, but OpenCode Zen ended the free promotion in April 2026. The model now requires an OpenCode Go subscription. See [issue #242](https://github.com/link-assistant/agent/issues/242).
 
-> **Note:** Nemotron 3 Super Free (`opencode/nemotron-3-super-free`) was previously the default free model. See [issue #242](https://github.com/link-assistant/agent/issues/242).
+> **Note:** Nemotron 3 Super Free was withdrawn from Zen, along with MiniMax M2.5 Free, Hy3 Preview Free, and Ling 2.6 Flash Free. Use `kilo/nemotron-3-super-free` instead. See [issue #327](https://github.com/link-assistant/agent/issues/327).
 
 > **Note:** Kimi K2.5 Free (`opencode/kimi-k2.5-free`) was previously the default free model, but it was removed from the OpenCode Zen provider in March 2026. See [Case Study #208](docs/case-studies/issue-208/README.md) for details.
 
@@ -83,44 +81,29 @@ A model that has no context window to run out of can say so in the provider conf
 
 ### Free Models (in order of recommendation)
 
-1. **MiniMax M2.5 Free** (`opencode/minimax-m2.5-free`) - Default free model, strong general-purpose performance (204,800 context)
-2. **Ling 2.6 Flash Free** (`opencode/ling-2.6-flash-free`) - Fast free open-weight model (262,100 context)
-3. **Hy3 Preview Free** (`opencode/hy3-preview-free`) - Preview free model with reasoning support (256,000 context)
-4. **Nemotron 3 Super Free** (`opencode/nemotron-3-super-free`) - NVIDIA free endpoint with strong reasoning (204,800 context)
-5. **GPT 5 Nano** (`opencode/gpt-5-nano`) - Reliable OpenAI-powered free option (400,000 context)
-6. **Big Pickle** (`opencode/big-pickle`) - Stealth model, free during evaluation (200,000 context)
+1. **Nemotron 3 Super** (`kilo/nemotron-3-super-free`) — default (262,144 context).
+2. **Nemotron 3 Ultra** (`kilo/nemotron-3-ultra-free`) — 1,000,000 context.
+3. **Nemotron 3.5 Lightning** (`kilo/nemotron-3.5-lightning-free`) — 1,000,000 context.
 
-> **Note:** `opencode/qwen3.6-plus-free`, `opencode/kimi-k2.5-free`, `opencode/minimax-m2.1-free`, and `opencode/glm-4.7-free` are no longer available as recommended free models on OpenCode Zen. See [OpenCode Zen Documentation](https://opencode.ai/docs/zen/) for the current list of free models.
+These built-in IDs were checked against the [Kilo catalog](https://api.kilo.ai/api/gateway/models) on October 12, 2026. See [Free Models](FREE_MODELS.md) for withdrawals and the scheduled drift check.
 
 ## Usage Examples
 
 ### Using the Default Model (Free)
 
 ```bash
-# Uses opencode/minimax-m2.5-free by default
+# Authenticate with agent auth login (Kilo Gateway) or KILO_API_KEY
+# Uses kilo/nemotron-3-super-free by default
 echo "hello" | agent
 ```
 
 ### Using Other Free Models
 
 ```bash
-# MiniMax M2.5 Free (default)
-echo "hello" | agent --model opencode/minimax-m2.5-free
-
-# Ling 2.6 Flash Free
-echo "hello" | agent --model opencode/ling-2.6-flash-free
-
-# Hy3 Preview Free
-echo "hello" | agent --model opencode/hy3-preview-free
-
-# Nemotron 3 Super Free
-echo "hello" | agent --model opencode/nemotron-3-super-free
-
-# GPT 5 Nano
-echo "hello" | agent --model opencode/gpt-5-nano
-
-# Big Pickle
-echo "hello" | agent --model opencode/big-pickle
+# Built-in free Kilo models (authentication recommended)
+echo "hello" | agent --model kilo/nemotron-3-super-free
+echo "hello" | agent --model kilo/nemotron-3-ultra-free
+echo "hello" | agent --model kilo/nemotron-3.5-lightning-free
 
 # Formal AI local server
 echo "hello" | agent --model formal-ai
@@ -259,64 +242,20 @@ For more details, see the [OpenRouter Documentation](docs/openrouter.md).
 
 [Kilo](https://kilo.ai) is an open-source AI coding agent platform providing access to 500+ AI models through the Kilo Gateway. The gateway uses an OpenAI-compatible API, making it easy to integrate with existing tools.
 
-### Free Models (No API Key Required)
+### Free Models
 
-Kilo offers several free models that work without setting up an API key:
+Kilo authentication is required for inference even when token pricing is zero. Run `agent auth login` and choose Kilo Gateway, or set `KILO_API_KEY`.
 
-| Model                   | Model ID                     | Context Window | Description                                             |
-| ----------------------- | ---------------------------- | -------------- | ------------------------------------------------------- |
-| **GLM-5 (recommended)** | `kilo/glm-5-free`            | 202,752 tokens | Z.AI flagship model, matches Opus 4.5 on many tasks     |
-| GLM 4.5 Air             | `kilo/glm-4.5-air-free`      | 131,072 tokens | Free Z.AI model with agent-centric capabilities         |
-| MiniMax M2.5            | `kilo/minimax-m2.5-free`     | 204,800 tokens | Strong general-purpose performance (upgraded from M2.1) |
-| DeepSeek R1             | `kilo/deepseek-r1-free`      | 163,840 tokens | Advanced reasoning model                                |
-| Giga Potato             | `kilo/giga-potato-free`      | 256,000 tokens | Free evaluation model                                   |
-| Trinity Large Preview   | `kilo/trinity-large-preview` | 131,000 tokens | Arcee AI preview model                                  |
-
-> **Note:** `kilo/glm-4.7-free` and `kilo/minimax-m2.1-free` are no longer the recommended free models. Use `kilo/glm-4.5-air-free` and `kilo/minimax-m2.5-free` instead.
-
-> **Note:** GLM-5 is currently free for a limited time. See [GLM-5 Announcement](https://blog.kilo.ai/p/glm-5-free-limited-time) for details.
-
-### GLM-5 Specifications
-
-GLM-5 is Z.AI's (Zhipu AI) flagship model with enhanced reasoning and coding capabilities:
-
-| Property           | Value             |
-| ------------------ | ----------------- |
-| Model ID           | `kilo/glm-5-free` |
-| Context Window     | 202,752 tokens    |
-| Max Output Tokens  | 131,072 tokens    |
-| Function Calling   | Yes               |
-| Tool Choice        | Yes               |
-| Structured Outputs | Yes (JSON schema) |
-| Reasoning Tokens   | Yes               |
-
-### Using Paid Models
-
-For paid models, set your Kilo API key:
+| Model                          | Agent model ID                     | Context   | Agent output limit |
+| ------------------------------ | ---------------------------------- | --------- | ------------------ |
+| **Nemotron 3 Super (default)** | `kilo/nemotron-3-super-free`       | 262,144   | 32,768             |
+| Nemotron 3 Ultra               | `kilo/nemotron-3-ultra-free`       | 1,000,000 | 65,536             |
+| Nemotron 3.5 Lightning         | `kilo/nemotron-3.5-lightning-free` | 1,000,000 | 65,536             |
 
 ```bash
-export KILO_API_KEY=your_api_key_here
+echo "hello" | agent --model kilo/nemotron-3-super-free
+echo "hello" | agent --model kilo/nemotron-3-ultra-free
+echo "hello" | agent --model kilo/nemotron-3.5-lightning-free
 ```
 
-Get your API key at [app.kilo.ai](https://app.kilo.ai).
-
-### Kilo Usage Examples
-
-```bash
-# Using GLM-5 (recommended free model)
-echo "hello" | agent --model kilo/glm-5-free
-
-# Using GLM 4.5 Air (free, agent-centric)
-echo "hello" | agent --model kilo/glm-4.5-air-free
-
-# Using MiniMax M2.5 (free)
-echo "hello" | agent --model kilo/minimax-m2.5-free
-
-# Using DeepSeek R1 (free, reasoning)
-echo "hello" | agent --model kilo/deepseek-r1-free
-
-# Using Giga Potato (free evaluation)
-echo "hello" | agent --model kilo/giga-potato-free
-```
-
-For more details, see the [Kilo Gateway Documentation](docs/kilo.md).
+The six previous free aliases (GLM-5, GLM 4.5 Air, MiniMax M2.5, Giga Potato, Trinity Large Preview, and DeepSeek R1) were removed because their gateway IDs disappeared. For exact ID mappings, additional model overrides, and paid model authentication, see [Kilo Gateway Documentation](docs/kilo.md).

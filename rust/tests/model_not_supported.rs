@@ -37,5 +37,5 @@ fn cli_accepts_arbitrary_provider_model_combinations() {
 
 #[test]
 fn default_model_is_the_documented_free_tier_model() {
-    assert_eq!(DEFAULT_MODEL, "opencode/minimax-m2.5-free");
+    assert_eq!(DEFAULT_MODEL, "kilo/nemotron-3-super-free");
 }

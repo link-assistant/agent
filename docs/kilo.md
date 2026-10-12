@@ -1,129 +1,75 @@
 # Kilo Gateway Provider
 
-[Kilo](https://kilo.ai) is an open-source AI coding agent platform providing unified access to 500+ AI models through the Kilo Gateway. This provider uses an OpenAI-compatible API at `https://api.kilo.ai/api/gateway`.
+[Kilo Gateway](https://kilo.ai/docs/gateway) provides an OpenRouter-compatible API. Agent uses `https://api.kilo.ai/api/openrouter` for inference and checks availability against [the gateway model catalog](https://api.kilo.ai/api/gateway/models).
 
-## Overview
+## Authentication
 
-The Kilo Gateway offers:
-
-- **500+ AI Models** - Access to models from Anthropic, OpenAI, Google, xAI, Mistral, MiniMax, and more
-- **Free Tier** - Several free models available without API key (using `public` key)
-- **BYOK Support** - Bring your own API keys with encrypted-at-rest storage
-- **OpenAI-Compatible API** - Drop-in replacement for OpenAI's `/chat/completions` endpoint
-- **SSE Streaming** - Full Server-Sent Events streaming support
-- **Tool Calling** - Robust function/tool calling capabilities
-
-## Free Models
-
-The following models are available without setting up an API key:
-
-| Model                      | Model ID                       | Provider       | Context Window | Status              |
-| -------------------------- | ------------------------------ | -------------- | -------------- | ------------------- |
-| **GLM-5 (recommended)**    | `kilo/glm-5-free`              | Z.AI           | 202,752 tokens | Free (limited time) |
-| GLM 4.5 Air                | `kilo/glm-4.5-air-free`        | Z.AI           | 131,072 tokens | Free                |
-| MiniMax M2.5               | `kilo/minimax-m2.5-free`       | MiniMax        | 204,800 tokens | Free                |
-| DeepSeek R1                | `kilo/deepseek-r1-free`        | DeepSeek       | 163,840 tokens | Free                |
-| Giga Potato                | `kilo/giga-potato-free`        | Unknown        | 256,000 tokens | Free (evaluation)   |
-| Trinity Large Preview      | `kilo/trinity-large-preview`   | Arcee AI       | 131,000 tokens | Free (preview)      |
-
-> **Note:** `kilo/glm-4.7-free`, `kilo/kimi-k2.5-free`, and `kilo/minimax-m2.1-free` are no longer the recommended free models. They have been replaced by the models listed above. See [Kilo Free Models Documentation](https://kilo.ai/docs/advanced-usage/free-and-budget-models) for current availability.
-
-### GLM-5: Flagship Free Model
-
-GLM-5 is Z.AI's (Zhipu AI) latest flagship model with enhanced reasoning and coding capabilities. Key features:
-
-- **Deep Reasoning** - Excels at "thinking through" complex architectural problems before writing code
-- **Fast Inference** - Delivers significantly faster inference speeds than previous GLM versions
-- **Bilingual** - Optimized for both Chinese and English
-- **Tool Calling** - Full support for function calling and tool use
-- **Structured Outputs** - JSON schema validation for structured responses
-
-| Specification     | Value                |
-| ----------------- | -------------------- |
-| Context Window    | 202,752 tokens       |
-| Max Output Tokens | 131,072 tokens       |
-| Function Calling  | Yes                  |
-| Tool Choice       | Yes                  |
-| Reasoning Tokens  | Yes                  |
-| Release Date      | February 11, 2026    |
-
-> **Note:** GLM-5 is currently free for a limited time. See the [official announcement](https://blog.kilo.ai/p/glm-5-free-limited-time) for details.
-
-## Configuration
-
-### Using Free Models (No API Key Required)
-
-Free models work out of the box with no configuration:
+Authenticate for reliable free and paid inference:
 
 ```bash
-# GLM-5 (recommended)
-echo "hello" | agent --model kilo/glm-5-free
-
-# GLM 4.5 Air
-echo "hello" | agent --model kilo/glm-4.5-air-free
-
-# MiniMax M2.5
-echo "hello" | agent --model kilo/minimax-m2.5-free
-
-# DeepSeek R1 (reasoning model)
-echo "hello" | agent --model kilo/deepseek-r1-free
-```
-
-### Using Paid Models
-
-For paid models, set your Kilo API key:
-
-```bash
+agent auth login # Select Kilo Gateway
+# Alternatively:
 export KILO_API_KEY=your_api_key_here
 ```
 
-Get your API key at [app.kilo.ai](https://app.kilo.ai).
+Get an API key at [app.kilo.ai](https://app.kilo.ai). Agent can list free models without credentials, but anonymous completion requests may be rejected by the gateway.
+
+## Built-in Free Models
+
+Checked October 12, 2026. These models support reasoning and tool calls with zero input/output token cost.
+
+| Agent model ID                             | Exact gateway ID                         | Context   | Agent output limit |
+| ------------------------------------------ | ---------------------------------------- | --------- | ------------------ |
+| **`kilo/nemotron-3-super-free` (default)** | `nvidia/nemotron-3-super-120b-a12b:free` | 262,144   | 32,768             |
+| `kilo/nemotron-3-ultra-free`               | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 | 65,536             |
+| `kilo/nemotron-3.5-lightning-free`         | `nvidia/nemotron-3.5-lightning:free`     | 1,000,000 | 65,536             |
+
+```bash
+echo "hello" | agent
+echo "hello" | agent --model kilo/nemotron-3-super-free
+echo "hello" | agent --model kilo/nemotron-3-ultra-free
+echo "hello" | agent --model kilo/nemotron-3.5-lightning-free
+```
+
+Short names for these built-in aliases also resolve to Kilo. Session titles and compaction use served Kilo entries by default. The gateway's Super output capacity is larger than Agent's conservative 32,768 output cap.
+
+The former GLM-5, GLM 4.5 Air, MiniMax M2.5, Giga Potato, Trinity Large Preview, and DeepSeek R1 free gateway IDs have been withdrawn and their built-ins removed. See [issue #327](https://github.com/link-assistant/agent/issues/327).
+
+## Additional Models
+
+Use a provider model override with an exact gateway ID for models outside the built-in list:
+
+```json
+{
+  "provider": {
+    "kilo": {
+      "models": {
+        "my-model": {
+          "id": "exact/id-from-the-gateway-catalog",
+          "limit": { "context": 262144, "output": 32768 }
+        }
+      }
+    }
+  }
+}
+```
+
+Then select `--model kilo/my-model`. Configure pricing and capabilities for that model as appropriate; free catalog listings are subject to change. Operator overrides remain supported.
 
 ## API Details
 
-The Kilo Gateway uses an OpenAI-compatible API:
+| Property           | Value                                    |
+| ------------------ | ---------------------------------------- |
+| Inference base URL | `https://api.kilo.ai/api/openrouter`     |
+| Model catalog      | `https://api.kilo.ai/api/gateway/models` |
+| API format         | OpenRouter-compatible chat completions   |
+| Authentication     | Kilo login or `KILO_API_KEY`             |
+| Streaming          | Server-Sent Events                       |
 
-| Property          | Value                                |
-| ----------------- | ------------------------------------ |
-| Base URL          | `https://api.kilo.ai/api/gateway`    |
-| API Format        | OpenAI-compatible                    |
-| Authentication    | Bearer token (`KILO_API_KEY`)        |
-| Streaming         | SSE (Server-Sent Events)             |
-| Tool Calling      | Supported                            |
-
-### Example API Call (Vercel AI SDK)
-
-```typescript
-import { streamText } from "ai"
-import { createOpenAI } from "@ai-sdk/openai"
-
-const kilo = createOpenAI({
-  baseURL: "https://api.kilo.ai/api/gateway",
-  apiKey: process.env.KILO_API_KEY || "public",
-})
-
-const result = streamText({
-  model: kilo("z-ai/glm-5"),
-  prompt: "Write a function to sort an array",
-})
-```
-
-## Comparison with OpenCode Zen
-
-| Feature          | OpenCode Zen                            | Kilo Gateway                     |
-| ---------------- | --------------------------------------- | -------------------------------- |
-| Free Models      | 4 (Kimi K2.5, MiniMax M2.5, etc.)       | 6+ (GLM-5, MiniMax M2.5, etc.)   |
-| Flagship Free    | Kimi K2.5 Free                          | GLM-5 (limited time)             |
-| API Format       | OpenAI-compatible                       | OpenAI-compatible                |
-| Free API Key     | `public`                                | `public`                         |
-| Total Models     | 50+                                     | 500+                             |
-| BYOK Support     | Yes                                     | Yes                              |
+The scheduled drift check compares the actual inference IDs, not the shorter Agent aliases. Run it locally with `cd js && npm run check:model-drift`.
 
 ## More Information
 
+- [Free Models](../FREE_MODELS.md)
 - [Kilo Gateway Documentation](https://kilo.ai/docs/gateway)
-- [Free and Budget Models](https://kilo.ai/docs/advanced-usage/free-and-budget-models)
-- [GLM-5 Free Announcement](https://blog.kilo.ai/p/glm-5-free-limited-time)
 - [Kilo GitHub Repository](https://github.com/Kilo-Org/kilo)
-- [Kilo Code VS Code Extension](https://github.com/Kilo-Org/kilocode)
-- [Z.AI Developer Documentation](https://docs.z.ai/devpack/overview)

@@ -27,6 +27,10 @@ on:
           - groq/openai/gpt-oss-20b
           - groq/qwen-qwq-32b
           - groq/qwen/qwen3-32b
+          # Maintained Kilo free aliases (authentication recommended)
+          - kilo/nemotron-3-super-free
+          - kilo/nemotron-3-ultra-free
+          - kilo/nemotron-3.5-lightning-free
           # OpenCode models (sorted alphabetically)
           - opencode/alpha-doubao-seed-code
           - opencode/alpha-gd4
@@ -87,6 +91,7 @@ jobs:
       cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     env:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      KILO_API_KEY: ${{ secrets.KILO_API_KEY }}
 
     steps:
       - name: Checkout repository

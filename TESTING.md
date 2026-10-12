@@ -43,7 +43,9 @@ bun test ./js/tests/integration/bash.tools.js
 
 ### Why Integration Tests Are Separate
 
-The default AI model (`minimax-m2.5-free`) has strict rate limits. Running multiple integration tests in bulk will exhaust the rate limit quota, causing tests to fail or wait for hours.
+The default AI model (`kilo/nemotron-3-super-free`) has strict rate limits. Running multiple integration tests in bulk will exhaust the rate limit quota, causing tests to fail or wait for hours.
+
+Authenticate with Kilo Gateway (`agent auth login`) or set `KILO_API_KEY` before running default-model inference tests. The manual integration and model workflows accept the corresponding repository secret.
 
 All integration tests pass `--no-retry-on-rate-limits` to the agent CLI to fail fast instead of waiting when rate limited.
 
