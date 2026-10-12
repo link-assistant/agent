@@ -190,7 +190,7 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
     .option('compaction-model', {
       type: 'string',
       description:
-        'Model to use for context compaction and session summaries, in format providerID/modelID. Use "same" to use the base model. Default: opencode/gpt-5-nano (free, 400K context), which falls back to the --model model when --model points at another provider. Overridden by --compaction-models if both are specified.',
+        'Model to use for context compaction and session summaries, in format providerID/modelID. Use "same" to use the base model. Default: kilo/nemotron-3-super-free (free, Kilo authentication recommended, 262K context), which falls back to the --model model when --model points at another provider. Overridden by --compaction-models if both are specified.',
       default: defaultCompactionModel,
     })
     .option('compaction-models', {

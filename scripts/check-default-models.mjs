@@ -7,9 +7,12 @@ import {
   DEFAULT_COMPACTION_MODELS,
   parseModelParts,
 } from '../js/src/config/defaults.ts';
+import { Kilo } from '../js/src/provider/kilo.ts';
+import { catalogIDs } from './model-catalog.mjs';
 
 export const ZEN_MODELS_URL = 'https://opencode.ai/zen/v1/models';
 export const MODELS_DEV_URL = 'https://models.dev/api.json';
+export const KILO_MODELS_URL = Kilo.MODELS_URL;
 
 // Read constants directly: local environment overrides must not hide stale defaults.
 export function shippedModelIDs() {
@@ -30,10 +33,21 @@ export function shippedModelIDs() {
   ];
 }
 
-export function unavailableModels(models, zenIDs, modelsDev) {
+export function unavailableModels(
+  models,
+  zenIDs,
+  modelsDev,
+  kiloIDs = new Set()
+) {
   return models.filter((model) => {
     const { providerID, modelID } = parseModelParts(model);
     if (providerID === 'opencode' && zenIDs.has(modelID)) {
+      return false;
+    }
+    if (
+      providerID === 'kilo' &&
+      kiloIDs.has(Kilo.FREE_MODELS[modelID]?.id ?? modelID)
+    ) {
       return false;
     }
     const metadata = modelsDev[providerID]?.models?.[modelID];
@@ -49,15 +63,8 @@ async function fetchCatalogue(url, fetchFn) {
     throw new Error(`${url}: HTTP ${response.status}`);
   }
   const body = await response.json();
-  if (url === ZEN_MODELS_URL) {
-    if (
-      !Array.isArray(body?.data) ||
-      body.data.length === 0 ||
-      body.data.some((row) => typeof row?.id !== 'string')
-    ) {
-      throw new Error(`${url}: invalid or empty model list`);
-    }
-    return new Set(body.data.map((row) => row.id));
+  if (url !== MODELS_DEV_URL) {
+    return catalogIDs(body, url);
   }
   if (!body?.opencode?.models || typeof body.opencode.models !== 'object') {
     throw new Error(`${url}: missing OpenCode model metadata`);
@@ -70,8 +77,12 @@ export async function checkDefaultModels({
   models = shippedModelIDs(),
   warn = console.warn,
 } = {}) {
+  const urls = [ZEN_MODELS_URL, MODELS_DEV_URL];
+  if (models.some((model) => parseModelParts(model).providerID === 'kilo')) {
+    urls.push(KILO_MODELS_URL);
+  }
   const results = await Promise.allSettled(
-    [ZEN_MODELS_URL, MODELS_DEV_URL].map((url) => fetchCatalogue(url, fetchFn))
+    urls.map((url) => fetchCatalogue(url, fetchFn))
   );
   for (const result of results) {
     if (result.status === 'rejected') {
@@ -81,11 +92,13 @@ export async function checkDefaultModels({
   const zenIDs =
     results[0].status === 'fulfilled' ? results[0].value : new Set();
   const modelsDev = results[1].status === 'fulfilled' ? results[1].value : {};
-  const missing = unavailableModels(models, zenIDs, modelsDev);
+  const kiloIDs =
+    results[2]?.status === 'fulfilled' ? results[2].value : new Set();
+  const missing = unavailableModels(models, zenIDs, modelsDev, kiloIDs);
   if (missing.length > 0) {
     throw new Error(
       `Unavailable shipped models: ${missing.join(', ')}. ` +
-        `Each must be listed at ${ZEN_MODELS_URL} or have non-deprecated metadata at ${MODELS_DEV_URL}.`
+        `Each must be listed in its provider catalogue (${urls.filter((url) => url !== MODELS_DEV_URL).join(', ')}) or have non-deprecated metadata at ${MODELS_DEV_URL}.`
     );
   }
   return models;

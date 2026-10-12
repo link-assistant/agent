@@ -366,17 +366,20 @@ fn test_args_all_options_combined() {
 
 #[test]
 fn test_default_model_matches_js() {
-    assert_eq!(DEFAULT_MODEL, "opencode/big-pickle");
+    assert_eq!(DEFAULT_MODEL, "kilo/nemotron-3-super-free");
 }
 
 #[test]
 fn test_default_compaction_model_matches_js() {
-    assert_eq!(DEFAULT_COMPACTION_MODEL, "opencode/gpt-5-nano");
+    assert_eq!(DEFAULT_COMPACTION_MODEL, "kilo/nemotron-3-super-free");
 }
 
 #[test]
 fn test_default_compaction_models_matches_js() {
-    assert_eq!(DEFAULT_COMPACTION_MODELS, "(big-pickle gpt-5-nano same)");
+    assert_eq!(
+        DEFAULT_COMPACTION_MODELS,
+        "(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)"
+    );
 }
 
 #[test]

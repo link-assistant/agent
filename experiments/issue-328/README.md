@@ -15,7 +15,7 @@ bun scripts/check-default-models.mjs
 bun test ./js/tests/default-model-catalogue.ts
 ```
 
-The replay reports four unavailable original models and zero unavailable current models. Before the fix, the live checker also failed with those four IDs and the regression suite had three failures. Catalogue checks validate model IDs; the separate Zen `FreeTierError` restriction reported in [issue #327](https://github.com/link-assistant/agent/issues/327#issuecomment-6040047705) can still prevent inference.
+The replay reports four unavailable original models and zero unavailable current models, using the Zen evidence here and the gateway snapshot from [issue #327](../issue-327/kilo-models.json). Before the fix, the live checker also failed with those four IDs and the regression suite had three failures. Catalogue checks validate model IDs; the separate Zen `FreeTierError` restriction reported in [issue #327](https://github.com/link-assistant/agent/issues/327#issuecomment-6040047705) can still prevent inference.
 
 ## Dependency freshness follow-up
 
@@ -47,3 +47,17 @@ export. Their exceptions reference the open upstream issues
 The freshness gate is unchanged. The
 [packed parser experiment](../issue-322/README.md) verifies the supported runtime
 and Agent's newer parser support while reproducing OpenTUI's peer conflict.
+
+## Latest main integration
+
+PR #329 merged during this follow-up, followed by JavaScript 0.26.12 and Rust
+0.10.3 releases. Preserve its served Kilo defaults, gateway aliases, restricted
+Zen error handling, and dependency updates. The default check now resolves
+Kilo aliases to the exact live gateway ID before validating availability; Zen
+catalogue IDs cannot validate a model from another provider. Its metadata
+fallback and Rust parity checks still cover the default, single compaction
+model, expanded cascade, and `same`.
+
+Four regression failures reproduced the missing Kilo support before extending
+the checker. The current catalogue tests verify exact IDs, withdrawn aliases,
+malformed gateway data, endpoint fallback, and both languages' shipped values.

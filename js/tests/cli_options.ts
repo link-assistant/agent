@@ -48,7 +48,7 @@ async function parseRunOptions(
 describe('cli_options', () => {
   test('model_option_default', async () => {
     const argv = await parseRunOptions([]);
-    expect(argv.model).toBe('opencode/big-pickle');
+    expect(argv.model).toBe('kilo/nemotron-3-super-free');
   });
 
   test('model_option_custom', async () => {
@@ -172,9 +172,9 @@ describe('cli_options', () => {
   test('verbose_shows_config', async () => {
     const argv = await parseRunOptions(['--verbose']);
     expect(argv.verbose).toBe(true);
-    expect(argv.model).toBe('opencode/big-pickle');
+    expect(argv.model).toBe('kilo/nemotron-3-super-free');
     expect(argv.jsonStandard).toBe('opencode');
-    expect(argv.compactionModel).toBe('opencode/gpt-5-nano');
+    expect(argv.compactionModel).toBe('kilo/nemotron-3-super-free');
     expect(argv.compactionSafetyMargin).toBe(25);
   });
 
@@ -324,7 +324,7 @@ describe('cli_options', () => {
 
   test('compaction_model_default', async () => {
     const argv = await parseRunOptions([]);
-    expect(argv.compactionModel).toBe('opencode/gpt-5-nano');
+    expect(argv.compactionModel).toBe('kilo/nemotron-3-super-free');
   });
 
   test('compaction_model_custom', async () => {
@@ -348,7 +348,9 @@ describe('cli_options', () => {
 
   test('compaction_models_default', async () => {
     const argv = await parseRunOptions([]);
-    expect(argv.compactionModels).toBe('(big-pickle gpt-5-nano same)');
+    expect(argv.compactionModels).toBe(
+      '(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)'
+    );
   });
 
   test('compaction_models_custom', async () => {

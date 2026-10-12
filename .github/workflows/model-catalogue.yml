@@ -7,6 +7,8 @@ on:
       - 'js/src/config/defaults.ts'
       - 'rust/src/defaults.rs'
       - 'scripts/check-default-models.mjs'
+      - 'scripts/model-catalog.mjs'
+      - 'js/src/provider/kilo.ts'
       - 'js/tests/default-model-catalogue.ts'
       - '.github/workflows/model-catalogue.yml'
   pull_request:
@@ -14,6 +16,8 @@ on:
       - 'js/src/config/defaults.ts'
       - 'rust/src/defaults.rs'
       - 'scripts/check-default-models.mjs'
+      - 'scripts/model-catalog.mjs'
+      - 'js/src/provider/kilo.ts'
       - 'js/tests/default-model-catalogue.ts'
       - '.github/workflows/model-catalogue.yml'
   schedule:
@@ -43,7 +47,7 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: latest
-      # The checker and these tests import only dependency-free defaults.
+      # The checker imports dependency-free defaults, Kilo aliases and catalogue helpers.
       - name: Test catalogue validation and Rust parity
         run: bun test ./js/tests/default-model-catalogue.ts
       - name: Validate shipped models against live catalogues

@@ -3,49 +3,28 @@ import type { ModelsDev } from './models';
 
 export namespace OpenCodeZen {
   const log = Log.create({ service: 'opencode-zen' });
-  const MODELS_URL = 'https://opencode.ai/zen/v1/models';
-  const DEPRECATED_FREE_MODEL_IDS = new Set(['trinity-large-preview-free']);
+  export const MODELS_URL = 'https://opencode.ai/zen/v1/models';
+  export const DEPRECATED_FREE_MODEL_IDS = new Set([
+    'trinity-large-preview-free',
+    'qwen3.6-plus-free',
+    'kimi-k2.5-free',
+    'minimax-m2.5-free',
+    'ling-2.6-flash-free',
+    'hy3-preview-free',
+    'nemotron-3-super-free',
+    'nemotron-3-ultra-free',
+  ]);
 
-  const FREE_MODEL_OVERRIDES: Record<
+  // Zen's free endpoints are restricted to OpenCode clients, so none is a default.
+  export const FREE_MODEL_OVERRIDES: Record<
     string,
     Partial<ModelsDev.Model> & { name: string }
   > = {
-    'minimax-m2.5-free': {
-      name: 'MiniMax M2.5 Free',
+    'nemotron-3.5-lightning-free': {
+      name: 'Nemotron 3.5 Lightning Free',
       reasoning: true,
-      release_date: '2026-02-12',
-      limit: { context: 204800, output: 131072 },
+      limit: { context: 1000000, output: 65536 },
       provider: { npm: '@ai-sdk/openai-compatible' },
-    },
-    'ling-2.6-flash-free': {
-      name: 'Ling 2.6 Flash Free',
-      reasoning: false,
-      release_date: '2026-04-21',
-      limit: { context: 262100, output: 32800 },
-      provider: { npm: '@ai-sdk/openai-compatible' },
-    },
-    'hy3-preview-free': {
-      name: 'Hy3 Preview Free',
-      reasoning: true,
-      release_date: '2026-04-20',
-      limit: { context: 256000, output: 64000 },
-      provider: { npm: '@ai-sdk/openai-compatible' },
-    },
-    'nemotron-3-super-free': {
-      name: 'Nemotron 3 Super Free',
-      reasoning: true,
-      release_date: '2026-03-11',
-      limit: { context: 204800, output: 128000 },
-      provider: { npm: '@ai-sdk/openai-compatible' },
-    },
-    'gpt-5-nano': {
-      name: 'GPT-5 Nano',
-      attachment: true,
-      reasoning: true,
-      temperature: false,
-      release_date: '2025-08-07',
-      limit: { context: 400000, output: 128000 },
-      provider: { npm: '@ai-sdk/openai' },
     },
     'big-pickle': {
       name: 'Big Pickle',
@@ -68,11 +47,7 @@ export namespace OpenCodeZen {
 
   function isFreeModelID(modelID: string) {
     if (DEPRECATED_FREE_MODEL_IDS.has(modelID)) return false;
-    return (
-      modelID.endsWith('-free') ||
-      modelID === 'gpt-5-nano' ||
-      modelID === 'big-pickle'
-    );
+    return modelID.endsWith('-free') || modelID === 'big-pickle';
   }
 
   export async function fetchModelIDs(fetchFn: typeof fetch = fetch) {
@@ -115,6 +90,10 @@ export namespace OpenCodeZen {
     });
     if (!ids.has(modelID)) return undefined;
 
+    return freeModelInfo(modelID);
+  }
+
+  export function freeModelInfo(modelID: string): ModelsDev.Model {
     const overrides = FREE_MODEL_OVERRIDES[modelID];
     return {
       id: modelID,

@@ -16,41 +16,28 @@ export interface DefaultConfigOptions {
 }
 
 /** Default model used when no `--model` CLI argument is provided. */
-export const DEFAULT_MODEL = 'opencode/big-pickle';
+export const DEFAULT_MODEL = 'kilo/nemotron-3-super-free';
 
 /** Env var for overriding the default model in test runs and automation. */
 export const DEFAULT_MODEL_ENV = 'LINK_ASSISTANT_AGENT_DEFAULT_MODEL';
 
 /** Default compaction model used when no `--compaction-model` CLI argument is provided. */
-export const DEFAULT_COMPACTION_MODEL = 'opencode/gpt-5-nano';
+export const DEFAULT_COMPACTION_MODEL = 'kilo/nemotron-3-super-free';
 
 /** Env var for overriding the default compaction model in test runs and automation. */
 export const DEFAULT_COMPACTION_MODEL_ENV =
   'LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL';
 
 /**
- * Default compaction models cascade, ordered from smallest/cheapest context to largest.
- * During compaction, the system tries each model in order. If the used context exceeds
- * a model's context limit, it skips to the next larger model. If a model's rate limit
- * is reached, it also skips to the next model.
- * The special value "same" means use the same model as `--model`.
+ * Free Kilo models ordered by context capacity, followed by the session model.
+ * Compaction skips models whose context is too small or which hit a rate limit.
+ * Provider prefixes keep default secondary calls away from Zen's restricted tier.
+ * The special value "same" uses the model running the session.
  *
- * Parsed as links notation references sequence (single anonymous link):
- *   "(big-pickle gpt-5-nano same)"
- *
- * Context limits (approximate):
- *   big-pickle:             ~200K
- *   gpt-5-nano:             ~400K
- *   same:                   (base model's context)
- *
- * Note: qwen3.6-plus-free was removed because the free promotion ended in April 2026.
- * Withdrawn free models were removed after checking both Zen and models.dev.
- * gpt-5-nano requires provider credentials when it is not offered for free.
- * @see https://github.com/link-assistant/agent/issues/328
- * @see https://github.com/link-assistant/agent/issues/242
- * @see https://github.com/link-assistant/agent/issues/232
+ * @see https://github.com/link-assistant/agent/issues/327
  */
-export const DEFAULT_COMPACTION_MODELS = '(big-pickle gpt-5-nano same)';
+export const DEFAULT_COMPACTION_MODELS =
+  '(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)';
 
 /** Env var for overriding the default compaction cascade in test runs and automation. */
 export const DEFAULT_COMPACTION_MODELS_ENV =

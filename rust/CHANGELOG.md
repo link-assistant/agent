@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.10.3] - 2026-10-12
+
+### Fixed
+
+- Align CLI default model and compaction cascade with the JavaScript implementation's served Kilo Nemotron models.
+
+### Changed
+
+- Update serde_json, tokio, and uuid to their current releases for the dependency freshness check.
+
 ## [0.10.2] - 2026-09-30
 
 ### Fixed

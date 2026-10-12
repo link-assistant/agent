@@ -21,12 +21,14 @@ fn agent_cmd() -> assert_cmd::Command {
 
 #[test]
 fn model_option_default() {
-    // Default model should be opencode/big-pickle (matching JS).
+    // Default model should be kilo/nemotron-3-super-free (matching JS).
     agent_cmd()
         .args(["--dry-run", "--verbose", "-p", "hello"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("Model: opencode/big-pickle"));
+        .stdout(predicate::str::contains(
+            "Model: kilo/nemotron-3-super-free",
+        ));
 }
 
 #[test]
@@ -606,7 +608,7 @@ fn compaction_model_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Compaction model: opencode/gpt-5-nano",
+            "Compaction model: kilo/nemotron-3-super-free",
         ));
 }
 
@@ -665,7 +667,7 @@ fn compaction_models_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Compaction models: (big-pickle gpt-5-nano same)",
+            "Compaction models: (kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)",
         ));
 }
 

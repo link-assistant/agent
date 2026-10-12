@@ -33,6 +33,19 @@ console.log(
   'Original defaults unavailable:',
   unavailableModels(originalModels, zenIDs, modelsDev)
 );
-const missing = unavailableModels(shippedModelIDs(), zenIDs, modelsDev);
+// Preserve the merged #327 defaults using its independently captured gateway snapshot.
+const kiloCatalogue = JSON.parse(
+  readFileSync(
+    new URL('../issue-327/kilo-models.json', import.meta.url),
+    'utf8'
+  )
+);
+const kiloIDs = new Set<string>(kiloCatalogue.data.map((model) => model.id));
+const missing = unavailableModels(
+  shippedModelIDs(),
+  zenIDs,
+  modelsDev,
+  kiloIDs
+);
 console.log('Current defaults unavailable:', missing);
 if (missing.length > 0) process.exitCode = 1;

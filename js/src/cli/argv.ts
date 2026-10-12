@@ -105,7 +105,7 @@ export function getCompactionSafetyMarginFromProcessArgv(): string | null {
 /**
  * Extract --compaction-models argument directly from process.argv
  * The value is a links notation references sequence, e.g.:
- *   "(big-pickle gpt-5-nano same)"
+ *   "(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)"
  * @returns The compaction models argument from CLI or null if not found
  * @see https://github.com/link-assistant/agent/issues/232
  */

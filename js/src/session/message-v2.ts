@@ -1,3 +1,7 @@
+import {
+  isFreeTierError,
+  FREE_TIER_ERROR_MESSAGE,
+} from '../provider/free-tier-error';
 import z from 'zod';
 import { Bus } from '../bus';
 import { NamedError } from '../util/error';
@@ -866,7 +870,12 @@ export namespace MessageV2 {
         ? (root['error'] as Record<string, unknown>)
         : root;
     const rawCode =
-      candidate['code'] ?? candidate['statusCode'] ?? candidate['status'];
+      candidate['code'] ??
+      candidate['statusCode'] ??
+      candidate['status'] ??
+      root['code'] ??
+      root['statusCode'] ??
+      root['status'];
     const statusCode =
       typeof rawCode === 'number'
         ? rawCode
@@ -900,6 +909,27 @@ export namespace MessageV2 {
   }
 
   export function fromError(e: unknown, ctx: { providerID: string }) {
+    const providerError = APICallError.isInstance(e)
+      ? undefined
+      : normalizeProviderErrorObject(e);
+    const freeTierRefusal =
+      ctx.providerID === 'opencode' &&
+      (APICallError.isInstance(e)
+        ? isFreeTierError(e.statusCode, e.responseBody)
+        : isFreeTierError(providerError?.statusCode, e));
+    if (freeTierRefusal) {
+      return new MessageV2.APIError(
+        {
+          message: FREE_TIER_ERROR_MESSAGE,
+          statusCode: 403,
+          isRetryable: false,
+          responseBody: APICallError.isInstance(e)
+            ? e.responseBody
+            : providerError?.responseBody,
+        },
+        { cause: e }
+      ).toObject();
+    }
     switch (true) {
       case e instanceof DOMException && e.name === 'AbortError':
         return new MessageV2.AbortedError(

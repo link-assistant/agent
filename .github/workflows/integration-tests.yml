@@ -72,6 +72,7 @@ jobs:
         os: ${{ fromJSON(needs.matrix.outputs.os) }}
     env:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      KILO_API_KEY: ${{ secrets.KILO_API_KEY }}
 
     defaults:
       run:

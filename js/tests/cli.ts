@@ -364,15 +364,17 @@ describe('cli', () => {
   });
 
   test('test_default_model_matches_js', () => {
-    expect(DEFAULT_MODEL).toBe('opencode/big-pickle');
+    expect(DEFAULT_MODEL).toBe('kilo/nemotron-3-super-free');
   });
 
   test('test_default_compaction_model_matches_js', () => {
-    expect(DEFAULT_COMPACTION_MODEL).toBe('opencode/gpt-5-nano');
+    expect(DEFAULT_COMPACTION_MODEL).toBe('kilo/nemotron-3-super-free');
   });
 
   test('test_default_compaction_models_matches_js', () => {
-    expect(DEFAULT_COMPACTION_MODELS).toBe('(big-pickle gpt-5-nano same)');
+    expect(DEFAULT_COMPACTION_MODELS).toBe(
+      '(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)'
+    );
   });
 
   test('test_default_compaction_safety_margin_matches_js', () => {

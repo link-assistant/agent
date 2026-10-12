@@ -15,6 +15,12 @@ import {
 } from '../src/config/defaults';
 
 // Minimal snapshot of the real catalogue evidence for #328, 2026-10-12.
+const kiloURL = 'https://api.kilo.ai/api/gateway/models';
+const kiloIDs = new Set([
+  'nvidia/nemotron-3-super-120b-a12b:free',
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'nvidia/nemotron-3.5-lightning:free',
+]);
 const currentIDs = new Set(['big-pickle', 'gpt-5-nano']);
 const currentMetadata = {
   opencode: {
@@ -36,12 +42,12 @@ function catalogueFetch(zen: unknown, metadata: unknown): typeof fetch {
 
 describe('shipped model catalogue (#328)', () => {
   test('no-argument runs select a currently served model', () => {
-    expect(getDefaultModel({ env: {} })).toBe('opencode/big-pickle');
+    expect(getDefaultModel({ env: {} })).toBe('kilo/nemotron-3-super-free');
   });
 
   test('every shipped compaction entry is currently supported', () => {
     expect(
-      unavailableModels(shippedModelIDs(), currentIDs, currentMetadata)
+      unavailableModels(shippedModelIDs(), currentIDs, currentMetadata, kiloIDs)
     ).toEqual([]);
   });
 
@@ -65,8 +71,9 @@ describe('shipped model catalogue (#328)', () => {
 
   test('same resolves to the default and duplicate entries are checked once', () => {
     expect(shippedModelIDs()).toEqual([
-      'opencode/big-pickle',
-      'opencode/gpt-5-nano',
+      'kilo/nemotron-3-super-free',
+      'kilo/nemotron-3-ultra-free',
+      'kilo/nemotron-3.5-lightning-free',
     ]);
   });
 
@@ -144,5 +151,65 @@ describe('shipped model catalogue (#328)', () => {
     }) as typeof fetch;
     await checkDefaultModels({ fetchFn, models: ['opencode/big-pickle'] });
     expect(urls).toEqual([ZEN_MODELS_URL, MODELS_DEV_URL]);
+  });
+});
+
+describe('Kilo defaults after merging #329', () => {
+  test('resolves shipped aliases against exact live gateway IDs', async () => {
+    const urls: string[] = [];
+    const fetchFn = (async (url) => {
+      urls.push(String(url));
+      return Response.json(
+        url === MODELS_DEV_URL
+          ? { opencode: { models: {} } }
+          : {
+              data: [...(url === kiloURL ? kiloIDs : currentIDs)].map((id) => ({
+                id,
+              })),
+            }
+      );
+    }) as typeof fetch;
+    await expect(checkDefaultModels({ fetchFn })).resolves.toEqual(
+      shippedModelIDs()
+    );
+    expect(urls).toContain(kiloURL);
+  });
+
+  test('reports the shipped alias when its exact gateway ID is withdrawn', () => {
+    expect(
+      unavailableModels(
+        ['kilo/nemotron-3-super-free'],
+        currentIDs,
+        currentMetadata,
+        new Set(['nvidia/nemotron-3-ultra-550b-a55b:free'])
+      )
+    ).toEqual(['kilo/nemotron-3-super-free']);
+  });
+
+  test('accepts an explicit gateway ID as well as a built-in alias', () => {
+    expect(
+      unavailableModels(
+        ['kilo/nvidia/nemotron-3-super-120b-a12b:free'],
+        new Set(),
+        {},
+        kiloIDs
+      )
+    ).toEqual([]);
+  });
+
+  test('an invalid Kilo catalog cannot pass via Zen IDs', async () => {
+    const warnings: string[] = [];
+    const fetchFn = (async (url) =>
+      Response.json(
+        url === kiloURL
+          ? { data: [] }
+          : url === MODELS_DEV_URL
+            ? currentMetadata
+            : { data: [{ id: 'nemotron-3-super-free' }] }
+      )) as typeof fetch;
+    await expect(
+      checkDefaultModels({ fetchFn, warn: (s) => warnings.push(s) })
+    ).rejects.toThrow('Unavailable shipped models: kilo/nemotron-3-super-free');
+    expect(warnings.some((s) => s.includes(kiloURL))).toBe(true);
   });
 });
