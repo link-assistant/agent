@@ -49,6 +49,15 @@ Authenticate with Kilo Gateway (`agent auth login`) or set `KILO_API_KEY` before
 
 All integration tests pass `--no-retry-on-rate-limits` to the agent CLI to fail fast instead of waiting when rate limited.
 
+### Check shipped default models
+
+From the repository root, run `bun scripts/check-default-models.mjs` to validate
+all shipped defaults against the relevant live provider catalogues or
+non-deprecated models.dev metadata. Kilo aliases resolve to exact gateway IDs.
+`bun test ./js/tests/default-model-catalogue.ts` covers offline regression and
+JavaScript/Rust parity. The Model Catalogue workflow runs on relevant pull
+requests and daily, without inference calls or credentials.
+
 ### Run Specific Test Files
 
 ```bash

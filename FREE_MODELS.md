@@ -69,6 +69,12 @@ npm run check:model-drift
 
 The **Free Model Drift** workflow runs daily, on relevant pull requests, and manually. It checks exact gateway IDs for Kilo aliases and maintained Zen IDs against both live catalogs, fails on withdrawals or unavailable/malformed catalogs, and saves diagnostics as an artifact. It checks availability; authentication, client restrictions, pricing, and successful inference are separate concerns.
 
+The **Model Catalogue** workflow additionally validates the shipped default,
+single compaction model, and expanded cascade (including `same`) against the
+matching provider's live IDs or non-deprecated models.dev metadata. Run
+`bun scripts/check-default-models.mjs` from the repository root to check them
+locally. Its offline tests verify JavaScript/Rust parity.
+
 ## More Information
 
 - [Full Models Documentation](MODELS.md)

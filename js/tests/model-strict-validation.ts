@@ -120,6 +120,20 @@ describe('Model validation - explicit provider/model format (#231)', () => {
 });
 
 describe('OpenCode Zen live model endpoint (#266)', () => {
+  test('withdrawn MiniMax is no longer shared with Zen (#328)', async () => {
+    const { Provider } = await import('../src/provider/provider');
+    expect(
+      await Provider.getAlternativeProviders('minimax-m2.5-free', 'kilo', false)
+    ).toEqual([]);
+    expect(
+      await Provider.getAlternativeProviders(
+        'minimax-m2.5-free',
+        'opencode',
+        false
+      )
+    ).toEqual([]);
+  });
+
   test('parses model ids from the live models endpoint response', async () => {
     const { OpenCodeZen } = await import('../src/provider/opencode-zen');
     const fetchFn = async () =>
