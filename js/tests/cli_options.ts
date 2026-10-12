@@ -48,7 +48,7 @@ async function parseRunOptions(
 describe('cli_options', () => {
   test('model_option_default', async () => {
     const argv = await parseRunOptions([]);
-    expect(argv.model).toBe('opencode/minimax-m2.5-free');
+    expect(argv.model).toBe('opencode/big-pickle');
   });
 
   test('model_option_custom', async () => {
@@ -172,7 +172,7 @@ describe('cli_options', () => {
   test('verbose_shows_config', async () => {
     const argv = await parseRunOptions(['--verbose']);
     expect(argv.verbose).toBe(true);
-    expect(argv.model).toBe('opencode/minimax-m2.5-free');
+    expect(argv.model).toBe('opencode/big-pickle');
     expect(argv.jsonStandard).toBe('opencode');
     expect(argv.compactionModel).toBe('opencode/gpt-5-nano');
     expect(argv.compactionSafetyMargin).toBe(25);
@@ -348,9 +348,7 @@ describe('cli_options', () => {
 
   test('compaction_models_default', async () => {
     const argv = await parseRunOptions([]);
-    expect(argv.compactionModels).toBe(
-      '(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)'
-    );
+    expect(argv.compactionModels).toBe('(big-pickle gpt-5-nano same)');
   });
 
   test('compaction_models_custom', async () => {

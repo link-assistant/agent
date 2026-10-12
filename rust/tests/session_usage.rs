@@ -15,14 +15,11 @@ use link_assistant_agent::cli::DEFAULT_MODEL;
 use link_assistant_agent::defaults::default_model_parts;
 
 #[test]
-fn default_model_identifies_a_free_tier_model() {
+fn default_model_identifies_the_documented_zero_cost_model() {
     let parts = default_model_parts();
     assert_eq!(parts.provider_id, "opencode");
-    assert!(
-        parts.model_id.contains("free"),
-        "default model id should be a free-tier model, got {}",
-        parts.model_id
-    );
+    // Big Pickle is listed at zero cost without a "free" suffix in its ID.
+    assert_eq!(parts.model_id, "big-pickle");
 }
 
 #[test]

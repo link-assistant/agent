@@ -364,7 +364,7 @@ describe('cli', () => {
   });
 
   test('test_default_model_matches_js', () => {
-    expect(DEFAULT_MODEL).toBe('opencode/minimax-m2.5-free');
+    expect(DEFAULT_MODEL).toBe('opencode/big-pickle');
   });
 
   test('test_default_compaction_model_matches_js', () => {
@@ -372,9 +372,7 @@ describe('cli', () => {
   });
 
   test('test_default_compaction_models_matches_js', () => {
-    expect(DEFAULT_COMPACTION_MODELS).toBe(
-      '(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)'
-    );
+    expect(DEFAULT_COMPACTION_MODELS).toBe('(big-pickle gpt-5-nano same)');
   });
 
   test('test_default_compaction_safety_margin_matches_js', () => {

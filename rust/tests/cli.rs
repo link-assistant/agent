@@ -366,7 +366,7 @@ fn test_args_all_options_combined() {
 
 #[test]
 fn test_default_model_matches_js() {
-    assert_eq!(DEFAULT_MODEL, "opencode/minimax-m2.5-free");
+    assert_eq!(DEFAULT_MODEL, "opencode/big-pickle");
 }
 
 #[test]
@@ -376,10 +376,7 @@ fn test_default_compaction_model_matches_js() {
 
 #[test]
 fn test_default_compaction_models_matches_js() {
-    assert_eq!(
-        DEFAULT_COMPACTION_MODELS,
-        "(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)"
-    );
+    assert_eq!(DEFAULT_COMPACTION_MODELS, "(big-pickle gpt-5-nano same)");
 }
 
 #[test]

@@ -192,9 +192,9 @@ describe('model_resolved contract', () => {
   test('requested is null when nothing was requested', () => {
     const event = buildModelResolvedEvent({
       requested: null,
-      selector: 'opencode/minimax-m2.5-free',
+      selector: 'opencode/big-pickle',
       providerID: 'opencode',
-      modelID: 'minimax-m2.5-free',
+      modelID: 'big-pickle',
       source: 'default',
     });
 
@@ -207,7 +207,7 @@ describe('model_resolved contract', () => {
     // replaces an already selected model.
     const event = buildModelResolvedEvent({
       requested: null,
-      selector: 'opencode/minimax-m2.5-free',
+      selector: 'opencode/big-pickle',
       providerID: 'claude-oauth',
       modelID: 'claude-sonnet-4-5',
       source: 'default',
@@ -296,7 +296,7 @@ describe('model_resolved emission', () => {
     expect(event.requested).toBeNull();
     expect(event.source).toBe('default');
     expect(event.providerID).toBe('opencode');
-    expect(event.modelID).toBe('minimax-m2.5-free');
+    expect(event.modelID).toBe('big-pickle');
     expect(event.matchesRequest).toBe(true);
   });
 

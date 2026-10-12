@@ -21,14 +21,12 @@ fn agent_cmd() -> assert_cmd::Command {
 
 #[test]
 fn model_option_default() {
-    // Default model should be opencode/minimax-m2.5-free (matching JS).
+    // Default model should be opencode/big-pickle (matching JS).
     agent_cmd()
         .args(["--dry-run", "--verbose", "-p", "hello"])
         .assert()
         .success()
-        .stdout(predicate::str::contains(
-            "Model: opencode/minimax-m2.5-free",
-        ));
+        .stdout(predicate::str::contains("Model: opencode/big-pickle"));
 }
 
 #[test]
@@ -667,7 +665,7 @@ fn compaction_models_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Compaction models: (big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)",
+            "Compaction models: (big-pickle gpt-5-nano same)",
         ));
 }
 

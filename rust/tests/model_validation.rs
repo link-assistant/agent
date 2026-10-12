@@ -41,7 +41,7 @@ fn default_model_env_override_wins_over_constant() {
 fn default_model_parts_split_on_first_slash() {
     let parts = default_model_parts_from_env(empty_env());
     assert_eq!(parts.provider_id, "opencode");
-    assert_eq!(parts.model_id, "minimax-m2.5-free");
+    assert_eq!(parts.model_id, "big-pickle");
 }
 
 #[test]

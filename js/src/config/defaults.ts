@@ -16,7 +16,7 @@ export interface DefaultConfigOptions {
 }
 
 /** Default model used when no `--model` CLI argument is provided. */
-export const DEFAULT_MODEL = 'opencode/minimax-m2.5-free';
+export const DEFAULT_MODEL = 'opencode/big-pickle';
 
 /** Env var for overriding the default model in test runs and automation. */
 export const DEFAULT_MODEL_ENV = 'LINK_ASSISTANT_AGENT_DEFAULT_MODEL';
@@ -36,25 +36,21 @@ export const DEFAULT_COMPACTION_MODEL_ENV =
  * The special value "same" means use the same model as `--model`.
  *
  * Parsed as links notation references sequence (single anonymous link):
- *   "(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)"
+ *   "(big-pickle gpt-5-nano same)"
  *
  * Context limits (approximate):
  *   big-pickle:             ~200K
- *   minimax-m2.5-free:      ~204K
- *   nemotron-3-super-free:  ~204K
- *   hy3-preview-free:       ~256K
- *   ling-2.6-flash-free:    ~262K
  *   gpt-5-nano:             ~400K
  *   same:                   (base model's context)
  *
  * Note: qwen3.6-plus-free was removed because the free promotion ended in April 2026.
- * Note: minimax-m2.5-free is the default model again as of issue #266.
- * @see https://github.com/link-assistant/agent/issues/266
+ * Withdrawn free models were removed after checking both Zen and models.dev.
+ * gpt-5-nano requires provider credentials when it is not offered for free.
+ * @see https://github.com/link-assistant/agent/issues/328
  * @see https://github.com/link-assistant/agent/issues/242
  * @see https://github.com/link-assistant/agent/issues/232
  */
-export const DEFAULT_COMPACTION_MODELS =
-  '(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)';
+export const DEFAULT_COMPACTION_MODELS = '(big-pickle gpt-5-nano same)';
 
 /** Env var for overriding the default compaction cascade in test runs and automation. */
 export const DEFAULT_COMPACTION_MODELS_ENV =

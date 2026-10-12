@@ -2251,9 +2251,9 @@ export namespace Provider {
    * Note: This is only used for models without explicit provider specification.
    * If user specifies "kilo/deepseek-r1-free", no fallback will occur.
    */
-  const SHARED_FREE_MODELS: Record<string, string[]> = {
-    'minimax-m2.5-free': ['opencode', 'kilo'],
-  };
+  // MiniMax M2.5 Free was withdrawn from Zen (#328). There are currently no
+  // confirmed free models with the same id served by multiple providers.
+  const SHARED_FREE_MODELS: Record<string, string[]> = {};
 
   /**
    * Get alternative providers for a model when the primary provider fails (e.g., rate limited).
