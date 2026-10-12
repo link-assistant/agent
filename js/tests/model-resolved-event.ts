@@ -295,8 +295,8 @@ describe('model_resolved emission', () => {
     const [event] = result.events;
     expect(event.requested).toBeNull();
     expect(event.source).toBe('default');
-    expect(event.providerID).toBe('opencode');
-    expect(event.modelID).toBe('minimax-m2.5-free');
+    expect(event.providerID).toBe('kilo');
+    expect(event.modelID).toBe('nemotron-3-super-free');
     expect(event.matchesRequest).toBe(true);
   });
 

@@ -104,7 +104,7 @@ agent [OPTIONS]
 
 Options:
       --model <MODEL>                    Model to use in format providerID/modelID
-                                         [default: opencode/minimax-m2.5-free]
+                                         [default: kilo/nemotron-3-super-free]
       --json-standard <JSON_STANDARD>    JSON output format standard
                                          [possible values: opencode, claude]
                                          [default: opencode]

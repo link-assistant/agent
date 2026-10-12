@@ -144,16 +144,16 @@ describe('OpenCode Zen live model endpoint (#266)', () => {
     const fetchFn = async () =>
       new Response(
         JSON.stringify({
-          data: [{ id: 'hy3-preview-free', object: 'model' }],
+          data: [{ id: 'nemotron-3.5-lightning-free', object: 'model' }],
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
       );
 
     const info = await OpenCodeZen.getLiveFreeModelInfo(
-      'hy3-preview-free',
+      'nemotron-3.5-lightning-free',
       fetchFn as typeof fetch
     );
-    expect(info?.id).toBe('hy3-preview-free');
+    expect(info?.id).toBe('nemotron-3.5-lightning-free');
     expect(info?.cost.input).toBe(0);
     expect(info?.cost.output).toBe(0);
     expect(info?.tool_call).toBe(true);
@@ -194,7 +194,7 @@ describe('OpenCode Zen live model endpoint (#266)', () => {
     expect(info).toBeUndefined();
   });
 
-  test('provider sorting prioritizes MiniMax M2.5 among current free Zen models', async () => {
+  test('provider sorting prioritizes Nemotron 3 Super among current free models', async () => {
     const { Provider } = await import('../src/provider/provider');
     const sorted = Provider.sort([
       { id: 'big-pickle' },
@@ -205,7 +205,7 @@ describe('OpenCode Zen live model endpoint (#266)', () => {
       { id: 'minimax-m2.5-free' },
     ] as any);
 
-    expect(sorted[0].id).toBe('minimax-m2.5-free');
+    expect(sorted[0].id).toBe('nemotron-3-super-free');
   });
 });
 

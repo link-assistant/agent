@@ -364,16 +364,16 @@ describe('cli', () => {
   });
 
   test('test_default_model_matches_js', () => {
-    expect(DEFAULT_MODEL).toBe('opencode/minimax-m2.5-free');
+    expect(DEFAULT_MODEL).toBe('kilo/nemotron-3-super-free');
   });
 
   test('test_default_compaction_model_matches_js', () => {
-    expect(DEFAULT_COMPACTION_MODEL).toBe('opencode/gpt-5-nano');
+    expect(DEFAULT_COMPACTION_MODEL).toBe('kilo/nemotron-3-super-free');
   });
 
   test('test_default_compaction_models_matches_js', () => {
     expect(DEFAULT_COMPACTION_MODELS).toBe(
-      '(big-pickle minimax-m2.5-free nemotron-3-super-free hy3-preview-free ling-2.6-flash-free gpt-5-nano same)'
+      '(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)'
     );
   });
 

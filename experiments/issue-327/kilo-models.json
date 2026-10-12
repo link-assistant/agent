@@ -1,0 +1,316 @@
+{
+  "data": [
+    {
+      "id": "stepfun/step-5-preview-free",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.000000000000",
+        "completion": "0.000000000000",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0",
+        "input_cache_read": "0.000000000000"
+      },
+      "top_provider": {
+        "context_length": 1000000,
+        "max_completion_tokens": 64000,
+        "is_moderated": false
+      },
+      "supported_parameters": [
+        "max_tokens",
+        "temperature",
+        "tools",
+        "reasoning",
+        "include_reasoning"
+      ]
+    },
+    {
+      "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 1000000,
+        "max_completion_tokens": 65536
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 1000000,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "reasoning_effort",
+        "seed",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    },
+    {
+      "id": "dots-studio/dots-3-note-preview:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 512000,
+        "max_completion_tokens": 460800
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 512000,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "response_format",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    },
+    {
+      "id": "poolside/laguna-s-2.1:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 262144,
+        "max_completion_tokens": 32768
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 262144,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "temperature",
+        "tool_choice",
+        "tools"
+      ]
+    },
+    {
+      "id": "liquid/lfm-2.5-2.6b:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 65536,
+        "max_completion_tokens": 8192
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 65536,
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "logprobs",
+        "max_completion_tokens",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "reasoning",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_k",
+        "top_logprobs",
+        "top_p"
+      ]
+    },
+    {
+      "id": "nvidia/nemotron-3.5-lightning:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 1000000,
+        "max_completion_tokens": 65536
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 1000000,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "seed",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    },
+    {
+      "id": "thinkingmachines/inkling-small:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 1048576,
+        "max_completion_tokens": 262144
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 1048576,
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "max_tokens",
+        "presence_penalty",
+        "reasoning",
+        "reasoning_effort",
+        "seed",
+        "stop",
+        "temperature",
+        "tools",
+        "top_p"
+      ]
+    },
+    {
+      "id": "poolside/laguna-xs-2.1:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 262144,
+        "max_completion_tokens": 32768
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 262144,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "temperature",
+        "tool_choice",
+        "tools"
+      ]
+    },
+    {
+      "id": "cohere/north-mini-code:free",
+      "top_provider": {
+        "is_moderated": true,
+        "context_length": 256000,
+        "max_completion_tokens": 64000
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 256000,
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "max_tokens",
+        "presence_penalty",
+        "reasoning",
+        "seed",
+        "stop",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_k",
+        "top_p"
+      ]
+    },
+    {
+      "id": "nvidia/nemotron-3.5-content-safety:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 128000,
+        "max_completion_tokens": 8192
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 128000,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "seed",
+        "temperature",
+        "top_p"
+      ]
+    },
+    {
+      "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 256000,
+        "max_completion_tokens": 65536
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 256000,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "seed",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    },
+    {
+      "id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "top_provider": {
+        "is_moderated": false,
+        "context_length": 262144,
+        "max_completion_tokens": 235929
+      },
+      "pricing": {
+        "prompt": "0",
+        "completion": "0",
+        "discount": 0
+      },
+      "context_length": 262144,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "reasoning_effort",
+        "response_format",
+        "seed",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    }
+  ],
+  "_meta": {
+    "source": "https://api.kilo.ai/api/gateway/models",
+    "captured_date": "2026-10-12",
+    "live_model_count": 390,
+    "scope": "Relevant free model rows; paid rows omitted"
+  }
+}

@@ -83,20 +83,20 @@ describe('ModelsDev module', () => {
     expect(Object.keys(database['opencode'].models).length).toBeGreaterThan(0);
   });
 
-  test('opencode provider should have MiniMax M2.5 Free model', async () => {
-    const { ModelsDev } = await import('../../src/provider/models.ts');
-
-    // Get the models database
-    const database = await ModelsDev.get();
-
-    // Check for the current default free OpenCode Zen model.
-    const opencode = database['opencode'];
-    expect(opencode).toBeTruthy();
-
-    const minimaxModel = opencode.models['minimax-m2.5-free'];
-    expect(minimaxModel).toBeTruthy();
-    expect(minimaxModel.name).toContain('MiniMax');
-    expect(minimaxModel.cost.input).toBe(0); // Should be free
+  test('runtime default is available independently of models.dev cache', async () => {
+    const { Provider } = await import('../../src/provider/provider.ts');
+    const { Instance } = await import('../../src/project/instance.ts');
+    await Instance.provide({
+      directory: process.cwd(),
+      fn: async () => {
+        const model = await Provider.getModel('kilo', 'nemotron-3-super-free');
+        expect(model.language.modelId).toBe(
+          'nvidia/nemotron-3-super-120b-a12b:free'
+        );
+        expect(model.info.cost.input).toBe(0);
+      },
+    });
+    await Instance.disposeAll();
   });
 
   test('opencode provider should have other free models', async () => {
@@ -116,15 +116,8 @@ describe('ModelsDev module', () => {
     // Should have multiple free models
     expect(freeModels.length).toBeGreaterThan(0);
 
-    // Some known current free models that should exist.
-    const expectedFreeModels = [
-      'minimax-m2.5-free',
-      'ling-2.6-flash-free',
-      'hy3-preview-free',
-      'nemotron-3-super-free',
-      'gpt-5-nano',
-      'big-pickle',
-    ];
+    // models.dev is upstream metadata, not the maintained runtime catalog.
+    const expectedFreeModels = ['nemotron-3.5-lightning-free', 'big-pickle'];
     for (const modelId of expectedFreeModels) {
       const model = opencode.models[modelId];
       if (model) {
