@@ -394,6 +394,8 @@ jobs:
       - name: Authenticate with crates.io (trusted publishing)
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18
         id: prm_auth
+        # Trusted publishing first; the publish step falls back to the token secret.
+        continue-on-error: true
         if: steps.check.outputs.should_release == 'true'
       - name: Publish to crates.io
         id: publish
@@ -401,7 +403,7 @@ jobs:
         run: bash scripts/run-with-budget-warning.sh 600 "crates.io publish" node scripts/publish-to-crates.mjs --should-pull
 
         env:
-          CARGO_REGISTRY_TOKEN: ${{ steps.prm_auth.outputs.token }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.prm_auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}
       - name: Create GitHub Release
         if: steps.check.outputs.should_release == 'true' && (steps.publish.outputs.published == 'true' || steps.publish.outcome == 'success')
         env:
@@ -482,6 +484,8 @@ jobs:
       - name: Authenticate with crates.io (trusted publishing)
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18
         id: prm_auth
+        # Trusted publishing first; the publish step falls back to the token secret.
+        continue-on-error: true
         if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
       - name: Publish to crates.io
         id: publish
@@ -489,7 +493,7 @@ jobs:
         run: bash scripts/run-with-budget-warning.sh 600 "crates.io publish" node scripts/publish-to-crates.mjs
 
         env:
-          CARGO_REGISTRY_TOKEN: ${{ steps.prm_auth.outputs.token }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.prm_auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}
       - name: Create GitHub Release
         if: steps.publish.outputs.published == 'true' || steps.publish.outcome == 'success'
         env:
