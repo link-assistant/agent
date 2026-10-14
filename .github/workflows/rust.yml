@@ -249,6 +249,7 @@ jobs:
       group: main-writer-${{ github.repository }}-main
       cancel-in-progress: false
     permissions:
+      id-token: write
       contents: write
     steps:
       - uses: actions/checkout@v6
@@ -391,11 +392,18 @@ jobs:
         run: cargo build --release
         working-directory: rust
 
+      - name: Authenticate with crates.io (trusted publishing)
+        id: prm_auth
+        # Trusted publishing first; the publish step falls back to the token secret.
+        continue-on-error: true
+        if: steps.check.outputs.should_release == 'true'
+        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+
       - name: Publish to crates.io
         id: publish
         if: steps.check.outputs.should_release == 'true'
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.prm_auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}
         run: bash scripts/run-with-budget-warning.sh 600 "crates.io publish" node scripts/publish-to-crates.mjs --should-pull
 
       - name: Create GitHub Release
@@ -426,6 +434,7 @@ jobs:
       group: main-writer-${{ github.repository }}-main
       cancel-in-progress: false
     permissions:
+      id-token: write
       contents: write
     steps:
       - uses: actions/checkout@v6
@@ -474,11 +483,18 @@ jobs:
         run: cargo build --release
         working-directory: rust
 
+      - name: Authenticate with crates.io (trusted publishing)
+        id: prm_auth
+        # Trusted publishing first; the publish step falls back to the token secret.
+        continue-on-error: true
+        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
+        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+
       - name: Publish to crates.io
         id: publish
         if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.prm_auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}
         run: bash scripts/run-with-budget-warning.sh 600 "crates.io publish" node scripts/publish-to-crates.mjs
 
       - name: Create GitHub Release
