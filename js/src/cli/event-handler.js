@@ -82,25 +82,17 @@ export function outputBusEvent({
     }
 
     if (part.type === 'tool') {
+      // A failed tool call is reported only here, as `part.state.status:
+      // "error"`. It is a tool result the model sees and recovers from, not a
+      // session failure, so it must not also be emitted as a top-level
+      // `error` event: that type is reserved for errors that end the turn or
+      // the session, and consumers treat it as fatal (issue #332).
       eventHandler.output({
         type: 'tool_use',
         timestamp: Date.now(),
         sessionID,
         part,
       });
-
-      // If tool failed, also output an error event
-      if (part.state?.status === 'error') {
-        const stateError = part.state.error;
-        eventHandler.output({
-          type: 'error',
-          timestamp: Date.now(),
-          sessionID,
-          part,
-          message: errorText(stateError, 'Tool execution failed'),
-          error: stateError || 'Tool execution failed',
-        });
-      }
     }
   }
 

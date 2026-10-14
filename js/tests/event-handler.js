@@ -75,18 +75,74 @@ describe('outputBusEvent error events (issue #289)', () => {
     expect(error.error.name).toBe('RetryTimeoutExceededError');
     expect(`${error.message}`).not.toBe('[object Object]');
   });
+});
 
-  test('failed tool parts carry a human-readable message', () => {
+describe('failed tool calls are not fatal error events (issue #332)', () => {
+  function failedToolEvent(state) {
+    return {
+      type: 'message.part.updated',
+      properties: {
+        part: {
+          id: 'prt_failed',
+          sessionID: 'ses_tool',
+          messageID: 'msg_tool',
+          type: 'tool',
+          callID: 'call_failed',
+          tool: 'read',
+          state,
+        },
+      },
+    };
+  }
+
+  function captureOpenCode(state) {
     const outputs = [];
+    let errors = 0;
+    outputBusEvent({
+      event: failedToolEvent(state),
+      sessionID: 'ses_tool',
+      eventHandler: {
+        output(event) {
+          outputs.push(event);
+        },
+      },
+      onError() {
+        errors++;
+      },
+    });
+    return { outputs, errors };
+  }
+
+  test('a failed tool part is reported only on its tool_use event', () => {
+    const { outputs, errors } = captureOpenCode({
+      status: 'error',
+      input: { filePath: 'e.g' },
+      error: 'Error: File not found: e.g',
+      time: { start: 100, end: 200 },
+    });
+
+    expect(outputs.map((event) => event.type)).toEqual(['tool_use']);
+    expect(outputs[0].part.state.status).toBe('error');
+    expect(outputs[0].part.state.error).toBe('Error: File not found: e.g');
+    expect(errors).toBe(0);
+  });
+
+  test('a failed tool part without error detail is still not fatal', () => {
+    const { outputs, errors } = captureOpenCode({ status: 'error' });
+
+    expect(outputs.map((event) => event.type)).toEqual(['tool_use']);
+    expect(errors).toBe(0);
+  });
+
+  test('a session error is still a fatal error event', () => {
+    const outputs = [];
+    let errors = 0;
     outputBusEvent({
       event: {
-        type: 'message.part.updated',
+        type: 'session.error',
         properties: {
-          part: {
-            sessionID: 'ses_tool',
-            type: 'tool',
-            state: { status: 'error', error: { name: 'ToolError' } },
-          },
+          sessionID: 'ses_tool',
+          error: { name: 'APIError', data: { message: 'boom' } },
         },
       },
       sessionID: 'ses_tool',
@@ -95,37 +151,14 @@ describe('outputBusEvent error events (issue #289)', () => {
           outputs.push(event);
         },
       },
-      onError() {},
+      onError() {
+        errors++;
+      },
     });
 
-    const error = outputs.find((event) => event.type === 'error');
-    expect(error.message).toBe('ToolError');
-  });
-
-  test('failed tool parts without any error detail use the fallback', () => {
-    const outputs = [];
-    outputBusEvent({
-      event: {
-        type: 'message.part.updated',
-        properties: {
-          part: {
-            sessionID: 'ses_tool2',
-            type: 'tool',
-            state: { status: 'error' },
-          },
-        },
-      },
-      sessionID: 'ses_tool2',
-      eventHandler: {
-        output(event) {
-          outputs.push(event);
-        },
-      },
-      onError() {},
-    });
-
-    const error = outputs.find((event) => event.type === 'error');
-    expect(error.message).toBe('Tool execution failed');
+    expect(outputs.map((event) => event.type)).toEqual(['error']);
+    expect(outputs[0].message).toBe('APIError: boom');
+    expect(errors).toBe(1);
   });
 });
 
@@ -147,16 +180,17 @@ describe('stream-json tool lifecycle (issue #310)', () => {
     };
   }
 
-  function captureClaudeLifecycle(states, id) {
+  function captureClaudeLifecycle(states, id, streams = {}) {
     const output = [];
     const originalWrite = process.stdout.write;
     const originalErrorWrite = process.stderr.write;
-    const capture = (chunk) => {
+    const capture = (stream) => (chunk) => {
       output.push(String(chunk));
+      streams[stream]?.push(String(chunk));
       return true;
     };
-    process.stdout.write = capture;
-    process.stderr.write = capture;
+    process.stdout.write = capture('stdout');
+    process.stderr.write = capture('stderr');
 
     try {
       const eventHandler = createEventHandler('claude', 'ses_tool_lifecycle');
@@ -291,5 +325,43 @@ describe('stream-json tool lifecycle (issue #310)', () => {
         tool_use_id: 'prt_error',
       })
     );
+  });
+
+  test('a failed tool result goes to stdout, not the error stream (#332)', () => {
+    const streams = { stdout: [], stderr: [] };
+    captureClaudeLifecycle(
+      [
+        { status: 'running', input: {}, time: { start: 100 } },
+        { status: 'error', input: {}, error: 'File not found' },
+      ],
+      'prt_error_stream',
+      streams
+    );
+
+    expect(streams.stderr).toEqual([]);
+    expect(streams.stdout.map((line) => JSON.parse(line).type)).toEqual([
+      'tool_use',
+      'tool_result',
+    ]);
+  });
+
+  test('a failed tool result renders object errors and falls back (#332)', () => {
+    const [, objectResult] = captureClaudeLifecycle(
+      [
+        { status: 'running', input: {}, time: { start: 100 } },
+        { status: 'error', input: {}, error: { name: 'ToolError' } },
+      ],
+      'prt_error_object'
+    );
+    expect(objectResult.output).toBe('ToolError');
+
+    const [, emptyResult] = captureClaudeLifecycle(
+      [
+        { status: 'running', input: {}, time: { start: 100 } },
+        { status: 'error', input: {} },
+      ],
+      'prt_error_empty'
+    );
+    expect(emptyResult.output).toBe('Tool execution failed');
   });
 });
