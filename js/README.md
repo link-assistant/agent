@@ -360,6 +360,9 @@ echo "hi" | agent --json-standard opencode
 
 - **Format**: Pretty-printed JSON (human-readable with indentation)
 - **Event Types**: `step_start`, `step_finish`, `text`, `tool_use`, `error`
+  (`error` only for failures that end the turn or session; a failed tool call
+  is reported on its `tool_use` event — see
+  [Error Events](../docs/stdin-mode.md#error-events))
 - **Timestamps**: Unix milliseconds (number)
 - **Session ID**: `sessionID` (camelCase)
 
