@@ -3,4 +3,5 @@ bump: patch
 ---
 
 ### Changed
-- Publish through GitHub Actions trusted publishing and remove long-lived registry token workflow inputs.
+
+- Publish to crates.io through GitHub Actions trusted publishing (OIDC), falling back to the `CARGO_REGISTRY_TOKEN` / `CARGO_TOKEN` secrets when trusted publishing is unavailable.

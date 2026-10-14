@@ -15,7 +15,9 @@
  * - Outputs `published=true` and `published_version=X.Y.Z` for GitHub Actions.
  *
  * Required environment variables (at least one must be set):
- * - CARGO_REGISTRY_TOKEN: API token for crates.io
+ * - CARGO_REGISTRY_TOKEN: API token for crates.io (in CI, the short-lived
+ *   trusted publishing token from rust-lang/crates-io-auth-action, or the
+ *   long-lived secret as a fallback)
  * - CARGO_TOKEN: Fallback API token (e.g. set at organization level)
  *
  * Optional environment variables:
