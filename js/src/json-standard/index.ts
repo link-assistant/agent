@@ -11,6 +11,7 @@
 
 import { EOL } from 'os';
 import { config } from '../config/config';
+import { errorText } from '../util/error-text';
 
 export type JsonStandard = 'opencode' | 'claude';
 
@@ -143,10 +144,17 @@ export function convertOpenCodeToClaude(
           };
         }
 
-        // outputBusEvent follows an errored tool snapshot with an error event
-        // carrying the same part, which is converted to the terminal result.
+        // A failed tool call is a recoverable tool result, not a session
+        // error (issue #332): report it as an error-status terminal result.
         if (status === 'error') {
-          return null;
+          return {
+            type: 'tool_result',
+            timestamp,
+            session_id,
+            tool_use_id: event.part.id as string,
+            output: errorText(state.error, 'Tool execution failed'),
+            status: 'error',
+          };
         }
 
         return {
@@ -177,21 +185,6 @@ export function convertOpenCodeToClaude(
       };
 
     case 'error':
-      if (event.part?.type === 'tool' && event.part.state) {
-        const state = event.part.state as Record<string, unknown>;
-        return {
-          type: 'tool_result',
-          timestamp,
-          session_id,
-          tool_use_id: event.part.id as string,
-          output:
-            event.message ||
-            (typeof state.error === 'string'
-              ? state.error
-              : 'Tool execution failed'),
-          status: 'error',
-        };
-      }
       return {
         type: 'result',
         timestamp,

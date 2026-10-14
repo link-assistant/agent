@@ -462,6 +462,51 @@ text (and never publish `[object Object]`):
 The `error` field is unchanged — `message` is purely additive. Consumers should
 prefer `record.message` and fall back to rendering `record.error` themselves.
 
+#### `error` Means The Turn Or Session Failed
+
+A top-level `error` event is reserved for failures that end the turn or the
+session (a provider error, a retry timeout, invalid input). Consumers may treat
+it as fatal.
+
+A failed tool call is **not** such a failure. The model receives the tool's
+error as an ordinary tool result and usually recovers (reads another file,
+fixes an edit anchor, retries a command). It is therefore reported only on the
+tool's own event and never as a top-level `error` event
+([#332](https://github.com/link-assistant/agent/issues/332)).
+
+OpenCode output — `tool_use` with `part.state.status: "error"`:
+
+```json
+{
+  "type": "tool_use",
+  "timestamp": 1718630400000,
+  "sessionID": "ses_abc123",
+  "part": {
+    "type": "tool",
+    "tool": "read",
+    "state": {
+      "status": "error",
+      "input": { "filePath": "/repo/missing.txt" },
+      "error": "Error: File not found: /repo/missing.txt"
+    }
+  }
+}
+```
+
+Claude `stream-json` output — a `tool_result` with `status: "error"`, written
+to stdout like every other tool result:
+
+```json
+{
+  "type": "tool_result",
+  "timestamp": "2026-07-03T00:00:00.000Z",
+  "session_id": "ses_abc123",
+  "tool_use_id": "prt_abc123",
+  "output": "Error: File not found: /repo/missing.txt",
+  "status": "error"
+}
+```
+
 ## Status Messages
 
 When entering listening mode, the CLI outputs a JSON status message (pretty-printed by default).
