@@ -28,7 +28,7 @@ function mockFetch(responses: Array<() => Response>) {
 
 describe('auth plugin registry', () => {
   test('xai, poe and digitalocean offer a login and an API key method', () => {
-    for (const id of ['xai', 'poe', 'digitalocean']) {
+    for (const id of ['xai', 'poe', 'digitalocean', 'gitlab']) {
       const plugin = AuthPlugins.getPlugin(id);
       expect(plugin?.provider).toBe(id);
       expect(plugin!.methods.map((m) => m.type)).toEqual(['oauth', 'api']);
@@ -343,8 +343,170 @@ describe('DigitalOcean login', () => {
   });
 });
 
+describe('GitLab login', () => {
+  test('normalizes the instance URL and keeps a relative root', () => {
+    expect(ProviderLogins.gitlabInstanceUrl(undefined, {})).toBe(
+      'https://gitlab.com'
+    );
+    expect(
+      ProviderLogins.gitlabInstanceUrl(' https://git.example.com/gitlab/ ', {})
+    ).toBe('https://git.example.com/gitlab');
+    expect(
+      ProviderLogins.gitlabInstanceUrl('', {
+        GITLAB_INSTANCE_URL: 'https://self.example.com',
+      })
+    ).toBe('https://self.example.com');
+    expect(() => ProviderLogins.gitlabInstanceUrl('ftp://x', {})).toThrow();
+  });
+
+  test('GITLAB_OAUTH_CLIENT_ID overrides the bundled application', () => {
+    expect(ProviderLogins.gitlabClientID({})).toBe(
+      ProviderLogins.GITLAB_CLIENT_ID
+    );
+    expect(
+      ProviderLogins.gitlabClientID({ GITLAB_OAUTH_CLIENT_ID: ' x ' })
+    ).toBe('x');
+  });
+
+  test('token exchange stores the instance and defaults to a 2h expiry', async () => {
+    const { calls, fetchImpl } = mockFetch([
+      () => Response.json({ access_token: 'a', refresh_token: 'r' }),
+    ]);
+    const auth = await ProviderLogins.exchangeGitLabToken(
+      'https://gitlab.com',
+      { grant_type: 'authorization_code', code: 'c', code_verifier: 'v' },
+      fetchImpl,
+      0
+    );
+    expect(auth).toEqual({
+      type: 'oauth',
+      access: 'a',
+      refresh: 'r',
+      expires: 7_200_000,
+      enterpriseUrl: 'https://gitlab.com',
+    });
+    expect(calls[0].url).toBe('https://gitlab.com/oauth/token');
+    expect(calls[0].body.get('redirect_uri')).toBe(
+      ProviderLogins.GITLAB_REDIRECT_URI
+    );
+    expect(calls[0].body.get('code_verifier')).toBe('v');
+  });
+
+  test('rejected grants explain the likely causes', async () => {
+    const { fetchImpl } = mockFetch([
+      () => Response.json({ error: 'invalid_grant' }, { status: 400 }),
+    ]);
+    await expect(
+      ProviderLogins.exchangeGitLabToken(
+        'https://gitlab.com',
+        { grant_type: 'refresh_token', refresh_token: 'r' },
+        fetchImpl
+      )
+    ).rejects.toThrow(/fresh login/);
+  });
+
+  test('concurrent refreshes of one token share a single exchange', async () => {
+    const { calls, fetchImpl } = mockFetch([
+      () => Response.json({ access_token: 'a2', refresh_token: 'r2' }),
+    ]);
+    const auth = {
+      type: 'oauth' as const,
+      access: 'a',
+      refresh: 'shared-refresh',
+      expires: 0,
+      enterpriseUrl: 'https://gitlab.com',
+    };
+    const [first, second] = await Promise.all([
+      ProviderLogins.refreshGitLab(auth, fetchImpl),
+      ProviderLogins.refreshGitLab(auth, fetchImpl),
+    ]);
+    expect(first.access).toBe('a2');
+    expect(second.refresh).toBe('r2');
+    expect(calls).toHaveLength(1);
+  });
+
+  test('self-managed hosts need their own OAuth application', async () => {
+    const previous = process.env.GITLAB_OAUTH_CLIENT_ID;
+    delete process.env.GITLAB_OAUTH_CLIENT_ID;
+    try {
+      const result = await ProviderLogins.GitLabPlugin.methods[0].authorize!({
+        instanceUrl: 'https://git.example.com',
+      });
+      expect(result).toEqual({ type: 'failed' });
+    } finally {
+      if (previous !== undefined) process.env.GITLAB_OAUTH_CLIENT_ID = previous;
+    }
+  });
+
+  test('the loader passes the token and instance to gitlab-ai-provider', async () => {
+    const loader = ProviderLogins.GitLabPlugin.loader!;
+    expect(
+      await loader(
+        async () => ({
+          type: 'oauth',
+          access: 'a',
+          refresh: 'r',
+          expires: Date.now() + 3600_000,
+          enterpriseUrl: 'https://git.example.com',
+        }),
+        {}
+      )
+    ).toEqual({
+      apiKey: 'a',
+      options: { instanceUrl: 'https://git.example.com' },
+    });
+    expect(
+      await loader(async () => ({ type: 'api', key: 'glpat-x' }), {})
+    ).toEqual({ apiKey: 'glpat-x' });
+  });
+
+  test('browser flow: PKCE callback on 127.0.0.1:8080', async () => {
+    const realFetch = globalThis.fetch;
+    const exchanged: URLSearchParams[] = [];
+    globalThis.fetch = (async (input: any, init?: any) => {
+      if (String(input) === 'https://gitlab.com/oauth/token') {
+        exchanged.push(new URLSearchParams(String(init?.body)));
+        return Response.json({
+          access_token: 'gl-access',
+          refresh_token: 'gl-refresh',
+          expires_in: 60,
+        });
+      }
+      return realFetch(input, init);
+    }) as typeof fetch;
+    try {
+      const authorize = (await ProviderLogins.GitLabPlugin.methods[0]
+        .authorize!({})) as any;
+      // Port 8080 is fixed by the registered redirect URI; skip if taken.
+      if (authorize.type === 'failed') return;
+      const url = new URL(authorize.url);
+      expect(url.origin + url.pathname).toBe(
+        'https://gitlab.com/oauth/authorize'
+      );
+      expect(url.searchParams.get('scope')).toBe('api');
+      expect(url.searchParams.get('code_challenge_method')).toBe('S256');
+      const pending = authorize.callback();
+      const response = await realFetch(
+        `${ProviderLogins.GITLAB_REDIRECT_URI}?code=gl-code&state=${url.searchParams.get('state')}`
+      );
+      expect(response.status).toBe(200);
+      expect(await pending).toMatchObject({
+        type: 'success',
+        provider: 'gitlab',
+        access: 'gl-access',
+        refresh: 'gl-refresh',
+        enterpriseUrl: 'https://gitlab.com',
+      });
+      expect(exchanged[0].get('code')).toBe('gl-code');
+      expect(exchanged[0].get('code_verifier')).toBeTruthy();
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+});
+
 describe('stored subscription logins reach the provider registry', () => {
-  test('xAI token is refreshed and DigitalOcean token is used', async () => {
+  test('xAI and GitLab tokens are refreshed, DigitalOcean token is used', async () => {
     const dataHome = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-334-'));
     try {
       const proc = Bun.spawn(
@@ -367,7 +529,16 @@ describe('stored subscription logins reach the provider registry', () => {
         apiKey: 'do-access',
       });
       expect(result.poe).toEqual({ source: 'api', apiKey: 'poe-key' });
-      expect(result.refreshRequests).toHaveLength(1);
+      expect(result.gitlab).toEqual({
+        apiKey: 'new-gitlab-access',
+        instanceUrl: 'https://gitlab.example.com/root',
+      });
+      expect(result.storedGitlab).toEqual({
+        access: 'new-gitlab-access',
+        refresh: 'gitlab-refresh-2',
+        enterpriseUrl: 'https://gitlab.example.com/root',
+      });
+      expect(result.refreshRequests).toHaveLength(2);
       expect(result.storedXai).toEqual({
         access: 'new-xai-access',
         refresh: 'xai-refresh-2',

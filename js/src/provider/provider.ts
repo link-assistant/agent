@@ -951,7 +951,7 @@ export namespace Provider {
         continue;
       }
       // Subscription logins without a dedicated custom loader (xAI,
-      // DigitalOcean) resolve to a key or fetch through their plugin (#334).
+      // DigitalOcean, GitLab) resolve to a key or fetch through their plugin (#334).
       if (provider.type !== 'oauth' || CUSTOM_LOADERS[providerID]) continue;
       if (!database[providerID]) continue;
       const loaderFn = await AuthPlugins.getLoader(providerID);
@@ -968,7 +968,7 @@ export namespace Provider {
         return undefined;
       });
       if (!result?.apiKey && !result?.fetch) continue;
-      const options: Record<string, any> = {};
+      const options: Record<string, any> = { ...result.options };
       if (result.apiKey) options['apiKey'] = result.apiKey;
       if (result.baseURL) options['baseURL'] = result.baseURL;
       if (result.fetch) options['fetch'] = result.fetch;

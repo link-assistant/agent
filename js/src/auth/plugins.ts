@@ -79,6 +79,8 @@ export interface AuthPlugin {
     apiKey?: string;
     baseURL?: string;
     fetch?: typeof fetch;
+    /** Extra SDK options, e.g. GitLab's `instanceUrl`. */
+    options?: Record<string, any>;
   }>;
 }
 
@@ -2823,6 +2825,7 @@ const plugins: Record<string, AuthPlugin> = {
   xai: ProviderLogins.XAIPlugin,
   poe: ProviderLogins.PoePlugin,
   digitalocean: ProviderLogins.DigitalOceanPlugin,
+  gitlab: ProviderLogins.GitLabPlugin,
 };
 
 /**

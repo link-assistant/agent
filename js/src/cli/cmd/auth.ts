@@ -361,6 +361,7 @@ export const AuthLoginCommand = cmd({
       xai: 'https://console.x.ai',
       poe: 'https://poe.com/api_key',
       digitalocean: 'https://cloud.digitalocean.com/gen-ai/model-access-keys',
+      gitlab: 'https://gitlab.com/-/user_settings/personal_access_tokens',
     };
 
     if (apiKeyUrls[provider]) {

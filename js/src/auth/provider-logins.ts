@@ -5,7 +5,8 @@ import type { AuthPlugin, AuthResult } from './plugins';
 import { Log } from '../util/log';
 
 /**
- * Subscription / account logins OpenCode offers for xAI, Poe and DigitalOcean
+ * Subscription / account logins OpenCode offers for xAI, Poe, DigitalOcean
+ * and GitLab
  * (https://github.com/anomalyco/opencode, packages/core/src/plugin/provider),
  * ported to the agent's AuthPlugin shape (#334). Each provider also keeps a
  * plain API-key method.
@@ -560,6 +561,243 @@ export namespace ProviderLogins {
         return {};
       }
       return { apiKey: auth.access };
+    },
+  };
+
+  // ------------------------------------------------------------- GitLab ----
+
+  /**
+   * OpenCode's public GitLab OAuth application, registered on gitlab.com with
+   * the redirect URI below. Self-managed instances need their own application
+   * (`GITLAB_OAUTH_CLIENT_ID`).
+   */
+  export const GITLAB_CLIENT_ID =
+    'fd180700a8f9c5d5557aca231632dd0611a1135a3bb510a741d5a988a3394fa7';
+  /** GitLab matches redirect_uri exactly, so the port cannot be ephemeral. */
+  export const GITLAB_REDIRECT_URI = 'http://127.0.0.1:8080/callback';
+  const GITLAB_SCOPE = 'api';
+
+  export function gitlabInstanceUrl(
+    input?: string,
+    env: Record<string, string | undefined> = process.env
+  ) {
+    const url = new URL(
+      input?.trim() || env['GITLAB_INSTANCE_URL'] || 'https://gitlab.com'
+    );
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error('GitLab instance URL must use http(s)');
+    }
+    // Keep the path so instances under a relative URL root work.
+    return `${url.origin}${url.pathname.replace(/\/+$/, '')}`;
+  }
+
+  export function gitlabClientID(
+    env: Record<string, string | undefined> = process.env
+  ) {
+    return env['GITLAB_OAUTH_CLIENT_ID']?.trim() || GITLAB_CLIENT_ID;
+  }
+
+  export async function exchangeGitLabToken(
+    instanceUrl: string,
+    body: Record<string, string>,
+    fetchImpl: Fetch = fetch,
+    now = Date.now()
+  ): Promise<Extract<Auth.Info, { type: 'oauth' }>> {
+    const response = await fetchImpl(`${instanceUrl}/oauth/token`, {
+      method: 'POST',
+      headers: FORM,
+      body: new URLSearchParams({
+        ...body,
+        client_id: gitlabClientID(),
+        redirect_uri: GITLAB_REDIRECT_URI,
+      }).toString(),
+    });
+    if (!response.ok) {
+      const error = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        error_description?: string;
+      };
+      const detail =
+        error.error_description || error.error || `HTTP ${response.status}`;
+      throw new Error(
+        error.error === 'invalid_grant' || error.error === 'invalid_client'
+          ? `GitLab token exchange failed: ${detail}. Start a fresh login; a custom GITLAB_OAUTH_CLIENT_ID application must register ${GITLAB_REDIRECT_URI}, grant the \`api\` scope and not be confidential.`
+          : `GitLab token exchange failed: ${detail}`
+      );
+    }
+    const token = (await response.json()) as XAIToken;
+    if (!token.access_token || !token.refresh_token) {
+      throw new Error('Invalid GitLab token response');
+    }
+    return {
+      type: 'oauth',
+      access: token.access_token,
+      refresh: token.refresh_token,
+      expires: now + positiveSeconds(token.expires_in, 7200) * 1000,
+      enterpriseUrl: instanceUrl,
+    };
+  }
+
+  // GitLab rotates the refresh token on every use: share one refresh.
+  const gitlabRefreshing = new Map<
+    string,
+    Promise<Extract<Auth.Info, { type: 'oauth' }>>
+  >();
+
+  export function refreshGitLab(
+    auth: Extract<Auth.Info, { type: 'oauth' }>,
+    fetchImpl: Fetch = fetch
+  ) {
+    const instanceUrl = auth.enterpriseUrl || gitlabInstanceUrl();
+    const key = `${instanceUrl}\0${auth.refresh}`;
+    let pending = gitlabRefreshing.get(key);
+    if (!pending) {
+      pending = exchangeGitLabToken(
+        instanceUrl,
+        { grant_type: 'refresh_token', refresh_token: auth.refresh },
+        fetchImpl
+      ).finally(() => {
+        setTimeout(() => gitlabRefreshing.delete(key), 60_000).unref?.();
+      });
+      gitlabRefreshing.set(key, pending);
+    }
+    return pending;
+  }
+
+  export const GitLabPlugin: AuthPlugin = {
+    provider: 'gitlab',
+    methods: [
+      {
+        label: 'Login with GitLab (OAuth)',
+        type: 'oauth',
+        prompts: [
+          {
+            type: 'text',
+            key: 'instanceUrl',
+            message: 'GitLab instance URL',
+            placeholder: 'https://gitlab.com',
+            validate: (value) =>
+              !value || /^https?:\/\/\S+$/.test(value.trim())
+                ? undefined
+                : 'Enter an http(s) URL',
+          },
+        ],
+        async authorize(inputs) {
+          const instanceUrl = gitlabInstanceUrl(inputs['instanceUrl']);
+          const custom = Boolean(process.env['GITLAB_OAUTH_CLIENT_ID']?.trim());
+          if (!custom && new URL(instanceUrl).host !== 'gitlab.com') {
+            log.error(() => ({
+              message: `The bundled GitLab OAuth application only exists on gitlab.com. Register an OAuth application on ${instanceUrl} with redirect URI ${GITLAB_REDIRECT_URI} and the \`api\` scope (not confidential), then set GITLAB_OAUTH_CLIENT_ID. A personal access token in GITLAB_TOKEN also works.`,
+            }));
+            return { type: 'failed' as const };
+          }
+          const verifier = crypto.randomBytes(32).toString('base64url');
+          const challenge = crypto
+            .createHash('sha256')
+            .update(verifier)
+            .digest('base64url');
+          const state = crypto.randomBytes(32).toString('base64url');
+          let settle!: (value: { code: string } | Error) => void;
+          const received = new Promise<{ code: string } | Error>(
+            (resolve) => (settle = resolve)
+          );
+          const server = http.createServer((request, response) => {
+            const url = new URL(request.url ?? '/', 'http://127.0.0.1');
+            if (request.method !== 'GET' || url.pathname !== '/callback') {
+              response.writeHead(404).end();
+              return;
+            }
+            const params = url.searchParams;
+            const error =
+              params.get('state') !== state
+                ? 'Invalid OAuth state'
+                : params.get('error_description') ||
+                  params.get('error') ||
+                  (params.get('code')
+                    ? undefined
+                    : 'Missing authorization code');
+            response
+              .writeHead(error ? 400 : 200, { 'Content-Type': 'text/html' })
+              .end(
+                error
+                  ? page('Authorization failed', error)
+                  : page(
+                      'Authorization successful',
+                      'You can close this window and return to the terminal.'
+                    )
+              );
+            settle(error ? new Error(error) : { code: params.get('code')! });
+          });
+          try {
+            await listen(server, 8080, '127.0.0.1');
+          } catch (error: any) {
+            log.error(() => ({
+              message:
+                error?.code === 'EADDRINUSE'
+                  ? 'GitLab login needs local port 8080, but it is already in use'
+                  : 'gitlab callback server failed',
+              error: String(error),
+            }));
+            return { type: 'failed' as const };
+          }
+          return {
+            url: `${instanceUrl}/oauth/authorize?${new URLSearchParams({
+              client_id: gitlabClientID(),
+              redirect_uri: GITLAB_REDIRECT_URI,
+              response_type: 'code',
+              state,
+              scope: GITLAB_SCOPE,
+              code_challenge: challenge,
+              code_challenge_method: 'S256',
+            })}`,
+            instructions:
+              'Complete authorization in your browser. This window will close automatically.',
+            method: 'auto' as const,
+            async callback(): Promise<AuthResult> {
+              try {
+                const result = await received;
+                if (result instanceof Error) throw result;
+                const auth = await exchangeGitLabToken(instanceUrl, {
+                  grant_type: 'authorization_code',
+                  code: result.code,
+                  code_verifier: verifier,
+                });
+                return {
+                  type: 'success',
+                  provider: 'gitlab',
+                  access: auth.access,
+                  refresh: auth.refresh,
+                  expires: auth.expires,
+                  enterpriseUrl: instanceUrl,
+                };
+              } catch (error) {
+                log.error(() => ({
+                  message: 'gitlab login failed',
+                  error: String(error),
+                }));
+                return { type: 'failed' };
+              } finally {
+                server.close();
+                server.closeAllConnections();
+              }
+            },
+          };
+        },
+      },
+      apiKeyMethod,
+    ],
+    async loader(getAuth) {
+      let auth = await getAuth();
+      if (auth?.type === 'api') return { apiKey: auth.key };
+      if (auth?.type !== 'oauth') return {};
+      if (auth.expires <= Date.now() + 60_000) {
+        auth = await refreshGitLab(auth);
+        await Auth.set('gitlab', auth);
+      }
+      return {
+        apiKey: auth.access,
+        options: { instanceUrl: auth.enterpriseUrl || gitlabInstanceUrl() },
+      };
     },
   };
 }
