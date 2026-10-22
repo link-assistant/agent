@@ -266,15 +266,15 @@ export namespace ParityLoaders {
     return typeof token === 'string' ? token : (token?.token ?? undefined);
   }
 
+  /** `aiplatform.googleapis.com` and regional `{location}-aiplatform...`. */
+  const VERTEX_HOST = /^(?:[a-z0-9-]+-)?aiplatform\.googleapis\.com$/i;
+
   /**
    * Vertex serves partner models (OpenAI-compatible `endpoints/openapi`,
    * Mistral) through plain HTTP SDKs that know nothing about Google
    * credentials. Add an Application Default Credentials bearer token to
    * requests for `*aiplatform.googleapis.com` that carry no real credential.
    */
-  /** `aiplatform.googleapis.com` and regional `{location}-aiplatform...`. */
-  const VERTEX_HOST = /^(?:[a-z0-9-]+-)?aiplatform\.googleapis\.com$/i;
-
   export function vertexFetch(
     inner: typeof fetch = fetch,
     token: () => Promise<string | undefined> = vertexAccessToken

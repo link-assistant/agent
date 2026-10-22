@@ -31,3 +31,5 @@ feat: support every AI provider OpenCode supports, plus gpt4free, with live mode
   providers (`bun scripts/generate-provider-docs.mjs`),
   `docs/gpt4free.md` and `docs/model-discovery.md`. Refreshed `MODELS.md`
   and `FREE_MODELS.md` with current models.
+- Updated the AI SDK provider packages, `ai`, `google-auth-library` and the
+  other direct dependencies to their latest releases.
