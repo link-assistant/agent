@@ -115,3 +115,28 @@ jobs:
           echo ""
           echo "Report location: lychee/out.md (available as a workflow artifact if configured)."
           exit 1
+
+  # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
+  # the run grey instead of red. This gate fails the run on any unsuccessful
+  # job and on any cancellation a newer run does not explain (#301, #337).
+  pipeline-status:
+    name: Pipeline Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    if: always()
+    needs:
+      - link-checker
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Fail the run when a required job was cancelled or failed
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh
