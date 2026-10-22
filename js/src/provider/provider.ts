@@ -948,7 +948,31 @@ export namespace Provider {
       if (disabled.has(providerID)) continue;
       if (provider.type === 'api') {
         mergeProvider(providerID, { apiKey: provider.key }, 'api');
+        continue;
       }
+      // Subscription logins without a dedicated custom loader (xAI,
+      // DigitalOcean) resolve to a key or fetch through their plugin (#334).
+      if (provider.type !== 'oauth' || CUSTOM_LOADERS[providerID]) continue;
+      if (!database[providerID]) continue;
+      const loaderFn = await AuthPlugins.getLoader(providerID);
+      if (!loaderFn) continue;
+      const result = await loaderFn(
+        () => Auth.get(providerID),
+        database[providerID]
+      ).catch((error) => {
+        log.warn(() => ({
+          message: 'oauth credentials could not be loaded',
+          providerID,
+          error: String(error),
+        }));
+        return undefined;
+      });
+      if (!result?.apiKey && !result?.fetch) continue;
+      const options: Record<string, any> = {};
+      if (result.apiKey) options['apiKey'] = result.apiKey;
+      if (result.baseURL) options['baseURL'] = result.baseURL;
+      if (result.fetch) options['fetch'] = result.fetch;
+      mergeProvider(providerID, options, 'api');
     }
 
     // load custom

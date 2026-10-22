@@ -4,6 +4,7 @@ import * as net from 'node:net';
 import { Auth } from './index';
 import { Log } from '../util/log';
 import { createVerboseFetch } from '../util/verbose-fetch';
+import { ProviderLogins } from './provider-logins';
 
 /**
  * Auth Plugins Module
@@ -2819,6 +2820,9 @@ const plugins: Record<string, AuthPlugin> = {
   'qwen-coder': QwenPlugin,
   alibaba: AlibabaPlugin,
   kilo: KiloPlugin,
+  xai: ProviderLogins.XAIPlugin,
+  poe: ProviderLogins.PoePlugin,
+  digitalocean: ProviderLogins.DigitalOceanPlugin,
 };
 
 /**
