@@ -130,7 +130,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: '26.x'
 
       # `--package-lock-only` audits the committed lockfile, so the result does
       # not depend on what a fresh install happens to resolve today.

@@ -129,7 +129,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.x'
+          node-version: '26.x'
 
       - name: Cache cargo registry
         uses: actions/cache@v5
@@ -274,7 +274,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.x'
+          node-version: '26.x'
 
       - name: Configure git
         run: |
@@ -473,7 +473,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.x'
+          node-version: '26.x'
 
       - name: Configure git
         run: |
