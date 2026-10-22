@@ -122,7 +122,47 @@ Tests: `js/tests/edit-write-reliability.ts`, `rust/tests/tool_edit.rs`,
 Full reports: [`analysis/B-read-search.md`](analysis/B-read-search.md),
 [`analysis/C-bash-web.md`](analysis/C-bash-web.md).
 
-<!-- B/C results are filled in below once implemented. -->
+Reproductions: [`experiments/issue-335/read-search/`](../../../experiments/issue-335/read-search/),
+[`experiments/issue-335/bash-web/`](../../../experiments/issue-335/bash-web/).
+Tests: `js/tests/read-search-reliability-read.ts`,
+`js/tests/read-search-reliability-search.ts`,
+`js/tests/bash-web-reliability.ts`, `rust/tests/tool_{read,grep,glob,bash,webfetch,websearch}.rs`.
+
+### 5.1 Read, grep, glob, ls
+
+| Defect (before)                                                                          | Upstream                      | Fix                                                                                  | JS  | Rust            |
+| ---------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------ | --- | --------------- |
+| `glob`/`ls` hung after 100 results: rg blocked on a full stdout pipe while we awaited it | #10833, `76ee87ead8`          | Cancel the stream and kill rg in `finally`; abort signal passed through              | ✅  | ✅ (100 limit)  |
+| `grep` returned "No files found" when rg exited 2 because one path was unreadable        | #8612, ripgrep 11 exit status | Exit 2 keeps matches and adds "(Some paths were inaccessible and skipped)"           | ✅  | n/a             |
+| `grep` read stdout before stderr (deadlock on large stderr), could not be cancelled      | #39238, `4d2696e027`          | Pipes drained together; `ctx.abort` + 30 s timeout; clear errors for bad regex/paths | ✅  | n/a             |
+| `grep` skipped hidden files (`.github/`)                                                 | #7501                         | `--hidden` and `--glob=!**/.git/**`                                                  | ✅  | ✅              |
+| `glob` followed symlinked directories (cyclic/huge trees); user rg config changed output | #11415                        | No `--follow`; `--no-config`; ENOTDIR for a file path                                | ✅  | n/a             |
+| `read` resolved relative paths against the worktree root, unlike every other tool        | `6cf2c3e3db`                  | Resolved against the session directory                                               | ✅  | n/a             |
+| `read` could return megabytes (2000 lines × 2000 chars, unlimited `limit`)               | #14009, #51011                | 50 KB cap with an `offset=` hint; `limit` ≤ 2000                                     | ✅  | ✅              |
+| `read` loaded a whole file to sniff 4 KB for binary content                              | #14009                        | Reads a 4 KB sample                                                                  | ✅  | ✅              |
+| `read` of CRLF files leaked `\r`; a trailing newline counted as an extra line            | `c1b03b728a`, `683d470fe4`    | Split on `\r?\n`, drop the final empty line                                          | ✅  | ✅ (guard test) |
+| Screenshot names with U+202F / curly quotes were "not found"                             | #45807, #50953                | Unique directory entry matched after canonicalizing                                  | ✅  | ✅              |
+| Reading a directory or past the end gave confusing output                                | #33255, #33260                | Explicit errors                                                                      | ✅  | ✅              |
+| SVG/BMP/TIFF/ICO/AVIF sent as images                                                     | #21114                        | **Not ported** — the fork supports these on purpose (86f24ac, maintainer request)    | —   | —               |
+
+### 5.2 Bash, webfetch, websearch, codesearch, task
+
+| Defect (before)                                                                                      | Upstream        | Fix                                                                                           | JS  | Rust            |
+| ---------------------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------- | --- | --------------- |
+| `bash` ran `/bin/sh` (dash on Debian/Ubuntu), so bash syntax failed                                  | #3494, #5205    | `$SHELL` if usable, else bash (zsh on macOS); fish/nu fall back                               | ✅  | already bash    |
+| Long output kept the start and dropped the end, where errors are                                     | #22660, #39403  | Keep the last 2000 lines / 30 KB with a `...output truncated...` prefix                       | ✅  | ✅              |
+| Truncation could split a UTF-8 character (Rust panicked)                                             | —               | Per-stream `TextDecoder`; cut on character boundaries                                         | ✅  | ✅              |
+| Every output chunk re-published the whole output as metadata                                         | #22660, #41007  | Bounded preview                                                                               | ✅  | n/a             |
+| `echo x > file` matched an `echo*` allow rule in read-only/plan mode                                 | #6737 (adapted) | Write redirects checked as a separate `>` command; `/dev/null` and `2>&1` exempt              | ✅  | already handled |
+| tree-sitter trees leaked in the WASM heap                                                            | #24861          | `tree.delete()` in `finally`                                                                  | ✅  | n/a             |
+| Rust `bash` deadlocked when stderr filled its pipe; lost output on timeout; signals unreported       | (found here)    | Both pipes read concurrently; partial output kept; signal name reported                       | n/a | ✅              |
+| `Tool.define` stacked another execute wrapper on every init                                          | #16952          | Copy the definition before wrapping                                                           | ✅  | n/a             |
+| Web tools: timeout did not cover the body; 5 MB limit checked only after reading it all              | #21378, #33259  | `AbortSignal.timeout`; bounded streaming reader (`util/read-bounded.ts`, `read_body_bounded`) | ✅  | ✅              |
+| Cloudflare challenge 403 returned as an error                                                        | #10328, #8284   | One retry with an honest user agent; a plain 403 is not retried                               | ✅  | ✅              |
+| `webfetch` required `format`                                                                         | #6345, #30215   | Optional, markdown by default                                                                 | ✅  | ✅              |
+| HTML-to-text dropped text that follows a `<script>`/`<style>` element                                | #26309          | Skipped                                                                                       | ✅  | n/a             |
+| Exa: `EXA_API_KEY` ignored, plain-JSON replies rejected, errors unlabeled, stale year in description | #16362, #13559  | Shared client (`util/exa-mcp.ts`, Rust equivalent)                                            | ✅  | ✅              |
+| `task` kept its event subscription after an error                                                    | #9992           | `try/finally` around `unsub()`                                                                | ✅  | n/a             |
 
 ## 6. Session, provider and MCP fixes (report D)
 
