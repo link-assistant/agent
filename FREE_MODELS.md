@@ -49,6 +49,36 @@ Zen's catalog still lists free endpoints, including these maintained entries:
 
 **Zen restricts free inference to OpenCode clients.** Agent calls can receive HTTP 403 `FreeTierError` even when an ID is present in the catalog. Agent reports this restriction and does not retry it. These endpoints are excluded from Agent's defaults; use authenticated Kilo or a paid provider instead. See [issue #327](https://github.com/link-assistant/agent/issues/327#issuecomment-6040047705).
 
+## Keyless Providers: gpt4free, Pollinations and Local Servers
+
+These need no account. They are only used when named with `--model`, so they never replace the default. See [gpt4free, Pollinations and local servers](docs/gpt4free.md).
+
+```bash
+# gpt4free Interference API on your machine (docker run -p 1337:8080 hlohaus789/g4f:latest-slim)
+echo "hello" | agent --model gpt4free/auto
+
+# Hosted gpt4free gateway and Pollinations (public, rate limited)
+echo "hello" | agent --model g4f-space/auto
+echo "hello" | agent --model pollinations/openai
+
+# Local models
+echo "hello" | agent --model ollama/qwen3
+```
+
+`agent models gpt4free --discover` lists what the server offers right now; any other model ID is passed through unchanged.
+
+## Finding Free Models
+
+The lists above are maintained by hand. For everything else, ask the catalogue and the providers themselves:
+
+```bash
+agent models --free             # free models of the providers you have configured
+agent models --free --discover  # include models the provider APIs list right now
+agent models openrouter --free --discover
+```
+
+models.dev marks 593 models across 80 providers as free (October 22, 2026). Many of them are part of a paid subscription (coding plans, token plans, GitLab Duo) or still need an API key, and listed prices do not guarantee free inference. A model from a live listing counts as free only if the provider reports a zero price or a `:free` / `-free` ID, models.dev lists it at zero cost, or the provider is keyless. See [Model discovery](docs/model-discovery.md).
+
 ## Withdrawn Entries
 
 The following former built-ins have been removed rather than silently remapped to a different model:
@@ -78,6 +108,9 @@ locally. Its offline tests verify JavaScript/Rust parity.
 ## More Information
 
 - [Full Models Documentation](MODELS.md)
+- [All providers](docs/providers.md)
+- [gpt4free, Pollinations and local servers](docs/gpt4free.md)
+- [Model discovery](docs/model-discovery.md)
 - [Kilo Gateway Documentation](docs/kilo.md)
 - [Kilo Privacy Policy](https://kilo.ai/privacy)
 - [OpenCode Zen Documentation](https://opencode.ai/docs/zen/)

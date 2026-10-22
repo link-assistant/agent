@@ -10,6 +10,7 @@ import { NamedError } from '../util/error';
 import { Auth } from '../auth';
 import { ClaudeOAuth } from '../auth/claude-oauth';
 import { AuthPlugins } from '../auth/plugins';
+import { AzureLogin } from '../auth/azure-login';
 import { Instance } from '../project/instance';
 import { Global } from '../global';
 import { config, isVerbose } from '../config/config';
@@ -21,21 +22,36 @@ import { RetryFetch } from './retry-fetch';
 import { SSEUsageExtractor } from '../util/sse-usage-extractor';
 import { OpenCodeZen } from './opencode-zen';
 import { Kilo } from './kilo';
+import { EnvTemplate } from './env-template';
+import { ExtraProviders } from './extra-providers';
+import { ModelDiscovery } from './model-discovery';
+import { ParityLoaders } from './parity-loaders';
 
 // Direct imports for bundled providers - these are pre-installed to avoid runtime installation hangs
 // @see https://github.com/link-assistant/agent/issues/173
 // @see https://github.com/oven-sh/bun/issues/5831 (bun install hangs sporadically)
 import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
+import { createBedrockMantle } from '@ai-sdk/amazon-bedrock/mantle';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createAzure } from '@ai-sdk/azure';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createVertex } from '@ai-sdk/google-vertex';
+import { createVertexAnthropic } from '@ai-sdk/google-vertex/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { createXai } from '@ai-sdk/xai';
 import { createMistral } from '@ai-sdk/mistral';
 import { createGroq } from '@ai-sdk/groq';
+import { createAlibaba } from '@ai-sdk/alibaba';
+import { createCerebras } from '@ai-sdk/cerebras';
+import { createCohere } from '@ai-sdk/cohere';
+import { createDeepInfra } from '@ai-sdk/deepinfra';
+import { createDeepSeek } from '@ai-sdk/deepseek';
+import { createFireworks } from '@ai-sdk/fireworks';
+import { createGateway } from '@ai-sdk/gateway';
+import { createPerplexity } from '@ai-sdk/perplexity';
+import { createTogetherAI } from '@ai-sdk/togetherai';
 
 export namespace Provider {
   const log = Log.create({ service: 'provider' });
@@ -70,17 +86,24 @@ export namespace Provider {
     '@ai-sdk/xai': createXai,
     '@ai-sdk/mistral': createMistral,
     '@ai-sdk/groq': createGroq,
+    // Packages models.dev (and OpenCode) use for the remaining providers and
+    // per-model overrides (#334).
+    '@ai-sdk/amazon-bedrock/mantle': createBedrockMantle,
+    '@ai-sdk/google-vertex/anthropic': createVertexAnthropic,
+    '@ai-sdk/alibaba': createAlibaba,
+    '@ai-sdk/cerebras': createCerebras,
+    '@ai-sdk/cohere': createCohere,
+    '@ai-sdk/deepinfra': createDeepInfra,
+    '@ai-sdk/deepseek': createDeepSeek,
+    '@ai-sdk/fireworks': createFireworks,
+    '@ai-sdk/gateway': createGateway,
+    '@ai-sdk/perplexity': createPerplexity,
+    '@ai-sdk/togetherai': createTogetherAI,
   };
 
-  type CustomLoader = (provider: ModelsDev.Provider) => Promise<{
-    autoload: boolean;
-    getModel?: (
-      sdk: any,
-      modelID: string,
-      options?: Record<string, any>
-    ) => Promise<any>;
-    options?: Record<string, any>;
-  }>;
+  type CustomLoader = (
+    provider: ModelsDev.Provider
+  ) => Promise<ParityLoaders.LoaderResult>;
 
   type Source = 'env' | 'config' | 'custom' | 'api';
 
@@ -224,8 +247,14 @@ export namespace Provider {
       };
     },
     azure: async () => {
+      // `agent auth login azure` with Microsoft Entra ID stores no secret:
+      // requests mint bearer tokens from the Azure CLI session (#334).
+      const entra = await AzureLogin.options(await Auth.get('azure'));
+      if (entra) {
+        log.info(() => ({ message: 'using azure entra id credentials' }));
+      }
       return {
-        autoload: false,
+        autoload: !!entra,
         async getModel(
           sdk: any,
           modelID: string,
@@ -237,7 +266,7 @@ export namespace Provider {
             return sdk.responses(modelID);
           }
         },
-        options: {},
+        options: entra ?? {},
       };
     },
     'azure-cognitive-services': async () => {
@@ -263,103 +292,6 @@ export namespace Provider {
         },
       };
     },
-    'amazon-bedrock': async () => {
-      if (
-        !process.env['AWS_PROFILE'] &&
-        !process.env['AWS_ACCESS_KEY_ID'] &&
-        !process.env['AWS_BEARER_TOKEN_BEDROCK']
-      )
-        return { autoload: false };
-
-      const region = process.env['AWS_REGION'] ?? 'us-east-1';
-
-      const { fromNodeProviderChain } = await import(
-        await BunProc.install('@aws-sdk/credential-providers')
-      );
-      return {
-        autoload: true,
-        options: {
-          region,
-          credentialProvider: fromNodeProviderChain(),
-        },
-        async getModel(
-          sdk: any,
-          modelID: string,
-          _options?: Record<string, any>
-        ) {
-          let regionPrefix = region.split('-')[0];
-
-          switch (regionPrefix) {
-            case 'us': {
-              const modelRequiresPrefix = [
-                'nova-micro',
-                'nova-lite',
-                'nova-pro',
-                'nova-premier',
-                'claude',
-                'deepseek',
-              ].some((m) => modelID.includes(m));
-              const isGovCloud = region.startsWith('us-gov');
-              if (modelRequiresPrefix && !isGovCloud) {
-                modelID = `${regionPrefix}.${modelID}`;
-              }
-              break;
-            }
-            case 'eu': {
-              const regionRequiresPrefix = [
-                'eu-west-1',
-                'eu-west-2',
-                'eu-west-3',
-                'eu-north-1',
-                'eu-central-1',
-                'eu-south-1',
-                'eu-south-2',
-              ].some((r) => region.includes(r));
-              const modelRequiresPrefix = [
-                'claude',
-                'nova-lite',
-                'nova-micro',
-                'llama3',
-                'pixtral',
-              ].some((m) => modelID.includes(m));
-              if (regionRequiresPrefix && modelRequiresPrefix) {
-                modelID = `${regionPrefix}.${modelID}`;
-              }
-              break;
-            }
-            case 'ap': {
-              const isAustraliaRegion = [
-                'ap-southeast-2',
-                'ap-southeast-4',
-              ].includes(region);
-              if (
-                isAustraliaRegion &&
-                ['anthropic.claude-sonnet-4-5', 'anthropic.claude-haiku'].some(
-                  (m) => modelID.includes(m)
-                )
-              ) {
-                regionPrefix = 'au';
-                modelID = `${regionPrefix}.${modelID}`;
-              } else {
-                const modelRequiresPrefix = [
-                  'claude',
-                  'nova-lite',
-                  'nova-micro',
-                  'nova-pro',
-                ].some((m) => modelID.includes(m));
-                if (modelRequiresPrefix) {
-                  regionPrefix = 'apac';
-                  modelID = `${regionPrefix}.${modelID}`;
-                }
-              }
-              break;
-            }
-          }
-
-          return sdk.languageModel(modelID);
-        },
-      };
-    },
     openrouter: async () => {
       return {
         autoload: false,
@@ -379,52 +311,6 @@ export namespace Provider {
             'http-referer': 'https://opencode.ai/',
             'x-title': 'opencode',
           },
-        },
-      };
-    },
-    'google-vertex': async () => {
-      const project =
-        process.env['GOOGLE_CLOUD_PROJECT'] ??
-        process.env['GCP_PROJECT'] ??
-        process.env['GCLOUD_PROJECT'];
-      const location =
-        process.env['GOOGLE_CLOUD_LOCATION'] ??
-        process.env['VERTEX_LOCATION'] ??
-        'us-east5';
-      const autoload = Boolean(project);
-      if (!autoload) return { autoload: false };
-      return {
-        autoload: true,
-        options: {
-          project,
-          location,
-        },
-        async getModel(sdk: any, modelID: string) {
-          const id = String(modelID).trim();
-          return sdk.languageModel(id);
-        },
-      };
-    },
-    'google-vertex-anthropic': async () => {
-      const project =
-        process.env['GOOGLE_CLOUD_PROJECT'] ??
-        process.env['GCP_PROJECT'] ??
-        process.env['GCLOUD_PROJECT'];
-      const location =
-        process.env['GOOGLE_CLOUD_LOCATION'] ??
-        process.env['VERTEX_LOCATION'] ??
-        'global';
-      const autoload = Boolean(project);
-      if (!autoload) return { autoload: false };
-      return {
-        autoload: true,
-        options: {
-          project,
-          location,
-        },
-        async getModel(sdk: any, modelID: string) {
-          const id = String(modelID).trim();
-          return sdk.languageModel(id);
         },
       };
     },
@@ -764,6 +650,9 @@ export namespace Provider {
         options: {},
       };
     },
+    // OpenCode parity: Cloudflare, Snowflake, SAP AI Core, Vertex, Bedrock,
+    // attribution headers (#334).
+    ...ParityLoaders.create(),
   };
 
   export const state = Instance.state(async () => {
@@ -780,6 +669,7 @@ export namespace Provider {
           modelID: string,
           options?: Record<string, any>
         ) => Promise<any>;
+        sdkOptions?: ParityLoaders.LoaderResult['sdkOptions'];
         options: Record<string, any>;
       };
     } = {};
@@ -807,24 +697,29 @@ export namespace Provider {
         sdk: any,
         modelID: string,
         options?: Record<string, any>
-      ) => Promise<any>
+      ) => Promise<any>,
+      sdkOptions?: ParityLoaders.LoaderResult['sdkOptions']
     ) {
       const provider = providers[id];
       if (!provider) {
         const info = database[id];
         if (!info) return;
-        if (info.api && !options['baseURL']) options['baseURL'] = info.api;
+        // models.dev base URLs may contain `${ENV}` placeholders (#334).
+        const baseURL = EnvTemplate.resolve(info.api);
+        if (baseURL && !options['baseURL']) options['baseURL'] = baseURL;
         providers[id] = {
           source,
           info,
           options,
           getModel,
+          sdkOptions,
         };
         return;
       }
       provider.options = mergeDeep(provider.options, options);
       provider.source = source;
       provider.getModel = getModel ?? provider.getModel;
+      provider.sdkOptions = sdkOptions ?? provider.sdkOptions;
     }
 
     const configProviders = Object.entries(config.provider ?? {});
@@ -939,14 +834,29 @@ export namespace Provider {
       }
     }
 
+    // Kilo keeps its curated free aliases and gains the rest of its
+    // models.dev catalogue (text models only), served through the same
+    // OpenRouter-compatible endpoint (#334).
     database.kilo = {
       id: 'kilo',
       name: 'Kilo Gateway',
       npm: '@openrouter/ai-sdk-provider',
       api: 'https://api.kilo.ai/api/openrouter',
       env: ['KILO_API_KEY'],
-      models: structuredClone(Kilo.FREE_MODELS),
+      models: {
+        ...Kilo.catalogueModels(database.kilo),
+        ...structuredClone(Kilo.FREE_MODELS),
+      },
     };
+
+    // Providers models.dev does not list (gpt4free, Pollinations, local
+    // servers) and packages the bundled AI SDK cannot load (#334).
+    ExtraProviders.augment(database);
+    ParityLoaders.patchCloudflareGateway(
+      database,
+      process.env,
+      config.provider?.['cloudflare-ai-gateway']?.options?.['baseURL']
+    );
 
     for (const [providerID, provider] of configProviders) {
       const existing = database[providerID];
@@ -1030,8 +940,9 @@ export namespace Provider {
     for (const [providerID, provider] of Object.entries(database)) {
       if (disabled.has(providerID)) continue;
       // Find the first truthy env var (supports multiple env var options like Google's
-      // GOOGLE_GENERATIVE_AI_API_KEY and GEMINI_API_KEY)
-      const apiKey = provider.env
+      // GOOGLE_GENERATIVE_AI_API_KEY and GEMINI_API_KEY). Variables that only
+      // fill a templated URL or name an account/region are not keys (#334).
+      const apiKey = EnvTemplate.credentialEnv(provider)
         .map((item) => process.env[item])
         .find(Boolean);
       if (!apiKey) continue;
@@ -1044,7 +955,31 @@ export namespace Provider {
       if (disabled.has(providerID)) continue;
       if (provider.type === 'api') {
         mergeProvider(providerID, { apiKey: provider.key }, 'api');
+        continue;
       }
+      // Subscription logins without a dedicated custom loader (xAI,
+      // DigitalOcean, GitLab) resolve to a key or fetch through their plugin (#334).
+      if (provider.type !== 'oauth' || CUSTOM_LOADERS[providerID]) continue;
+      if (!database[providerID]) continue;
+      const loaderFn = await AuthPlugins.getLoader(providerID);
+      if (!loaderFn) continue;
+      const result = await loaderFn(
+        () => Auth.get(providerID),
+        database[providerID]
+      ).catch((error) => {
+        log.warn(() => ({
+          message: 'oauth credentials could not be loaded',
+          providerID,
+          error: String(error),
+        }));
+        return undefined;
+      });
+      if (!result?.apiKey && !result?.fetch) continue;
+      const options: Record<string, any> = { ...result.options };
+      if (result.apiKey) options['apiKey'] = result.apiKey;
+      if (result.baseURL) options['baseURL'] = result.baseURL;
+      if (result.fetch) options['fetch'] = result.fetch;
+      mergeProvider(providerID, options, 'api');
     }
 
     // load custom
@@ -1056,7 +991,8 @@ export namespace Provider {
           providerID,
           result.options ?? {},
           'custom',
-          result.getModel
+          result.getModel,
+          result.sdkOptions
         );
       }
     }
@@ -1095,11 +1031,40 @@ export namespace Provider {
       available: Object.keys(providers),
     }));
 
+    /**
+     * Enable a keyless provider (gpt4free, Pollinations, local servers) on
+     * first explicit use. They stay out of `providers` until then, so they
+     * never take part in default or short-name resolution (#334).
+     */
+    async function activate(providerID: string): Promise<boolean> {
+      if (providers[providerID]) return true;
+      if (disabled.has(providerID)) return false;
+      if (!database[providerID] || !ExtraProviders.isKeyless(providerID)) {
+        return false;
+      }
+      const loader = CUSTOM_LOADERS[providerID];
+      const result = loader ? await loader(database[providerID]) : undefined;
+      mergeProvider(
+        providerID,
+        result?.options ?? {},
+        'custom',
+        result?.getModel,
+        result?.sdkOptions
+      );
+      registryLog.info(() => ({
+        message: 'keyless provider enabled on explicit request',
+        provider: providerID,
+      }));
+      return Boolean(providers[providerID]);
+    }
+
     return {
       models,
       providers,
       sdk,
       realIdByKey,
+      database,
+      activate,
     };
   });
 
@@ -1114,7 +1079,38 @@ export namespace Provider {
       });
       const s = await state();
       const pkg = model.provider?.npm ?? provider.npm ?? provider.id;
-      const options = { ...s.providers[provider.id]?.options };
+      const entry = s.providers[provider.id];
+      let options: Record<string, any> = { ...entry?.options };
+      // Per-model endpoint from models.dev (Vertex partner models, Bedrock
+      // Mantle, Cloudflare passthrough routes). A user-set baseURL still wins
+      // for models served by the provider's own package (#334).
+      const providerURL = EnvTemplate.resolve(provider.api);
+      const modelURL = EnvTemplate.resolve(model.provider?.api);
+      const ownPackage = !model.provider?.npm || pkg === provider.npm;
+      if (
+        modelURL &&
+        /^https?:\/\//.test(modelURL) &&
+        (!ownPackage ||
+          !options['baseURL'] ||
+          options['baseURL'] === providerURL)
+      ) {
+        options['baseURL'] = modelURL;
+      }
+      const template = model.provider?.api ?? provider.api;
+      if (
+        !options['baseURL'] &&
+        EnvTemplate.isTemplate(template) &&
+        !EnvTemplate.resolve(template)
+      ) {
+        const missing = EnvTemplate.variables(template).filter(
+          (name) => !EnvTemplate.resolve(`\${${name}}`)
+        );
+        throw new Error(
+          `Provider "${provider.id}" needs ${missing.join(', ')} to build its base URL (${template}). ` +
+            `Set the environment variable(s) or provider.${provider.id}.options.baseURL in the config.`
+        );
+      }
+      if (entry?.sdkOptions) options = entry.sdkOptions(pkg, options);
       if (
         pkg.includes('@ai-sdk/openai-compatible') &&
         options['includeUsage'] === undefined
@@ -1517,17 +1513,9 @@ export namespace Provider {
         installedPath = pkg;
       }
 
-      // The `google-vertex-anthropic` provider points to the `@ai-sdk/google-vertex` package.
-      // Ref: https://github.com/sst/models.dev/blob/0a87de42ab177bebad0620a889e2eb2b4a5dd4ab/providers/google-vertex-anthropic/provider.toml
-      // However, the actual export is at the subpath `@ai-sdk/google-vertex/anthropic`.
-      // Ref: https://ai-sdk.dev/providers/ai-sdk-providers/google-vertex#google-vertex-anthropic-provider-usage
-      // In addition, Bun's dynamic import logic does not support subpath imports,
-      // so we patch the import path to load directly from `dist`.
-      const modPath =
-        provider.id === 'google-vertex-anthropic'
-          ? `${installedPath}/dist/anthropic/index.mjs`
-          : installedPath;
-      const mod = await import(modPath);
+      // `@ai-sdk/google-vertex/anthropic` and other subpath packages are
+      // bundled above, so no dist path patching is needed here (#334).
+      const mod = await import(installedPath);
 
       const fn = mod[Object.keys(mod).find((key) => key.startsWith('create'))!];
       const loaded = fn({
@@ -1550,27 +1538,92 @@ export namespace Provider {
   }
 
   export async function getProvider(providerID: string) {
-    return state().then((s) => s.providers[providerID]);
+    const s = await state();
+    const id = ExtraProviders.canonicalID(providerID);
+    if (!s.providers[id]) await s.activate(id);
+    return s.providers[id];
   }
 
   /**
    * Whether a provider's catalog lists a model. Looks at that one provider
-   * only and logs nothing (#313).
+   * only and logs nothing (#313). Routers and local servers that accept any
+   * model ID count as listing every model (#334).
    */
   export async function hasModel(providerID: string, modelID: string) {
-    const provider = await getProvider(providerID);
-    return Boolean(provider?.info.models[modelID]);
+    const s = await state();
+    const provider = s.providers[ExtraProviders.canonicalID(providerID)];
+    if (!provider) return false;
+    if (provider.info.models[modelID]) return true;
+    return ExtraProviders.allowsUnknownModels(provider.info.id);
   }
 
-  async function getLiveModelInfo(providerID: string, modelID: string) {
-    if (providerID !== 'opencode') return undefined;
-    return OpenCodeZen.getLiveFreeModelInfo(modelID);
+  /**
+   * List the models an active provider serves right now, using its
+   * token-free listing endpoint (`/models`). `force` bypasses the cache.
+   */
+  export async function discoverModels(
+    providerID: string,
+    input: { force?: boolean } = {}
+  ): Promise<ModelDiscovery.DiscoveryResult> {
+    const provider = await getProvider(providerID);
+    if (!provider) {
+      return { status: 'skipped', models: [], error: 'provider not active' };
+    }
+    const options = provider.options ?? {};
+    return ModelDiscovery.discover({
+      providerID: provider.info.id,
+      npm: provider.info.npm,
+      baseURL: options['baseURL'] ?? EnvTemplate.resolve(provider.info.api),
+      apiKey:
+        typeof options['apiKey'] === 'string' ? options['apiKey'] : undefined,
+      headers: options['headers'],
+      resourceName:
+        options['resourceName'] ??
+        (provider.info.id === 'azure'
+          ? process.env['AZURE_RESOURCE_NAME']
+          : undefined),
+      // Providers that sign requests themselves (OAuth) list models the same way.
+      fetchImpl:
+        typeof options['fetch'] === 'function' ? options['fetch'] : undefined,
+      force: input.force,
+    });
+  }
+
+  /**
+   * Look a model up in the provider's own model listing. OpenCode Zen keeps
+   * its dedicated free-model lookup; every other provider with a token-free
+   * listing endpoint goes through `ModelDiscovery` (#334).
+   */
+  async function getLiveModelInfo(
+    providerID: string,
+    modelID: string
+  ): Promise<ModelsDev.Model | undefined> {
+    if (providerID === 'opencode') {
+      return OpenCodeZen.getLiveFreeModelInfo(modelID);
+    }
+    const s = await state();
+    const result = await discoverModels(providerID);
+    const found = ModelDiscovery.findModel(result.models, modelID);
+    if (!found) return undefined;
+    return ModelDiscovery.toModelInfo(found, {
+      metadata: ModelDiscovery.catalogueMetadata(
+        s.database,
+        found.model ?? found.id,
+        providerID
+      ),
+    });
+  }
+
+  /** Metadata for a model ID a router or local server accepts unlisted. */
+  function passthroughModelInfo(modelID: string): ModelsDev.Model {
+    return ModelDiscovery.toModelInfo({ id: modelID, free: true });
   }
 
   export async function refreshLiveModelInfo(
     providerID: string,
     modelID: string
   ) {
+    providerID = ExtraProviders.canonicalID(providerID);
     const info = await getLiveModelInfo(providerID, modelID);
     if (!info) return undefined;
 
@@ -1588,12 +1641,14 @@ export namespace Provider {
   }
 
   export async function getModel(providerID: string, modelID: string) {
+    providerID = ExtraProviders.canonicalID(providerID);
     const key = `${providerID}/${modelID}`;
     const s = await state();
     if (s.models.has(key)) return s.models.get(key)!;
 
     log.info(() => ({ message: 'getModel', providerID, modelID }));
 
+    if (!s.providers[providerID]) await s.activate(providerID);
     const provider = s.providers[providerID];
     if (!provider) {
       // Check if this model ID might exist in another provider (e.g., OpenRouter)
@@ -1680,6 +1735,22 @@ export namespace Provider {
       }
     }
 
+    if (
+      !isSyntheticProvider &&
+      !info &&
+      ExtraProviders.allowsUnknownModels(providerID)
+    ) {
+      // Routers (gpt4free, Pollinations) and local servers accept model IDs
+      // that are not listed anywhere; pass the ID through as-is (#334).
+      info = passthroughModelInfo(modelID);
+      provider.info.models[modelID] = info;
+      log.info(() => ({
+        message: 'passing unlisted model through to router/local server',
+        providerID,
+        modelID,
+      }));
+    }
+
     if (!isSyntheticProvider && !info) {
       // Model not found even after cache refresh.
       // Check if this is the default model — if so, create synthetic info and proceed (#239).
@@ -1739,9 +1810,13 @@ export namespace Provider {
       } else {
         // For regular providers, load the SDK first
         const sdk = await getSDK(provider.info, info!);
-        language = provider.getModel
-          ? await provider.getModel(sdk, realID, provider.options)
-          : sdk.languageModel(realID);
+        // Models that need a specific API shape (Bedrock Mantle, models.dev
+        // `provider.shape`) pick the SDK method themselves (#334).
+        language =
+          ParityLoaders.selectByShape(sdk, info!, realID) ??
+          (provider.getModel
+            ? await provider.getModel(sdk, realID, provider.options)
+            : sdk.languageModel(realID));
       }
       log.info(() => ({ message: 'found', providerID, modelID }));
       s.models.set(key, {
@@ -1911,7 +1986,7 @@ export namespace Provider {
   export function parseModel(model: string) {
     const [providerID, ...rest] = model.split('/');
     return {
-      providerID: providerID,
+      providerID: ExtraProviders.canonicalID(providerID),
       modelID: rest.join('/'),
     };
   }

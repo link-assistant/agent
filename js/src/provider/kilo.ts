@@ -46,4 +46,23 @@ export namespace Kilo {
       65536
     ),
   };
+
+  /**
+   * Text models models.dev lists for Kilo. Their IDs are the same on the
+   * OpenRouter-compatible route this provider uses, so the curated aliases
+   * above only add short names for the free Nemotron models (#334).
+   */
+  export function catalogueModels(
+    provider: ModelsDev.Provider | undefined
+  ): Record<string, ModelsDev.Model> {
+    const result: Record<string, ModelsDev.Model> = {};
+    for (const [key, model] of Object.entries(provider?.models ?? {})) {
+      const output = model.modalities?.output ?? ['text'];
+      if (!output.includes('text')) continue;
+      // The catalogue points at the gateway route; ours is fixed.
+      const { provider: _route, ...rest } = model;
+      result[key] = structuredClone(rest);
+    }
+    return result;
+  }
 }

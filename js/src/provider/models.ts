@@ -58,7 +58,16 @@ export namespace ModelsDev {
       status: z.enum(['alpha', 'beta', 'deprecated']).optional(),
       options: z.record(z.string(), z.any()),
       headers: z.record(z.string(), z.string()).optional(),
-      provider: z.object({ npm: z.string() }).optional(),
+      provider: z
+        .object({
+          npm: z.string().optional(),
+          api: z.string().optional(),
+          shape: z.enum(['responses', 'completions']).optional(),
+        })
+        .optional()
+        .describe(
+          'Per-model SDK override from models.dev: package, base URL (may contain ${ENV} placeholders) and API shape.'
+        ),
     })
     .meta({
       ref: 'Model',
@@ -92,6 +101,7 @@ export namespace ModelsDev {
       env: z.array(z.string()),
       id: z.string(),
       npm: z.string().optional(),
+      doc: z.string().optional(),
       models: z.record(z.string(), Model),
     })
     .meta({

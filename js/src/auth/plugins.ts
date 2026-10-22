@@ -4,6 +4,8 @@ import * as net from 'node:net';
 import { Auth } from './index';
 import { Log } from '../util/log';
 import { createVerboseFetch } from '../util/verbose-fetch';
+import { ProviderLogins } from './provider-logins';
+import { AzureLogin } from './azure-login';
 
 /**
  * Auth Plugins Module
@@ -78,6 +80,8 @@ export interface AuthPlugin {
     apiKey?: string;
     baseURL?: string;
     fetch?: typeof fetch;
+    /** Extra SDK options, e.g. GitLab's `instanceUrl`. */
+    options?: Record<string, any>;
   }>;
 }
 
@@ -2819,6 +2823,11 @@ const plugins: Record<string, AuthPlugin> = {
   'qwen-coder': QwenPlugin,
   alibaba: AlibabaPlugin,
   kilo: KiloPlugin,
+  xai: ProviderLogins.XAIPlugin,
+  poe: ProviderLogins.PoePlugin,
+  digitalocean: ProviderLogins.DigitalOceanPlugin,
+  gitlab: ProviderLogins.GitLabPlugin,
+  azure: AzureLogin.Plugin,
 };
 
 /**
