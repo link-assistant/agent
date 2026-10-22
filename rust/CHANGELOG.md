@@ -15,6 +15,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.10.6] - 2026-10-22
+
+### Fixed
+
+- Fix the clippy and rustdoc warnings the Rust pipeline let through: the
+  pipeline now fails on any rustc, clippy, rustdoc or Cargo manifest warning
+  (#337).
+- Stop reporting a false `##[error]` on every crates.io release: trusted
+  publishing now runs only when the `CRATES_IO_TRUSTED_PUBLISHING` repository
+  variable is `true`, and the token fallback is announced with a notice (#337).
+- Auto Release publishes the crate whenever the current version is missing
+  from crates.io, even if its tag and GitHub release exist, and fails when
+  crates.io cannot be reached instead of treating the version as unpublished
+  (#337).
+- The release tag is created after the release commit reaches main, so a push
+  retried after a rebase no longer tags a commit that never landed (#337).
+
 ## [0.10.5] - 2026-10-22
 
 ### Changed
