@@ -1,0 +1,95 @@
+=== dev/log/issues/337/pulls/338/ci-logs/js-39827151731.log
+      2 Unit Tests (Bun on macos-latest) | (fail) run-with-budget-warning.sh > warns while the overrun can still be acted on [3091.14ms]
+      2 Unit Tests (Bun on macos-latest) |       at <anonymous> (/Users/runner/work/agent/agent/js/tests/run-with-budget-warning.js:80:27)
+      1 Verbose HTTP Logging Test |   "level": "warn",
+      1 Verbose HTTP Logging Test |   "content": "Here is some useful information about the environment you are running in:\n<env>\n  Working directory: /home/runner/work/agent/agent/js\n  Is directory a git repo: yes\n  Platform: linux\n
+      1 Verbose HTTP Logging Test |   "bodyPreview": "{\"model\":\"nvidia/nemotron-3-super-120b-a12b:free\",\"max_tokens\":32000,\"temperature\":0,\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are Agent
+      1 Verbose HTTP Logging Test |             "description": "Reads a file from the local filesystem. You can access any file directly by using this tool.\nAssume this tool is able to read all files on the machine. If the User provides 
+      1 Verbose HTTP Logging Test |             "description": "Executes a given bash command in a persistent shell session with optional timeout, ensuring proper handling and security measures.\n\nBefore executing the command, please fol
+      1 Verbose HTTP Logging Test |               "text": "Here is some useful information about the environment you are running in:\n<env>\n  Working directory: /home/runner/work/agent/agent/js\n  Is directory a git repo: yes\n  Platform
+      1 Verbose HTTP Logging Test |               "description": "Reads a file from the local filesystem. You can access any file directly by using this tool.\nAssume this tool is able to read all files on the machine. If the User provide
+      1 Verbose HTTP Logging Test |               "description": "Executes a given bash command in a persistent shell session with optional timeout, ensuring proper handling and security measures.\n\nBefore executing the command, please f
+      1 Verbose HTTP Logging Test |                 "text": "Here is some useful information about the environment you are running in:\n<env>\n  Working directory: /home/runner/work/agent/agent/js\n  Is directory a git repo: yes\n  Platfo
+      1 Unit Tests (Bun on windows-latest) | ^[[36;1mbash ../scripts/run-with-budget-warning.sh 600 "Bun test suite" bun run test^[[0m
+      1 Unit Tests (Bun on windows-latest) | Running Bun test suite with a 600s budget (warning at 420s).
+      1 Unit Tests (Bun on windows-latest) | (node:9184) [AISDK_DEP_GENERATE_OBJECT] DeprecationWarning: AI SDK Warning: Deprecated: "generateObject". Use generateText with an output setting instead.
+      1 Unit Tests (Bun on windows-latest) | (node:9184) Warning: AI SDK Warning System: To turn off warning logging, set the AI_SDK_LOG_WARNINGS global to false.
+      1 Unit Tests (Bun on windows-latest) | (node:9184) Warning: AI SDK Warning (test-provider.chat / test-model): The feature "responseFormat" is not supported. JSON response format schema is only supported with structuredOutputs
+      1 Unit Tests (Bun on windows-latest) | (Use `bun.exe --trace-warnings ...` to show where the warning was created)
+      1 Unit Tests (Bun on windows-latest) | ##[group]tests\run-with-budget-warning.js:
+      1 Unit Tests (Bun on windows-latest) | ##[group]tests\ai-sdk-warnings.ts:
+      1 Unit Tests (Bun on windows-latest) | ##[group]Run bash ../scripts/run-with-budget-warning.sh 600 "Bun test suite" bun run test
+      1 Unit Tests (Bun on ubuntu-latest) | ^[[36;1mbash ../scripts/run-with-budget-warning.sh 600 "Bun test suite" bun run test^[[0m
+      1 Unit Tests (Bun on ubuntu-latest) | Running Bun test suite with a 600s budget (warning at 420s).
+      1 Unit Tests (Bun on ubuntu-latest) | (node:2438) [AISDK_DEP_GENERATE_OBJECT] DeprecationWarning: AI SDK Warning: Deprecated: "generateObject". Use generateText with an output setting instead.
+      1 Unit Tests (Bun on ubuntu-latest) | (node:2438) Warning: AI SDK Warning System: To turn off warning logging, set the AI_SDK_LOG_WARNINGS global to false.
+      1 Unit Tests (Bun on ubuntu-latest) | (node:2438) Warning: AI SDK Warning (test-provider.chat / test-model): The feature "responseFormat" is not supported. JSON response format schema is only supported with structuredOutputs
+=== dev/log/issues/337/pulls/338/ci-logs/rust-39827151737.log
+      2 Build Package | ^[[1m^[[92m     Running^[[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name libc --edition=2021 /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.19
+      1 Test (ubuntu-latest) | ^[[36;1mbash ../scripts/run-with-budget-warning.sh 1200 "Cargo test suite" cargo test --all-features --verbose^[[0m
+      1 Test (ubuntu-latest) | ^[[1m^[[92m     Running^[[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name tracing --edition=2018 /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/t
+      1 Test (ubuntu-latest) | ^[[1m^[[92m     Running^[[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name log --edition=2021 /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/log-0
+      1 Test (ubuntu-latest) | ^[[1m^[[92m     Running^[[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name libc --edition=2021 /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc
+      1 Test (ubuntu-latest) | ^[[1m^[[92m     Running^[[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name clap_derive --edition=2024 /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b55
+      1 Test (ubuntu-latest) | ^[[1m^[[92m     Running^[[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name clap_builder --edition=2024 /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b5
+      1 Test (ubuntu-latest) | ^[[1m^[[92m     Running^[[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name clap --edition=2024 /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clap
+      1 Test (ubuntu-latest) | Running Cargo test suite with a 1200s budget (warning at 840s).
+      1 Test (ubuntu-latest) | ##[group]Run bash ../scripts/run-with-budget-warning.sh 1200 "Cargo test suite" cargo test --all-features --verbose
+      1 Test (macos-latest) | ^[[36;1mbash ../scripts/run-with-budget-warning.sh 1200 "Cargo test suite" cargo test --all-features --verbose^[[0m
+      1 Test (macos-latest) | ^[[1m^[[92m     Running^[[0m `/Users/runner/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc --crate-name tracing --edition=2018 /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/trac
+      1 Test (macos-latest) | ^[[1m^[[92m     Running^[[0m `/Users/runner/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc --crate-name log --edition=2021 /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/log-0.4.
+      1 Test (macos-latest) | ^[[1m^[[92m     Running^[[0m `/Users/runner/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc --crate-name libc --edition=2021 /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.
+      1 Test (macos-latest) | ^[[1m^[[92m     Running^[[0m `/Users/runner/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc --crate-name clap_derive --edition=2024 /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/
+      1 Test (macos-latest) | ^[[1m^[[92m     Running^[[0m `/Users/runner/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc --crate-name clap_builder --edition=2024 /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f
+      1 Test (macos-latest) | ^[[1m^[[92m     Running^[[0m `/Users/runner/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc --crate-name clap --edition=2024 /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clap-4.
+      1 Test (macos-latest) | Running Cargo test suite with a 1200s budget (warning at 840s).
+      1 Test (macos-latest) | ##[group]Run bash ../scripts/run-with-budget-warning.sh 1200 "Cargo test suite" cargo test --all-features --verbose
+      1 Lint and Format Check | ^[[1m^[[33mwarning^[[0m^[[1m: the borrowed expression implements the required traits^[[0m
+      1 Lint and Format Check | ^[[1m^[[33mwarning^[[0m^[[1m: consider using `sort_by_key`^[[0m
+      1 Lint and Format Check | ^[[1m^[[33mwarning^[[0m: `link-assistant-agent` (test "tool_read") generated 1 warning (run `cargo clippy --fix --test "tool_read" -p link-assistant-agent -- ` to apply 1 suggestion)
+      1 Lint and Format Check | ^[[1m^[[33mwarning^[[0m: `link-assistant-agent` (lib) generated 1 warning
+      1 Lint and Format Check | ^[[1m^[[33mwarning^[[0m: `link-assistant-agent` (lib test) generated 1 warning (1 duplicate)
+      1 Lint and Format Check |    ^[[1m^[[94m= ^[[0m^[[1mnote^[[0m: `#[warn(clippy::needless_borrows_for_generic_args)]` on by default
+=== dev/log/issues/337/pulls/338/ci-logs/security-39827151966.log
+      3 CodeQL (rust) |                 "pattern" : "^(off|errors|warnings|(info|progress)|(debug|progress\\+)|(trace|progress\\+\\+)|progress\\+\\+\\+)$"
+      3 CodeQL (rust) |                 "description" : "Controls the level of verbosity of the extractor. The supported levels are (in order of increasing verbosity):\n  - off\n  - errors\n  - warnings\n  - info or progress\n  - debug or
+      1 CodeQL (rust) | rust does not support TRAP caching (missing option group)
+      1 CodeQL (rust) | [command]tar -x --zstd --ignore-zeros --warning=no-unknown-keyword --overwrite -f - -C /home/runner/work/_temp/417ba722-61e1-46e5-98d9-b2580f77f927
+      1 CodeQL (rust) | [9/37] Loaded /home/runner/work/_temp/417ba722-61e1-46e5-98d9-b2580f77f927/codeql/qlpacks/codeql/rust-queries/0.1.45/queries/security/CWE-614/InsecureCookie.qlx.
+      1 CodeQL (rust) | [25/37 eval 1m51s] Evaluation done; writing results to codeql/rust-queries/queries/security/CWE-614/InsecureCookie.bqrs.
+      1 CodeQL (rust) | [22/37] Loaded /home/runner/work/_temp/417ba722-61e1-46e5-98d9-b2580f77f927/codeql/qlpacks/codeql/rust-queries/0.1.45/queries/diagnostics/ExtractionWarnings.qlx.
+      1 CodeQL (rust) | [1/37 eval 7.3s] Evaluation done; writing results to codeql/rust-queries/queries/diagnostics/ExtractionWarnings.bqrs.
+      1 CodeQL (rust) | Starting evaluation of codeql/rust-queries/queries/security/CWE-614/InsecureCookie.ql.
+      1 CodeQL (rust) | Starting evaluation of codeql/rust-queries/queries/diagnostics/ExtractionWarnings.ql.
+      1 CodeQL (rust) | Interpreting /home/runner/work/_temp/417ba722-61e1-46e5-98d9-b2580f77f927/codeql/qlpacks/codeql/rust-queries/0.1.45/queries/security/CWE-614/InsecureCookie.ql...
+      1 CodeQL (rust) | Interpreting /home/runner/work/_temp/417ba722-61e1-46e5-98d9-b2580f77f927/codeql/qlpacks/codeql/rust-queries/0.1.45/queries/diagnostics/ExtractionWarnings.ql...
+      1 CodeQL (rust) | Interpreted pathproblem query "'Secure' attribute is not set to true" (rust/insecure-cookie) at path /home/runner/work/_temp/codeql_databases/rust/results/codeql/rust-queries/queries/security/CWE-614/InsecureCookie
+      1 CodeQL (rust) | Interpreted diagnostic query "Extraction warnings" (rust/diagnostics/extraction-warnings) at path /home/runner/work/_temp/codeql_databases/rust/results/codeql/rust-queries/queries/diagnostics/ExtractionWarnings.bqr
+      1 CodeQL (rust) |  ... found results file at /home/runner/work/_temp/codeql_databases/rust/results/codeql/rust-queries/queries/security/CWE-614/InsecureCookie.bqrs.
+      1 CodeQL (rust) |  ... found results file at /home/runner/work/_temp/codeql_databases/rust/results/codeql/rust-queries/queries/diagnostics/ExtractionWarnings.bqrs.
+      1 CodeQL (rust) |     "suppressesMissingFileBaselineWarning": true,
+      1 CodeQL (javascript-typescript) | [command]tar -x --zstd --ignore-zeros --warning=no-unknown-keyword --overwrite -f - -C /home/runner/work/_temp/7c72fad2-1aa1-4cb6-b56d-9d0fae08776f
+      1 CodeQL (javascript-typescript) | [82/89] Loaded /home/runner/work/_temp/7c72fad2-1aa1-4cb6-b56d-9d0fae08776f/codeql/qlpacks/codeql/javascript-queries/2.4.8/Electron/AllowRunningInsecureContent.qlx.
+      1 CodeQL (javascript-typescript) | [81/89] Loaded /home/runner/work/_temp/7c72fad2-1aa1-4cb6-b56d-9d0fae08776f/codeql/qlpacks/codeql/javascript-queries/2.4.8/AngularJS/InsecureUrlWhitelist.qlx.
+      1 CodeQL (javascript-typescript) | [74/89 eval 301ms] Evaluation done; writing results to codeql/javascript-queries/Security/CWE-829/InsecureDownload.bqrs.
+      1 CodeQL (javascript-typescript) | [71/89 eval 265ms] Evaluation done; writing results to codeql/javascript-queries/Security/CWE-693/InsecureHelmet.bqrs.
+      1 CodeQL (javascript-typescript) | [70/89] Loaded /home/runner/work/_temp/7c72fad2-1aa1-4cb6-b56d-9d0fae08776f/codeql/qlpacks/codeql/javascript-queries/2.4.8/Security/CWE-300/InsecureDependencyResolution.qlx.
+      1 CodeQL (javascript-typescript) | [7/89 eval 7.9s] Evaluation done; writing results to codeql/javascript-queries/AngularJS/InsecureUrlWhitelist.bqrs.
+      1 CodeQL (javascript-typescript) | [61/89 eval 1.5s] Evaluation done; writing results to codeql/javascript-queries/Security/CWE-338/InsecureRandomness.bqrs.
+=== dev/log/issues/337/pulls/338/ci-logs/links-39827151734.log
+      1 Check Links |   [WARN] ./**/*.html: No files found for this input source
+=== dev/log/issues/337/pulls/338/ci-logs/model-catalogue-39827151771.log
+=== dev/log/issues/337/pulls/338/ci-logs/dependency-freshness-39827151817.log
+      1 npm outdated | npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+      1 npm outdated | npm warn deprecated glob@9.3.5: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions m
+      1 npm outdated | npm warn EBADENGINE }
+      1 npm outdated | npm warn EBADENGINE Unsupported engine {
+      1 npm outdated | npm warn EBADENGINE   required: { bun: '>=1.3.14', node: '>=26.4.0' },
+      1 npm outdated | npm warn EBADENGINE   package: '@opentui/core@0.6.6',
+      1 npm outdated | npm warn EBADENGINE   current: { node: 'v24.21.0', npm: '11.19.0' }
+      1 cargo outdated | info: install-action does not support cargo-outdated@0.19.0 (updating install-action might resolve this); fallback to cargo-binstall
+      1 cargo outdated | ^[[36;1m  printf '::error::install-action: %s\n' "$*"^[[0m
+      1 cargo outdated |  WARN The package cargo-outdated v0.19.0 (x86_64-unknown-linux-musl) has been downloaded from github.com
+=== dev/log/issues/337/pulls/338/ci-logs/workflows-39827152118.log
+=== dev/log/issues/337/pulls/338/ci-logs/model-drift-39782953415.log
+      1 Check live free model catalogs |   if-no-files-found: warn

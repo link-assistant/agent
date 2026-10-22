@@ -1,0 +1,31 @@
+119997121649	Pipeline Status	success	1
+119995534300	Manual Release	skipped	0
+119995532895	Auto Release	success	2
+119994628037	Build Package	success	1
+119994606666	Release	skipped	0
+119994606186	Pipeline Status	failure	3
+119993415383	Instant Release	skipped	0
+119993405678	Check for Changesets	skipped	0
+119993382024	Changelog Fragment Check	skipped	0
+119993335564	Clean Package Install	success	1
+119993335469	cargo outdated	success	1
+119993335453	npm outdated	success	1
+119993335317	Create Changeset PR	skipped	0
+119993335295	Unit Tests (Bun on macos-latest)	failure	3
+119993335254	Dependency Review	skipped	0
+119993335194	Verbose HTTP Logging Test	success	1
+119993335134	zizmor	success	1
+119993334862	actionlint	success	1
+119993334796	Unit Tests (Bun on ubuntu-latest)	success	1
+119993334795	Test (macos-latest)	success	1
+119993334756	Unit Tests (Bun on windows-latest)	success	0
+119993334638	Test (ubuntu-latest)	success	1
+119993334564	Lint and Format Check	success	1
+119993334292	Lint and Format Check	success	1
+119993333837	Audit npm lock	success	1
+119993333556	CodeQL (javascript-typescript)	success	1
+119993333524	CodeQL (actions)	success	1
+119993333398	CodeQL (rust)	success	1
+119993332943	Cargo audit	success	1
+119993332623	Check Links	success	2
+119993332470	Default model availability	success	1

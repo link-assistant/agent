@@ -1,0 +1,29 @@
+[Pipeline Status] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Auto Release] failure : Failed to retrieve token from Cargo registry. Status: 400. Error: No Trusted Publishing config found for repository `link-assistant/agent`.
+[Auto Release] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Build Package] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Pipeline Status] failure : Process completed with exit code 1.
+[Pipeline Status] failure : Pipeline failed. Failing jobs: test
+[Pipeline Status] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Clean Package Install] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[cargo outdated] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[npm outdated] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Unit Tests (Bun on macos-latest)] failure : Process completed with exit code 1.
+[Unit Tests (Bun on macos-latest)] failure error: expect(received).toBe(expected): Expected: 0 | Received: 124 |  |       at <anonymous> (/Users/runner/work/agent/agent/js/tests/run-with-budget-warning.js:80:27)
+[Unit Tests (Bun on macos-latest)] notice : Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times.
+[Verbose HTTP Logging Test] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[zizmor] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[actionlint] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Unit Tests (Bun on ubuntu-latest)] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Test (macos-latest)] notice : Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times.
+[Test (ubuntu-latest)] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Lint and Format Check] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Lint and Format Check] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Audit npm lock] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[CodeQL (javascript-typescript)] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[CodeQL (actions)] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[CodeQL (rust)] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Cargo audit] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Check Links] notice : Summary report available at: https://github.com/link-assistant/agent/actions/runs/39827151734#summary-119993332623
+[Check Links] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+[Default model availability] notice : "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
