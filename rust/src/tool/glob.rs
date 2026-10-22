@@ -10,6 +10,9 @@ use serde_json::{json, Value};
 use super::{context::ToolContext, Tool, ToolResult};
 use crate::error::{AgentError, Result};
 
+/// Maximum number of results, matching the JavaScript glob tool
+const LIMIT: usize = 100;
+
 /// Tool description
 const DESCRIPTION: &str = r#"Fast file pattern matching tool.
 
@@ -106,18 +109,31 @@ impl Tool for GlobTool {
         // Sort by modification time (most recent first)
         matches.sort_by_key(|entry| std::cmp::Reverse(entry.1));
 
+        // Bound the result like the JS tool, so a broad pattern cannot flood
+        // the context
+        let truncated = matches.len() > LIMIT;
+        matches.truncate(LIMIT);
+
         // Format output
         let output: Vec<String> = matches
             .iter()
             .map(|(path, _)| ctx.relative_path(path))
             .collect();
+        let count = output.len();
+        let mut output = output.join("\n");
+        if truncated {
+            output.push_str(
+                "\n\n(Results are truncated. Consider using a more specific path or pattern.)",
+            );
+        }
 
         Ok(ToolResult {
             is_error: false,
             title,
-            output: output.join("\n"),
+            output,
             metadata: json!({
-                "count": output.len(),
+                "count": count,
+                "truncated": truncated,
             }),
             attachments: None,
         })

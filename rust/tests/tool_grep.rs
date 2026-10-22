@@ -186,3 +186,36 @@ fn test_grep_tool_parameters_schema() {
     let schema = tool.parameters_schema();
     assert!(schema["properties"]["pattern"].is_object());
 }
+
+// grep reliability fixes ported from upstream OpenCode (issue #335).
+
+#[tokio::test]
+async fn test_grep_searches_hidden_files() {
+    // upstream #7501: `.github/` and other dotfiles are searched.
+    let temp = TempDir::new().unwrap();
+    fs::create_dir(temp.path().join(".github")).unwrap();
+    fs::write(temp.path().join(".github").join("ci.yml"), "needle: true\n").unwrap();
+    fs::write(temp.path().join(".env.example"), "needle=1\n").unwrap();
+
+    let tool = GrepTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "pattern": "needle" });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("ci.yml"), "{}", result.output);
+    assert!(result.output.contains(".env.example"), "{}", result.output);
+}
+
+#[tokio::test]
+async fn test_grep_skips_git_directory() {
+    let temp = TempDir::new().unwrap();
+    fs::create_dir(temp.path().join(".git")).unwrap();
+    fs::write(temp.path().join(".git").join("config"), "needle\n").unwrap();
+
+    let tool = GrepTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "pattern": "needle" });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(!result.output.contains("config"), "{}", result.output);
+}
