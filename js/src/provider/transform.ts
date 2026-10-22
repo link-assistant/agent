@@ -159,6 +159,27 @@ export namespace ProviderTransform {
     return undefined;
   }
 
+  /**
+   * Catalogue providers whose chat-completions endpoint accepts an unscoped
+   * `prompt_cache_key`, as audited by OpenCode
+   * (packages/core/src/plugin/provider/prompt-cache-key.ts).
+   * @see https://github.com/link-assistant/agent/issues/334
+   */
+  export const PROMPT_CACHE_KEY_PROVIDERS = new Set([
+    'abliteration-ai',
+    'aihubmix',
+    'anyapi',
+    'auriko',
+    'edenai',
+    'jalapeno',
+    'llama',
+    'morph',
+    'snowflake-cortex',
+    'tencent-tokenhub',
+    'upstage',
+    'venice',
+  ]);
+
   export function options(
     providerID: string,
     modelID: string,
@@ -166,6 +187,14 @@ export namespace ProviderTransform {
     sessionID: string
   ): Record<string, any> | undefined {
     const result: Record<string, any> = {};
+
+    if (
+      npm === '@ai-sdk/openai-compatible' &&
+      PROMPT_CACHE_KEY_PROVIDERS.has(providerID)
+    ) {
+      // Unknown openai-compatible options are sent verbatim in the body.
+      result['prompt_cache_key'] = sessionID;
+    }
 
     if (providerID === 'openai') {
       result['promptCacheKey'] = sessionID;

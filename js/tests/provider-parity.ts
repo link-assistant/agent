@@ -4,6 +4,9 @@ import { ExtraProviders } from '../src/provider/extra-providers';
 import { ModelDiscovery } from '../src/provider/model-discovery';
 import { ParityLoaders } from '../src/provider/parity-loaders';
 import { Kilo } from '../src/provider/kilo';
+import { ProviderTransform } from '../src/provider/transform';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { generateText } from 'ai';
 import type { ModelsDev } from '../src/provider/models';
 
 /**
@@ -536,6 +539,59 @@ describe('ParityLoaders (#334)', () => {
       )
     ).toBe('chat:x');
     expect(ParityLoaders.selectByShape(sdk, model('x'), 'x')).toBeUndefined();
+  });
+});
+
+describe('prompt_cache_key providers (#334)', () => {
+  test('only audited openai-compatible providers get the key', () => {
+    const options = (id: string, npm = '@ai-sdk/openai-compatible') =>
+      ProviderTransform.options(id, 'some-model', npm, 'ses_1');
+    expect(options('venice')['prompt_cache_key']).toBe('ses_1');
+    expect(options('snowflake-cortex')['prompt_cache_key']).toBe('ses_1');
+    expect(options('groq')['prompt_cache_key']).toBeUndefined();
+    expect(
+      options('venice', 'venice-ai-sdk-provider')['prompt_cache_key']
+    ).toBeUndefined();
+  });
+
+  test('the key reaches the chat-completions body', async () => {
+    let body: any;
+    const sdk = createOpenAICompatible({
+      name: 'venice',
+      baseURL: 'https://example.invalid/v1',
+      fetch: (async (_url: any, init?: any) => {
+        body = JSON.parse(String(init?.body));
+        return Response.json({
+          id: 'c1',
+          object: 'chat.completion',
+          created: 0,
+          model: 'm',
+          choices: [
+            {
+              index: 0,
+              message: { role: 'assistant', content: 'ok' },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+        });
+      }) as typeof fetch,
+    });
+    await generateText({
+      model: sdk('m'),
+      prompt: 'hi',
+      providerOptions: ProviderTransform.providerOptions(
+        '@ai-sdk/openai-compatible',
+        'venice',
+        ProviderTransform.options(
+          'venice',
+          'm',
+          '@ai-sdk/openai-compatible',
+          'ses_42'
+        )
+      ),
+    });
+    expect(body.prompt_cache_key).toBe('ses_42');
   });
 });
 
