@@ -5,6 +5,7 @@ import {
   getCompactionSafetyMarginFromProcessArgv,
 } from './argv.ts';
 import { Log } from '../util/log.ts';
+import { ExtraProviders } from '../provider/extra-providers.ts';
 import {
   DEFAULT_PROVIDER_ID,
   DEFAULT_MODEL_ID,
@@ -124,7 +125,8 @@ export async function parseModelConfig(
   if (modelArg.includes('/')) {
     // Explicit provider/model format - respect user's choice
     const modelParts = modelArg.split('/');
-    providerID = modelParts[0];
+    // Accept alternative spellings such as `g4f/...` for `gpt4free/...` (#334)
+    providerID = ExtraProviders.canonicalID(modelParts[0]);
     modelID = modelParts.slice(1).join('/');
 
     // Validate that providerID and modelID are not empty
@@ -152,9 +154,10 @@ export async function parseModelConfig(
     const isDefaultModel = !cliModelArg && modelArg === defaultModel;
     try {
       const { Provider } = await import('../provider/provider.ts');
-      const s = await Provider.state();
-      const provider = s.providers[providerID];
-      if (provider && !provider.info.models[modelID]) {
+      // getProvider also enables keyless providers (gpt4free, local servers)
+      // on explicit request; routers among them accept unlisted IDs (#334).
+      const provider = await Provider.getProvider(providerID);
+      if (provider && !(await Provider.hasModel(providerID, modelID))) {
         const liveInfo = await Provider.refreshLiveModelInfo(
           providerID,
           modelID
