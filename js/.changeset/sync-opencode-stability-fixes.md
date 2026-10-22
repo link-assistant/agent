@@ -14,3 +14,23 @@ fix: sync reliability fixes for existing tools from upstream OpenCode (#335)
 - The "modified since read" check compares file mtime and size instead of
   clocks, and treats equivalent paths as one file (upstream #17835, #20367).
 - `edit` works right after `write`, and both return a short confirmation.
+- `read` resolves relative paths against the session directory, caps output
+  at 50 KB and 2000 lines, handles CRLF files, directories and file names
+  with macOS narrow no-break spaces or curly quotes, and samples only 4 KB
+  for the binary check.
+- `grep` keeps matches when some paths are unreadable (rg exit 2), searches
+  hidden files except `.git`, honours aborts, times out after 30 s, and
+  reports invalid regexes and missing paths clearly.
+- `glob` and `ls` no longer hang after their 100-result limit, stop rg on
+  abort, do not follow symlinked directories, and ignore a user ripgrep
+  config.
+- `bash` runs commands in `$SHELL` or bash instead of `/bin/sh`, keeps the
+  end of long output (where errors are), never splits UTF-8 characters,
+  bounds the live metadata preview, frees parser trees, and asks for
+  permission for write redirects in read-only/plan modes.
+- `webfetch`, `websearch` and `codesearch` enforce the 5 MB limit while
+  streaming, time out with a clear message, retry Cloudflare challenges with
+  an honest user agent, accept plain JSON or SSE replies from Exa, and pass
+  `EXA_API_KEY` when set; `webfetch` defaults to markdown.
+- Tools no longer stack a new execute wrapper on every init, and `task`
+  always unsubscribes from child-session events.
