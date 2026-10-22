@@ -35,7 +35,7 @@ This repository contains two implementations of the agent:
 | [JavaScript/Bun](js/README.md) | **Production Ready** | npm             | `bun install -g @link-assistant/agent` |
 | [Rust](rust/README.md)         | Work in Progress     | cargo           | `cargo install link-assistant-agent`   |
 
-Both implementations aim to be fully compatible with [OpenCode](https://github.com/sst/opencode)'s `run --format json` mode.
+Both implementations aim to be fully compatible with [OpenCode](https://github.com/anomalyco/opencode)'s `run --format json` mode.
 
 ### JavaScript/Bun Implementation
 
@@ -116,7 +116,7 @@ While maintaining 100% compatibility with OpenCode's JSON interface, Agent offer
 - **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
 - **Unrestricted Access**: Full file system and command execution access (no sandbox, no restrictions)
 - **Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
-- **Flexible Model Selection**: Supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Formal AI](docs/formal-ai.md), [Claude OAuth](docs/claude-oauth.md), [Groq](docs/groq.md), [OpenRouter](docs/openrouter.md), and more - see [MODELS.md](MODELS.md)
+- **Flexible Model Selection**: Supports every [models.dev](https://models.dev) provider OpenCode supports, OpenCode's subscription logins (Claude, ChatGPT, GitHub Copilot, Google, xAI, GitLab, Azure Entra ID and more), [gpt4free](docs/gpt4free.md), Pollinations, local servers and [Formal AI](docs/formal-ai.md), with models discovered live from each provider - see [MODELS.md](MODELS.md) and [Providers](docs/providers.md)
 - **Public Domain**: Unlicense - use it however you want
 
 ## Quick Start
@@ -240,7 +240,7 @@ See [js/README.md](js/README.md#mcp-model-context-protocol-support) for full MCP
 
 This repository includes official reference implementations as git submodules to provide best-in-class examples:
 
-- **original-opencode** - [OpenCode](https://github.com/sst/opencode) - The original OpenCode implementation we maintain compatibility with
+- **original-opencode** - [OpenCode](https://github.com/anomalyco/opencode) - The original OpenCode implementation we maintain compatibility with
 - **reference-gemini-cookbook** - [Google Gemini Cookbook](https://github.com/google-gemini/cookbook) - Official examples and guides for using the Gemini API
 - **reference-gemini-cli** - [Google Gemini CLI](https://github.com/google-gemini/gemini-cli) - Official AI agent bringing Gemini directly to the terminal
 - **reference-qwen3-coder** - [Qwen3-Coder](https://github.com/QwenLM/Qwen3-Coder) - Official Qwen3 code model from Alibaba Cloud

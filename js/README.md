@@ -24,7 +24,7 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 
 - ✅ **JSON Input/Output**: Compatible with `opencode run --format json`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
-- ✅ **Flexible Model Selection**: Defaults to free Kilo Nemotron 3 Super (Kilo authentication recommended), supports [OpenCode Zen](https://opencode.ai/docs/zen/), [Formal AI](../docs/formal-ai.md), [Claude OAuth](../docs/claude-oauth.md), [Groq](../docs/groq.md), and [OpenRouter](../docs/openrouter.md) providers
+- ✅ **Flexible Model Selection**: Defaults to free Kilo Nemotron 3 Super (Kilo authentication recommended), supports every [models.dev](https://models.dev) provider OpenCode supports ([full list](../docs/providers.md)), OpenCode's subscription logins, [gpt4free](../docs/gpt4free.md), Pollinations, local servers, [Formal AI](../docs/formal-ai.md) and [Claude OAuth](../docs/claude-oauth.md), with [live model discovery](../docs/model-discovery.md)
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
 - ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
 - ✅ **Full Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
@@ -735,7 +735,7 @@ This agent is **exclusively built for Bun** for the following reasons:
 4. **Minimalism**: Single runtime target keeps the codebase simple
 5. **Bun Ecosystem**: Leverages Bun-specific features and optimizations
 
-**Not supporting Node.js or Deno is intentional** to keep the project focused and minimal. If you need Node.js/Deno compatibility, consider using [OpenCode](https://github.com/sst/opencode) instead.
+**Not supporting Node.js or Deno is intentional** to keep the project focused and minimal. If you need Node.js/Deno compatibility, consider using [OpenCode](https://github.com/anomalyco/opencode) instead.
 
 ## Project Structure
 
@@ -753,7 +753,7 @@ js/
 
 ## Architecture
 
-This agent-cli reproduces the core architecture of [OpenCode](https://github.com/sst/opencode)'s `run --format json` command:
+This agent-cli reproduces the core architecture of [OpenCode](https://github.com/anomalyco/opencode)'s `run --format json` command:
 
 - **Streaming JSON Events**: Instead of single responses, outputs real-time event stream
 - **Event Types**: `tool_use`, `text`, `step_start`, `step_finish`, `error`
