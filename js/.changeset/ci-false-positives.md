@@ -33,3 +33,6 @@ fix(ci): remove CI/CD false positives and false negatives (#337)
   each decision. Every workflow now ends in such a gate.
 - Model tests fail at once with the secret's name when `GROQ_API_KEY` is
   missing, and warn when Kilo models run without `KILO_API_KEY`.
+- Refresh the AI SDK packages to their latest patch releases, which the
+  Dependency Freshness check requires, and update `ip-address` to 10.7.4 for
+  GHSA-rxp7-6hxx-x8q5.
