@@ -166,7 +166,67 @@ Tests: `js/tests/read-search-reliability-read.ts`,
 
 ## 6. Session, provider and MCP fixes (report D)
 
-<!-- Filled in once triaged and implemented. -->
+Full report: [`analysis/D-session-provider.md`](analysis/D-session-provider.md).
+These parts exist only in the JS implementation; the Rust port has no session
+loop, provider layer or MCP client yet.
+
+Tests: `js/tests/session-reliability.ts`,
+`js/tests/provider-transform-reliability.ts`, `js/tests/mcp-reliability.ts`
+(with the stdio fixture `js/tests/fixtures/mcp-server.js`).
+
+### 6.1 Session loop, errors and retry
+
+| #   | Defect (before)                                                                                                                                                   | Upstream                    | Fix                                                                                                                 |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 1   | "Prompt is too long", HTTP 413 and mid-stream `context_length_exceeded` ended the session with an `APIError`                                                      | #6480, #12768, #14707       | `ContextOverflowError`; the processor returns `'compact'`, the loop compacts and continues; a second overflow stops |
+| 2   | Stream error objects with a string `code` (`server_error`) were misread, so retryable 5xx were never retried                                                      | #12768, `027d43b5ea`        | Numeric `statusCode` is read first; the string code is kept as the error type                                       |
+| 3   | Finish reason `stop` after tool calls ended the loop before results reached the model                                                                             | #14973, #26178              | `hasToolCalls()` keeps the loop going when the last step has completed tool calls                                   |
+| 16  | An invalid tool call stored the raw string input; Gemini returned 400 on every later turn                                                                         | #21709                      | Non-object input is stored as `{ value }`                                                                           |
+| 17  | Aborted tools lost their start time and could not be told apart from failures; open text was never closed                                                         | #27254, #26178, #21598      | `interrupted: true` marker, start time and partial output kept, open text/reasoning parts finalized                 |
+| 18  | 5xx marked non-retryable, plain-text rate limits, Vertex `RESOURCE_EXHAUSTED`, OpenAI item 404, `ZlibError`                                                       | #10590, #24063, #19104      | Classified as retryable                                                                                             |
+| 19  | API errors showed raw SDK text or whole HTML pages                                                                                                                | `4fd576f3af`, #15407        | `apiErrorMessage()` adds the error message from a JSON body; HTML 401/403 pages become a short explanation          |
+| 20  | A tool call or result that arrived without `tool-input-start` was dropped                                                                                         | #21709                      | `ensureToolCall()` creates the part on demand                                                                       |
+| 21  | `cancel()` rejected queued callers with `undefined`                                                                                                               | `6c9b2c37a5`                | Rejected with a `DOMException` `AbortError`                                                                         |
+| 24  | A retry delay above 2^31−1 ms fired immediately (hot retry loop)                                                                                                  | upstream `retry.ts` `cap()` | Every delay capped at 2 147 483 647 ms                                                                              |
+| 25  | Reasoning tokens were charged twice                                                                                                                               | #21047                      | `output = outputTokens − reasoningTokens`                                                                           |
+| own | `maxOutputTokens` got the provider ID instead of the npm package, so the Anthropic thinking-budget branch never ran                                               | (found here)                | Passes `model.npm`                                                                                                  |
+| own | When `retry-after` exceeded the retry timeout, `process()` left with `break` and returned `undefined`, so the loop started another step with a fresh retry budget | (found here)                | The error takes the normal final-error path and the turn stops                                                      |
+| own | `RetryTimeoutExceededError`, `SocketConnectionError` and `TimeoutError` were missing from the message error union, so saving them threw a `ZodError`              | (found here)                | Added to the union                                                                                                  |
+
+### 6.2 Provider message transforms
+
+| #   | Defect (before)                                                                                      | Upstream                | Fix                                                                                        |
+| --- | ---------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------ |
+| 5   | Lone UTF-16 surrogates (cut emoji) reached the provider: HTTP 400 "invalid Unicode"                  | #25934                  | Replaced with U+FFFD in every text field                                                   |
+| 6   | Empty text/reasoning parts and empty messages went to Anthropic/Bedrock: 400                         | upstream `transform.ts` | Filtered for those providers                                                               |
+| 7   | Signatures and reasoning from another model were replayed (model cascade, summary model): 400        | `021e42c0bb1`           | `toModelMessage(msgs, target)` drops foreign provider metadata and sends reasoning as text |
+| 12  | Signed reasoning with an empty text part lost its block                                              | #21370                  | Sends `" "`                                                                                |
+| 13  | `applyCaching` replaced existing provider options with a shallow spread                              | #10323                  | `mergeDeep`                                                                                |
+| 14  | Bedrock used the wrong cache-point shape                                                             | #11664, #18959          | `cachePoint: { type: 'default' }` at message level                                         |
+| 15  | Moonshot/Kimi rejected schemas with `$ref` siblings or tuple `items`; MCP schemas skipped `schema()` | #24730, #11984          | Schemas sanitized; MCP tools go through `ProviderTransform.schema`                         |
+| 22  | A user message whose parts all converted to nothing became `content: []`                             | #4811                   | Such messages are dropped                                                                  |
+
+### 6.3 MCP client
+
+| #   | Defect (before)                                                                                      | Upstream                     | Fix                                                                                    |
+| --- | ---------------------------------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------- |
+| 4   | A server that never answered `initialize` blocked every session                                      | #6760, #19200                | Connect timeout (`timeout` or 30 s); the transport is closed on failure                |
+| 8   | `tools/list` had no timeout, looped on a repeated cursor, ran sequentially and leaked failed clients | #31442, #13229, `e5abe1e78b` | Per-request timeout, 1000-page cap, repeated-cursor error, parallel listing, `close()` |
+| 9   | Results without `content`, with resources or with only `structuredContent` crashed or were dropped   | #7879, #32244, #57640        | `normalizeResult()`                                                                    |
+| 10  | An invalid URL or an exception during creation removed the server silently                           | #25019, #31595               | `failed` status with the reason                                                        |
+| 11  | A server without the `tools` capability was marked failed                                            | #31271, #55474               | Treated as no tools, still connected                                                   |
+| 23  | Dispose left grandchild processes running                                                            | #15516                       | Descendants found with `pgrep -P` and sent SIGTERM                                     |
+| own | The tool timeout rejected the promise but the MCP request kept running                               | (found here)                 | `callWithTimeout()` aborts the request                                                 |
+| own | `getToolTimeout` split on the first `_`, so servers named `my_server` never matched                  | (found here)                 | Longest configured server prefix wins                                                  |
+| own | `const config = cfg.mcp` shadowed the `config` import, so connect timeouts were `NaN`                | (found while porting #4)     | Renamed to `servers`                                                                   |
+
+### 6.4 Not ported and known remaining issues
+
+- Upstream replays the user message that overflowed once compaction is done.
+  Here the existing compaction flow is kept: the summary covers the request,
+  and a synthetic "Continue if you have next steps" message resumes the turn.
+- When a model overflows, the compaction model cascade does not move on to
+  the next model; the overflow is reported instead.
 
 ## 7. Upstream practices adopted
 
@@ -182,6 +242,15 @@ Tests: `js/tests/read-search-reliability-read.ts`,
 - Round-trips keep the file's bytes: BOM and line endings are preserved, and
   untouched lines are never rewritten.
 - Tools return a short confirmation instead of an empty string.
+- Every external call has a deadline and is cancelled on abort: rg, web
+  requests, MCP connect, `tools/list` and tool calls. A timeout that only
+  rejects the promise is not enough; the request itself is aborted.
+- Loops driven by remote data are bounded (MCP pagination, retry delays).
+- Child processes are cleaned up on every exit path, including grandchildren.
+- Errors are classified by structure first (status code, error code), then by
+  message patterns, and only overflow and transient errors are acted on.
+- Messages sent to a provider are sanitized for what that provider rejects
+  (lone surrogates, empty blocks, foreign signatures).
 
 ## 8. Online research
 
@@ -221,7 +290,30 @@ Tests: `js/tests/read-search-reliability-read.ts`,
 | Line diff for ending restore (Rust) | `similar` (already a dependency)                      | `TextDiff::from_lines` maps unchanged lines back to their raw bytes                      |
 | String similarity                   | `fastest-levenshtein`, `strsim` (Rust)                | Existing in-tree Levenshtein (JS) and a small two-row implementation (Rust)              |
 | Search                              | `ripgrep` (already used)                              | Kept; exit-status and process handling fixed                                             |
+| Deep merge of provider options      | `remeda` `mergeDeep` (already a dependency)           | Used in `applyCaching`, as upstream does                                                 |
+| MCP client timeouts                 | `@ai-sdk/mcp` request options, `AbortSignal.timeout`  | Built-in per-request timeouts and abort signals; no wrapper library                      |
+| Process tree cleanup                | `tree-kill`, `pidtree`                                | `pgrep -P` walk, as upstream #15516 does; no new dependency                              |
+| Bounded response reading            | `raw-body`, `stream-size`                             | A small reader over `ReadableStream` (`util/read-bounded.ts`)                            |
 
 ## 10. Verification
 
-<!-- Filled in with final test numbers. -->
+Run on 2026-10-22 with Bun 1.4.3 on Linux.
+
+| Check                                                                 | Result                               |
+| --------------------------------------------------------------------- | ------------------------------------ |
+| `cd js && bun test --timeout 30000 ./tests/*.js ./tests/*.ts`         | 1150 pass, 4 todo, 0 fail (91 files) |
+| `cd js && npm run check` (eslint, prettier, file size)                | clean                                |
+| `cd rust && cargo fmt --all -- --check`                               | clean                                |
+| `cd rust && cargo clippy --all-targets --all-features -- -D warnings` | clean                                |
+| `cd rust && cargo test`                                               | 479 pass, 0 fail                     |
+
+The regression tests were written first, to reproduce each defect, and the
+fixes were made afterwards. The reproduction scripts in `experiments/issue-335/` show the original
+behaviour without the test harness.
+
+New test files:
+
+- edit/write: `js/tests/edit-write-reliability.ts`, `rust/tests/tool_edit.rs`, `rust/tests/tool_write.rs`
+- read/search: `js/tests/read-search-reliability-read.ts`, `js/tests/read-search-reliability-search.ts`
+- bash/web: `js/tests/bash-web-reliability.ts`
+- session/provider/MCP: `js/tests/session-reliability.ts`, `js/tests/provider-transform-reliability.ts`, `js/tests/mcp-reliability.ts`
