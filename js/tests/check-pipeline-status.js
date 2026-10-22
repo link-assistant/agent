@@ -299,10 +299,11 @@ describe('job-cancel-policy.mjs', () => {
   // a superseded run would fail closed and turn pull requests red.
   for (const file of ['js.yml', 'rust.yml']) {
     test(`every job of ${file} has an evaluable cancel-in-progress`, () => {
+      // Windows checks the workflows out with CRLF line endings.
       const body = readFileSync(
         join(repoRoot, '.github', 'workflows', file),
         'utf8'
-      );
+      ).replaceAll('\r\n', '\n');
       const jobs = Array.from(
         body
           .slice(body.indexOf('\njobs:\n'))
