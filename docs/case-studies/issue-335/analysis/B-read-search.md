@@ -59,7 +59,9 @@ Findings are ordered by severity. "JS" means `js/src`. "Rust" means `rust/src/to
 - **Test:** `Instance.provide({directory: <git repo>/sub})`, write `sub/a.txt` and `<repo>/a.txt` with different contents, then read `a.txt`. Today it returns the root file's contents. It should return `sub`'s.
 - **Rust:** not applicable. `read.rs:106` `ctx.resolve_path` joins `working_directory`.
 
-## 3. HIGH: SVG, BMP, TIFF, ICO and AVIF are sent to the provider as image attachments. PORT (JS + Rust)
+## 3. HIGH: SVG, BMP, TIFF, ICO and AVIF are sent to the provider as image attachments. NOT PORTED (JS + Rust)
+
+- **Status:** NOT PORTED. Deliberate deviation: the fork supports these formats on purpose (86f24ac, maintainer request). Validation from 268aa49 already guards against malformed images.
 
 - **Upstream:** 51e310c9ce (#21114, 2026-05-01) adds `SUPPORTED_IMAGE_MIMES = new Set(["image/jpeg","image/png","image/gif","image/webp"])`. Anything else falls through to the text/binary path. 84a0868e66 (2025-12-09) reads SVG as text.
 - **Ours:** `tool/read.ts:271-297` `isImageFile` includes `.bmp/.tiff/.tif/.svg/.ico/.avif`. `read.ts:106` uses `mime = file.type`. `read.ts:114-122` attaches the data URL. `session/message-v2.ts:747-761` replays the tool attachment as a user `file` part on every later request. Nothing filters mimes further down; the only `image/...` string in the code is in a webfetch Accept header.
@@ -146,10 +148,17 @@ Findings are ordered by severity. "JS" means `js/src`. "Rust" means `rust/src/to
 - **Proof** (`e5-read-misc.ts (b)`): for the real file `Screenshot ... 9.41.07 AM.png` with the model typing a plain space, `exists()` is false, our suggestions are `[]`, and upstream's canonical match finds the file. Pasted macOS screenshot paths always contain U+202F.
 - **Fix:** before throwing not-found, run this:
   ```ts
-  const canonical = (n: string) => n.normalize('NFC').replace(/[  ]/g, ' ').replace(/[‘’]/g, "'");
-  const entries = fs.existsSync(dir) ? fs.readdirSync(dir, { withFileTypes: true }) : [];
-  const hits = entries.filter((e) => e.isFile() && canonical(e.name) === canonical(base));
-  if (hits.length === 1) { filepath = path.join(dir, hits[0].name); /* continue with the normal read */ }
+  const canonical = (n: string) =>
+    n.normalize('NFC').replace(/[  ]/g, ' ').replace(/[‘’]/g, "'");
+  const entries = fs.existsSync(dir)
+    ? fs.readdirSync(dir, { withFileTypes: true })
+    : [];
+  const hits = entries.filter(
+    (e) => e.isFile() && canonical(e.name) === canonical(base)
+  );
+  if (hits.length === 1) {
+    filepath = path.join(dir, hits[0].name); /* continue with the normal read */
+  }
   ```
 - **Test:** create `a b.txt`, then read `a b.txt`. Today it throws `File not found`. After the fix it returns the file's content.
 - **Rust:** `read.rs:110-116`, the same addition before `find_suggestions`.
@@ -205,16 +214,16 @@ Findings are ordered by severity. "JS" means `js/src`. "Rust" means `rust/src/to
 
 ## ALREADY-HAVE (no action)
 
-| Upstream | Bug | Proof in our code |
-|---|---|---|
-| a06f40297b (#22356) grep exact file path | cwd set to a file broke grep on a single file | `grep.ts:45` passes the path positionally. `rg --json --regexp needle fx/ok.txt` found 1 match. |
-| 5af35117db (#5948), grep part | CRLF in match lines | `grep.ts:41` uses `--json`, and `grep.ts:160-162` `stripTrailingLineEnding` uses `/\r?\n$/` |
-| c64d813347 (#38631) / 7affee529b (#38922) truncation notice | results silently truncated | `glob.ts:32-35,52-57` and `grep.ts:108-110,142-147` print `(Results are truncated...)` |
-| 7affee529b, empty pattern | empty regex matched everything | `grep.ts:34-36` `if (!params.pattern) throw new Error('pattern is required')` |
-| b6ccb66610 (#37154) default limit | unbounded default results | `glob.ts:25`, `grep.ts:108` and `ls.ts:35` limit to 100. Rust `glob.rs` has no limit, so add one there. |
-| 8f4b62eb49 (#35337) missing search path | silent empty result | grep: rg exit 2 throws with stderr (`grep.ts:64-66`). glob/ls: `file/ripgrep.ts:236-245` throws ENOENT. Keep this when porting #4 (see the note there). |
-| 9918f389e7 (#23291) magic-byte mime sniff | PNG named `.jpg` sent as image/jpeg | Mostly covered: with the default `verifyImagesAtReadTool=true`, `read.ts:88-103` `validateImageFormat` rejects mismatches with a clear error. Only `LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL=false` sends the wrong mime. Optional: use the sniffed mime instead of throwing. |
-| 38c641a2fc `.fbs` treated as image/video | extension-to-mime false positive | our image detection is an explicit extension list (`read.ts:271-297`) |
+| Upstream                                                    | Bug                                           | Proof in our code                                                                                                                                                                                                                                                                    |
+| ----------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| a06f40297b (#22356) grep exact file path                    | cwd set to a file broke grep on a single file | `grep.ts:45` passes the path positionally. `rg --json --regexp needle fx/ok.txt` found 1 match.                                                                                                                                                                                      |
+| 5af35117db (#5948), grep part                               | CRLF in match lines                           | `grep.ts:41` uses `--json`, and `grep.ts:160-162` `stripTrailingLineEnding` uses `/\r?\n$/`                                                                                                                                                                                          |
+| c64d813347 (#38631) / 7affee529b (#38922) truncation notice | results silently truncated                    | `glob.ts:32-35,52-57` and `grep.ts:108-110,142-147` print `(Results are truncated...)`                                                                                                                                                                                               |
+| 7affee529b, empty pattern                                   | empty regex matched everything                | `grep.ts:34-36` `if (!params.pattern) throw new Error('pattern is required')`                                                                                                                                                                                                        |
+| b6ccb66610 (#37154) default limit                           | unbounded default results                     | `glob.ts:25`, `grep.ts:108` and `ls.ts:35` limit to 100. Rust `glob.rs` has no limit, so add one there.                                                                                                                                                                              |
+| 8f4b62eb49 (#35337) missing search path                     | silent empty result                           | grep: rg exit 2 throws with stderr (`grep.ts:64-66`). glob/ls: `file/ripgrep.ts:236-245` throws ENOENT. Keep this when porting #4 (see the note there).                                                                                                                              |
+| 9918f389e7 (#23291) magic-byte mime sniff                   | PNG named `.jpg` sent as image/jpeg           | Mostly covered: with the default `verifyImagesAtReadTool=true`, `read.ts:88-103` `validateImageFormat` rejects mismatches with a clear error. Only `LINK_ASSISTANT_AGENT_VERIFY_IMAGES_AT_READ_TOOL=false` sends the wrong mime. Optional: use the sniffed mime instead of throwing. |
+| 38c641a2fc `.fbs` treated as image/video                    | extension-to-mime false positive              | our image detection is an explicit extension list (`read.ts:271-297`)                                                                                                                                                                                                                |
 
 ## NOT-APPLICABLE
 
@@ -227,5 +236,6 @@ Findings are ordered by severity. "JS" means `js/src`. "Rust" means `rust/src/to
 
 ## Rust port summary
 
-- **Apply:** #3 (unsupported image mimes, `read.rs:328-333`), #5 (byte cap), #6 (whole-file reads at `read.rs:124,309`), #8 (U+202F recovery), #9 (hidden files at `grep.rs:218`), the #10 directory check (`read.rs:110`), #12, and a 100-result limit with a truncation notice for `glob.rs`, which is unbounded today.
+- **Apply:** #5 (byte cap), #6 (whole-file reads at `read.rs:124,309`), #8 (U+202F recovery), #9 (hidden files at `grep.rs:218`), the #10 directory check (`read.rs:110`), #12, and a 100-result limit with a truncation notice for `glob.rs`, which is unbounded today.
 - **Not needed:** #1, #2, #4, #11 and #13, because of a different architecture or the Rust code already handles them.
+- **Not ported:** #3, a deliberate deviation (see #3).
