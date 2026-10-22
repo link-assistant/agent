@@ -529,6 +529,24 @@ export namespace ModelDiscovery {
 
   const memory = new Map<string, { at: number; result: DiscoveryResult }>();
 
+  const fingerprints = new Map<string, string>();
+
+  /**
+   * Credential fingerprint for cache file names, so two accounts never share
+   * a listing. scrypt (memoized) keeps the key unrecoverable from the name.
+   */
+  function fingerprint(secret: string) {
+    if (!secret) return '';
+    let value = fingerprints.get(secret);
+    if (!value) {
+      value = crypto
+        .scryptSync(secret, 'link-assistant-agent/model-discovery', 16)
+        .toString('hex');
+      fingerprints.set(secret, value);
+    }
+    return value;
+  }
+
   function cacheKey(providerID: string, request: ListingRequest) {
     const secret =
       request.headers['authorization'] ??
@@ -538,7 +556,7 @@ export namespace ModelDiscovery {
       '';
     return crypto
       .createHash('sha256')
-      .update(`${providerID}\n${request.url}\n${secret}`)
+      .update(`${providerID}\n${request.url}\n${fingerprint(secret)}`)
       .digest('hex')
       .slice(0, 24);
   }

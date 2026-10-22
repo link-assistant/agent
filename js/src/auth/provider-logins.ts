@@ -414,6 +414,7 @@ export namespace ProviderLogins {
   /** The redirect URI registered for the client is fixed to this port. */
   export const DIGITALOCEAN_CALLBACK_PORT = 1456;
   const CALLBACK_PATH = '/auth/callback';
+  // Also written literally in the bootstrap page script below.
   const TOKEN_PATH = '/auth/token';
 
   /**
@@ -421,7 +422,7 @@ export namespace ProviderLogins {
    * fragment, so a small page posts it back to the loopback server.
    */
   export function digitalOceanBootstrapPage() {
-    const script = `var p=new URLSearchParams(location.hash.slice(1));var b={};p.forEach(function(v,k){b[k]=v});new URLSearchParams(location.search).forEach(function(v,k){if(!(k in b))b[k]=v});fetch(${JSON.stringify(TOKEN_PATH)},{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(function(r){return r.json()}).then(function(j){document.getElementById('h').textContent=j.ok?'Authorization successful':'Authorization failed';document.getElementById('m').textContent=j.ok?'You can close this window.':(j.error||'')}).catch(function(e){document.getElementById('m').textContent=String(e)})`;
+    const script = `var p=new URLSearchParams(location.hash.slice(1));var b={};p.forEach(function(v,k){b[k]=v});new URLSearchParams(location.search).forEach(function(v,k){if(!(k in b))b[k]=v});fetch('/auth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(function(r){return r.json()}).then(function(j){document.getElementById('h').textContent=j.ok?'Authorization successful':'Authorization failed';document.getElementById('m').textContent=j.ok?'You can close this window.':(j.error||'')}).catch(function(e){document.getElementById('m').textContent=String(e)})`;
     return page(
       'Finishing sign-in',
       'Completing your DigitalOcean authorization.',

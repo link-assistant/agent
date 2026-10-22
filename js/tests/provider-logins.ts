@@ -293,7 +293,7 @@ describe('DigitalOcean login', () => {
   test('bootstrap page posts the fragment to the token endpoint', () => {
     const page = ProviderLogins.digitalOceanBootstrapPage();
     expect(page).toContain('location.hash');
-    expect(page).toContain('"/auth/token"');
+    expect(page).toContain("fetch('/auth/token'");
   });
 
   test('browser flow: fragment posted to the loopback server', async () => {

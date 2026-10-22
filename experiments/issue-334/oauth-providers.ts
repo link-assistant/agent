@@ -64,6 +64,30 @@ globalThis.fetch = (async (input: any, init?: any) => {
   return realFetch(input, init);
 }) as typeof fetch;
 
+/**
+ * Report credentials only as the mock values issued above, so the RESULT
+ * line never prints a real secret if the probe is pointed at a real store.
+ */
+const MOCK_CREDENTIALS = [
+  'old-xai-access',
+  'xai-refresh',
+  'new-xai-access',
+  'xai-refresh-2',
+  'do-access',
+  'poe-key',
+  'old-gitlab-access',
+  'gitlab-refresh',
+  'new-gitlab-access',
+  'gitlab-refresh-2',
+];
+function mock(value: unknown): string | null {
+  if (value === undefined || value === null || value === '') return null;
+  return (
+    MOCK_CREDENTIALS.find((known) => known === value) ??
+    '<unexpected credential>'
+  );
+}
+
 const { Instance } = await import('../../js/src/project/instance');
 const { Provider } = await import('../../js/src/provider/provider');
 
@@ -75,13 +99,13 @@ await Instance.provide({
     for (const id of ['xai', 'digitalocean', 'poe']) {
       const provider = s.providers[id];
       result[id] = provider
-        ? { source: provider.source, apiKey: provider.options.apiKey }
+        ? { source: provider.source, apiKey: mock(provider.options.apiKey) }
         : null;
     }
     const gitlab = s.providers['gitlab'];
     result.gitlab = gitlab
       ? {
-          apiKey: gitlab.options.apiKey,
+          apiKey: mock(gitlab.options.apiKey),
           instanceUrl: gitlab.options.instanceUrl,
         }
       : null;
@@ -90,13 +114,13 @@ await Instance.provide({
 result.refreshRequests = refreshRequests;
 const stored = JSON.parse(await fs.readFile(authFile, 'utf8'));
 result.storedXai = {
-  access: stored.xai.access,
-  refresh: stored.xai.refresh,
+  access: mock(stored.xai.access),
+  refresh: mock(stored.xai.refresh),
   fresh: stored.xai.expires > Date.now(),
 };
 result.storedGitlab = {
-  access: stored.gitlab.access,
-  refresh: stored.gitlab.refresh,
+  access: mock(stored.gitlab.access),
+  refresh: mock(stored.gitlab.refresh),
   enterpriseUrl: stored.gitlab.enterpriseUrl,
 };
 console.log(`RESULT ${JSON.stringify(result)}`);

@@ -272,6 +272,9 @@ export namespace ParityLoaders {
    * credentials. Add an Application Default Credentials bearer token to
    * requests for `*aiplatform.googleapis.com` that carry no real credential.
    */
+  /** `aiplatform.googleapis.com` and regional `{location}-aiplatform...`. */
+  const VERTEX_HOST = /^(?:[a-z0-9-]+-)?aiplatform\.googleapis\.com$/i;
+
   export function vertexFetch(
     inner: typeof fetch = fetch,
     token: () => Promise<string | undefined> = vertexAccessToken
@@ -283,7 +286,7 @@ export namespace ParityLoaders {
           : input instanceof URL
             ? input.href
             : input.url;
-      if (!new URL(url).host.endsWith('aiplatform.googleapis.com')) {
+      if (!VERTEX_HOST.test(new URL(url).hostname)) {
         return inner(input, init);
       }
       const headers = new Headers(init?.headers);
