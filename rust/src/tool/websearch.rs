@@ -7,13 +7,15 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
+use super::webfetch::read_body_bounded;
 use super::{context::ToolContext, Tool, ToolResult};
 use crate::error::{AgentError, Result};
 
-const API_BASE_URL: &str = "https://mcp.exa.ai";
-const API_ENDPOINT: &str = "/mcp";
+/// Anonymous Exa MCP endpoint, shared with the codesearch tool.
+pub const EXA_MCP_URL: &str = "https://mcp.exa.ai/mcp";
 const DEFAULT_NUM_RESULTS: u32 = 8;
 const SEARCH_TIMEOUT_SECS: u64 = 25;
+const MAX_RESPONSE_SIZE: usize = 5 * 1024 * 1024;
 
 /// Tool description
 const DESCRIPTION: &str = r#"Searches the web using the Exa search API.
@@ -22,7 +24,18 @@ Usage:
 - Provide a natural language search query
 - Optionally specify number of results (default: 8)
 - Optionally specify live crawl mode ('fallback' or 'preferred')
-- Optionally specify search type ('auto', 'fast', or 'deep')"#;
+- Optionally specify search type ('auto', 'fast', or 'deep')
+- The current year is {{year}}. You MUST use this year when searching for recent information or current events
+- Example: If the current year is {{year}} and the user asks for "latest AI news", search for "AI news {{year}}", not last year's news"#;
+
+/// Tells the model the current year so "latest" searches are not pinned to
+/// its training cutoff (upstream websearch.txt `{{year}}`).
+fn description_with_year() -> &'static str {
+    static DESCRIPTION_WITH_YEAR: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    DESCRIPTION_WITH_YEAR.get_or_init(|| {
+        DESCRIPTION.replace("{{year}}", &chrono::Utc::now().format("%Y").to_string())
+    })
+}
 
 /// Parameters for the websearch tool
 #[derive(Debug, Deserialize)]
@@ -71,22 +84,87 @@ struct McpSearchArguments {
     context_max_characters: Option<u32>,
 }
 
-#[derive(Debug, Deserialize)]
-struct McpSearchResponse {
-    result: McpSearchResult,
+/// Exa MCP endpoint. The anonymous endpoint is rate-limited; a non-empty
+/// EXA_API_KEY lifts the limit (upstream fde3d9133b, #16362).
+pub fn exa_mcp_url() -> String {
+    exa_mcp_url_for(std::env::var("EXA_API_KEY").ok().as_deref())
 }
 
-#[derive(Debug, Deserialize)]
-struct McpSearchResult {
-    content: Vec<McpContent>,
+/// [`exa_mcp_url`] for an explicit key.
+pub fn exa_mcp_url_for(key: Option<&str>) -> String {
+    match key.filter(|key| !key.is_empty()) {
+        Some(key) => reqwest::Url::parse_with_params(EXA_MCP_URL, &[("exaApiKey", key)])
+            .map(|url| url.to_string())
+            .unwrap_or_else(|_| EXA_MCP_URL.to_string()),
+        None => EXA_MCP_URL.to_string(),
+    }
 }
 
-#[derive(Debug, Deserialize)]
-struct McpContent {
-    #[serde(rename = "type")]
-    #[allow(dead_code)]
-    content_type: String,
-    text: String,
+/// First text content of an Exa MCP reply, which is either SSE `data:`
+/// lines or a plain JSON body.
+pub fn parse_exa_response(text: &str) -> Option<String> {
+    let first = |value: Value| {
+        value["result"]["content"][0]["text"]
+            .as_str()
+            .map(str::to_string)
+    };
+    for line in text.lines() {
+        if let Some(data) = line.strip_prefix("data:") {
+            if let Ok(value) = serde_json::from_str::<Value>(data.trim()) {
+                if let Some(text) = first(value) {
+                    return Some(text);
+                }
+            }
+        }
+    }
+    serde_json::from_str::<Value>(text.trim())
+        .ok()
+        .and_then(first)
+}
+
+/// POST a JSON-RPC request to an Exa MCP endpoint. The client timeout also
+/// covers the body, and the body is bounded (upstream 69f1ec22e3, #33259).
+pub async fn call_exa(
+    url: &str,
+    request: &impl Serialize,
+    timeout_secs: u64,
+    tool: &str,
+    label: &str,
+) -> Result<Option<String>> {
+    let client = reqwest::Client::builder()
+        .timeout(tokio::time::Duration::from_secs(timeout_secs))
+        .build()
+        .map_err(|e| AgentError::tool_execution(tool, e.to_string()))?;
+
+    let response = client
+        .post(url)
+        .header("accept", "application/json, text/event-stream")
+        .header("content-type", "application/json")
+        .json(request)
+        .send()
+        .await
+        .map_err(|e| {
+            if e.is_timeout() {
+                AgentError::tool_execution(tool, format!("{} request timed out", label))
+            } else {
+                AgentError::tool_execution(tool, e.to_string())
+            }
+        })?;
+
+    let status = response.status();
+    let body = read_body_bounded(response, MAX_RESPONSE_SIZE)
+        .await
+        .map_err(|e| AgentError::tool_execution(tool, format!("{} error: {}", label, e)))?;
+    let text = String::from_utf8_lossy(&body);
+
+    if !status.is_success() {
+        return Err(AgentError::tool_execution(
+            tool,
+            format!("{} error ({}): {}", label, status, text),
+        ));
+    }
+
+    Ok(parse_exa_response(&text))
 }
 
 /// WebSearch tool implementation
@@ -99,7 +177,7 @@ impl Tool for WebSearchTool {
     }
 
     fn description(&self) -> &'static str {
-        DESCRIPTION
+        description_with_year()
     }
 
     fn parameters_schema(&self) -> Value {
@@ -153,55 +231,23 @@ impl Tool for WebSearchTool {
             },
         };
 
-        let client = reqwest::Client::builder()
-            .timeout(tokio::time::Duration::from_secs(SEARCH_TIMEOUT_SECS))
-            .build()
-            .map_err(|e| AgentError::tool_execution("websearch", e.to_string()))?;
+        let output = call_exa(
+            &exa_mcp_url(),
+            &search_request,
+            SEARCH_TIMEOUT_SECS,
+            "websearch",
+            "Search",
+        )
+        .await?;
 
-        let response = client
-            .post(format!("{}{}", API_BASE_URL, API_ENDPOINT))
-            .header("accept", "application/json, text/event-stream")
-            .header("content-type", "application/json")
-            .json(&search_request)
-            .send()
-            .await
-            .map_err(|e| {
-                if e.is_timeout() {
-                    AgentError::tool_execution("websearch", "Search request timed out")
-                } else {
-                    AgentError::tool_execution("websearch", e.to_string())
-                }
-            })?;
-
-        if !response.status().is_success() {
-            let status = response.status();
-            let error_text = response.text().await.unwrap_or_default();
-            return Err(AgentError::tool_execution(
-                "websearch",
-                format!("Search error ({}): {}", status, error_text),
-            ));
-        }
-
-        let response_text = response
-            .text()
-            .await
-            .map_err(|e| AgentError::tool_execution("websearch", e.to_string()))?;
-
-        // Parse SSE response (same as JS implementation)
-        for line in response_text.lines() {
-            if let Some(data) = line.strip_prefix("data: ") {
-                if let Ok(parsed) = serde_json::from_str::<McpSearchResponse>(data) {
-                    if let Some(content) = parsed.result.content.first() {
-                        return Ok(ToolResult {
-                            is_error: false,
-                            title: format!("Web search: {}", params.query),
-                            output: content.text.clone(),
-                            metadata: json!({}),
-                            attachments: None,
-                        });
-                    }
-                }
-            }
+        if let Some(output) = output {
+            return Ok(ToolResult {
+                is_error: false,
+                title: format!("Web search: {}", params.query),
+                output,
+                metadata: json!({}),
+                attachments: None,
+            });
         }
 
         Ok(ToolResult {
