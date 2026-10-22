@@ -284,104 +284,20 @@ jobs:
           # requiring extra approval for unattributed changes blocks it.
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Read crate name/version from the [package] section only. A plain
-      # `grep -Po '(?<=^name = ")'` also matches every [lib]/[[bin]]/[[test]]
-      # section, which produced a malformed crates.io URL and failed this job
-      # with curl exit code 3 (issue #287).
-      - name: Read crate metadata
-        id: crate
-        run: node scripts/rust-package-info.mjs
-
-      - name: Recover missing GitHub release for current version
-        id: recover
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          CURRENT_VERSION="${{ steps.crate.outputs.version }}"
-          TAG_EXISTS=false
-          RELEASE_EXISTS=false
-
-          if git rev-parse "rust-v$CURRENT_VERSION" >/dev/null 2>&1; then
-            TAG_EXISTS=true
-          fi
-
-          if gh api "repos/${{ github.repository }}/releases/tags/rust-v$CURRENT_VERSION" --silent 2>/dev/null; then
-            RELEASE_EXISTS=true
-          fi
-
-          if [ "$TAG_EXISTS" = "true" ] && [ "$RELEASE_EXISTS" = "false" ]; then
-            echo "Recovering: tag rust-v$CURRENT_VERSION exists but GitHub release is missing"
-            node scripts/create-github-release.mjs \
-              --release-version "$CURRENT_VERSION" \
-              --repository "${{ github.repository }}" \
-              --prefix "rust-"
-            node scripts/format-github-release.mjs \
-              --release-version "$CURRENT_VERSION" \
-              --repository "${{ github.repository }}" \
-              --commit-sha "$(git rev-list -1 "rust-v$CURRENT_VERSION")" \
-              --prefix "rust-"
-            echo "recovered=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "No recovery needed (tag=$TAG_EXISTS, release=$RELEASE_EXISTS)"
-            echo "recovered=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Determine bump type from changelog fragments
         id: bump_type
         run: node scripts/rust-get-bump-type.mjs
 
+      # Any missing part of the current release (tag, crates.io version,
+      # GitHub release) sends the job through publish and release, which skip
+      # what already exists. An unreachable crates.io fails the job instead of
+      # reading as "not published" (issue #337).
       - name: Check if version already released or no fragments
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          CURRENT_VERSION="${{ steps.crate.outputs.version }}"
-          CRATE_NAME="${{ steps.crate.outputs.name }}"
-
-          # Check if version is published on crates.io (source of truth for publish status).
-          # A network hiccup must not fail the job, so curl retries and its exit
-          # status is tolerated; an unreachable registry simply reads as "not published".
-          HTTP_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
-            --retry 3 --retry-delay 2 --retry-all-errors --max-time 30 \
-            -A "link-assistant-agent-ci" \
-            "https://crates.io/api/v1/crates/$CRATE_NAME/$CURRENT_VERSION" || echo "000")
-          echo "crates.io HTTP status: $HTTP_STATUS"
-          CRATES_PUBLISHED=false
-          if [ "$HTTP_STATUS" = "200" ]; then
-            CRATES_PUBLISHED=true
-          fi
-
-          TAG_EXISTS=false
-          if git rev-parse "rust-v$CURRENT_VERSION" >/dev/null 2>&1; then
-            TAG_EXISTS=true
-          fi
-
-          RELEASE_EXISTS=false
-          if gh api "repos/${{ github.repository }}/releases/tags/rust-v$CURRENT_VERSION" --silent 2>/dev/null; then
-            RELEASE_EXISTS=true
-          fi
-
-          echo "Tag exists: $TAG_EXISTS, Release exists: $RELEASE_EXISTS, Crates.io published: $CRATES_PUBLISHED"
-
-          if [ "${{ steps.bump_type.outputs.has_fragments }}" = "true" ]; then
-            echo "Found changelog fragments, proceeding with release"
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "skip_bump=false" >> "$GITHUB_OUTPUT"
-          elif [ "$TAG_EXISTS" = "true" ] && [ "$RELEASE_EXISTS" = "true" ] && [ "$CRATES_PUBLISHED" = "true" ]; then
-            echo "No changelog fragments and rust-v$CURRENT_VERSION fully released (tag + GitHub release + crates.io)"
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-          elif [ "$TAG_EXISTS" = "true" ] && [ "$RELEASE_EXISTS" = "false" ]; then
-            echo "Tag exists but GitHub release missing for rust-v$CURRENT_VERSION — recovering"
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "skip_bump=true" >> "$GITHUB_OUTPUT"
-          elif [ "$TAG_EXISTS" = "false" ]; then
-            echo "No changelog fragments but rust-v$CURRENT_VERSION not yet tagged"
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "skip_bump=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Version rust-v$CURRENT_VERSION appears fully released"
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-          fi
+          HAS_FRAGMENTS: ${{ steps.bump_type.outputs.has_fragments }}
+        run: node scripts/rust-release-state.mjs --repository "${{ github.repository }}"
 
       - name: Collect changelog and bump version
         id: version
