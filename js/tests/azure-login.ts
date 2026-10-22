@@ -244,6 +244,12 @@ describe('stored Azure CLI login reaches the provider registry', () => {
           'echo \'{"accessToken":"entra-token","expires_on":4102444800}\'\n',
         { mode: 0o755 }
       );
+      // Windows runs the batch twin, as it runs the real `az.cmd`.
+      await fs.writeFile(
+        path.join(bin, 'az.cmd'),
+        '@echo off\r\nif not "%1 %2"=="account get-access-token" exit /b 2\r\n' +
+          'echo {"accessToken":"entra-token","expires_on":4102444800}\r\n'
+      );
       const proc = Bun.spawn(
         ['bun', '../experiments/issue-334/azure-entra.ts'],
         {
@@ -258,15 +264,18 @@ describe('stored Azure CLI login reaches the provider registry', () => {
           stderr: 'pipe',
         }
       );
-      const output = await new Response(proc.stdout).text();
-      await proc.exited;
+      const [output, stderr] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ]);
       const line = output.split('\n').find((l) => l.startsWith('RESULT '));
-      expect(line).toBeDefined();
+      if (!line) throw new Error(`probe failed: ${output}\n${stderr}`);
       const result = JSON.parse(line!.slice('RESULT '.length));
       expect(result.azure).toEqual({
         source: 'custom',
         resourceName: 'my-models',
-        apiKey: AzureLogin.PLACEHOLDER_KEY,
+        placeholderKey: true,
         hasFetch: true,
       });
       expect(result.discovery).toEqual({

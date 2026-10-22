@@ -41,7 +41,7 @@ async function run(...args: string[]) {
     new Response(proc.stderr).text(),
     proc.exited,
   ]);
-  return { code, lines: stdout.trim().split('\n').filter(Boolean), stderr };
+  return { code, lines: stdout.trim().split(/\r?\n/).filter(Boolean), stderr };
 }
 
 const result = {

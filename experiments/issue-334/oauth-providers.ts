@@ -7,9 +7,14 @@
 // Prints one `RESULT <json>` line.
 import path from 'path';
 import fs from 'fs/promises';
+import os from 'os';
 
 const dataHome = process.env.XDG_DATA_HOME;
-if (!dataHome || !dataHome.includes('tmp')) {
+// os.tmpdir() is /var/folders/... on macOS and ...\Temp on Windows.
+if (
+  !dataHome ||
+  !path.resolve(dataHome).startsWith(path.resolve(os.tmpdir()) + path.sep)
+) {
   throw new Error('set XDG_DATA_HOME to a temporary directory');
 }
 const authFile = path.join(dataHome, 'link-assistant-agent', 'auth.json');
@@ -65,27 +70,11 @@ globalThis.fetch = (async (input: any, init?: any) => {
 }) as typeof fetch;
 
 /**
- * Report credentials only as the mock values issued above, so the RESULT
- * line never prints a real secret if the probe is pointed at a real store.
+ * Credentials are reported only as whether they equal the expected mock
+ * value, so the RESULT line never prints a secret.
  */
-const MOCK_CREDENTIALS = [
-  'old-xai-access',
-  'xai-refresh',
-  'new-xai-access',
-  'xai-refresh-2',
-  'do-access',
-  'poe-key',
-  'old-gitlab-access',
-  'gitlab-refresh',
-  'new-gitlab-access',
-  'gitlab-refresh-2',
-];
-function mock(value: unknown): string | null {
-  if (value === undefined || value === null || value === '') return null;
-  return (
-    MOCK_CREDENTIALS.find((known) => known === value) ??
-    '<unexpected credential>'
-  );
+function is(value: unknown, expected: string): boolean {
+  return value === expected;
 }
 
 const { Instance } = await import('../../js/src/project/instance');
@@ -96,16 +85,21 @@ await Instance.provide({
   directory: process.cwd(),
   fn: async () => {
     const s = await Provider.state();
-    for (const id of ['xai', 'digitalocean', 'poe']) {
+    const keys: Record<string, string> = {
+      xai: 'new-xai-access',
+      digitalocean: 'do-access',
+      poe: 'poe-key',
+    };
+    for (const [id, key] of Object.entries(keys)) {
       const provider = s.providers[id];
       result[id] = provider
-        ? { source: provider.source, apiKey: mock(provider.options.apiKey) }
+        ? { source: provider.source, apiKey: is(provider.options.apiKey, key) }
         : null;
     }
     const gitlab = s.providers['gitlab'];
     result.gitlab = gitlab
       ? {
-          apiKey: mock(gitlab.options.apiKey),
+          apiKey: is(gitlab.options.apiKey, 'new-gitlab-access'),
           instanceUrl: gitlab.options.instanceUrl,
         }
       : null;
@@ -114,13 +108,13 @@ await Instance.provide({
 result.refreshRequests = refreshRequests;
 const stored = JSON.parse(await fs.readFile(authFile, 'utf8'));
 result.storedXai = {
-  access: mock(stored.xai.access),
-  refresh: mock(stored.xai.refresh),
+  access: is(stored.xai.access, 'new-xai-access'),
+  refresh: is(stored.xai.refresh, 'xai-refresh-2'),
   fresh: stored.xai.expires > Date.now(),
 };
 result.storedGitlab = {
-  access: mock(stored.gitlab.access),
-  refresh: mock(stored.gitlab.refresh),
+  access: is(stored.gitlab.access, 'new-gitlab-access'),
+  refresh: is(stored.gitlab.refresh, 'gitlab-refresh-2'),
   enterpriseUrl: stored.gitlab.enterpriseUrl,
 };
 console.log(`RESULT ${JSON.stringify(result)}`);

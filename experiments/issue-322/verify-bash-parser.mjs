@@ -73,12 +73,16 @@ try {
       assert.doesNotMatch(installed.stderr, /incorrect peer dependency/);
       assert.equal(peers.status, 0, 'the pinned package must have valid peers');
     } else {
-      assert.ok(
-        installed.stderr.includes(
-          `incorrect peer dependency "web-tree-sitter@${version}"`
-        ),
-        'the newer runtime must reproduce the OpenTUI peer warning'
-      );
+      // Bun up to 1.4.3 warns about the peer; 1.4.4 installs silently, so
+      // `npm ls` is the check that holds on every Bun release.
+      if (/incorrect peer dependency/.test(installed.stderr)) {
+        assert.ok(
+          installed.stderr.includes(
+            `incorrect peer dependency "web-tree-sitter@${version}"`
+          ),
+          'the peer warning must name the newer runtime'
+        );
+      }
       assert.notEqual(peers.status, 0, 'OpenTUI still requires the older peer');
       assert.match(peers.stderr, /invalid: web-tree-sitter@/);
     }

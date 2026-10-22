@@ -9,9 +9,14 @@
 // Prints one `RESULT <json>` line.
 import path from 'path';
 import fs from 'fs/promises';
+import os from 'os';
 
 const dataHome = process.env.XDG_DATA_HOME;
-if (!dataHome || !dataHome.includes('tmp')) {
+// os.tmpdir() is /var/folders/... on macOS and ...\Temp on Windows.
+if (
+  !dataHome ||
+  !path.resolve(dataHome).startsWith(path.resolve(os.tmpdir()) + path.sep)
+) {
   throw new Error('set XDG_DATA_HOME to a temporary directory');
 }
 delete process.env.AZURE_API_KEY;
@@ -74,7 +79,8 @@ await Instance.provide({
       ? {
           source: azure.source,
           resourceName: azure.options.resourceName,
-          apiKey: azure.options.apiKey,
+          // Only whether it is the placeholder; the key itself is not printed.
+          placeholderKey: azure.options.apiKey === 'azure-entra-id',
           hasFetch: typeof azure.options.fetch === 'function',
         }
       : null;

@@ -518,30 +518,30 @@ describe('stored subscription logins reach the provider registry', () => {
           stderr: 'pipe',
         }
       );
-      const output = await new Response(proc.stdout).text();
-      await proc.exited;
+      const [output, stderr] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ]);
       const line = output.split('\n').find((l) => l.startsWith('RESULT '));
-      expect(line).toBeDefined();
+      if (!line) throw new Error(`probe failed: ${output}\n${stderr}`);
       const result = JSON.parse(line!.slice('RESULT '.length));
-      expect(result.xai).toEqual({ source: 'api', apiKey: 'new-xai-access' });
-      expect(result.digitalocean).toEqual({
-        source: 'api',
-        apiKey: 'do-access',
-      });
-      expect(result.poe).toEqual({ source: 'api', apiKey: 'poe-key' });
+      expect(result.xai).toEqual({ source: 'api', apiKey: true });
+      expect(result.digitalocean).toEqual({ source: 'api', apiKey: true });
+      expect(result.poe).toEqual({ source: 'api', apiKey: true });
       expect(result.gitlab).toEqual({
-        apiKey: 'new-gitlab-access',
+        apiKey: true,
         instanceUrl: 'https://gitlab.example.com/root',
       });
       expect(result.storedGitlab).toEqual({
-        access: 'new-gitlab-access',
-        refresh: 'gitlab-refresh-2',
+        access: true,
+        refresh: true,
         enterpriseUrl: 'https://gitlab.example.com/root',
       });
       expect(result.refreshRequests).toHaveLength(2);
       expect(result.storedXai).toEqual({
-        access: 'new-xai-access',
-        refresh: 'xai-refresh-2',
+        access: true,
+        refresh: true,
         fresh: true,
       });
     } finally {
