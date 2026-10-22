@@ -35,6 +35,7 @@ import {
   isCrateVersionPublished,
 } from '../../scripts/crates-registry.mjs';
 import { isNonRetryableFailure } from '../../scripts/publish-failure-classifier.mjs';
+import { pushWithRebaseRetry } from '../../scripts/push-with-rebase-retry.mjs';
 import {
   decideRustRelease,
   readCratePublished,
@@ -835,5 +836,39 @@ describe('Rust release state (#337)', () => {
     await expect(
       readCratePublished('demo', '1.0.0', { lookup, delayMs: 0 })
     ).rejects.toThrow('Cannot tell whether demo@1.0.0 is on crates.io');
+  });
+});
+
+describe('pushWithRebaseRetry (#337)', () => {
+  test('rebases and pushes again when main moved', async () => {
+    const calls = [];
+    let pushes = 0;
+    const attempt = await pushWithRebaseRetry({
+      push: async () => {
+        calls.push('push');
+        if (++pushes === 1) {
+          throw new Error('rejected: fetch first');
+        }
+      },
+      pullRebase: async () => calls.push('rebase'),
+      log: () => {},
+    });
+    expect(attempt).toBe(2);
+    expect(calls).toEqual(['push', 'rebase', 'push']);
+  });
+
+  test('gives up after the last attempt', async () => {
+    let rebases = 0;
+    await expect(
+      pushWithRebaseRetry({
+        push: async () => {
+          throw new Error('rejected');
+        },
+        pullRebase: async () => rebases++,
+        attempts: 3,
+        log: () => {},
+      })
+    ).rejects.toThrow('rejected');
+    expect(rebases).toBe(2);
   });
 });

@@ -21,6 +21,7 @@ import {
   needsCd,
   parseJsRootConfig,
 } from './js-paths.mjs';
+import { pushWithRebaseRetry } from './push-with-rebase-retry.mjs';
 import { isEarlierAttemptRelease } from './release-rerun.mjs';
 
 // Load dependencies through the shared use-m loader, which normalizes the
@@ -263,8 +264,11 @@ async function main() {
       const escapedMessage = commitMessage.replace(/"/g, '\\"');
       await $`git commit -m "${escapedMessage}"`;
 
-      // Push directly to main
-      await $`git push origin main`;
+      // Push directly to main, rebasing when another merge landed first
+      await pushWithRebaseRetry({
+        push: () => $`git push origin main`,
+        pullRebase: () => $`git pull --rebase origin main`,
+      });
 
       console.log('\u2705 Version bump committed and pushed to main');
       setOutput('version_committed', 'true');
