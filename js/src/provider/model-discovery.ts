@@ -44,6 +44,8 @@ export namespace ModelDiscovery {
     free?: boolean;
     cost?: { input: number; output: number };
     releaseDate?: string;
+    /** Alternative IDs the provider accepts for the same model (Pollinations). */
+    aliases?: string[];
   }
 
   export interface ListingRequest {
@@ -338,6 +340,14 @@ export namespace ModelDiscovery {
       free,
       cost: free ? { input: 0, output: 0 } : cost,
       releaseDate: date(item.created ?? item.created_at),
+      ...(Array.isArray(item.aliases) && item.aliases.length
+        ? {
+            aliases: item.aliases.filter(
+              (alias: unknown): alias is string =>
+                typeof alias === 'string' && alias.length > 0
+            ),
+          }
+        : {}),
     };
   }
 
@@ -598,9 +608,11 @@ export namespace ModelDiscovery {
     modelID: string
   ): DiscoveredModel | undefined {
     const wanted = modelID.replace(/^models\//, '');
+    const lower = wanted.toLowerCase();
     return (
       models.find((m) => m.id === wanted) ??
-      models.find((m) => m.id.toLowerCase() === wanted.toLowerCase())
+      models.find((m) => m.id.toLowerCase() === lower) ??
+      models.find((m) => m.aliases?.some((a) => a.toLowerCase() === lower))
     );
   }
 }
