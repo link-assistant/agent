@@ -633,6 +633,53 @@ describe('processor context overflow (#335 item 1)', () => {
   });
 });
 
+describe('retry-after beyond the retry timeout (#335)', () => {
+  // Before: the processor left its retry loop with `break`, skipped the
+  // cleanup and returned undefined. The prompt loop only stops on 'stop', so
+  // it started another step with a fresh retry budget.
+  test('stops the turn with RetryTimeoutExceededError', async () => {
+    await withSession(async (sessionID) => {
+      const { result, message } = await runProcessor(sessionID, [], {
+        fail: callError({
+          message: 'Too Many Requests',
+          statusCode: 429,
+          isRetryable: true,
+          responseHeaders: {
+            'retry-after': String(config.retryTimeout * 10),
+          },
+        }),
+      });
+      expect(result).toBe('stop');
+      expect(message.error?.name).toBe('RetryTimeoutExceededError');
+      expect(message.time.completed).toBeNumber();
+      expect(SessionStatus.get(sessionID).type).not.toBe('retry');
+    });
+  });
+
+  // Retry-only errors become the message error once their retries run out,
+  // so the message schema has to accept them.
+  test.each([
+    new MessageV2.SocketConnectionError({
+      message: 'socket closed',
+      isRetryable: true,
+    }),
+    new MessageV2.TimeoutError({ message: 'timed out', isRetryable: true }),
+    new MessageV2.RetryTimeoutExceededError({
+      message: 'retry-after too long',
+      isRetryable: false,
+      retryAfterMs: 2,
+      maxTimeoutMs: 1,
+    }),
+  ])('an assistant message can persist $name', async (error) => {
+    await withSession(async (sessionID) => {
+      const user = await userMessage(sessionID);
+      const assistant = await assistantMessage(sessionID, user.id);
+      assistant.error = error.toObject() as MessageV2.Assistant['error'];
+      await Session.updateMessage(assistant);
+    });
+  });
+});
+
 describe('loop exit after tool calls (#335 item 3)', () => {
   const part = (state: Record<string, unknown>, metadata?: object) =>
     ({

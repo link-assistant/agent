@@ -80,6 +80,24 @@ export namespace MessageV2 {
   export type TimeoutError = z.infer<typeof TimeoutError.Schema>;
 
   /**
+   * The provider asked us to wait (retry-after) longer than the configured
+   * retry timeout, so the request is not retried.
+   * See: https://github.com/link-assistant/agent/issues/157
+   */
+  export const RetryTimeoutExceededError = NamedError.create(
+    'RetryTimeoutExceededError',
+    z.object({
+      message: z.string(),
+      isRetryable: z.literal(false),
+      retryAfterMs: z.number(),
+      maxTimeoutMs: z.number(),
+    })
+  );
+  export type RetryTimeoutExceededError = z.infer<
+    typeof RetryTimeoutExceededError.Schema
+  >;
+
+  /**
    * The request exceeds the model's context window. Not retried as is: the
    * session is compacted and the turn continues (upstream #14707).
    */
@@ -532,6 +550,10 @@ export namespace MessageV2 {
         AbortedError.Schema,
         APIError.Schema,
         ContextOverflowError.Schema,
+        // Retry-only errors are stored once their retries are used up.
+        SocketConnectionError.Schema,
+        TimeoutError.Schema,
+        RetryTimeoutExceededError.Schema,
       ])
       .optional(),
     parentID: z.string(),

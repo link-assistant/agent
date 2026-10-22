@@ -743,6 +743,7 @@ export namespace SessionProcessor {
                   )
                 : { shouldRetry: true, elapsedTime: 0, maxTime: 0 };
 
+              let delay: number | undefined;
               if (
                 (isRetryableAPIError && retryCheck.shouldRetry) ||
                 isRetryableSocketError ||
@@ -751,7 +752,6 @@ export namespace SessionProcessor {
                 attempt++;
                 // Use error-specific delay calculation
                 // SessionRetry.delay may throw RetryTimeoutExceededError if retry-after exceeds timeout
-                let delay: number;
                 try {
                   delay =
                     error?.name === 'SocketConnectionError'
@@ -770,25 +770,22 @@ export namespace SessionProcessor {
                       retryAfterMs: delayError.retryAfterMs,
                       maxTimeoutMs: delayError.maxTimeoutMs,
                     }));
-                    SessionRetry.clearRetryState(input.sessionID);
-                    // Create a specific error for this case
-                    input.assistantMessage.error = {
-                      name: 'RetryTimeoutExceededError',
-                      data: {
+                    // Report it like any other final error below. Leaving
+                    // the loop with `break` skipped the cleanup and returned
+                    // undefined, so the prompt loop started another step.
+                    error = new MessageV2.RetryTimeoutExceededError(
+                      {
                         message: delayError.message,
                         isRetryable: false,
                         retryAfterMs: delayError.retryAfterMs,
                         maxTimeoutMs: delayError.maxTimeoutMs,
                       },
-                    } as MessageV2.Error;
-                    Bus.publish(Session.Event.Error, {
-                      sessionID: input.assistantMessage.sessionID,
-                      error: input.assistantMessage.error,
-                    });
-                    break;
-                  }
-                  throw delayError;
+                      { cause: delayError }
+                    ).toObject();
+                  } else throw delayError;
                 }
+              }
+              if (delay !== undefined) {
                 log.info(() => ({
                   message: 'retrying',
                   errorType: error?.name,
