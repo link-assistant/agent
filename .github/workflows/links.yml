@@ -54,7 +54,10 @@ jobs:
         id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          # Check all Markdown and HTML files
+          # Check all Markdown and HTML files. A directory input with
+          # --extensions walks the tree honouring .gitignore and, unlike a
+          # './**/*.html' glob, does not log "No files found" while the
+          # repository has no HTML files (#337).
           # Exclusions:
           # - docs/case-studies: research documents quoting external repos,
           #   whose issue numbers and file paths do not exist here.
@@ -73,8 +76,8 @@ jobs:
             --exclude-path node_modules
             --exclude-path js/node_modules
             --exclude-path dev
-            './**/*.md'
-            './**/*.html'
+            --extensions md,html
+            .
           # Don't fail the workflow immediately - we want to check web archive first
           fail: false
           # Output file for broken links report (used by check-web-archive.mjs)
