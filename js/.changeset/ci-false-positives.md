@@ -19,3 +19,17 @@ fix(ci): remove CI/CD false positives and false negatives (#337)
   1.2.0-beta.15, and `js/.npmrc` sets `strict-allow-scripts` so a stale entry
   fails the install instead of logging a warning. CI installs on Node 26,
   which `@opentui/core` requires.
+- Instant Release runs only after lint, the tests, the verbose integration
+  test and the package install check pass, and every release job requires
+  lint and test to succeed.
+- A release rerun recognises that an earlier attempt already pushed its
+  version commit when main moved meanwhile, instead of skipping the publish.
+- The release pushes its version commit with up to three attempts, rebasing
+  onto main when another merge landed first, instead of failing the release.
+- The pipeline status gate fails on every unsuccessful job result, including
+  a test that `timeout-minutes` cancelled on a pull request. A cancellation
+  passes only when a newer run replaced this one and the job's own
+  `cancel-in-progress` allowed that. Set `PIPELINE_STATUS_VERBOSE=1` to trace
+  each decision. Every workflow now ends in such a gate.
+- Model tests fail at once with the secret's name when `GROQ_API_KEY` is
+  missing, and warn when Kilo models run without `KILO_API_KEY`.
