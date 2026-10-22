@@ -166,9 +166,11 @@ describe('glob path validation and ripgrep flags', () => {
 });
 
 describe('grep', () => {
-  const isRoot = process.getuid?.() === 0;
+  // chmod 000 makes a directory unreadable only for a non-root POSIX user;
+  // Windows ignores the permission bits, so rg can still read it there.
+  const canLockDir = process.platform !== 'win32' && process.getuid?.() !== 0;
 
-  test.skipIf(isRoot)(
+  test.skipIf(!canLockDir)(
     'keeps matches when some paths are unreadable (rg exit 2)',
     async () => {
       const dir = tempDir();
