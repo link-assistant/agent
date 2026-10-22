@@ -17,6 +17,7 @@ import {
   wrapLanguageModel,
   isStepCount,
   jsonSchema,
+  asSchema,
 } from 'ai';
 import { SessionCompaction } from './compaction';
 import { Instance } from '../project/instance';
@@ -33,7 +34,6 @@ import { mergeDeep, pipe } from 'remeda';
 import { ToolRegistry } from '../tool/registry';
 import { Wildcard } from '../util/wildcard';
 import { MCP } from '../mcp';
-import { withTimeout } from '../util/timeout';
 import { ReadTool } from '../tool/read';
 import { ListTool } from '../tool/ls';
 import { FileTime } from '../file/time';
@@ -102,7 +102,7 @@ export namespace SessionPrompt {
           abort: AbortController;
           callbacks: {
             resolve(input: MessageV2.WithParts): void;
-            reject(): void;
+            reject(reason?: unknown): void;
           }[];
         }
       > = {};
@@ -274,14 +274,34 @@ export namespace SessionPrompt {
     return controller.signal;
   }
 
+  // Tool calls whose results must go back to the model. Provider-executed
+  // tools already have their result in the response, and tools interrupted by
+  // an abort or retry are not pending work (upstream #14707, #16776).
+  export function hasToolCalls(parts: MessageV2.Part[]) {
+    return parts.some(
+      (part) =>
+        part.type === 'tool' &&
+        !part.metadata?.providerExecuted &&
+        !(
+          part.state.status === 'error' &&
+          part.state.metadata?.interrupted === true
+        )
+    );
+  }
+
   export function cancel(sessionID: string) {
     log.info(() => ({ message: 'cancel', sessionID }));
     const s = state();
     const match = s[sessionID];
-    if (!match) return;
+    if (!match) {
+      SessionStatus.set(sessionID, { type: 'idle' });
+      return;
+    }
     match.abort.abort();
+    // Queued callers get a real AbortError instead of `undefined`
+    // (upstream #16776).
     for (const item of match.callbacks) {
-      item.reject();
+      item.reject(new DOMException('Aborted', 'AbortError'));
     }
     delete s[sessionID];
     SessionStatus.set(sessionID, { type: 'idle' });
@@ -333,87 +353,64 @@ export namespace SessionPrompt {
 
       // Check if we should exit the agentic loop
       // We exit when: the assistant has a finish reason, it's not 'tool-calls',
-      // and the assistant message is newer than the last user message
-      if (
-        lastAssistant?.finish &&
+      // it made no tool calls whose results still have to be sent back, and
+      // the assistant message is newer than the last user message. Providers
+      // report finish 'stop' (or nothing) for turns with tool calls, so the
+      // finish reason alone is not enough (upstream #14707, #194).
+      const lastAssistantParts = lastAssistant
+        ? msgs.find((m) => m.info.id === lastAssistant!.id)?.parts
+        : undefined;
+      const finishedTurn =
+        !!lastAssistant?.finish &&
         lastAssistant.finish !== 'tool-calls' &&
-        lastUser.id < lastAssistant.id
-      ) {
-        // SAFETY CHECK for issue #194: If finish reason is 'unknown', check for tool calls
-        // Some providers (e.g., Kimi K2.5 via OpenCode) return undefined finishReason
-        // which gets converted to 'unknown'. If there were tool calls made, we should
-        // continue the loop to execute them instead of prematurely exiting.
-        // See: https://github.com/link-assistant/agent/issues/194
-        if (lastAssistant.finish === 'unknown') {
-          // First check for tool calls BEFORE checking zero tokens (#239)
-          // Some providers (e.g., OpenCode Zen / OpenRouter) return zero tokens and
-          // unknown finish reason even when the model successfully executed tool calls.
-          // We must check for tool calls first to avoid prematurely terminating
-          // a session that is actually making progress.
-          const lastAssistantParts = msgs.find(
-            (m) => m.info.id === lastAssistant.id
-          )?.parts;
-          const hasToolCalls = lastAssistantParts?.some(
-            (p) =>
-              p.type === 'tool' &&
-              (p.state.status === 'completed' || p.state.status === 'running')
-          );
-
-          // SAFETY CHECK for issue #196: Detect zero-token responses as provider failures
-          // When all tokens are 0 and finish reason is 'unknown', this indicates the provider
-          // returned an empty/error response (e.g., rate limit, model unavailable, API failure).
-          // But ONLY treat this as fatal if there are NO tool calls (#239).
-          const tokens = lastAssistant.tokens;
-          if (
-            tokens.input === 0 &&
-            tokens.output === 0 &&
-            tokens.reasoning === 0 &&
-            !hasToolCalls
-          ) {
-            const errorMessage =
-              `Provider returned zero tokens with unknown finish reason. ` +
-              `Requested model: ${lastAssistant.model?.requestedModelID ?? 'unknown'} ` +
-              `(provider: ${lastAssistant.model?.providerID ?? 'unknown'}). ` +
-              `Responded model: ${lastAssistant.model?.respondedModelID ?? 'unknown'}. ` +
-              `This usually indicates the provider failed to process the request. ` +
-              `Check provider status, model availability, and API keys.`;
-            log.error(() => ({
+        lastUser.id < lastAssistant.id;
+      const toolCallsMade = hasToolCalls(lastAssistantParts ?? []);
+      if (finishedTurn && toolCallsMade) {
+        log.info(() => ({
+          message: 'continuing loop - tool calls detected',
+          sessionID,
+          finishReason: lastAssistant!.finish,
+        }));
+      }
+      if (lastAssistant && finishedTurn && !toolCallsMade) {
+        // SAFETY CHECK for issue #196: Detect zero-token responses as provider failures
+        // When all tokens are 0 and finish reason is 'unknown', this indicates the provider
+        // returned an empty/error response (e.g., rate limit, model unavailable, API failure).
+        // Turns with tool calls never get here (#239).
+        const tokens = lastAssistant.tokens;
+        if (
+          lastAssistant.finish === 'unknown' &&
+          tokens.input === 0 &&
+          tokens.output === 0 &&
+          tokens.reasoning === 0
+        ) {
+          const errorMessage =
+            `Provider returned zero tokens with unknown finish reason. ` +
+            `Requested model: ${lastAssistant.model?.requestedModelID ?? 'unknown'} ` +
+            `(provider: ${lastAssistant.model?.providerID ?? 'unknown'}). ` +
+            `Responded model: ${lastAssistant.model?.respondedModelID ?? 'unknown'}. ` +
+            `This usually indicates the provider failed to process the request. ` +
+            `Check provider status, model availability, and API keys.`;
+          log.error(() => ({
+            message: errorMessage,
+            sessionID,
+            finishReason: lastAssistant.finish,
+            tokens,
+            cost: lastAssistant.cost,
+            model: lastAssistant.model,
+            issue: 'https://github.com/link-assistant/agent/issues/198',
+          }));
+          // Publish error event so JSON standard output includes it (#198)
+          Bus.publish(Session.Event.Error, {
+            sessionID,
+            error: new NamedError.Unknown({
               message: errorMessage,
-              sessionID,
-              finishReason: lastAssistant.finish,
-              tokens,
-              cost: lastAssistant.cost,
-              model: lastAssistant.model,
-              issue: 'https://github.com/link-assistant/agent/issues/198',
-            }));
-            // Publish error event so JSON standard output includes it (#198)
-            Bus.publish(Session.Event.Error, {
-              sessionID,
-              error: new NamedError.Unknown({
-                message: errorMessage,
-              }).toObject(),
-            });
-            break;
-          }
-
-          if (hasToolCalls) {
-            log.info(() => ({
-              message:
-                'continuing loop despite unknown finish reason - tool calls detected',
-              sessionID,
-              finishReason: lastAssistant.finish,
-              zeroTokens: tokens.input === 0 && tokens.output === 0,
-              hint: 'Provider returned undefined finishReason but made tool calls',
-            }));
-            // Don't break - continue the loop to handle tool call results
-          } else {
-            log.info(() => ({ message: 'exiting loop', sessionID }));
-            break;
-          }
-        } else {
-          log.info(() => ({ message: 'exiting loop', sessionID }));
+            }).toObject(),
+          });
           break;
         }
+        log.info(() => ({ message: 'exiting loop', sessionID }));
+        break;
       }
 
       step++;
@@ -867,7 +864,8 @@ export namespace SessionPrompt {
           }
 
           return false;
-        })
+        }),
+        { providerID: model.providerID, modelID: model.modelID }
       );
       // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
       const safeModelMessages = Array.isArray(modelMessages)
@@ -998,8 +996,10 @@ export namespace SessionPrompt {
           maxRetries: 0,
           activeTools: Object.keys(tools).filter((x) => x !== 'invalid'),
           maxOutputTokens: capOutputTokensToContext({
+            // The first argument is the npm package: passing the provider ID
+            // skipped the Anthropic thinking-budget adjustment (#335).
             baseMaxOutput: ProviderTransform.maxOutputTokens(
-              model.providerID,
+              model.npm ?? '',
               params.options,
               model.info?.limit?.output ?? 100000,
               OUTPUT_TOKEN_MAX
@@ -1029,7 +1029,8 @@ export namespace SessionPrompt {
                     args.params.prompt = ProviderTransform.message(
                       args.params.prompt,
                       model.providerID,
-                      model.modelID
+                      model.modelID,
+                      model.npm
                     );
                   }
                   return args.params;
@@ -1040,6 +1041,27 @@ export namespace SessionPrompt {
         })
       );
       if (result === 'stop') break;
+      if (result === 'compact') {
+        // Overflowing again straight after a compaction means the summary
+        // plus the latest message still do not fit; compacting once more
+        // would loop forever (upstream #14707).
+        if (lastFinished?.summary) {
+          processor.message.error = new MessageV2.ContextOverflowError({
+            message:
+              'Context still exceeds the model limit after compaction - start a new session or use a model with a larger context window',
+          }).toObject();
+          await Session.updateMessage(processor.message);
+          Bus.publish(Session.Event.Error, {
+            sessionID,
+            error: processor.message.error,
+          });
+          break;
+        }
+        await SessionCompaction.create({
+          sessionID,
+          model: lastUser.model,
+        });
+      }
       continue;
     }
     SessionCompaction.prune({ sessionID });
@@ -1208,56 +1230,43 @@ export namespace SessionPrompt {
       if (Wildcard.all(key, enabledTools) === false) continue;
       const execute = item.execute;
       if (!execute) continue;
+      // MCP schemas go through the same provider fixes as built-in tools
+      // (e.g. Moonshot/Kimi rejects `$ref` siblings and tuple `items`).
+      // See: upstream 528fb1d404 (#24730) and b7b734f51f (#11984).
+      const inputSchema = item.inputSchema;
+      item.inputSchema = jsonSchema(async () =>
+        ProviderTransform.schema(
+          input.model.providerID,
+          input.model.modelID,
+          (await asSchema(inputSchema).jsonSchema) as any
+        )
+      );
       item.execute = async (args, opts) => {
-        // Get timeout for this specific tool
         const timeout = await MCP.getToolTimeout(key);
-
-        // Wrap the execute call with timeout to prevent indefinite hangs
-        let result;
-        try {
-          result = await withTimeout(execute(args, opts), timeout);
-        } catch (error) {
-          // Check if it's a timeout error
-          if (
-            error instanceof Error &&
-            error.message.includes('timed out after')
-          ) {
-            const timeoutSec = Math.round(timeout / 1000);
-            throw new Error(
-              `MCP tool "${key}" timed out after ${timeoutSec} seconds. ` +
-                `The operation did not complete within the configured timeout. ` +
-                `You can increase the timeout in the MCP server configuration using tool_call_timeout or tool_timeouts.`
-            );
-          }
-          throw error;
-        }
-
-        const textParts: string[] = [];
-        const attachments: MessageV2.FilePart[] = [];
-
-        for (const item of result.content) {
-          if (item.type === 'text') {
-            textParts.push(item.text);
-          } else if (item.type === 'image') {
-            attachments.push({
-              id: Identifier.ascending('part'),
-              sessionID: input.sessionID,
-              messageID: input.processor.message.id,
-              type: 'file',
-              mime: item.mimeType,
-              url: `data:${item.mimeType};base64,${item.data}`,
-            });
-          }
-          // Add support for other types if needed
-        }
+        const result = await MCP.callWithTimeout(
+          key,
+          (abortSignal) => execute(args, { ...opts, abortSignal }),
+          timeout,
+          opts?.abortSignal
+        );
+        const normalized = MCP.normalizeResult(result);
+        const attachments: MessageV2.FilePart[] = normalized.attachments.map(
+          (attachment) => ({
+            id: Identifier.ascending('part'),
+            sessionID: input.sessionID,
+            messageID: input.processor.message.id,
+            type: 'file',
+            ...attachment,
+          })
+        );
 
         return {
           title: '',
-          metadata: result.metadata ?? {},
-          output: textParts.join('\n\n'),
+          metadata: normalized.metadata,
+          output: normalized.output,
           attachments,
-          content: result.content, // directly return content to preserve ordering when outputting to model
-          isError: result.isError,
+          content: normalized.content, // directly return content to preserve ordering when outputting to model
+          isError: normalized.isError,
         };
       };
       item.toModelOutput = Tool.toModelOutput;

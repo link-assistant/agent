@@ -3,14 +3,11 @@ import { Tool } from './tool';
 import DESCRIPTION from './websearch.txt';
 import { Config } from '../config/file-config';
 import { createVerboseFetch } from '../util/verbose-fetch';
+import { ExaMcp } from '../util/exa-mcp';
 
 const verboseFetch = createVerboseFetch(fetch, { caller: 'websearch' });
 
 const API_CONFIG = {
-  BASE_URL: 'https://mcp.exa.ai',
-  ENDPOINTS: {
-    SEARCH: '/mcp',
-  },
   DEFAULT_NUM_RESULTS: 8,
 } as const;
 
@@ -30,18 +27,13 @@ interface McpSearchRequest {
   };
 }
 
-interface McpSearchResponse {
-  jsonrpc: string;
-  result: {
-    content: Array<{
-      type: string;
-      text: string;
-    }>;
-  };
-}
-
 export const WebSearchTool = Tool.define('websearch', {
-  description: DESCRIPTION,
+  // The year, not the date, so the prompt cache survives midnight (upstream
+  // 1a43e5fe87, 179c40749d #13559). Tool.define copies the object on each
+  // init(), so the getter is read per init.
+  get description() {
+    return DESCRIPTION.replace('{{year}}', String(new Date().getFullYear()));
+  },
   parameters: z.object({
     query: z.string().describe('Websearch query'),
     numResults: z
@@ -85,66 +77,19 @@ export const WebSearchTool = Tool.define('websearch', {
       },
     };
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    const output = await ExaMcp.call({
+      fetch: verboseFetch,
+      body: searchRequest,
+      timeout: 25000,
+      abort: ctx.abort,
+      label: 'Search',
+    });
 
-    try {
-      const headers: Record<string, string> = {
-        accept: 'application/json, text/event-stream',
-        'content-type': 'application/json',
-      };
-
-      const response = await verboseFetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEARCH}`,
-        {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(searchRequest),
-          signal: AbortSignal.any([controller.signal, ctx.abort]),
-        }
-      );
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Search error (${response.status}): ${errorText}`);
-      }
-
-      const responseText = await response.text();
-
-      // Parse SSE response
-      const lines = responseText.split('\n');
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data: McpSearchResponse = JSON.parse(line.substring(6));
-          if (
-            data.result &&
-            data.result.content &&
-            data.result.content.length > 0
-          ) {
-            return {
-              output: data.result.content[0].text,
-              title: `Web search: ${params.query}`,
-              metadata: {},
-            };
-          }
-        }
-      }
-
-      return {
-        output: 'No search results found. Please try a different query.',
-        title: `Web search: ${params.query}`,
-        metadata: {},
-      };
-    } catch (error) {
-      clearTimeout(timeoutId);
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Search request timed out');
-      }
-
-      throw error;
-    }
+    return {
+      output:
+        output ?? 'No search results found. Please try a different query.',
+      title: `Web search: ${params.query}`,
+      metadata: {},
+    };
   },
 });

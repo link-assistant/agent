@@ -4,6 +4,8 @@ import TurndownService from 'turndown';
 import DESCRIPTION from './webfetch.txt';
 import { createVerboseFetch } from '../util/verbose-fetch';
 import { Permission } from '../permission';
+import { Branding } from '../branding';
+import { readBounded } from '../util/read-bounded';
 
 const verboseFetch = createVerboseFetch(fetch, { caller: 'webfetch' });
 
@@ -15,10 +17,14 @@ export const WebFetchTool = Tool.define('webfetch', {
   description: DESCRIPTION,
   parameters: z.object({
     url: z.string().describe('The URL to fetch content from'),
+    // Optional, not `.default()`: the JSON schema sent to the model would
+    // still list a defaulted field as required, and execute receives the raw
+    // arguments (upstream fd973d242e #6345, 2d2f587bfa #30215).
     format: z
       .enum(['text', 'markdown', 'html'])
+      .optional()
       .describe(
-        'The format to return the content in (text, markdown, or html)'
+        'The format to return the content in (text, markdown, or html). Defaults to markdown.'
       ),
     timeout: z
       .number()
@@ -26,6 +32,7 @@ export const WebFetchTool = Tool.define('webfetch', {
       .optional(),
   }),
   async execute(params, ctx) {
+    const format = params.format ?? 'markdown';
     // Validate URL
     if (
       !params.url.startsWith('http://') &&
@@ -50,12 +57,15 @@ export const WebFetchTool = Tool.define('webfetch', {
       MAX_TIMEOUT
     );
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    // AbortSignal.timeout keeps no timer alive after a failed fetch, and it
+    // also aborts a body that trickles in after the headers (upstream
+    // bc1840b196 #21378, 69f1ec22e3 #33259).
+    const timeoutSignal = AbortSignal.timeout(timeout);
+    const signal = AbortSignal.any([timeoutSignal, ctx.abort]);
 
     // Build Accept header based on requested format with q parameters for fallbacks
     let acceptHeader = '*/*';
-    switch (params.format) {
+    switch (format) {
       case 'markdown':
         acceptHeader =
           'text/markdown;q=1.0, text/x-markdown;q=0.9, text/plain;q=0.8, text/html;q=0.7, */*;q=0.1';
@@ -73,40 +83,56 @@ export const WebFetchTool = Tool.define('webfetch', {
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8';
     }
 
-    const response = await verboseFetch(params.url, {
-      signal: AbortSignal.any([controller.signal, ctx.abort]),
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept: acceptHeader,
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-    });
+    const headers = {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
+      Accept: acceptHeader,
+      'Accept-Language': 'en-US,en;q=0.9',
+    };
 
-    clearTimeout(timeoutId);
+    let body: Buffer;
+    let response: Response;
+    try {
+      const initial = await verboseFetch(params.url, { signal, headers });
+      // Cloudflare challenges a Chrome UA whose TLS fingerprint is not
+      // Chrome's, and lets an honest UA through (upstream b978ca11da #10328).
+      if (
+        initial.status === 403 &&
+        initial.headers.get('cf-mitigated') === 'challenge'
+      ) {
+        await initial.body?.cancel().catch(() => {});
+        response = await verboseFetch(params.url, {
+          signal,
+          headers: { ...headers, 'User-Agent': Branding.BINARY },
+        });
+      } else {
+        response = initial;
+      }
 
-    if (!response.ok) {
-      throw new Error(`Request failed with status code: ${response.status}`);
+      if (!response.ok) {
+        await response.body?.cancel().catch(() => {});
+        throw new Error(`Request failed with status code: ${response.status}`);
+      }
+
+      body = await readBounded(
+        response,
+        MAX_RESPONSE_SIZE,
+        () => new Error('Response too large (exceeds 5MB limit)')
+      );
+    } catch (error) {
+      if (timeoutSignal.aborted && !ctx.abort.aborted) {
+        throw new Error(`Request timed out after ${timeout / 1000} seconds`);
+      }
+      throw error;
     }
 
-    // Check content length
-    const contentLength = response.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > MAX_RESPONSE_SIZE) {
-      throw new Error('Response too large (exceeds 5MB limit)');
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    if (arrayBuffer.byteLength > MAX_RESPONSE_SIZE) {
-      throw new Error('Response too large (exceeds 5MB limit)');
-    }
-
-    const content = new TextDecoder().decode(arrayBuffer);
+    const content = new TextDecoder().decode(body);
     const contentType = response.headers.get('content-type') || '';
 
     const title = `${params.url} (${contentType})`;
 
     // Handle content based on requested format and actual content type
-    switch (params.format) {
+    switch (format) {
       case 'markdown':
         if (contentType.includes('text/html')) {
           const markdown = convertHTMLToMarkdown(content);
@@ -156,37 +182,23 @@ export const WebFetchTool = Tool.define('webfetch', {
 
 async function extractTextFromHTML(html: string) {
   let text = '';
-  let skipContent = false;
+  // Count open skipped elements so text after `</script>` and text outside
+  // any element is kept (upstream ad6a8a1850, #26309).
+  let skipDepth = 0;
 
   const rewriter = new HTMLRewriter()
     .on('script, style, noscript, iframe, object, embed', {
-      element() {
-        skipContent = true;
-      },
-      text() {
-        // Skip text content inside these elements
+      element(element) {
+        if (!element.canHaveContent) return;
+        skipDepth++;
+        element.onEndTag(() => {
+          skipDepth--;
+        });
       },
     })
-    .on('*', {
-      element(element) {
-        // Reset skip flag when entering other elements
-        if (
-          ![
-            'script',
-            'style',
-            'noscript',
-            'iframe',
-            'object',
-            'embed',
-          ].includes(element.tagName)
-        ) {
-          skipContent = false;
-        }
-      },
+    .onDocument({
       text(input) {
-        if (!skipContent) {
-          text += input.text;
-        }
+        if (skipDepth === 0) text += input.text;
       },
     })
     .transform(new Response(html));

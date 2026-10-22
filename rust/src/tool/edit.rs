@@ -91,6 +91,14 @@ impl Tool for EditTool {
 
         // Handle new file creation (oldString is empty)
         if params.old_string.is_empty() {
+            // Upstream OpenCode #30932: an empty oldString used to silently
+            // replace the whole existing file.
+            if filepath.exists() {
+                return Err(AgentError::tool_execution("edit", EMPTY_OLD_STRING_ERROR));
+            }
+            if let Some(parent) = filepath.parent() {
+                fs::create_dir_all(parent).await?;
+            }
             fs::write(&filepath, &params.new_string).await?;
 
             let diff = create_diff("", &params.new_string, &filepath.to_string_lossy());
@@ -98,7 +106,7 @@ impl Tool for EditTool {
             return Ok(ToolResult {
                 is_error: false,
                 title,
-                output: String::new(),
+                output: EDIT_SUCCESS_OUTPUT.to_string(),
                 metadata: json!({
                     "diagnostics": {},
                     "diff": diff,
@@ -122,19 +130,24 @@ impl Tool for EditTool {
             ));
         }
 
-        let content_old = fs::read_to_string(&filepath).await?;
-        let content_old = normalize_line_endings(&content_old);
-
-        // Perform replacement
+        let raw = fs::read_to_string(&filepath).await?;
+        // The replacers rebuild matched text from `str::lines()` joined with
+        // LF, so they must run on the LF view of the file: on raw CRLF text a
+        // fuzzy match is never found again and the edit silently becomes a
+        // no-op. The result is mapped back to the file's own line endings so
+        // CRLF files are not converted to LF (upstream OpenCode #9443) and
+        // untouched lines of a mixed-ending file keep their bytes (upstream
+        // #53166). `read_to_string` keeps a UTF-8 BOM as the first char, so
+        // it is preserved without extra handling.
+        let content_old = normalize_line_endings(&raw);
         let content_new = replace(
             &content_old,
-            &params.old_string,
-            &params.new_string,
+            &normalize_line_endings(&params.old_string),
+            &normalize_line_endings(&params.new_string),
             params.replace_all,
         )?;
-
-        // Write the file
-        fs::write(&filepath, &content_new).await?;
+        let written = restore_line_endings(&raw, &content_old, &content_new);
+        fs::write(&filepath, &written).await?;
 
         // Calculate diff
         let diff = create_diff(&content_old, &content_new, &filepath.to_string_lossy());
@@ -154,7 +167,7 @@ impl Tool for EditTool {
         Ok(ToolResult {
             is_error: false,
             title,
-            output: String::new(),
+            output: EDIT_SUCCESS_OUTPUT.to_string(),
             metadata: json!({
                 "diagnostics": {},
                 "diff": diff,
@@ -171,9 +184,58 @@ impl Tool for EditTool {
     }
 }
 
+const EDIT_SUCCESS_OUTPUT: &str = "Edit applied successfully.";
+
+const EMPTY_OLD_STRING_ERROR: &str = "oldString cannot be empty when editing an existing file. Provide the exact text to replace, or use write for an intentional full-file replacement.";
+
+/// Minimum average similarity of the middle lines for a block-anchor match
+/// (upstream OpenCode #30932 raised it from 0.0, which accepted any block
+/// whose first and last lines matched).
+const BLOCK_ANCHOR_SIMILARITY_THRESHOLD: f64 = 0.65;
+
 /// Normalize line endings to Unix style
 fn normalize_line_endings(text: &str) -> String {
     text.replace("\r\n", "\n")
+}
+
+/// The dominant line ending of `text`; ties (including no line breaks) keep
+/// LF, so one stray CRLF line does not turn new lines of an LF file into CRLF.
+fn dominant_line_ending(text: &str) -> &'static str {
+    let crlf = text.matches("\r\n").count();
+    let lf = text.matches('\n').count() - crlf;
+    if crlf > lf {
+        "\r\n"
+    } else {
+        "\n"
+    }
+}
+
+/// Map an edit made on the LF view (`old_lf` -> `new_lf`) back onto `raw`:
+/// unchanged lines are copied from `raw` with their original line ending and
+/// inserted lines use the file's dominant line ending.
+fn restore_line_endings(raw: &str, old_lf: &str, new_lf: &str) -> String {
+    if !raw.contains("\r\n") {
+        return new_lf.to_string();
+    }
+    let ending = dominant_line_ending(raw);
+    // `normalize_line_endings` only rewrites CRLF to LF, so line i of `raw`
+    // is line i of `old_lf`.
+    let raw_lines: Vec<&str> = raw.split_inclusive('\n').collect();
+    let mut out = String::with_capacity(new_lf.len() + raw.len() - old_lf.len());
+    for change in TextDiff::from_lines(old_lf, new_lf).iter_all_changes() {
+        match change.tag() {
+            ChangeTag::Equal => match change.old_index().and_then(|i| raw_lines.get(i)) {
+                Some(line) => out.push_str(line),
+                None => out.push_str(change.value()),
+            },
+            ChangeTag::Insert if ending == "\r\n" => {
+                out.push_str(&change.value().replace('\n', "\r\n"))
+            }
+            ChangeTag::Insert => out.push_str(change.value()),
+            ChangeTag::Delete => {}
+        }
+    }
+    out
 }
 
 /// Create a unified diff string
@@ -209,6 +271,10 @@ fn create_diff(old: &str, new: &str, path: &str) -> String {
 /// Perform string replacement with fallback strategies
 /// Mirrors the JavaScript implementation's replace() function with all 9 strategies.
 fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool) -> Result<String> {
+    if old_string.is_empty() {
+        return Err(AgentError::tool_execution("edit", EMPTY_OLD_STRING_ERROR));
+    }
+
     // Strategy 1: SimpleReplacer / exact match
     if let Some(result) = try_exact_replace(content, old_string, new_string, replace_all) {
         return Ok(result);
@@ -415,6 +481,8 @@ pub fn try_block_anchor_replace(
 
     let first_line = search_lines[0].trim();
     let last_line = search_lines.last()?.trim();
+    let search_size = search_lines.len();
+    let max_line_delta = std::cmp::max(1, search_size / 4);
 
     let mut matches = Vec::new();
 
@@ -425,8 +493,18 @@ pub fn try_block_anchor_replace(
 
         for j in (i + 2)..content_lines.len() {
             if content_lines[j].trim() == last_line {
-                let matched: String = content_lines[i..=j].join("\n");
-                matches.push(matched);
+                let block = &content_lines[i..=j];
+                // Guards from upstream OpenCode #30932: the block must have
+                // about the same size as oldString and similar middle lines,
+                // otherwise unrelated code between the anchors is deleted.
+                if block.len().abs_diff(search_size) <= max_line_delta
+                    && middle_similarity(block, &search_lines) >= BLOCK_ANCHOR_SIMILARITY_THRESHOLD
+                {
+                    let matched: String = block.join("\n");
+                    if !is_disproportionate_match(&matched, old) {
+                        matches.push(matched);
+                    }
+                }
                 break;
             }
         }
@@ -449,6 +527,54 @@ pub fn try_block_anchor_replace(
     }
 
     Some(result)
+}
+
+/// Average Levenshtein similarity of the lines between the anchors.
+fn middle_similarity(block: &[&str], search: &[&str]) -> f64 {
+    let lines_to_check = std::cmp::min(block.len(), search.len()).saturating_sub(2);
+    if lines_to_check == 0 {
+        return 1.0;
+    }
+    let mut similarity = 0.0;
+    for k in 1..=lines_to_check {
+        let a: Vec<char> = block[k].trim().chars().collect();
+        let b: Vec<char> = search[k].trim().chars().collect();
+        let max_len = std::cmp::max(a.len(), b.len());
+        if max_len == 0 {
+            similarity += 1.0 / lines_to_check as f64;
+            continue;
+        }
+        similarity += (1.0 - levenshtein(&a, &b) as f64 / max_len as f64) / lines_to_check as f64;
+    }
+    similarity
+}
+
+fn levenshtein(a: &[char], b: &[char]) -> usize {
+    let mut prev: Vec<usize> = (0..=b.len()).collect();
+    let mut cur = vec![0; b.len() + 1];
+    for (i, ca) in a.iter().enumerate() {
+        cur[0] = i + 1;
+        for (j, cb) in b.iter().enumerate() {
+            let cost = usize::from(ca != cb);
+            cur[j + 1] = (prev[j + 1] + 1).min(cur[j] + 1).min(prev[j] + cost);
+        }
+        std::mem::swap(&mut prev, &mut cur);
+    }
+    prev[b.len()]
+}
+
+/// A fuzzy match spanning far more text than oldString (upstream #30932).
+fn is_disproportionate_match(matched: &str, old: &str) -> bool {
+    let old_lines = old.split('\n').count();
+    let matched_lines = matched.split('\n').count();
+    if matched_lines >= std::cmp::max(old_lines + 3, old_lines * 2) {
+        return true;
+    }
+    if old_lines == 1 {
+        return false;
+    }
+    let old_len = old.trim().len();
+    matched.trim().len() > std::cmp::max(old_len + 500, old_len * 4)
 }
 
 /// Try indentation-flexible matching (normalize leading indentation)

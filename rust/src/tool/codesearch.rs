@@ -7,11 +7,10 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
+use super::websearch::{call_exa, exa_mcp_url};
 use super::{context::ToolContext, Tool, ToolResult};
 use crate::error::{AgentError, Result};
 
-const API_BASE_URL: &str = "https://mcp.exa.ai";
-const API_ENDPOINT: &str = "/mcp";
 const SEARCH_TIMEOUT_SECS: u64 = 30;
 const DEFAULT_TOKENS_NUM: u32 = 5000;
 const MIN_TOKENS_NUM: u32 = 1000;
@@ -61,24 +60,6 @@ struct McpCodeArguments {
     query: String,
     #[serde(rename = "tokensNum")]
     tokens_num: u32,
-}
-
-#[derive(Debug, Deserialize)]
-struct McpCodeResponse {
-    result: McpCodeResult,
-}
-
-#[derive(Debug, Deserialize)]
-struct McpCodeResult {
-    content: Vec<McpContent>,
-}
-
-#[derive(Debug, Deserialize)]
-struct McpContent {
-    #[serde(rename = "type")]
-    #[allow(dead_code)]
-    content_type: String,
-    text: String,
 }
 
 /// CodeSearch tool implementation
@@ -133,55 +114,23 @@ impl Tool for CodeSearchTool {
             },
         };
 
-        let client = reqwest::Client::builder()
-            .timeout(tokio::time::Duration::from_secs(SEARCH_TIMEOUT_SECS))
-            .build()
-            .map_err(|e| AgentError::tool_execution("codesearch", e.to_string()))?;
+        let output = call_exa(
+            &exa_mcp_url(),
+            &code_request,
+            SEARCH_TIMEOUT_SECS,
+            "codesearch",
+            "Code search",
+        )
+        .await?;
 
-        let response = client
-            .post(format!("{}{}", API_BASE_URL, API_ENDPOINT))
-            .header("accept", "application/json, text/event-stream")
-            .header("content-type", "application/json")
-            .json(&code_request)
-            .send()
-            .await
-            .map_err(|e| {
-                if e.is_timeout() {
-                    AgentError::tool_execution("codesearch", "Code search request timed out")
-                } else {
-                    AgentError::tool_execution("codesearch", e.to_string())
-                }
-            })?;
-
-        if !response.status().is_success() {
-            let status = response.status();
-            let error_text = response.text().await.unwrap_or_default();
-            return Err(AgentError::tool_execution(
-                "codesearch",
-                format!("Code search error ({}): {}", status, error_text),
-            ));
-        }
-
-        let response_text = response
-            .text()
-            .await
-            .map_err(|e| AgentError::tool_execution("codesearch", e.to_string()))?;
-
-        // Parse SSE response (same as JS implementation)
-        for line in response_text.lines() {
-            if let Some(data) = line.strip_prefix("data: ") {
-                if let Ok(parsed) = serde_json::from_str::<McpCodeResponse>(data) {
-                    if let Some(content) = parsed.result.content.first() {
-                        return Ok(ToolResult {
-                            is_error: false,
-                            title: format!("Code search: {}", params.query),
-                            output: content.text.clone(),
-                            metadata: json!({}),
-                            attachments: None,
-                        });
-                    }
-                }
-            }
+        if let Some(output) = output {
+            return Ok(ToolResult {
+                is_error: false,
+                title: format!("Code search: {}", params.query),
+                output,
+                metadata: json!({}),
+                attachments: None,
+            });
         }
 
         Ok(ToolResult {

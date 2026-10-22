@@ -783,7 +783,8 @@ describe('Session.getUsage() - nested token extraction (issue #127)', () => {
     });
 
     expect(result.tokens.reasoning).toBe(200);
-    expect(result.tokens.output).toBe(500);
+    // Output excludes the reasoning it contains, which is billed apart (#335).
+    expect(result.tokens.output).toBe(300);
   });
 
   test('handles inputTokens as plain number (no nested cacheRead)', () => {

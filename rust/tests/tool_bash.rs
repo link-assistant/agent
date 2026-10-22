@@ -228,3 +228,112 @@ fn test_bash_tool_parameters_schema() {
     let schema = tool.parameters_schema();
     assert!(schema["properties"]["command"].is_object());
 }
+
+// Issue #335: the tool read stdout to EOF before reading stderr, so a command
+// that filled the stderr pipe (about 64 KiB) before closing stdout hung until
+// the timeout.
+#[tokio::test]
+async fn test_bash_large_stderr_does_not_deadlock() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({
+                "command": "head -c 200000 /dev/zero | tr '\\0' e >&2; echo done",
+                "timeout": 10000
+            }),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert!(
+        !result.is_error,
+        "{}",
+        result.output.chars().take(200).collect::<String>()
+    );
+    assert!(!result.output.contains("timed out"));
+    assert_eq!(result.metadata["exit"], 0);
+    // Truncation keeps the end of the combined output: the stderr tail.
+    assert!(result.output.ends_with('e'));
+}
+
+// Issue #335: `String::truncate` panicked when byte 30000 fell inside a
+// multi-byte character.
+#[tokio::test]
+async fn test_bash_truncation_respects_utf8_boundaries() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "printf a; yes é | head -n 15000 | tr -d '\\n'"}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert!(result.output.starts_with("...output truncated...\n\n"));
+    assert!(result.output.ends_with('é'));
+    assert!(!result.output.contains('\u{FFFD}'));
+    assert!(result.output.len() <= 30_000 + "...output truncated...\n\n".len());
+}
+
+// Issue #335: truncation keeps the end of the output, where errors are
+// printed, and drops the beginning (upstream 307251bf3c, #22660).
+#[tokio::test]
+async fn test_bash_truncation_keeps_the_tail() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "seq 1 5000; echo FINAL-ERROR-LINE; exit 3"}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert!(result
+        .output
+        .starts_with("Exit code 3\n...output truncated...\n\n"));
+    assert!(result.output.ends_with("FINAL-ERROR-LINE\n"));
+    assert!(!result.output.contains("\n1\n2\n3\n"));
+    assert!(result.output.lines().count() <= 2003);
+    assert_eq!(result.metadata["exit"], 3);
+}
+
+// Issue #335: a timed-out command keeps the output it printed before the
+// timeout (upstream 210be4b749, #39559).
+#[tokio::test]
+async fn test_bash_timeout_keeps_partial_output() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "echo before-timeout; exec sleep 5", "timeout": 500}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert!(result.output.starts_with("Exit code unavailable\n"));
+    assert!(result.output.contains("before-timeout"));
+    assert!(result.output.contains("timed out after 500ms"));
+    assert_eq!(result.metadata["exit"], serde_json::Value::Null);
+}
+
+// Issue #335: a shell killed by a signal reported "Exit code -1" (upstream
+// e22c1622e0, #51145).
+#[cfg(unix)]
+#[tokio::test]
+async fn test_bash_signal_is_reported() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "kill -9 $$"}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert!(result.is_error);
+    assert!(
+        result
+            .output
+            .starts_with("Exit code unavailable (signal SIGKILL)\n"),
+        "{}",
+        result.output
+    );
+    assert_eq!(result.metadata["exit"], serde_json::Value::Null);
+    assert_eq!(result.metadata["signal"], "SIGKILL");
+}

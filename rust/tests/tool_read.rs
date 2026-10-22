@@ -214,3 +214,181 @@ fn test_read_tool_parameters_schema() {
     let schema = tool.parameters_schema();
     assert!(schema["properties"]["filePath"].is_object());
 }
+
+// Read reliability fixes ported from upstream OpenCode (issue #335).
+
+#[tokio::test]
+async fn test_read_png_is_still_an_image() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("pic.png");
+    fs::write(
+        &file_path,
+        [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0],
+    )
+    .unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    let attachments = result.attachments.unwrap();
+    assert_eq!(attachments[0].mime, "image/png");
+}
+
+#[tokio::test]
+async fn test_read_output_capped_at_50kb() {
+    // upstream #14009: output is capped by bytes, not just lines.
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("wide.txt");
+    let content: Vec<String> = (0..2000).map(|i| format!("{:x<5000}", i)).collect();
+    fs::write(&file_path, content.join("\n")).unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+
+    assert!(result.output.len() < 60_000, "{}", result.output.len());
+    let marker = "(Output capped at 50 KB. Showing lines 1-";
+    let start = result.output.find(marker).expect("cap hint") + marker.len();
+    let rest = &result.output[start..];
+    let last: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+    assert!(rest.contains(&format!(". Use offset={} to continue.)", last)));
+}
+
+#[tokio::test]
+async fn test_read_limit_clamped_to_2000() {
+    // upstream #51011
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("long.txt");
+    let content: Vec<String> = (1..=3000).map(|i| format!("line {}", i)).collect();
+    fs::write(&file_path, content.join("\n")).unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy(), "limit": 100000 });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+
+    assert!(result.output.contains("02000| line 2000"));
+    assert!(!result.output.contains("02001| line 2001"));
+    assert!(result.output.contains("beyond line 2000"));
+}
+
+#[tokio::test]
+async fn test_read_binary_sniff_of_large_file() {
+    // Only the first 4 KB is sampled to detect binary data (upstream #14009).
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("big.dat");
+    let mut bytes = vec![0u8; 8 * 1024 * 1024];
+    bytes[..4].copy_from_slice(b"\x7fELF");
+    fs::write(&file_path, bytes).unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy() });
+
+    let err = tool.execute(params, &ctx).await.unwrap_err();
+    assert!(err.to_string().contains("Cannot read binary file"));
+}
+
+#[tokio::test]
+async fn test_read_narrow_no_break_space_name() {
+    // macOS screenshot names use U+202F before AM/PM (upstream #45807).
+    let temp = TempDir::new().unwrap();
+    fs::write(
+        temp.path().join("shot at 10\u{202f}AM.txt"),
+        "narrow space\n",
+    )
+    .unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": temp.path().join("shot at 10 AM.txt").to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("narrow space"));
+}
+
+#[tokio::test]
+async fn test_read_curly_apostrophe_name() {
+    // upstream #50953
+    let temp = TempDir::new().unwrap();
+    fs::write(temp.path().join("it\u{2019}s.txt"), "curly quote\n").unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": temp.path().join("it's.txt").to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("curly quote"));
+}
+
+#[tokio::test]
+async fn test_read_directory_is_reported() {
+    // upstream #33255/#33260
+    let temp = TempDir::new().unwrap();
+    fs::create_dir(temp.path().join("folder")).unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": temp.path().join("folder").to_string_lossy() });
+
+    let err = tool.execute(params, &ctx).await.unwrap_err();
+    assert!(
+        err.to_string().contains("Path is a directory, not a file"),
+        "{}",
+        err
+    );
+}
+
+#[tokio::test]
+async fn test_read_offset_past_end_is_reported() {
+    // upstream #14009
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("short.txt");
+    fs::write(&file_path, "one\ntwo\nthree\n").unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy(), "offset": 10, "limit": 5 });
+
+    let err = tool.execute(params, &ctx).await.unwrap_err();
+    assert!(
+        err.to_string()
+            .contains("Offset 10 is out of range for this file (3 lines)"),
+        "{}",
+        err
+    );
+}
+
+#[tokio::test]
+async fn test_read_empty_file_with_offset() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("empty.txt");
+    fs::write(&file_path, "").unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy(), "offset": 0 });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("<file>"));
+}
+
+#[tokio::test]
+async fn test_read_crlf_line_count() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("crlf.txt");
+    fs::write(&file_path, "a\r\nb\r\n").unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("total 2 lines"));
+    assert!(!result.output.contains('\r'));
+}

@@ -215,7 +215,9 @@ fn collect_files(path: &Path, glob_filter: Option<&str>) -> Result<Vec<std::path
                 if e.path() == path {
                     return true;
                 }
-                !is_hidden(e.file_name().to_str().unwrap_or(""))
+                // Hidden files such as `.github/` are searched; only `.git`
+                // is skipped (upstream #7501)
+                e.file_name() != ".git"
             })
             .filter_map(|e| e.ok())
         {
@@ -236,11 +238,6 @@ fn collect_files(path: &Path, glob_filter: Option<&str>) -> Result<Vec<std::path
     }
 
     Ok(files)
-}
-
-/// Check if a file/directory is hidden
-fn is_hidden(name: &str) -> bool {
-    name.starts_with('.') && name != "." && name != ".."
 }
 
 /// Simple glob matching for common patterns

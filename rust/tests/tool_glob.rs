@@ -94,3 +94,39 @@ fn test_glob_tool_parameters_schema() {
     let schema = tool.parameters_schema();
     assert!(schema["properties"]["pattern"].is_object());
 }
+
+// glob reliability fixes ported from upstream OpenCode (issue #335).
+
+#[tokio::test]
+async fn test_glob_results_are_limited_to_100() {
+    let temp = TempDir::new().unwrap();
+    for i in 0..150 {
+        fs::write(temp.path().join(format!("file{}.txt", i)), "x").unwrap();
+    }
+
+    let tool = GlobTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "pattern": "*.txt" });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert_eq!(result.metadata["count"], 100);
+    assert_eq!(result.metadata["truncated"], true);
+    assert!(result
+        .output
+        .contains("(Results are truncated. Consider using a more specific path or pattern.)"));
+}
+
+#[tokio::test]
+async fn test_glob_small_result_is_not_truncated() {
+    let temp = TempDir::new().unwrap();
+    fs::write(temp.path().join("a.txt"), "x").unwrap();
+
+    let tool = GlobTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "pattern": "*.txt" });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert_eq!(result.metadata["count"], 1);
+    assert_eq!(result.metadata["truncated"], false);
+    assert!(!result.output.contains("truncated"));
+}
