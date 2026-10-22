@@ -41,8 +41,11 @@ env:
   GIT_CONFIG_COUNT: '1'
   GIT_CONFIG_KEY_0: init.defaultBranch
   GIT_CONFIG_VALUE_0: main
-  # Note: -Dwarnings is disabled while Rust implementation is WIP
-  # Enable later with: RUSTFLAGS: -Dwarnings
+  # Every rustc and clippy warning fails the build, as in the Rust pipeline
+  # template. Without it the lint job passed while clippy reported warnings
+  # (issue #337). Cargo caps lints for dependencies, so only this crate is held
+  # to it.
+  RUSTFLAGS: -Dwarnings
 
 # Concurrency is declared per job rather than once for the whole workflow
 # (principle 10 of the CI/CD best practices, and the shape both pipeline
@@ -75,25 +78,19 @@ jobs:
         # would let a branch name execute shell code (zizmor template-injection).
         env:
           BASE_REF: ${{ github.base_ref }}
+        # Only a fragment this pull request adds or edits counts: unreleased
+        # fragments left by earlier pull requests used to satisfy the check,
+        # and a missing fragment only warned, so Rust changes could merge
+        # without ever being released (issue #337).
         run: |
-          # Get list of fragment files (excluding README)
-          FRAGMENTS=$(find rust/changelog.d -name "*.md" ! -name "README.md" 2>/dev/null | wc -l)
+          RANGE="origin/$BASE_REF...HEAD"
+          SOURCE_CHANGED=$(git diff --name-only "$RANGE" -- rust/src rust/tests rust/Cargo.toml | wc -l)
+          FRAGMENTS=$(git diff --name-only --diff-filter=AM "$RANGE" -- 'rust/changelog.d/*.md' | grep -cv '/README\.md$' || true)
 
-          # Get changed files in PR
-          CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF...HEAD")
-
-          # Check if any Rust source files changed
-          SOURCE_CHANGED=$(echo "$CHANGED_FILES" | grep -cE "^rust/(src/|tests/|Cargo\.toml)" || true)
-
+          echo "Rust source files changed: $SOURCE_CHANGED; changelog fragments added: $FRAGMENTS"
           if [ "$SOURCE_CHANGED" -gt 0 ] && [ "$FRAGMENTS" -eq 0 ]; then
-            echo "::warning::No changelog fragment found. Please add a changelog entry in rust/changelog.d/"
-            echo ""
-            echo "To create a changelog fragment:"
-            echo "  touch rust/changelog.d/\$(date +%Y%m%d_%H%M%S)_description.md"
-            echo ""
-            echo "See rust/changelog.d/README.md for more information."
-            # Note: This is a warning, not a failure, to allow flexibility
-            exit 0
+            echo "::error title=Missing Rust changelog fragment::Rust sources changed but no fragment was added to rust/changelog.d/. Create one with: touch rust/changelog.d/\$(date +%Y%m%d_%H%M%S)_description.md (see rust/changelog.d/README.md)."
+            exit 1
           fi
 
           echo "Changelog check passed"
@@ -149,8 +146,20 @@ jobs:
         run: cargo fmt --all -- --check
         working-directory: rust
 
+      - name: Fail on Cargo manifest warnings
+        run: bash ../scripts/check-cargo-warnings.sh
+        working-directory: rust
+
       - name: Run Clippy
         run: cargo clippy --all-targets --all-features
+        working-directory: rust
+
+      - name: Build documentation
+        # rustdoc-only lints (broken links, unclosed HTML tags) are not
+        # reported by clippy or the tests, so they are denied here.
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --all-features
         working-directory: rust
 
       - name: Check file size limit
@@ -392,12 +401,26 @@ jobs:
         run: cargo build --release
         working-directory: rust
 
+      # crates-io-auth-action reports a missing crates.io trusted publisher as
+      # `##[error]` even under continue-on-error, so every token-published
+      # release carried a false error annotation (issue #337). It only runs
+      # once a maintainer has configured the trusted publisher on crates.io
+      # and set the CRATES_IO_TRUSTED_PUBLISHING repository variable to true.
       - name: Authenticate with crates.io (trusted publishing)
         id: prm_auth
         # Trusted publishing first; the publish step falls back to the token secret.
         continue-on-error: true
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.check.outputs.should_release == 'true' && vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+
+      - name: Explain the crates.io credential
+        if: steps.check.outputs.should_release == 'true' && vars.CRATES_IO_TRUSTED_PUBLISHING != 'true'
+        run: >-
+          echo "::notice title=crates.io publishes with the token secret::Trusted
+          publishing is off. To publish through OIDC instead, add
+          ${GITHUB_REPOSITORY} / rust.yml as a trusted publisher of the
+          crate on crates.io, then set the CRATES_IO_TRUSTED_PUBLISHING
+          repository variable to true."
 
       - name: Publish to crates.io
         id: publish
@@ -483,12 +506,26 @@ jobs:
         run: cargo build --release
         working-directory: rust
 
+      # crates-io-auth-action reports a missing crates.io trusted publisher as
+      # `##[error]` even under continue-on-error, so every token-published
+      # release carried a false error annotation (issue #337). It only runs
+      # once a maintainer has configured the trusted publisher on crates.io
+      # and set the CRATES_IO_TRUSTED_PUBLISHING repository variable to true.
       - name: Authenticate with crates.io (trusted publishing)
         id: prm_auth
         # Trusted publishing first; the publish step falls back to the token secret.
         continue-on-error: true
-        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
+        if: (steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true') && vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+
+      - name: Explain the crates.io credential
+        if: (steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true') && vars.CRATES_IO_TRUSTED_PUBLISHING != 'true'
+        run: >-
+          echo "::notice title=crates.io publishes with the token secret::Trusted
+          publishing is off. To publish through OIDC instead, add
+          ${GITHUB_REPOSITORY} / rust.yml as a trusted publisher of the
+          crate on crates.io, then set the CRATES_IO_TRUSTED_PUBLISHING
+          repository variable to true."
 
       - name: Publish to crates.io
         id: publish

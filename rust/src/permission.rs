@@ -7,6 +7,7 @@
 //! By default the agent runs in **full auto mode** (every action is `allow`), so
 //! nothing changes for existing consumers. Opt-in CLI options switch the policy:
 //!
+//! ```text
 //!   --permission-mode auto      (default) allow everything, never ask
 //!   --permission-mode plan      read-only planning: deny edits, allow read-only
 //!                               shell commands, ask before anything else
@@ -17,6 +18,7 @@
 //!   --permission '<json>'       explicit OpenCode-compatible override merged on
 //!                               top of the mode, e.g.
 //!                               '{"bash":{"git push*":"ask","*":"allow"},"edit":"ask"}'
+//! ```
 //!
 //! The Rust binary does not yet drive a model agent loop (tools are invoked
 //! directly, not through a model), so this module provides the policy core,
