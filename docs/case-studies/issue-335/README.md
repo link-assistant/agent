@@ -15,37 +15,37 @@ was done.
 
 ### 1.1 Requirements
 
-| #   | Requirement (from the issue text)                                                    | Where it is handled                                     |
-| --- | ------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| R1  | Include upstream code that increases the reliability of our code                     | §4–§6, commits in PR #339                               |
-| R2  | Use upstream best practices                                                           | §3 (method), §7 (practices adopted)                     |
-| R3  | Do **not** add support for additional tools                                          | §2.3 — no tool was registered or added                  |
-| R4  | Only fix existing tools where we have potential issues                               | §4–§5: every port is a fix to an existing tool          |
-| R5  | Collect the data related to the issue into `./docs/case-studies/issue-335`          | `data/`, `analysis/`                                    |
-| R6  | Do a deep case study analysis, including online research for additional facts       | this file, `analysis/*.md`, §8                          |
-| R7  | List each and all requirements from the issue                                         | this table                                              |
-| R8  | Propose possible solutions and a solution plan for each requirement                  | §4–§6 (per-defect solution + status)                    |
-| R9  | Check known existing components/libraries that solve or help solve the problem       | §9                                                      |
-| R10 | Plan and execute everything in this single pull request                               | PR #339                                                 |
+| #   | Requirement (from the issue text)                                              | Where it is handled                            |
+| --- | ------------------------------------------------------------------------------ | ---------------------------------------------- |
+| R1  | Include upstream code that increases the reliability of our code               | §4–§6, commits in PR #339                      |
+| R2  | Use upstream best practices                                                    | §3 (method), §7 (practices adopted)            |
+| R3  | Do **not** add support for additional tools                                    | §2.3 — no tool was registered or added         |
+| R4  | Only fix existing tools where we have potential issues                         | §4–§5: every port is a fix to an existing tool |
+| R5  | Collect the data related to the issue into `./docs/case-studies/issue-335`     | `data/`, `analysis/`                           |
+| R6  | Do a deep case study analysis, including online research for additional facts  | this file, `analysis/*.md`, §8                 |
+| R7  | List each and all requirements from the issue                                  | this table                                     |
+| R8  | Propose possible solutions and a solution plan for each requirement            | §4–§6 (per-defect solution + status)           |
+| R9  | Check known existing components/libraries that solve or help solve the problem | §9                                             |
+| R10 | Plan and execute everything in this single pull request                        | PR #339                                        |
 
 ## 2. Context and timeline
 
 ### 2.1 Where the fork comes from
 
-| Date       | Event                                                                                                   |
-| ---------- | ------------------------------------------------------------------------------------------------------- |
+| Date       | Event                                                                                                    |
+| ---------- | -------------------------------------------------------------------------------------------------------- |
 | 2025-11-19 | Fork base: upstream commit `0068cb305f`. Our `js/` tree is a copy of `packages/opencode` from that time. |
-| 2025-12-15 | Upstream #4388 adds a per-file lock to `edit` (read-before-write race).                                 |
-| 2026-03-07 | Upstream #9443 preserves CRLF line endings in `edit`.                                                   |
+| 2025-12-15 | Upstream #4388 adds a per-file lock to `edit` (read-before-write race).                                  |
+| 2026-03-07 | Upstream #9443 preserves CRLF line endings in `edit`.                                                    |
 | 2026-03-16 | Upstream #17835 replaces the wall-clock read time with an `{mtime, size}` stamp.                         |
 | 2026-04-01 | Upstream #20367 normalizes paths used as FileTime keys.                                                  |
-| 2026-04-16 | Upstream #22999 deletes the FileTime module (moved into the Effect-based tool runtime).                 |
-| 2026-04-20 | Upstream #23483 re-adds per-file edit locking after the Effect refactor.                                |
-| 2026-04-22 | Upstream #23797 preserves the UTF-8 BOM in text tool round-trips.                                       |
-| 2026-06-05 | Upstream #30932 stops destructive fuzzy edit matches.                                                   |
-| 2026-07-20 | Upstream `44b6938b2a` deletes `packages/opencode`; the code now lives in `packages/core`.               |
-| 2026-10-12 | Upstream #53166 preserves mixed line endings in `edit`.                                                 |
-| 2026-10-22 | Upstream HEAD `d93568f334` (last tag `github-v1.2.27`). Issue #335 opened.                              |
+| 2026-04-16 | Upstream #22999 deletes the FileTime module (moved into the Effect-based tool runtime).                  |
+| 2026-04-20 | Upstream #23483 re-adds per-file edit locking after the Effect refactor.                                 |
+| 2026-04-22 | Upstream #23797 preserves the UTF-8 BOM in text tool round-trips.                                        |
+| 2026-06-05 | Upstream #30932 stops destructive fuzzy edit matches.                                                    |
+| 2026-07-20 | Upstream `44b6938b2a` deletes `packages/opencode`; the code now lives in `packages/core`.                |
+| 2026-10-12 | Upstream #53166 preserves mixed line endings in `edit`.                                                  |
+| 2026-10-22 | Upstream HEAD `d93568f334` (last tag `github-v1.2.27`). Issue #335 opened.                               |
 
 Because upstream reorganised the code base twice (Effect services, then the
 move from `packages/opencode` to `packages/core`), no upstream commit can be
@@ -101,21 +101,21 @@ Reproductions: [`experiments/issue-335/edit-write/`](../../../experiments/issue-
 Tests: `js/tests/edit-write-reliability.ts`, `rust/tests/tool_edit.rs`,
 `rust/tests/tool_write.rs`.
 
-| Defect (before)                                                                                   | Upstream          | Fix                                                                                                         | JS | Rust |
-| ------------------------------------------------------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------- | -- | ---- |
-| Parallel edits of one file read the same content; the last write won and other edits were lost    | #4388, #23483     | `FileTime.withLock` serializes read-modify-write per normalized path; `edit` and `write` both take it       | ✅ | n/a (sequential) |
-| Block-anchor fuzzy match accepted **any** block whose first and last lines matched                | #30932            | Similarity thresholds 0.0/0.3 → 0.65; block size must be within 25 % of `oldString`; disproportionate-match guard | ✅ | ✅ |
-| Empty `oldString` on an existing file silently replaced the whole file                            | #30932            | Rejected with an explicit error; still allowed for creating a new file                                     | ✅ | ✅ |
-| `replace(content, '', …)` looped forever                                                          | (found here)      | `replace()` rejects an empty `oldString`                                                                    | ✅ | ✅ |
-| CRLF files: LF `oldString` did not match, or the edited part was written with LF                  | #9443             | `oldString`/`newString` converted to the file's line ending                                                | ✅ | ✅ |
-| Mixed-ending files: one CRLF anywhere made all inserted lines CRLF; Rust rewrote untouched lines   | #53166            | Dominant line ending for new lines; Rust maps the result back line by line                                 | ✅ | ✅ |
-| Rust: fuzzy matches on CRLF files reported success but did not change the file                    | (found here)      | Replacers run on the LF view; endings restored afterwards                                                   | —  | ✅ |
-| UTF-8 BOM dropped by `edit` and `write`                                                            | #23797            | `Bom` helper splits/re-adds the BOM; no double BOM                                                          | ✅ | ✅ |
-| `replaceAll` treated `$&`, `$1`, `$'` in `newString` as patterns                                   | (String#replace)  | `split/join` instead of `String#replaceAll`                                                                 | ✅ | n/a (Rust `replace` is literal) |
-| "Modified since read" false positives for files with a future mtime; misses within the same ms     | #17835            | FileTime stores an `{mtime, size}` stamp and compares for equality                                         | ✅ | n/a (no FileTime) |
-| `dir/./a.txt` and `dir/a.txt` were different FileTime keys                                         | #20367            | Keys normalized with `path.resolve` + `realpath`                                                           | ✅ | n/a |
-| `edit` right after `write` failed with "You must read the file"                                    | —                 | `write` records a read                                                                                      | ✅ | n/a |
-| Empty output after a successful edit/write confused some models                                    | `66f9bdab32`      | "Edit applied successfully." / "Wrote file successfully."                                                   | ✅ | ✅ |
+| Defect (before)                                                                                  | Upstream         | Fix                                                                                                               | JS  | Rust                            |
+| ------------------------------------------------------------------------------------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------- | --- | ------------------------------- |
+| Parallel edits of one file read the same content; the last write won and other edits were lost   | #4388, #23483    | `FileTime.withLock` serializes read-modify-write per normalized path; `edit` and `write` both take it             | ✅  | n/a (sequential)                |
+| Block-anchor fuzzy match accepted **any** block whose first and last lines matched               | #30932           | Similarity thresholds 0.0/0.3 → 0.65; block size must be within 25 % of `oldString`; disproportionate-match guard | ✅  | ✅                              |
+| Empty `oldString` on an existing file silently replaced the whole file                           | #30932           | Rejected with an explicit error; still allowed for creating a new file                                            | ✅  | ✅                              |
+| `replace(content, '', …)` looped forever                                                         | (found here)     | `replace()` rejects an empty `oldString`                                                                          | ✅  | ✅                              |
+| CRLF files: LF `oldString` did not match, or the edited part was written with LF                 | #9443            | `oldString`/`newString` converted to the file's line ending                                                       | ✅  | ✅                              |
+| Mixed-ending files: one CRLF anywhere made all inserted lines CRLF; Rust rewrote untouched lines | #53166           | Dominant line ending for new lines; Rust maps the result back line by line                                        | ✅  | ✅                              |
+| Rust: fuzzy matches on CRLF files reported success but did not change the file                   | (found here)     | Replacers run on the LF view; endings restored afterwards                                                         | —   | ✅                              |
+| UTF-8 BOM dropped by `edit` and `write`                                                          | #23797           | `Bom` helper splits/re-adds the BOM; no double BOM                                                                | ✅  | ✅                              |
+| `replaceAll` treated `$&`, `$1`, `$'` in `newString` as patterns                                 | (String#replace) | `split/join` instead of `String#replaceAll`                                                                       | ✅  | n/a (Rust `replace` is literal) |
+| "Modified since read" false positives for files with a future mtime; misses within the same ms   | #17835           | FileTime stores an `{mtime, size}` stamp and compares for equality                                                | ✅  | n/a (no FileTime)               |
+| `dir/./a.txt` and `dir/a.txt` were different FileTime keys                                       | #20367           | Keys normalized with `path.resolve` + `realpath`                                                                  | ✅  | n/a                             |
+| `edit` right after `write` failed with "You must read the file"                                  | —                | `write` records a read                                                                                            | ✅  | n/a                             |
+| Empty output after a successful edit/write confused some models                                  | `66f9bdab32`     | "Edit applied successfully." / "Wrote file successfully."                                                         | ✅  | ✅                              |
 
 ## 5. Read/search and bash/web tools (reports B and C)
 
@@ -174,13 +174,13 @@ Full reports: [`analysis/B-read-search.md`](analysis/B-read-search.md),
 
 ## 9. Existing components and libraries
 
-| Need                          | Component considered                                     | Decision                                                                                     |
-| ----------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Per-file mutual exclusion     | `async-mutex`, `p-limit`, upstream Effect `Semaphore`    | A ~20-line promise chain (`FileTime.withLock`), as upstream #4388 did; no new dependency     |
-| BOM handling                  | `strip-bom`, `TextDecoder({ ignoreBOM })`                 | Built-in `TextDecoder` plus a small `Bom` helper                                             |
-| Line diff for ending restore (Rust) | `similar` (already a dependency)                    | `TextDiff::from_lines` maps unchanged lines back to their raw bytes                         |
-| String similarity             | `fastest-levenshtein`, `strsim` (Rust)                    | Existing in-tree Levenshtein (JS) and a small two-row implementation (Rust)                  |
-| Search                        | `ripgrep` (already used)                                  | Kept; exit-status and process handling fixed                                                |
+| Need                                | Component considered                                  | Decision                                                                                 |
+| ----------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Per-file mutual exclusion           | `async-mutex`, `p-limit`, upstream Effect `Semaphore` | A ~20-line promise chain (`FileTime.withLock`), as upstream #4388 did; no new dependency |
+| BOM handling                        | `strip-bom`, `TextDecoder({ ignoreBOM })`             | Built-in `TextDecoder` plus a small `Bom` helper                                         |
+| Line diff for ending restore (Rust) | `similar` (already a dependency)                      | `TextDiff::from_lines` maps unchanged lines back to their raw bytes                      |
+| String similarity                   | `fastest-levenshtein`, `strsim` (Rust)                | Existing in-tree Levenshtein (JS) and a small two-row implementation (Rust)              |
+| Search                              | `ripgrep` (already used)                              | Kept; exit-status and process handling fixed                                             |
 
 ## 10. Verification
 
