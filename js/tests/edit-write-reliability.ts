@@ -13,13 +13,15 @@ import { FileTime } from '../src/file/time.ts';
  *
  * Every test in this file reproduces a defect that existed in the fork's
  * edit/write tools before the sync:
- * - concurrent edits of one file silently lost updates (upstream 5cf126d489)
+ * - concurrent edits of one file silently lost updates (upstream #4388,
+ *   re-added in #23483)
  * - fuzzy block-anchor matching replaced unrelated code (upstream #30932)
  * - an empty oldString overwrote an existing file (upstream #30932)
- * - CRLF files were partially converted to LF (upstream #9443 / #23483)
+ * - CRLF files were partially converted to LF (upstream #9443 / #53166)
  * - a UTF-8 BOM was dropped by edit/write (upstream #23797)
  * - replaceAll interpreted `$&`/`$1` in newString (String#replaceAll)
- * - FileTime used wall-clock time and unnormalized keys (upstream #23483)
+ * - FileTime used wall-clock time and unnormalized keys (upstream #17835,
+ *   #20367)
  * - edit after write failed because write never recorded a read
  */
 

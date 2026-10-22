@@ -10,7 +10,7 @@ export namespace FileTime {
   // Comparing mtime/size for equality instead of `mtime > readTime` avoids
   // false "modified since read" errors for files whose mtime is in the
   // future (clock skew, archives, network mounts) and still catches edits
-  // made within the same millisecond as the read (upstream #23483).
+  // made within the same millisecond as the read (upstream #17835).
   export type Stamp = {
     read: Date;
     mtime: number | undefined;
@@ -31,7 +31,7 @@ export namespace FileTime {
   });
 
   // `dir/./a.txt`, `dir/a.txt`, relative paths and symlinked paths of the
-  // same file must share one entry (and one lock).
+  // same file must share one entry (and one lock) (upstream #20367).
   export function normalize(file: string) {
     const resolved = path.resolve(Instance.directory, file);
     try {
