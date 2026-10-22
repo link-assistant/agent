@@ -110,24 +110,32 @@ export const TaskTool = Tool.define('task', async () => {
       }
       ctx.abort.addEventListener('abort', cancel);
       using _ = defer(() => ctx.abort.removeEventListener('abort', cancel));
-      const promptParts = await SessionPrompt.resolvePromptParts(params.prompt);
-      const result = await SessionPrompt.prompt({
-        messageID,
-        sessionID: session.id,
-        model: {
-          modelID: model.modelID,
-          providerID: model.providerID,
-        },
-        agent: agent.name,
-        tools: {
-          todowrite: false,
-          todoread: false,
-          task: false,
-          ...agent.tools,
-        },
-        parts: promptParts,
-      });
-      unsub();
+      // Unsubscribe even when the subagent fails, or the subscription lives
+      // as long as the instance (upstream 63f5669eb5, #9992).
+      let result: Awaited<ReturnType<typeof SessionPrompt.prompt>>;
+      try {
+        const promptParts = await SessionPrompt.resolvePromptParts(
+          params.prompt
+        );
+        result = await SessionPrompt.prompt({
+          messageID,
+          sessionID: session.id,
+          model: {
+            modelID: model.modelID,
+            providerID: model.providerID,
+          },
+          agent: agent.name,
+          tools: {
+            todowrite: false,
+            todoread: false,
+            task: false,
+            ...agent.tools,
+          },
+          parts: promptParts,
+        });
+      } finally {
+        unsub();
+      }
       let all;
       all = await Session.messages({ sessionID: session.id });
       all = all.filter((x) => x.info.role === 'assistant');
