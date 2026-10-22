@@ -30,7 +30,7 @@ export namespace ModelDiscovery {
   export const DISABLE_ENV = 'LINK_ASSISTANT_AGENT_MODEL_DISCOVERY';
   export const DEFAULT_TIMEOUT_MS = 10_000;
 
-  export type Shape = 'openai' | 'anthropic' | 'gemini' | 'cohere';
+  export type Shape = 'openai' | 'anthropic' | 'gemini' | 'cohere' | 'azure';
 
   export interface DiscoveredModel {
     id: string;
@@ -46,6 +46,8 @@ export namespace ModelDiscovery {
     releaseDate?: string;
     /** Alternative IDs the provider accepts for the same model (Pollinations). */
     aliases?: string[];
+    /** Underlying model of a deployment (Azure), used for catalogue metadata. */
+    model?: string;
   }
 
   export interface ListingRequest {
@@ -146,7 +148,6 @@ export namespace ModelDiscovery {
     '@ai-sdk/amazon-bedrock/mantle',
     '@ai-sdk/google-vertex',
     '@ai-sdk/google-vertex/anthropic',
-    '@ai-sdk/azure',
     '@ai-sdk/perplexity',
     'gitlab-ai-provider',
     'ai-gateway-provider',
@@ -166,18 +167,58 @@ export namespace ModelDiscovery {
     return url.replace(/\/+$/, '');
   }
 
+  const AZURE_HOST =
+    /\.(openai\.azure\.com|services\.ai\.azure\.com|cognitiveservices\.azure\.com)$/i;
+  const AZURE_RESOURCE = /^[a-zA-Z0-9][a-zA-Z0-9-]*$/;
+
+  /**
+   * Root of an Azure resource's `/openai` API. A custom endpoint may expose
+   * other deployments than the resource, so it keeps the catalogue.
+   */
+  function azureRoot(baseURL?: string, resourceName?: string) {
+    if (baseURL) {
+      try {
+        const url = new URL(baseURL);
+        return AZURE_HOST.test(url.hostname)
+          ? `${url.origin}/openai`
+          : undefined;
+      } catch {
+        return undefined;
+      }
+    }
+    return resourceName && AZURE_RESOURCE.test(resourceName)
+      ? `https://${resourceName}.openai.azure.com/openai`
+      : undefined;
+  }
+
   export function listingRequest(input: {
     providerID: string;
     npm?: string;
     baseURL?: string;
     apiKey?: string;
     headers?: Record<string, string>;
+    /** Azure resource name (`AZURE_RESOURCE_NAME`). */
+    resourceName?: string;
   }): ListingRequest | undefined {
     const npm = input.npm ?? '@ai-sdk/openai-compatible';
     if (UNSUPPORTED_PROVIDERS.has(input.providerID)) return undefined;
     if (UNSUPPORTED_PACKAGES.has(npm)) return undefined;
     const apiKey = input.apiKey || undefined;
     const headers: Record<string, string> = { ...(input.headers ?? {}) };
+
+    if (npm === '@ai-sdk/azure') {
+      // Model IDs on Azure are deployment names. Only data-plane version
+      // 2022-12-01 lists a resource's deployments; later versions keep
+      // `/models`, the models it *could* deploy (same choice as OpenCode).
+      const root = azureRoot(input.baseURL, input.resourceName);
+      if (!root) return undefined;
+      if (apiKey) headers['api-key'] = apiKey;
+      return {
+        url: `${root}/deployments?api-version=2022-12-01`,
+        headers,
+        shape: 'azure',
+      };
+    }
 
     const override =
       LISTING_URL_OVERRIDES[input.providerID] ?? LISTING_URL_OVERRIDES[npm];
@@ -388,6 +429,15 @@ export namespace ModelDiscovery {
     };
   }
 
+  function normalizeAzure(item: any): DiscoveredModel | undefined {
+    if (!item || typeof item.id !== 'string') return undefined;
+    if (item.status !== 'succeeded') return undefined;
+    return {
+      id: item.id,
+      model: typeof item.model === 'string' ? item.model : undefined,
+    };
+  }
+
   /** Turn a listing payload into discovered models (deduplicated, sorted). */
   export function normalize(shape: Shape, payload: any): DiscoveredModel[] {
     const items: any[] = Array.isArray(payload)
@@ -401,7 +451,9 @@ export namespace ModelDiscovery {
           ? normalizeGemini
           : shape === 'cohere'
             ? normalizeCohere
-            : normalizeOpenAI;
+            : shape === 'azure'
+              ? normalizeAzure
+              : normalizeOpenAI;
     const seen = new Map<string, DiscoveredModel>();
     for (const item of items) {
       const model = fn(item);
@@ -482,6 +534,7 @@ export namespace ModelDiscovery {
       request.headers['authorization'] ??
       request.headers['x-api-key'] ??
       request.headers['x-goog-api-key'] ??
+      request.headers['api-key'] ??
       '';
     return crypto
       .createHash('sha256')
@@ -548,6 +601,7 @@ export namespace ModelDiscovery {
     baseURL?: string;
     apiKey?: string;
     headers?: Record<string, string>;
+    resourceName?: string;
     fetchImpl?: typeof fetch;
     timeoutMs?: number;
     force?: boolean;

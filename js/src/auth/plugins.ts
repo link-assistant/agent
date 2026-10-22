@@ -5,6 +5,7 @@ import { Auth } from './index';
 import { Log } from '../util/log';
 import { createVerboseFetch } from '../util/verbose-fetch';
 import { ProviderLogins } from './provider-logins';
+import { AzureLogin } from './azure-login';
 
 /**
  * Auth Plugins Module
@@ -2826,6 +2827,7 @@ const plugins: Record<string, AuthPlugin> = {
   poe: ProviderLogins.PoePlugin,
   digitalocean: ProviderLogins.DigitalOceanPlugin,
   gitlab: ProviderLogins.GitLabPlugin,
+  azure: AzureLogin.Plugin,
 };
 
 /**

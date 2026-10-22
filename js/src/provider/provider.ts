@@ -10,6 +10,7 @@ import { NamedError } from '../util/error';
 import { Auth } from '../auth';
 import { ClaudeOAuth } from '../auth/claude-oauth';
 import { AuthPlugins } from '../auth/plugins';
+import { AzureLogin } from '../auth/azure-login';
 import { Instance } from '../project/instance';
 import { Global } from '../global';
 import { config, isVerbose } from '../config/config';
@@ -246,8 +247,14 @@ export namespace Provider {
       };
     },
     azure: async () => {
+      // `agent auth login azure` with Microsoft Entra ID stores no secret:
+      // requests mint bearer tokens from the Azure CLI session (#334).
+      const entra = await AzureLogin.options(await Auth.get('azure'));
+      if (entra) {
+        log.info(() => ({ message: 'using azure entra id credentials' }));
+      }
       return {
-        autoload: false,
+        autoload: !!entra,
         async getModel(
           sdk: any,
           modelID: string,
@@ -259,7 +266,7 @@ export namespace Provider {
             return sdk.responses(modelID);
           }
         },
-        options: {},
+        options: entra ?? {},
       };
     },
     'azure-cognitive-services': async () => {
@@ -1570,6 +1577,11 @@ export namespace Provider {
       apiKey:
         typeof options['apiKey'] === 'string' ? options['apiKey'] : undefined,
       headers: options['headers'],
+      resourceName:
+        options['resourceName'] ??
+        (provider.info.id === 'azure'
+          ? process.env['AZURE_RESOURCE_NAME']
+          : undefined),
       // Providers that sign requests themselves (OAuth) list models the same way.
       fetchImpl:
         typeof options['fetch'] === 'function' ? options['fetch'] : undefined,
@@ -1596,7 +1608,7 @@ export namespace Provider {
     return ModelDiscovery.toModelInfo(found, {
       metadata: ModelDiscovery.catalogueMetadata(
         s.database,
-        found.id,
+        found.model ?? found.id,
         providerID
       ),
     });

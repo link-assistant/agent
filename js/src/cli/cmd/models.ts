@@ -71,7 +71,7 @@ export const ModelsCommand = cmd({
               if (models[found.id]) continue;
               const metadata = ModelDiscovery.catalogueMetadata(
                 s.database,
-                found.id,
+                found.model ?? found.id,
                 provider.info.id
               );
               // A listing without prices says nothing about the cost, except
