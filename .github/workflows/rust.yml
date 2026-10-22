@@ -493,5 +493,9 @@ jobs:
       - name: Fail the run when a required job was cancelled or failed
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
-          IS_MAIN: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+          # A cancellation passes only when a newer commit superseded this
+          # run and the job cancels in progress; refs/pull/<n>/head also
+          # resolves for pull requests from forks.
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
         run: bash scripts/check-pipeline-status.sh
