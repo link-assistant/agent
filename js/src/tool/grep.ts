@@ -1,4 +1,6 @@
 import z from 'zod';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { Tool } from './tool';
 import { Ripgrep } from '../file/ripgrep';
 
@@ -10,6 +12,7 @@ import {
 } from './text-window';
 
 const MAX_MATCHING_LINE_LENGTH = 2000;
+const SEARCH_TIMEOUT_MS = 30_000;
 
 export const GrepTool = Tool.define('grep', {
   description: DESCRIPTION,
@@ -30,28 +33,63 @@ export const GrepTool = Tool.define('grep', {
         'File pattern to include in the search (e.g. "*.js", "*.{ts,tsx}")'
       ),
   }),
-  async execute(params) {
+  async execute(params, ctx) {
     if (!params.pattern) {
       throw new Error('pattern is required');
     }
 
-    const searchPath = params.path || Instance.directory;
+    // Relative paths are relative to the session directory, not to the
+    // process cwd that rg would otherwise use.
+    const searchPath = path.resolve(Instance.directory, params.path || '.');
+    // upstream 8f4b62eb49 (#35337): say so instead of passing rg's exit 2 on
+    if (!(await fs.stat(searchPath).catch(() => undefined))) {
+      throw new Error(`Search path does not exist: ${searchPath}`);
+    }
 
     const rgPath = await Ripgrep.filepath();
-    const args = ['--json', '--regexp', params.pattern];
+    // `--hidden` finds dotfiles such as `.github/` like glob/ls do (upstream
+    // d5738f542c #7501); `--no-messages` keeps per-file errors out of stderr
+    // (upstream 4edb4fa4fa #8612); `--no-config` ignores RIPGREP_CONFIG_PATH.
+    const args = [
+      '--json',
+      '--hidden',
+      '--no-messages',
+      '--no-config',
+      '--glob=!**/.git/**',
+      '--regexp',
+      params.pattern,
+    ];
     if (params.include) {
       args.push('--glob', params.include);
     }
     args.push(searchPath);
 
+    // upstream 4d2696e027 / 3bda0ce123 (#39238): honor the tool call's abort
+    // signal and do not let a huge search run forever.
+    const timeout = AbortSignal.timeout(SEARCH_TIMEOUT_MS);
+    const signal = AbortSignal.any([ctx.abort, timeout]);
+    signal.throwIfAborted();
+
     const proc = Bun.spawn([rgPath, ...args], {
       stdout: 'pipe',
       stderr: 'pipe',
+      signal,
     });
 
-    const output = await new Response(proc.stdout).text();
-    const errorOutput = await new Response(proc.stderr).text();
-    const exitCode = await proc.exited;
+    // Drain both pipes concurrently: reading stdout to the end first
+    // deadlocks once rg fills the stderr pipe.
+    const [output, errorOutput, exitCode] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ]);
+
+    ctx.abort.throwIfAborted();
+    if (timeout.aborted) {
+      throw new Error(
+        `Search timed out after ${SEARCH_TIMEOUT_MS / 1000} seconds. Consider using a more specific path or pattern.`
+      );
+    }
 
     if (exitCode === 1) {
       return {
@@ -61,13 +99,24 @@ export const GrepTool = Tool.define('grep', {
       };
     }
 
-    if (exitCode !== 0) {
+    // Exit codes: 0 = matches, 1 = no matches, 2 = an error occurred. With
+    // `--no-messages`, exit 2 without a regex error means some paths could
+    // not be read; the matches from readable files are still valid.
+    if (
+      exitCode === 2 &&
+      /regex parse error|error parsing regex/i.test(errorOutput)
+    ) {
+      throw new Error(`Invalid regex pattern: ${errorOutput.trim()}`);
+    }
+
+    if (exitCode !== 0 && exitCode !== 2) {
       throw new Error(`Exit code ${exitCode}\nripgrep failed: ${errorOutput}`);
     }
 
+    const hasErrors = exitCode === 2;
     const matches = [];
 
-    for (const line of output.trim().split('\n')) {
+    for (const line of output.trim().split(/\r?\n/)) {
       if (!line) continue;
 
       const event = JSON.parse(line);
@@ -113,7 +162,9 @@ export const GrepTool = Tool.define('grep', {
       return {
         title: params.pattern,
         metadata: { matches: 0, truncated: false },
-        output: 'No files found',
+        output: hasErrors
+          ? 'No files found\n\n(Some paths were inaccessible and skipped)'
+          : 'No files found',
       };
     }
 
@@ -144,6 +195,11 @@ export const GrepTool = Tool.define('grep', {
       outputLines.push(
         '(Results are truncated. Consider using a more specific path or pattern.)'
       );
+    }
+
+    if (hasErrors) {
+      outputLines.push('');
+      outputLines.push('(Some paths were inaccessible and skipped)');
     }
 
     return {
