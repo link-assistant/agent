@@ -1,5 +1,78 @@
 # @link-assistant/agent
 
+## 0.27.0
+
+### Minor Changes
+
+- c0187d1: feat: support every AI provider OpenCode supports, plus gpt4free, with live model discovery (#334)
+
+  - Every [models.dev](https://models.dev) provider loads, including those
+    whose base URLs use `${ENV}` templates (Cloudflare, Databricks, Snowflake
+    Cortex, Vertex, Neon and others) and per-model endpoints. Ported OpenCode's
+    custom loaders for Amazon Bedrock (including Mantle), Google Vertex,
+    Cloudflare AI Gateway and Workers AI, Snowflake Cortex and SAP AI Core.
+    Venice and AIHubMix fall back to their OpenAI-compatible endpoints.
+  - Ported OpenCode's subscription logins to `agent auth login`: xAI
+    (SuperGrok), Poe, DigitalOcean, GitLab (gitlab.com and self-managed) and
+    Azure Microsoft Entra ID through the Azure CLI. They join the existing
+    Claude, ChatGPT, GitHub Copilot, Google, Qwen and Kilo logins.
+  - Sends `prompt_cache_key` to the openai-compatible providers OpenCode
+    enables it for.
+  - New providers that models.dev does not list: `gpt4free` (local
+    Interference API, `G4F_PROVIDER` pinning), `g4f-space`, `pollinations`,
+    `airforce`, `aibadgr`, `api-route`, `cheaperinference`, `theb`, `ollama`,
+    `vllm`, `llamacpp` and `omniroute`. Keyless ones are used only when named
+    with `--model`.
+  - Live model discovery: each provider's own token-free listing endpoint
+    (including Azure deployments) adds models released since the last
+    models.dev update. The listing is cached for at least an hour, and
+    endpoints that spend tokens are refused. Set
+    `LINK_ASSISTANT_AGENT_MODEL_DISCOVERY=off` to turn it off.
+  - `agent models` gains `--discover`, `--refresh` and `--free`.
+  - New docs: `docs/providers.md`, with a generated table of all models.dev
+    providers (`bun scripts/generate-provider-docs.mjs`),
+    `docs/gpt4free.md` and `docs/model-discovery.md`. Refreshed `MODELS.md`
+    and `FREE_MODELS.md` with current models.
+  - Updated the AI SDK provider packages, `ai`, `google-auth-library` and the
+    other direct dependencies to their latest releases.
+
+### Patch Changes
+
+- 3296fd4: fix(ci): remove CI/CD false positives and false negatives (#337)
+
+  - The step budget wrapper (`scripts/run-with-budget-warning.sh`) no longer
+    kills a command up to a second before its budget ends: bash's `SECONDS`
+    counts second boundaries, so a 3s budget could expire after about 2s. This
+    failed the JS unit tests on macOS and blocked the release of #334.
+  - The changeset check counts only the changesets a pull request adds, so an
+    unreleased changeset from an earlier pull request no longer satisfies it.
+  - `agent generate` builds the agent configuration with `generateText` and
+    `Output.object` instead of the deprecated `generateObject`, so it no longer
+    prints an AI SDK `DeprecationWarning`. The AI SDK warning tests now capture
+    warnings through `AI_SDK_LOG_WARNINGS`: AI SDK 7 reports them through
+    `process.emitWarning`, which the old `console.warn` mock never saw.
+  - The `allowScripts` entry for `node-pty` matches the locked 1.1.0 instead of
+    1.2.0-beta.15, and `js/.npmrc` sets `strict-allow-scripts` so a stale entry
+    fails the install instead of logging a warning. CI installs on Node 26,
+    which `@opentui/core` requires.
+  - Instant Release runs only after lint, the tests, the verbose integration
+    test and the package install check pass, and every release job requires
+    lint and test to succeed.
+  - A release rerun recognises that an earlier attempt already pushed its
+    version commit when main moved meanwhile, instead of skipping the publish.
+  - The release pushes its version commit with up to three attempts, rebasing
+    onto main when another merge landed first, instead of failing the release.
+  - The pipeline status gate fails on every unsuccessful job result, including
+    a test that `timeout-minutes` cancelled on a pull request. A cancellation
+    passes only when a newer run replaced this one and the job's own
+    `cancel-in-progress` allowed that. Set `PIPELINE_STATUS_VERBOSE=1` to trace
+    each decision. Every workflow now ends in such a gate.
+  - Model tests fail at once with the secret's name when `GROQ_API_KEY` is
+    missing, and warn when Kilo models run without `KILO_API_KEY`.
+  - Refresh the AI SDK packages to their latest patch releases, which the
+    Dependency Freshness check requires, and update `ip-address` to 10.7.4 for
+    GHSA-rxp7-6hxx-x8q5.
+
 ## 0.26.15
 
 ### Patch Changes
