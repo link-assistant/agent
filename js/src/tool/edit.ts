@@ -14,10 +14,23 @@ import { FileTime } from '../file/time';
 import { Instance } from '../project/instance';
 import { Snapshot } from '../snapshot';
 import { Permission } from '../permission';
+import { Bom } from '../util/bom';
 
 function normalizeLineEndings(text: string): string {
   return text.replaceAll('\r\n', '\n');
 }
+
+function detectLineEnding(text: string): '\n' | '\r\n' {
+  return text.includes('\r\n') ? '\r\n' : '\n';
+}
+
+function convertToLineEnding(text: string, ending: '\n' | '\r\n'): string {
+  if (ending === '\n') return text;
+  return text.replaceAll('\n', '\r\n');
+}
+
+const EMPTY_OLD_STRING_ERROR =
+  'oldString cannot be empty when editing an existing file. Provide the exact text to replace, or use write for an intentional full-file replacement.';
 
 export const EditTool = Tool.define('edit', {
   description: DESCRIPTION,
@@ -61,16 +74,23 @@ export const EditTool = Tool.define('edit', {
     let diff = '';
     let contentOld = '';
     let contentNew = '';
-    await (async () => {
+    // Tool calls of one step run concurrently; serialize read-modify-write of
+    // the same file so parallel edits cannot drop each other's changes.
+    await FileTime.withLock(filePath, async () => {
       if (params.oldString === '') {
-        contentNew = params.newString;
+        if (await Bun.file(filePath).exists()) {
+          throw new Error(EMPTY_OLD_STRING_ERROR);
+        }
+        const next = Bom.split(params.newString);
+        contentNew = next.text;
         diff = trimDiff(
           createTwoFilesPatch(filePath, filePath, contentOld, contentNew)
         );
-        await Bun.write(filePath, params.newString);
+        await Bun.write(filePath, Bom.join(contentNew, next.bom));
         await Bus.publish(File.Event.Edited, {
           file: filePath,
         });
+        FileTime.read(ctx.sessionID, filePath);
         return;
       }
 
@@ -80,28 +100,30 @@ export const EditTool = Tool.define('edit', {
       if (stats.isDirectory())
         throw new Error(`Path is a directory, not a file: ${filePath}`);
       await FileTime.assert(ctx.sessionID, filePath);
-      contentOld = await file.text();
-      contentNew = replace(
-        contentOld,
-        params.oldString,
-        params.newString,
-        params.replaceAll
-      );
+      const source = await Bom.readFile(filePath);
+      contentOld = source.text;
 
-      diff = trimDiff(
-        createTwoFilesPatch(
-          filePath,
-          filePath,
-          normalizeLineEndings(contentOld),
-          normalizeLineEndings(contentNew)
-        )
+      // Models usually send LF; keep the file's own line endings so a CRLF
+      // file is neither left unmatched nor partially converted to LF.
+      const ending = detectLineEnding(contentOld);
+      const oldString = convertToLineEnding(
+        normalizeLineEndings(params.oldString),
+        ending
       );
+      const newString = convertToLineEnding(
+        normalizeLineEndings(params.newString),
+        ending
+      );
+      const next = Bom.split(
+        replace(contentOld, oldString, newString, params.replaceAll)
+      );
+      contentNew = next.text;
 
-      await file.write(contentNew);
+      await Bun.write(filePath, Bom.join(contentNew, source.bom || next.bom));
       await Bus.publish(File.Event.Edited, {
         file: filePath,
       });
-      contentNew = await file.text();
+      FileTime.read(ctx.sessionID, filePath);
       diff = trimDiff(
         createTwoFilesPatch(
           filePath,
@@ -110,11 +132,9 @@ export const EditTool = Tool.define('edit', {
           normalizeLineEndings(contentNew)
         )
       );
-    })();
+    });
 
-    FileTime.read(ctx.sessionID, filePath);
-
-    let output = '';
+    const output = 'Edit applied successfully.';
     const diagnostics = {};
 
     const filediff: Snapshot.FileDiff = {
@@ -147,8 +167,10 @@ export type Replacer = (
 ) => Generator<string, void, unknown>;
 
 // Similarity thresholds for block anchor fallback matching
-const SINGLE_CANDIDATE_SIMILARITY_THRESHOLD = 0.0;
-const MULTIPLE_CANDIDATES_SIMILARITY_THRESHOLD = 0.3;
+// (raised from 0.0 / 0.3 in upstream #30932: with 0.0 any block whose first
+// and last lines matched was replaced, even when the middle was unrelated)
+const SINGLE_CANDIDATE_SIMILARITY_THRESHOLD = 0.65;
+const MULTIPLE_CANDIDATES_SIMILARITY_THRESHOLD = 0.65;
 
 /**
  * Levenshtein distance algorithm implementation
@@ -236,6 +258,7 @@ export const BlockAnchorReplacer: Replacer = function* (content, find) {
   const firstLineSearch = searchLines[0].trim();
   const lastLineSearch = searchLines[searchLines.length - 1].trim();
   const searchBlockSize = searchLines.length;
+  const maxLineDelta = Math.max(1, Math.floor(searchBlockSize * 0.25));
 
   // Collect all candidate positions where both anchors match
   const candidates: Array<{ startLine: number; endLine: number }> = [];
@@ -247,7 +270,10 @@ export const BlockAnchorReplacer: Replacer = function* (content, find) {
     // Look for the matching last line after this first line
     for (let j = i + 2; j < originalLines.length; j++) {
       if (originalLines[j].trim() === lastLineSearch) {
-        candidates.push({ startLine: i, endLine: j });
+        const actualBlockSize = j - i + 1;
+        if (Math.abs(actualBlockSize - searchBlockSize) <= maxLineDelta) {
+          candidates.push({ startLine: i, endLine: j });
+        }
         break; // Only match the first occurrence of the last line
       }
     }
@@ -631,6 +657,11 @@ export function replace(
   if (oldString === newString) {
     throw new Error('oldString and newString must be different');
   }
+  if (oldString === '') {
+    // Every replacer would "match" the empty string (MultiOccurrenceReplacer
+    // never terminates on it), so reject it explicitly.
+    throw new Error(EMPTY_OLD_STRING_ERROR);
+  }
 
   let notFound = true;
 
@@ -649,8 +680,15 @@ export function replace(
       const index = content.indexOf(search);
       if (index === -1) continue;
       notFound = false;
+      if (isDisproportionateMatch(search, oldString)) {
+        throw new Error(
+          'Refusing replacement because the matched span is much larger than oldString. Re-read the file and provide the full exact oldString for the intended replacement.'
+        );
+      }
       if (replaceAll) {
-        return content.replaceAll(search, newString);
+        // split/join instead of String#replaceAll so `$&`, `$1`, `$'` in
+        // newString are inserted literally.
+        return content.split(search).join(newString);
       }
       const lastIndex = content.lastIndexOf(search);
       if (index !== lastIndex) continue;
@@ -667,5 +705,18 @@ export function replace(
   }
   throw new Error(
     'Found multiple matches for oldString. Provide more surrounding lines in oldString to identify the correct match.'
+  );
+}
+
+// A fuzzy replacer matched far more text than the model asked to replace
+// (upstream #30932): refuse instead of deleting unrelated code.
+function isDisproportionateMatch(search: string, oldString: string) {
+  const oldLines = oldString.split('\n').length;
+  const searchLines = search.split('\n').length;
+  if (searchLines >= Math.max(oldLines + 3, oldLines * 2)) return true;
+  if (oldLines === 1) return false;
+  return (
+    search.trim().length >
+    Math.max(oldString.trim().length + 500, oldString.trim().length * 4)
   );
 }
