@@ -11,7 +11,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { URL, fileURLToPath } from 'node:url';
-import { BashTool } from '../src/tool/bash';
+import { BashTool, selectShell } from '../src/tool/bash';
 import { config } from '../src/config/config';
 import { Instance } from '../src/project/instance';
 import { Permission } from '../src/permission';
@@ -177,13 +177,16 @@ describe('bash tool command execution', () => {
   });
 
   test.skipIf(process.platform === 'win32')(
-    'uses the same POSIX shell as child_process shell mode',
+    'runs commands in the selected shell, not /bin/sh',
     async () => {
       const directory = tempDir();
       try {
-        // command-stream's builtin `pwd` and `ls` do not run /bin/sh.
+        // command-stream's builtin `pwd` and `ls` do not run a shell.
+        // /bin/sh is dash on Debian/Ubuntu, so bash syntax would fail there.
         const { result } = await runBash(directory, 'echo "$0" && pwd');
-        expect(result.output).toBe(`/bin/sh\n${realpathSync(directory)}\n`);
+        expect(result.output).toBe(
+          `${selectShell()}\n${realpathSync(directory)}\n`
+        );
       } finally {
         rmSync(directory, { recursive: true, force: true });
       }
@@ -213,7 +216,7 @@ describe('bash tool command execution', () => {
     }
   });
 
-  test('truncates long output with the original suffix', async () => {
+  test('truncates long output keeping its end', async () => {
     const directory = tempDir();
     try {
       const { result } = await runBash(
@@ -221,7 +224,7 @@ describe('bash tool command execution', () => {
         'node -e "process.stdout.write(\'x\'.repeat(30001))"'
       );
       expect(result.output).toBe(
-        `${'x'.repeat(30000)}\n\n(Output was truncated due to length limit)`
+        `...output truncated...\n\n${'x'.repeat(30000)}`
       );
       expect(result.metadata.output).toBe(result.output);
     } finally {

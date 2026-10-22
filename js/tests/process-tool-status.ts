@@ -144,7 +144,7 @@ describe('process tool status (#317)', () => {
       bunCommand("console.log('x'.repeat(30100)); process.exit(4)")
     );
     expect(result.output).toStartWith('Exit code 4\n');
-    expect(result.output).toContain('Output was truncated');
+    expect(result.output).toContain('...output truncated...');
     expect(result.isError).toBe(true);
   });
 
