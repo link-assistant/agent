@@ -4,9 +4,9 @@
 //! and the original inline tests from rust/src/tool/edit.rs.
 
 use link_assistant_agent::tool::edit::{
-    try_context_aware_replace, try_escape_normalized_replace, try_exact_replace,
-    try_indentation_flexible_replace, try_multi_occurrence_replace, try_trimmed_boundary_replace,
-    EditTool,
+    try_block_anchor_replace, try_context_aware_replace, try_escape_normalized_replace,
+    try_exact_replace, try_indentation_flexible_replace, try_multi_occurrence_replace,
+    try_trimmed_boundary_replace, EditTool,
 };
 use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
@@ -247,4 +247,107 @@ fn test_edit_tool_parameters_schema() {
     assert!(schema["properties"]["filePath"].is_object());
     assert!(schema["properties"]["oldString"].is_object());
     assert!(schema["properties"]["newString"].is_object());
+}
+
+// --- Reliability fixes synced from upstream OpenCode (issue #335) ---
+
+#[tokio::test]
+async fn test_edit_keeps_crlf_line_endings() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("crlf.txt");
+    fs::write(&file_path, "a\r\nb\r\nc\r\n").unwrap();
+
+    let ctx = create_context(temp.path());
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "a\nb",
+        "newString": "a\nB\nb2"
+    });
+    EditTool.execute(params, &ctx).await.unwrap();
+
+    // Before the fix the whole file was rewritten with LF line endings.
+    assert_eq!(
+        fs::read_to_string(&file_path).unwrap(),
+        "a\r\nB\r\nb2\r\nc\r\n"
+    );
+}
+
+#[tokio::test]
+async fn test_edit_keeps_utf8_bom() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("bom.txt");
+    fs::write(&file_path, "\u{feff}hello world\n").unwrap();
+
+    let ctx = create_context(temp.path());
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "hello",
+        "newString": "goodbye"
+    });
+    EditTool.execute(params, &ctx).await.unwrap();
+
+    assert_eq!(fs::read(&file_path).unwrap()[..3], [0xef, 0xbb, 0xbf]);
+    assert_eq!(
+        fs::read_to_string(&file_path).unwrap(),
+        "\u{feff}goodbye world\n"
+    );
+}
+
+#[tokio::test]
+async fn test_edit_empty_old_string_does_not_overwrite_existing_file() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("keep.txt");
+    fs::write(&file_path, "precious\n").unwrap();
+
+    let ctx = create_context(temp.path());
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "",
+        "newString": "gone"
+    });
+    let err = EditTool.execute(params, &ctx).await.unwrap_err();
+
+    assert!(err.to_string().contains("oldString cannot be empty"));
+    assert_eq!(fs::read_to_string(&file_path).unwrap(), "precious\n");
+}
+
+#[tokio::test]
+async fn test_edit_returns_confirmation_output() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("ok.txt");
+    fs::write(&file_path, "alpha\n").unwrap();
+
+    let ctx = create_context(temp.path());
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "alpha",
+        "newString": "beta"
+    });
+    let result = EditTool.execute(params, &ctx).await.unwrap();
+    assert_eq!(result.output, "Edit applied successfully.");
+}
+
+#[test]
+fn test_block_anchor_rejects_unrelated_middle() {
+    let content = "start\nalpha beta gamma\nend";
+    let old = "start\nzzzzzzzzzzzzzzzz\nend";
+    assert!(try_block_anchor_replace(content, old, "x", false).is_none());
+}
+
+#[test]
+fn test_block_anchor_rejects_much_larger_block() {
+    let content =
+        "fn a() {\n  one();\n  two();\n  three();\n  four();\n  five();\n  six();\n  seven();\n}";
+    let old = "fn a() {\n  totally different\n}";
+    assert!(try_block_anchor_replace(content, old, "x", false).is_none());
+}
+
+#[test]
+fn test_block_anchor_accepts_close_middle() {
+    let content = "start\n  value = compute(1, 2);\nend";
+    let old = "start\n  value = compute(1, 3);\nend";
+    assert_eq!(
+        try_block_anchor_replace(content, old, "replaced", false).as_deref(),
+        Some("replaced")
+    );
 }
