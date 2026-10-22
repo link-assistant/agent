@@ -334,6 +334,14 @@ jobs:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
 
+      # `changeset version` formats the changelog through the package manager
+      # it detects, which is bun because of js/bun.lock. Without bun it fails
+      # with `spawn bun ENOENT` before deleting the consumed changesets.
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+
       - name: Install dependencies
         run: bash ../scripts/run-with-budget-warning.sh 300 "Release dependency install" npm install --legacy-peer-deps
         working-directory: js

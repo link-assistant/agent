@@ -309,6 +309,20 @@ describe('merge result validation', () => {
   });
 });
 
+describe('release tooling', () => {
+  // `changeset version` formats files with the package manager it detects
+  // (bun, because of js/bun.lock). Without bun the 0.26.15 release left its
+  // changeset in js/.changeset.
+  test('the release job installs bun before running changeset version', () => {
+    const body = workflows.find((workflow) => workflow.file === 'js.yml').body;
+    const release = getJobBlock(body, 'release');
+    const bun = release.indexOf('oven-sh/setup-bun@');
+
+    expect(bun).toBeGreaterThan(-1);
+    expect(bun).toBeLessThan(release.indexOf('version-and-commit.mjs'));
+  });
+});
+
 describe('secrets detection', () => {
   test('the js pipeline scans the repository for committed secrets', () => {
     const body = workflows.find((workflow) => workflow.file === 'js.yml').body;

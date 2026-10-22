@@ -11,7 +11,9 @@
  */
 
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { URL } from 'node:url';
 
 import {
@@ -38,6 +40,10 @@ import {
   recoverJsRelease,
 } from '../../scripts/recover-js-release.mjs';
 import { jsReleaseSummary } from '../../scripts/js-release-summary.mjs';
+import {
+  assertChangesetsConsumed,
+  listChangesets,
+} from '../../scripts/changeset-files.mjs';
 import {
   DEFAULT_VERIFY_ATTEMPTS,
   DEFAULT_VERIFY_INITIAL_DELAY,
@@ -671,5 +677,47 @@ describe('crates-registry', () => {
     await expect(
       isCrateVersionPublished('crate', '0.9.2', { fetchFn })
     ).rejects.toThrow(/503/);
+  });
+});
+
+describe('changeset version result', () => {
+  // The 0.26.15 release: `changeset version` bumped package.json and wrote the
+  // changelog, then failed with `spawn bun ENOENT` before deleting the
+  // changeset. The script went on and committed the bump with the changeset
+  // still in js/.changeset. Reproduction:
+  // experiments/issue-334/changeset-version-without-bun.sh
+  function changesetDir(files) {
+    const dir = mkdtempSync(join(tmpdir(), 'changesets-'));
+    for (const file of files) {
+      writeFileSync(join(dir, file), '');
+    }
+    return dir;
+  }
+
+  test('lists changesets without README.md and config.json', () => {
+    const dir = changesetDir(['README.md', 'config.json', 'b.md', 'a.md']);
+    try {
+      expect(listChangesets(dir)).toEqual(['a.md', 'b.md']);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test('a changeset left behind fails the version step', () => {
+    const dir = changesetDir(['README.md', 'config.json', 'fix.md']);
+    try {
+      expect(() => assertChangesetsConsumed(dir)).toThrow(/fix\.md/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test('a fully consumed changeset directory passes', () => {
+    const dir = changesetDir(['README.md', 'config.json']);
+    try {
+      expect(() => assertChangesetsConsumed(dir)).not.toThrow();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
