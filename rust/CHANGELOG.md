@@ -14,6 +14,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.10.5] - 2026-10-22
+
+### Changed
+
+- Update tokio to 1.54.1 for the dependency freshness check.
+
+### Security
+
+- Update rustls-webpki to 0.103.16 (RUSTSEC-2026-0382) and webpki-root-certs to 1.0.10 (RUSTSEC-2026-0383).
+
 ## [0.10.4] - 2026-10-14
 
 ### Changed
