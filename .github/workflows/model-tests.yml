@@ -153,17 +153,29 @@ jobs:
           # line containing `=` in an unexpected place could inject an output.
           echo "$OUTPUT" | grep -E '^[A-Za-z_][A-Za-z0-9_]*=[^[:cntrl:]]*$' >> "$GITHUB_OUTPUT" || true
 
+      # Groq rejects every request without a key, so a missing secret fails
+      # here with its name instead of as an opaque test failure. Kilo serves
+      # its free models anonymously but may reject them, hence only a warning.
       - name: Check API key availability
         env:
           PROVIDER: ${{ steps.model.outputs.provider }}
         run: |
-          if [ "$PROVIDER" = "groq" ]; then
-            if [ -z "$GROQ_API_KEY" ]; then
-              echo "::warning::GROQ_API_KEY is not set. Groq tests may fail."
-            else
+          case "$PROVIDER" in
+            groq)
+              if [ -z "$GROQ_API_KEY" ]; then
+                echo "::error::GROQ_API_KEY is not set. Add it as a repository secret to test Groq models."
+                exit 1
+              fi
               echo "GROQ_API_KEY is configured"
-            fi
-          fi
+              ;;
+            kilo)
+              if [ -z "$KILO_API_KEY" ]; then
+                echo "::warning::KILO_API_KEY is not set. Kilo models are tested anonymously, which Kilo may reject."
+              else
+                echo "KILO_API_KEY is configured"
+              fi
+              ;;
+          esac
 
       - name: Test without tools (simple response)
         if: inputs.test_type == 'without_tools' || inputs.test_type == 'both'
@@ -212,3 +224,28 @@ jobs:
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
           fi
+
+  # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
+  # the run grey instead of red. This gate fails the run on any unsuccessful
+  # job and on any cancellation a newer run does not explain (#301, #337).
+  pipeline-status:
+    name: Pipeline Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status-${{ inputs.model }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    if: always()
+    needs:
+      - test-model
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Fail the run when a required job was cancelled or failed
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

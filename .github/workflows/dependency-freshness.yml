@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: '24.x'
+          node-version: '26.x'
           cache: npm
           cache-dependency-path: js/package-lock.json
       - name: Install dependencies from the committed lockfile
@@ -64,9 +64,39 @@ jobs:
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
+      # install-action (up to v2.87.30) ships no cargo-outdated manifest, so
+      # its "updating install-action might resolve this" info line is
+      # expected: the tool is always installed through cargo-binstall.
       - uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
         with:
           tool: cargo-outdated@0.19.0
+          fallback: cargo-binstall
       - name: Fail if a direct dependency has a newer release
         working-directory: rust
         run: cargo outdated --root-deps-only --exit-code 1
+
+  # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
+  # the run grey instead of red. This gate fails the run on any unsuccessful
+  # job and on any cancellation a newer run does not explain (#301, #337).
+  pipeline-status:
+    name: Pipeline Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    if: always()
+    needs:
+      - npm-outdated
+      - cargo-outdated
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Fail the run when a required job was cancelled or failed
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

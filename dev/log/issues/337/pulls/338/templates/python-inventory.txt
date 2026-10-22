@@ -1,0 +1,32 @@
+# python template at 533e0b7dff1587ba606867c641f149539878e355 (2026-10-10)
+
+## .github/workflows
+docs.yml
+links.yml
+release.yml
+security.yml
+workflows.yml
+
+## scripts
+audit_dependencies.py
+bump_version.py
+check-pipeline-status.sh
+check-required-docs.sh
+check_file_size.py
+check_release.py
+check_web_archive.py
+create_github_release.py
+create_manual_changeset.py
+detect_code_changes.py
+format_release_notes.py
+preflight-credentials.sh
+publish_to_pypi.py
+read-job-cancel-in-progress.sh
+read_manifest.py
+recheck_broken_links.py
+release_naming.py
+run-with-budget-warning.sh
+simulate-fresh-merge.sh
+smoke_test_published_package.py
+validate_changeset.py
+version_and_commit.py

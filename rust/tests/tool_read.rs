@@ -69,7 +69,7 @@ async fn test_read_nonexistent_file() {
 async fn test_read_binary_file() {
     let temp = TempDir::new().unwrap();
     let file_path = temp.path().join("test.bin");
-    fs::write(&file_path, &[0, 1, 2, 3, 0, 0, 0]).unwrap();
+    fs::write(&file_path, [0, 1, 2, 3, 0, 0, 0]).unwrap();
 
     let tool = ReadTool;
     let ctx = create_context(temp.path());

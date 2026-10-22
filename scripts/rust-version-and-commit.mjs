@@ -336,25 +336,11 @@ function main() {
     execFileSync('git', ['commit', '-m', commitMsg], { stdio: 'pipe' });
     console.log(`Committed version ${newVersion}`);
 
-    // Create tag
-    const tagMsg = description
-      ? `Rust Release v${newVersion}\n\n${description}`
-      : `Rust Release v${newVersion}`;
-    execFileSync('git', ['tag', '-a', `rust-v${newVersion}`, '-m', tagMsg], {
-      stdio: 'pipe',
-    });
-    console.log(`Created tag rust-v${newVersion}`);
-
     // Push with retry: if another CI job (e.g. JS release) pushed to main
     // concurrently, pull --rebase and retry
     for (let attempt = 1; attempt <= MAX_PUSH_RETRIES; attempt++) {
       try {
         exec('git push');
-        // Push only the tag created above. `git push --tags` also pushes every
-        // unrelated local tag, so one stale or conflicting tag would fail the
-        // release even though this one is fine.
-        exec(`git push origin refs/tags/rust-v${newVersion}`);
-        console.log('Pushed changes and tag');
         break;
       } catch (pushError) {
         if (attempt < MAX_PUSH_RETRIES) {
@@ -367,6 +353,21 @@ function main() {
         }
       }
     }
+
+    // Tag only after the push: a retry rebases the release commit, and a tag
+    // created before it would point at a commit that never reached main (#337).
+    const tagMsg = description
+      ? `Rust Release v${newVersion}\n\n${description}`
+      : `Rust Release v${newVersion}`;
+    execFileSync('git', ['tag', '-a', `rust-v${newVersion}`, '-m', tagMsg], {
+      stdio: 'pipe',
+    });
+    console.log(`Created tag rust-v${newVersion}`);
+    // Push only the tag created above. `git push --tags` also pushes every
+    // unrelated local tag, so one stale or conflicting tag would fail the
+    // release even though this one is fine.
+    exec(`git push origin refs/tags/rust-v${newVersion}`);
+    console.log('Pushed changes and tag');
 
     setOutput('version_committed', 'true');
     setOutput('new_version', newVersion);

@@ -1,0 +1,699 @@
+cargo outdated	UNKNOWN STEP	﻿2026-10-22T12:31:08.8420614Z Current runner version: '2.338.0'
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8441175Z ##[group]Runner Image Provisioner
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8442031Z Hosted Compute Agent
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8442571Z Version: 20261012.601
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8443189Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8443891Z Build Date: 2026-10-12T17:48:21Z
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8444512Z Worker ID: {0db7216f-a388-48c5-83c3-de3f9f017f84}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8445204Z Region: westcentralus
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8445827Z Cloud: Azure
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8446381Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8447629Z ##[group]Operating System
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8448175Z Ubuntu
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8448687Z 24.04.5
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8449163Z LTS
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8449646Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8450189Z ##[group]Runner Image
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8450737Z Image: ubuntu-24.04
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8451595Z Version: 20261012.334.1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8452744Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8454173Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8455052Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8456092Z ##[group]GITHUB_TOKEN Permissions
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8457920Z Contents: read
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8458502Z Metadata: read
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8459016Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8460784Z Secret source: Actions
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8461785Z Cache mode: write
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8462478Z Prepare workflow directory
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8822323Z Prepare all required actions
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:08.8868968Z Getting action download info
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:09.2054492Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:09.2872987Z Download action repository 'dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f' (SHA:e2a55d2ffb04f378e9626c28d38b36d230d1e12f)
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:09.5187200Z Download action repository 'taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b' (SHA:e67fa11c4b9316fa714ddf0abed07a0c3143b95b)
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.2607413Z Complete job name: cargo outdated
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3276595Z ##[group]Run actions/checkout@v6
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3277501Z with:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3278076Z   repository: link-assistant/agent
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3282374Z   token: ***
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3283015Z   ssh-strict: true
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3283600Z   ssh-user: git
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3284188Z   persist-credentials: true
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3284786Z   clean: true
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3285324Z   sparse-checkout-cone-mode: true
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3286000Z   fetch-depth: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3286536Z   fetch-tags: false
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3287086Z   show-progress: true
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3287656Z   lfs: false
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3288187Z   submodules: false
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3288794Z   set-safe-directory: true
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3289443Z   allow-unsafe-pr-checkout: false
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3290234Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3290785Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3291602Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3292320Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.3293010Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4293817Z Syncing repository: link-assistant/agent
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4296620Z ##[group]Getting Git version info
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4297962Z Working directory is '/home/runner/work/agent/agent'
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4299707Z [command]/usr/bin/git version
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4325242Z git version 2.55.0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4346850Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4360843Z Temporarily overriding HOME='/home/runner/work/_temp/42eea31e-8bb0-4089-b029-b9d9dd7c89ab' before making global git config changes
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4362840Z Adding repository directory to the temporary git global config as a safe directory
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4368502Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4415297Z Deleting the contents of '/home/runner/work/agent/agent'
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4419431Z ##[group]Determining repository object format
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4427684Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4438990Z ##[group]Initializing the repository
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4452596Z [command]/usr/bin/git init /home/runner/work/agent/agent
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4546043Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4557728Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4603358Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4604712Z ##[group]Disabling automatic garbage collection
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4608038Z [command]/usr/bin/git config --local gc.auto 0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4735910Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4737293Z ##[group]Setting up auth
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4738278Z Removing SSH command configuration
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4742527Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.4771443Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5097527Z Removing HTTP extra header
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5104504Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5135599Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5325710Z Removing includeIf entries pointing to credentials config files
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5332691Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5363104Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5543386Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5578347Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5608096Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5642102Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5672970Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5701256Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5702505Z ##[group]Fetching the repository
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:10.5708039Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91:refs/remotes/origin/main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2141308Z From https://github.com/link-assistant/agent
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2144661Z  * [new ref]         f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91 -> origin/main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2154745Z [command]/usr/bin/git branch --list --remote origin/main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2179355Z   origin/main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2187817Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2208425Z f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2213221Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2214969Z ##[group]Determining the checkout info
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2216886Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2218316Z [command]/usr/bin/git sparse-checkout disable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2266024Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2293473Z ##[group]Checking out the ref
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.2295994Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.4742939Z Reset branch 'main'
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.4746842Z branch 'main' set up to track 'origin/main'.
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.4758557Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.4797603Z [command]/usr/bin/git log -1 --format=%H
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.4820031Z f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5475118Z ##[group]Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5476662Z with:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5477595Z   toolchain: stable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5478561Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5479433Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5480498Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5482067Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5483052Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5573166Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5656789Z ##[group]Run if [[ -z $toolchain ]]; then
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5658179Z ^[[36;1mif [[ -z $toolchain ]]; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5660125Z ^[[36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5662435Z ^[[36;1m  echo "'toolchain' is a required input" >&2^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5663640Z ^[[36;1m  exit 1^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5665086Z ^[[36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5666659Z ^[[36;1m  if [[ Linux == macOS ]]; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5668544Z ^[[36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5670485Z ^[[36;1m  else^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5672120Z ^[[36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5673997Z ^[[36;1m  fi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5675238Z ^[[36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5677177Z ^[[36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5678969Z ^[[36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5681079Z ^[[36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5683219Z ^[[36;1melse^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5684122Z ^[[36;1m  delimiter=EOF^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5685381Z ^[[36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5687367Z ^[[36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5689026Z ^[[36;1mfi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5881228Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5882690Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5883535Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5884551Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5885723Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5886714Z   toolchain: stable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.5887661Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6028168Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=45]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6037304Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6093486Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6095706Z ^[[36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6139639Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6140927Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6141948Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6142958Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6144108Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6145241Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6234639Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=19]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6241468Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6296397Z ##[group]Run if ! command -v rustup &>/dev/null; then
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6297754Z ^[[36;1mif ! command -v rustup &>/dev/null; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6300505Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6303391Z ^[[36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6304579Z ^[[36;1mfi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6349852Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6351389Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6352228Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6353259Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6354390Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6355434Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6356481Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6443383Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=19]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6450005Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6465099Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6484243Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6526534Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6528839Z ^[[36;1mset -f  # split targets and components on commas and whitespace, without glob expansion^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6530460Z ^[[36;1mflags=()^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6531679Z ^[[36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6533299Z ^[[36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6535108Z ^[[36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6536699Z ^[[36;1mlog=$(mktemp)^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6537662Z ^[[36;1mtrap 'rm -f "$log"' EXIT^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6538705Z ^[[36;1mfor attempt in 1 2 3 4 5; do^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6540729Z ^[[36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6542882Z ^[[36;1m    break^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6543785Z ^[[36;1m  else^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6544635Z ^[[36;1m    status=$?^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6545555Z ^[[36;1m  fi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6546697Z ^[[36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6548678Z ^[[36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6550388Z ^[[36;1m    exit "$status"^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6551443Z ^[[36;1m  fi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6552840Z ^[[36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6554429Z ^[[36;1m  sleep 30^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6555292Z ^[[36;1mdone^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6598038Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6599314Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6600358Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6601437Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6602513Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6603550Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6604545Z   toolchain: stable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6605399Z   targets: 
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6606207Z   components: 
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6607082Z   RUSTUP_PERMIT_COPY_RENAME: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.6608122Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:12.8588647Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:13.1603359Z info: latest update on 2026-10-15 for version 1.99.1 (58cf8f9c3 2026-10-13)
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:13.1793628Z info: removing previous version of component rustfmt
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:13.1815012Z info: removing previous version of component clippy
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:13.1828538Z info: removing previous version of component cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:13.1872175Z info: removing previous version of component rust-std
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:13.1911533Z info: removing previous version of component rustc
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:13.1959452Z info: downloading 5 components
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.3423517Z 
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.3491799Z   stable-x86_64-unknown-linux-gnu updated - rustc 1.99.1 (58cf8f9c3 2026-10-13) (from rustc 1.99.0 (b940084d7 2026-09-28))
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.3492739Z 
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.3546981Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=11706]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.3554499Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5336196Z ##[group]Run rustup default "$toolchain" --force-non-host
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5336926Z ^[[36;1mrustup default "$toolchain" --force-non-host^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5377615Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5378033Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5378342Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5378659Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5379005Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5379391Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5379714Z   toolchain: stable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5380001Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.5983602Z info: using existing install for stable-x86_64-unknown-linux-gnu
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.6730477Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.6732249Z 
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.6794831Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.6795530Z 
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.6809178Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=325]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.6813651Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7040334Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7041497Z ^[[36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7042217Z ^[[36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7042796Z ^[[36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7080889Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7081408Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7081802Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7082166Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7082564Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7082884Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7083195Z   toolchain: stable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7083537Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7596256Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=78]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7598920Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7639497Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7640025Z ^[[36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7640423Z ^[[36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7640930Z ^[[36;1mfi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7675728Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7676143Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7676428Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7676809Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7677289Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7677593Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7677946Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7855530Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=25]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.7858042Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8148900Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8149344Z ^[[36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8149742Z ^[[36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8150172Z ^[[36;1mfi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8181781Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8182185Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8182452Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8182802Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8183139Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8183516Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8183843Z   CARGO_INCREMENTAL: 0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8184135Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8245412Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=38]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8249163Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8433217Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8433820Z ^[[36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8434531Z ^[[36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8435281Z ^[[36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8435903Z ^[[36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8436528Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8437077Z ^[[36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8437938Z ^[[36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8438478Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8438899Z ^[[36;1m  fi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8439194Z ^[[36;1mfi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8468459Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8468855Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8469183Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8469524Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8469907Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8470230Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8470552Z   CARGO_INCREMENTAL: 0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8470865Z   CARGO_TERM_COLOR: always
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8471279Z   toolchain: stable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8471548Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8754235Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=50]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.8757898Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9125496Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9126307Z ^[[36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9126947Z ^[[36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9127582Z ^[[36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9128052Z ^[[36;1mfi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9160301Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9160720Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9161409Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9161764Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9162101Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9162413Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9162767Z   CARGO_INCREMENTAL: 0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9163074Z   CARGO_TERM_COLOR: always
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9163404Z   toolchain: stable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9163688Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9345698Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=58]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9350445Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9433779Z ##[group]Run rustc +"$toolchain" --version --verbose
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9434419Z ^[[36;1mrustc +"$toolchain" --version --verbose^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9468015Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9468400Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9468685Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9469003Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9469325Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9469663Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9469960Z   CARGO_INCREMENTAL: 0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9470228Z   CARGO_TERM_COLOR: always
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9470537Z   toolchain: stable
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9470848Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9639993Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9640648Z binary: rustc
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9641233Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9641816Z commit-date: 2026-10-13
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9642295Z host: x86_64-unknown-linux-gnu
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9642752Z release: 1.99.1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9651577Z LLVM version: 23.1.1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9658995Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=30]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9928176Z ##[group]Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9928614Z with:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9928939Z   tool: cargo-outdated@0.19.0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9929347Z   checksum: true
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9929742Z   fallback: cargo-binstall
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9930191Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9930541Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9930906Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9931464Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9931832Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9932325Z   CARGO_INCREMENTAL: 0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9932729Z   CARGO_TERM_COLOR: always
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9933149Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:24.9941373Z ##[start-action display=Run bail() {;id=__taiki-e_install-action.__run]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0626728Z ##[group]Run bail() {
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0627064Z ^[[36;1mbail() {^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0627434Z ^[[36;1m  printf '::error::install-action: %s\n' "$*"^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0627921Z ^[[36;1m  exit 1^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0628175Z ^[[36;1m}^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0628654Z ^[[36;1m# If /bin/sh is dash, environment variable containing % is not imported, but is fine^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0629206Z ^[[36;1m# because it also means that it will not be exposed to subprocess.^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0629763Z ^[[36;1mif /usr/bin/env | grep -Eq '^BASH_FUNC_'; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0630374Z ^[[36;1m  bail 'bash function injection via BASH_FUNC_ environment variable is not allowed for security reasons'^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0630871Z ^[[36;1mfi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0631364Z ^[[36;1mif ! command -v bash >/dev/null; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0631762Z ^[[36;1m  if grep -Eq '^ID=alpine' /etc/os-release; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0632309Z ^[[36;1m    printf '::group::Install packages required for install-action (bash)\n'^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0632772Z ^[[36;1m    # NB: sync with apk_install in main.sh^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0633131Z ^[[36;1m    if command -v sudo >/dev/null; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0633528Z ^[[36;1m      sudo apk --no-cache add bash^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0634020Z ^[[36;1m    elif command -v doas >/dev/null; then^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0634414Z ^[[36;1m      doas apk --no-cache add bash^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0634756Z ^[[36;1m    else^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0635069Z ^[[36;1m      apk --no-cache add bash^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0635412Z ^[[36;1m    fi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0635702Z ^[[36;1m    printf '::endgroup::\n'^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0636045Z ^[[36;1m  else^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0636355Z ^[[36;1m    bail 'this action requires bash'^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0636693Z ^[[36;1m  fi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0636976Z ^[[36;1mfi^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0637326Z ^[[36;1mbash --noprofile --norc "${GITHUB_ACTION_PATH:?}/main.sh"^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0638660Z shell: /usr/bin/env -u ENV -u BASH_ENV -u CDPATH -u SHELLOPTS -u BASHOPTS /bin/sh -eu {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0639107Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0639383Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0639716Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0640034Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0640379Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0640702Z   CARGO_INCREMENTAL: 0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0641093Z   CARGO_TERM_COLOR: always
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0641430Z   INPUT_TOOL: cargo-outdated@0.19.0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0641800Z   INPUT_CHECKSUM: true
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0642131Z   INPUT_FALLBACK: cargo-binstall
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0644858Z   DEFAULT_GITHUB_TOKEN: ***
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0645329Z   ACTION_USER_AGENT: taiki-e/install-action (e67fa11c4b9316fa714ddf0abed07a0c3143b95b)
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0645824Z   RUNNER_OS: Linux
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0646125Z   RUNNER_ARCH: X64
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.0646434Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.1069548Z info: host platform: x86_64_linux
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.1084594Z info: install-action does not support cargo-outdated@0.19.0 (updating install-action might resolve this); fallback to cargo-binstall
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.1122800Z info: installing cargo-binstall@latest (1.22.0)
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.1416864Z info: downloading https://github.com/cargo-bins/cargo-binstall/releases/download/v1.22.0/cargo-binstall-x86_64-unknown-linux-musl.tgz
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.6917128Z info: verifying sha256 checksum for cargo-binstall-x86_64-unknown-linux-musl.tgz
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.8538218Z info: cargo-binstall installed at /home/runner/.cargo/bin/cargo-binstall
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.8541950Z + cargo-binstall binstall -V
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.8549217Z 1.22.0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:25.8648459Z  INFO resolve: Resolving package: 'cargo-outdated@=0.19.0'
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6826675Z  WARN The package cargo-outdated v0.19.0 (x86_64-unknown-linux-musl) has been downloaded from github.com
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6827382Z  INFO This will install the following binaries:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6828155Z  INFO   - cargo-outdated => /home/runner/.cargo/bin/cargo-outdated
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6828751Z  INFO Installing binaries...
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6833506Z  INFO Done in 2.827240983s
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6850421Z ##[end-action id=__taiki-e_install-action.__run;outcome=success;conclusion=success;duration_ms=3690]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6857641Z ##[start-action display=Run Set-StrictMode -Version Latest;id=__taiki-e_install-action.__run_2]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6862775Z ##[end-action id=__taiki-e_install-action.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6893317Z ##[group]Run cargo outdated --root-deps-only --exit-code 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6893800Z ^[[36;1mcargo outdated --root-deps-only --exit-code 1^[[0m
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6935025Z shell: /usr/bin/bash -e {0}
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6935516Z env:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6935798Z   GIT_CONFIG_COUNT: 1
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6936102Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6936508Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6936825Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6937171Z   CARGO_INCREMENTAL: 0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6937482Z   CARGO_TERM_COLOR: always
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:28.6937779Z ##[endgroup]
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.7615978Z Name   Project  Compat  Latest  Kind    Platform
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.7616565Z ----   -------  ------  ------  ----    --------
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.7617498Z tokio  1.53.3   1.54.1  1.54.1  Normal  ---
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.8069347Z ##[error]Process completed with exit code 1.
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.8184398Z Post job cleanup.
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.8993895Z [command]/usr/bin/git version
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9034540Z git version 2.55.0
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9076786Z Temporarily overriding HOME='/home/runner/work/_temp/13e5789c-fb79-4787-8952-4a2a6eb7d83a' before making global git config changes
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9077761Z Adding repository directory to the temporary git global config as a safe directory
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9083175Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9115561Z Removing SSH command configuration
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9123787Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9155337Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9359821Z Removing HTTP extra header
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9365299Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9394549Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9590635Z Removing includeIf entries pointing to credentials config files
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9597472Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9625575Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9626691Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9627915Z includeif.gitdir:/github/workspace/.git.path
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9628854Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9634554Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9653665Z /home/runner/work/_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9664210Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9745024Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9758340Z /home/runner/work/_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9771821Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9805005Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9824432Z /github/runner_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9833466Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9866639Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9886351Z /github/runner_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9895661Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:34.9929612Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:35.0110250Z Removing credentials config '/home/runner/work/_temp/git-credentials-56a11c68-9e32-4558-8851-7ac140e67a23.config'
+cargo outdated	UNKNOWN STEP	2026-10-22T12:31:35.0269586Z Cleaning up orphan processes
+npm outdated	UNKNOWN STEP	﻿2026-10-22T12:31:39.7039307Z Current runner version: '2.338.0'
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7062021Z ##[group]Runner Image Provisioner
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7062880Z Hosted Compute Agent
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7063482Z Version: 20261021.618
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7064062Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7064711Z Build Date: 2026-10-21T00:45:21Z
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7065380Z Worker ID: {8e37a4c0-d98b-4c17-8f0c-13e1273fa4fc}
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7066058Z Region: westus3
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7066831Z Cloud: Azure
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7067376Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7068652Z ##[group]Operating System
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7069319Z Ubuntu
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7069854Z 24.04.5
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7070336Z LTS
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7070832Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7071347Z ##[group]Runner Image
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7071916Z Image: ubuntu-24.04
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7072459Z Version: 20261021.345.10
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7073638Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261021.345/images/ubuntu/Ubuntu2404-Readme.md
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7075034Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261021.345
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7075922Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7077158Z ##[group]GITHUB_TOKEN Permissions
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7079107Z Contents: read
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7080015Z Metadata: read
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7080564Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7082426Z Secret source: Actions
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7083310Z Cache mode: write
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7083946Z Prepare workflow directory
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7441507Z Prepare all required actions
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:39.7487586Z Getting action download info
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.0635155Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.2483704Z Download action repository 'actions/setup-node@v6' (SHA:249970729cb0ef3589644e2896645e5dc5ba9c38)
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.5773964Z Complete job name: npm outdated
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6383501Z ##[group]Run actions/checkout@v6
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6384419Z with:
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6384999Z   repository: link-assistant/agent
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6389632Z   token: ***
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6390230Z   ssh-strict: true
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6390825Z   ssh-user: git
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6391378Z   persist-credentials: true
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6391990Z   clean: true
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6392553Z   sparse-checkout-cone-mode: true
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6393224Z   fetch-depth: 1
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6393780Z   fetch-tags: false
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6394326Z   show-progress: true
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6394859Z   lfs: false
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6395414Z   submodules: false
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6396028Z   set-safe-directory: true
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6397005Z   allow-unsafe-pr-checkout: false
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6398170Z env:
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6398651Z   GIT_CONFIG_COUNT: 1
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6399264Z   GIT_CONFIG_KEY_0: init.defaultBranch
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6399967Z   GIT_CONFIG_VALUE_0: main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.6400689Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7311389Z Syncing repository: link-assistant/agent
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7313393Z ##[group]Getting Git version info
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7314418Z Working directory is '/home/runner/work/agent/agent'
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7315693Z [command]/usr/bin/git version
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7352955Z git version 2.55.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7376368Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7392321Z Temporarily overriding HOME='/home/runner/work/_temp/5078d0f4-73f3-4590-a9ad-f8a4595931d0' before making global git config changes
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7395299Z Adding repository directory to the temporary git global config as a safe directory
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7397739Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7481848Z Deleting the contents of '/home/runner/work/agent/agent'
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7484389Z ##[group]Determining repository object format
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7486310Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7488263Z ##[group]Initializing the repository
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7490840Z [command]/usr/bin/git init /home/runner/work/agent/agent
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7605692Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7621140Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7685838Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7687665Z ##[group]Disabling automatic garbage collection
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7688976Z [command]/usr/bin/git config --local gc.auto 0
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7713575Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7714780Z ##[group]Setting up auth
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7715765Z Removing SSH command configuration
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7718822Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.7755220Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8101387Z Removing HTTP extra header
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8110848Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8139423Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8299165Z Removing includeIf entries pointing to credentials config files
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8304620Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8332194Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8508836Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8543691Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8571771Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8601426Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8631124Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8683165Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8684130Z ##[group]Fetching the repository
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:40.8689845Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91:refs/remotes/origin/main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3272348Z From https://github.com/link-assistant/agent
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3274628Z  * [new ref]         f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91 -> origin/main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3280208Z [command]/usr/bin/git branch --list --remote origin/main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3305657Z   origin/main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3312900Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3332576Z f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3336736Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3338455Z ##[group]Determining the checkout info
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3340333Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3341795Z [command]/usr/bin/git sparse-checkout disable
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3383788Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3411776Z ##[group]Checking out the ref
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.3413947Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.5867681Z Reset branch 'main'
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.5869636Z branch 'main' set up to track 'origin/main'.
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.5886748Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.5923976Z [command]/usr/bin/git log -1 --format=%H
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.5947402Z f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6280987Z ##[group]Run actions/setup-node@v6
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6282113Z with:
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6283016Z   node-version: 24.x
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6283926Z   cache: npm
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6284900Z   cache-dependency-path: js/package-lock.json
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6286099Z   check-latest: false
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6294345Z   token: ***
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6295303Z   package-manager-cache: true
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6296300Z env:
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6297214Z   GIT_CONFIG_COUNT: 1
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6298210Z   GIT_CONFIG_KEY_0: init.defaultBranch
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6299330Z   GIT_CONFIG_VALUE_0: main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.6300400Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.7478915Z Found in cache @ /opt/hostedtoolcache/node/24.22.1/x64
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:42.7482399Z ##[group]Environment details
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:50.5581924Z node: v24.22.1
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:50.5582685Z npm: 11.19.1
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:50.5583067Z yarn: 1.22.22
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:50.5584077Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:50.5599134Z [command]/opt/hostedtoolcache/node/24.22.1/x64/bin/npm config get cache
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.1469518Z /home/runner/.npm
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3723845Z npm cache is not found
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3831936Z ##[group]Run npm ci --legacy-peer-deps --ignore-scripts
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3832459Z ^[[36;1mnpm ci --legacy-peer-deps --ignore-scripts^[[0m
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3950148Z shell: /usr/bin/bash -e {0}
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3950513Z env:
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3950836Z   GIT_CONFIG_COUNT: 1
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3951248Z   GIT_CONFIG_KEY_0: init.defaultBranch
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3951590Z   GIT_CONFIG_VALUE_0: main
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:51.3951933Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:54.5432721Z npm warn EBADENGINE Unsupported engine {
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:54.5433679Z npm warn EBADENGINE   package: '@opentui/core@0.6.1',
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:54.5434842Z npm warn EBADENGINE   required: { bun: '>=1.3.14', node: '>=26.4.0' },
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:54.5435785Z npm warn EBADENGINE   current: { node: 'v24.22.1', npm: '11.19.1' }
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:54.5436780Z npm warn EBADENGINE }
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:57.0746202Z npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+npm outdated	UNKNOWN STEP	2026-10-22T12:31:58.0497548Z npm warn deprecated glob@9.3.5: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7481722Z 
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7482695Z added 510 packages, and audited 511 packages in 9s
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7483137Z 
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7483434Z 142 packages are looking for funding
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7484030Z   run `npm fund` for details
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7511846Z 
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7512836Z 5 vulnerabilities (4 moderate, 1 high)
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7513260Z 
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7513610Z To address issues that do not require attention, run:
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7514260Z   npm audit fix
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7514449Z 
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7514807Z To address all issues (including breaking changes), run:
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7515351Z   npm audit fix --force
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7515627Z 
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.7515835Z Run `npm audit` for details.
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8128530Z ##[group]Run node ../scripts/check-npm-freshness.mjs
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8128954Z ^[[36;1mnode ../scripts/check-npm-freshness.mjs^[[0m
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8159004Z shell: /usr/bin/bash -e {0}
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8159412Z env:
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8159665Z   GIT_CONFIG_COUNT: 1
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8159941Z   GIT_CONFIG_KEY_0: init.defaultBranch
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8160322Z   GIT_CONFIG_VALUE_0: main
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8162328Z   GITHUB_TOKEN: ***
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:00.8162644Z ##[endgroup]
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:11.9570362Z solid-js: pinned at 1.9.12; latest 1.9.17 (https://github.com/anomalyco/opentui/issues/689)
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.0395290Z web-tree-sitter: pinned at 0.25.10; latest 0.27.1 (https://github.com/anomalyco/opentui/issues/1550)
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4477757Z Dependencies behind latest:
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4478678Z @agentclientprotocol/sdk: 1.8.0 -> 2.0.1
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4479325Z @ai-sdk/amazon-bedrock: 5.0.113 -> 5.0.121
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4480185Z @ai-sdk/anthropic: 4.0.78 -> 4.0.85
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4480699Z @ai-sdk/azure: 4.0.99 -> 4.0.107
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4481118Z @ai-sdk/google: 4.0.93 -> 4.0.102
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4481650Z @ai-sdk/google-vertex: 5.0.109 -> 5.0.119
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4482106Z @ai-sdk/groq: 4.0.59 -> 4.0.67
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4482713Z @ai-sdk/mcp: 2.0.73 -> 2.0.81
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4483230Z @ai-sdk/mistral: 4.0.62 -> 4.0.69
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4483751Z @ai-sdk/openai: 4.0.91 -> 4.0.99
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4484418Z @ai-sdk/openai-compatible: 3.0.67 -> 3.0.75
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4485009Z @ai-sdk/provider: 4.0.26 -> 4.0.31
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4485521Z @ai-sdk/xai: 5.0.20 -> 5.0.27
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4485946Z @opencode-ai/sdk: 1.19.0 -> 1.19.3
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4486366Z @opentui/core: 0.6.1 -> 0.6.6
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4487193Z @opentui/solid: 0.6.1 -> 0.6.6
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4487805Z @standard-community/standard-json: 0.3.6 -> 0.3.7
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4488471Z @standard-community/standard-openapi: 0.2.10 -> 0.2.11
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4489013Z @zip.js/zip.js: 2.23.0 -> 2.24.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4489428Z ai: 7.0.137 -> 7.0.148
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4489859Z chokidar: 5.0.0 -> 6.0.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4490280Z command-stream: 2.3.0 -> 2.4.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4490779Z eslint: 10.12.0 -> 10.13.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4491224Z eslint-plugin-prettier: 5.5.6 -> 5.5.7
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4491668Z gpt-tokenizer: 4.0.0 -> 4.1.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4492131Z hono-openapi: 1.3.5 -> 1.5.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4492552Z ignore: 7.0.12 -> 7.0.13
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4492957Z remeda: 2.51.0 -> 2.53.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4493470Z vscode-jsonrpc: 9.0.3 -> 10.0.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4493989Z vscode-languageserver-types: 3.18.4 -> 3.18.5
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4494548Z zod: 4.6.6 -> 4.6.7
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4695606Z ##[error]Process completed with exit code 1.
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.4835492Z Post job cleanup.
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.5549937Z [command]/usr/bin/git version
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.5586968Z git version 2.55.0
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.5623978Z Temporarily overriding HOME='/home/runner/work/_temp/92d29a46-dea0-417f-9375-14ba8d21deff' before making global git config changes
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.5625537Z Adding repository directory to the temporary git global config as a safe directory
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.5637970Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.5748435Z Removing SSH command configuration
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.5756094Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.5802504Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6033404Z Removing HTTP extra header
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6039388Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6069156Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6261777Z Removing includeIf entries pointing to credentials config files
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6267806Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6290004Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6291373Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6292811Z includeif.gitdir:/github/workspace/.git.path
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6294172Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6299422Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6317730Z /home/runner/work/_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6327252Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6361773Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6380927Z /home/runner/work/_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6390806Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6427589Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6454314Z /github/runner_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6463412Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6538219Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6555988Z /github/runner_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6565863Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6626161Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6848387Z Removing credentials config '/home/runner/work/_temp/git-credentials-ea0f1b9f-20d5-49e5-b63e-5f8b5d89a67b.config'
+npm outdated	UNKNOWN STEP	2026-10-22T12:32:13.6988277Z Cleaning up orphan processes

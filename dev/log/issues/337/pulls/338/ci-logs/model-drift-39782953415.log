@@ -1,0 +1,289 @@
+Check live free model catalogs	UNKNOWN STEP	﻿2026-10-22T13:00:06.4556892Z Current runner version: '2.338.0'
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4592255Z ##[group]Runner Image Provisioner
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4593588Z Hosted Compute Agent
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4594923Z Version: 20261015.610
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4596184Z Commit: 267fdb4e8bbec4ab5ea31367f3a00d5c480c7656
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4597408Z Build Date: 2026-10-14T17:06:54Z
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4598689Z Worker ID: {aa21088e-b41a-4138-9930-3f0963b1d112}
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4599852Z Region: eastus
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4600880Z Cloud: Azure
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4601877Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4604940Z ##[group]Operating System
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4606111Z Ubuntu
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4606944Z 24.04.5
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4607806Z LTS
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4608732Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4609697Z ##[group]Runner Image
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4610769Z Image: ubuntu-24.04
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4611757Z Version: 20261018.339.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4614260Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261018.339/images/ubuntu/Ubuntu2404-Readme.md
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4617079Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261018.339
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4618776Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4621346Z ##[group]GITHUB_TOKEN Permissions
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4624597Z Contents: read
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4625789Z Metadata: read
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4626726Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4629827Z Secret source: Actions
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4631372Z Cache mode: write
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.4633146Z Prepare workflow directory
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.5159638Z Prepare all required actions
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.5208169Z Getting action download info
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.7257202Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.8287842Z Download action repository 'oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6' (SHA:0c5077e51419868618aeaa5fe8019c62421857d6)
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:06.9758250Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.1587470Z Complete job name: Check live free model catalogs
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2378499Z ##[group]Run actions/checkout@v6
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2379401Z with:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2379870Z   persist-credentials: false
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2380425Z   repository: link-assistant/agent
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2384729Z   token: ***
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2385190Z   ssh-strict: true
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2385632Z   ssh-user: git
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2386070Z   clean: true
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2386526Z   sparse-checkout-cone-mode: true
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2387064Z   fetch-depth: 1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2387509Z   fetch-tags: false
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2387958Z   show-progress: true
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2388423Z   lfs: false
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2388850Z   submodules: false
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2389310Z   set-safe-directory: true
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2389826Z   allow-unsafe-pr-checkout: false
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2390630Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2391050Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2391571Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2392166Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.2392647Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3458879Z Syncing repository: link-assistant/agent
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3461606Z ##[group]Getting Git version info
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3462698Z Working directory is '/home/runner/work/agent/agent'
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3464731Z [command]/usr/bin/git version
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3599792Z git version 2.55.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3625028Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3640705Z Temporarily overriding HOME='/home/runner/work/_temp/47b77ebb-b059-4b9d-bc1c-d7f49a184c06' before making global git config changes
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3642980Z Adding repository directory to the temporary git global config as a safe directory
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3647724Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3709597Z Deleting the contents of '/home/runner/work/agent/agent'
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3713961Z ##[group]Determining repository object format
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3716316Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3717760Z ##[group]Initializing the repository
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3721378Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3847671Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3861300Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3919804Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3921021Z ##[group]Disabling automatic garbage collection
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3925046Z [command]/usr/bin/git config --local gc.auto 0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3966757Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3967879Z ##[group]Setting up auth
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3968757Z Removing SSH command configuration
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.3974622Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.4016139Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.4432397Z Removing HTTP extra header
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.4442544Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.4494074Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.4766359Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.4772050Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.4821905Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.5109616Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.5175681Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.5219328Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.5271027Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.5354417Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.5400641Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.5401844Z ##[group]Fetching the repository
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:07.5412538Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91:refs/remotes/origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4753516Z From https://github.com/link-assistant/agent
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4755614Z  * [new ref]         f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91 -> origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4764873Z [command]/usr/bin/git branch --list --remote origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4805925Z   origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4835739Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4855109Z f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4862506Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4864377Z ##[group]Determining the checkout info
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4865874Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4868840Z [command]/usr/bin/git sparse-checkout disable
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4939070Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4984543Z ##[group]Checking out the ref
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.4989536Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7688004Z Reset branch 'main'
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7693179Z branch 'main' set up to track 'origin/main'.
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7726721Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7783195Z [command]/usr/bin/git log -1 --format=%H
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7818204Z f99ef75d80fb5a4dd221e44dd08b61ba8b1a6b91
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7830888Z ##[group]Removing auth
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7831949Z Removing SSH command configuration
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7835701Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.7880815Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8137961Z Removing HTTP extra header
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8142782Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8190977Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8439370Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8443308Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8485460Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8487456Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8489469Z includeif.gitdir:/github/workspace/.git.path
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8491929Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8498843Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8532301Z /home/runner/work/_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8545530Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8591800Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8628467Z /home/runner/work/_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8642147Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8694484Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8728143Z /github/runner_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8738361Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8781207Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8813418Z /github/runner_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8823156Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.8865944Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9107615Z Removing credentials config '/home/runner/work/_temp/git-credentials-44813063-3d78-475c-ab94-6d20badfae97.config'
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9116390Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9552172Z ##[group]Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9555486Z with:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9556792Z   no-cache: false
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9571882Z   token: ***
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9572818Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9573921Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9575001Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9576242Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:08.9577284Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:09.4938246Z Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:09.7629055Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/05047c53-9219-4f66-8849-acb6397683e8.zip
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6165904Z [command]/home/runner/.bun/bin/bun --revision
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6232849Z 1.4.4+38afee6c8
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6426220Z ##[group]Run bun install --frozen-lockfile
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6426708Z ^[[36;1mbun install --frozen-lockfile^[[0m
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6617345Z shell: /usr/bin/bash -e {0}
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6617772Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6618083Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6618447Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6618870Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6619230Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:10.6742123Z bun install v1.4.4 (38afee6c8)
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.7660855Z 
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.7661304Z $ cd .. && husky || true
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8092250Z 
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8092789Z + @changesets/cli@3.0.3
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8093385Z + @eslint/js@10.0.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8094352Z + eslint@10.12.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8094785Z + eslint-config-prettier@10.1.8
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8095266Z + eslint-plugin-prettier@5.5.6
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8095602Z + eslint-plugin-promise@7.3.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8095894Z + husky@9.1.7
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8096213Z + lint-staged@17.6.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8096474Z + prettier@3.9.10
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8096747Z + @agentclientprotocol/sdk@1.8.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8097069Z + @ai-sdk/amazon-bedrock@5.0.113
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8097388Z + @ai-sdk/anthropic@4.0.78
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8097677Z + @ai-sdk/azure@4.0.99
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8097969Z + @ai-sdk/google@4.0.93
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8098255Z + @ai-sdk/google-vertex@5.0.109
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8098549Z + @ai-sdk/groq@4.0.59
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8098839Z + @ai-sdk/mcp@2.0.73
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8099116Z + @ai-sdk/mistral@4.0.62
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8099422Z + @ai-sdk/openai@4.0.91
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8099721Z + @ai-sdk/openai-compatible@3.0.67
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8100039Z + @ai-sdk/provider@4.0.26
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8100487Z + @ai-sdk/xai@5.0.20
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8100755Z + @clack/prompts@1.8.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8101041Z + @hono/standard-validator@0.4.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8101355Z + @hono/zod-validator@0.9.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8101672Z + @modelcontextprotocol/sdk@1.32.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8101989Z + @octokit/graphql@9.0.5
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8102271Z + @octokit/rest@22.0.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8102541Z + @openauthjs/openauth@0.4.3
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8102842Z + @opencode-ai/sdk@1.19.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8103138Z + @openrouter/ai-sdk-provider@3.1.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8103455Z + @opentui/core@0.6.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8104073Z + @opentui/solid@0.6.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8104491Z + @parcel/watcher@2.6.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8104966Z + @solid-primitives/event-bus@1.1.4
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8105526Z + @standard-community/standard-json@0.3.6
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8106131Z + @standard-community/standard-openapi@0.2.10
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8106674Z + @zip.js/zip.js@2.23.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8107094Z + ai@7.0.137
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8107440Z + chokidar@5.0.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8107806Z + clipboardy@5.3.2
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8108194Z + command-stream@2.3.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8108590Z + decimal.js@10.6.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8108936Z + diff@9.0.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8109265Z + fuzzysort@4.0.2
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8109588Z + glob@13.0.6
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8109928Z + gpt-tokenizer@4.0.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8110286Z + gray-matter@4.0.3
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8110627Z + hono@4.13.13
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8111365Z + hono-openapi@1.3.5
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8111728Z + ignore@7.0.12
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8112063Z + jsonc-parser@3.3.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8112431Z + lino-arguments@0.3.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8112822Z + lino-objects-codec@0.9.2
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8113218Z + log-lazy@1.0.4
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8113572Z + minimatch@10.2.6
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8114228Z + remeda@2.51.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8114580Z + solid-js@1.9.12
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8114922Z + strip-ansi@7.2.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8115431Z + test-anywhere@0.9.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8115815Z + tree-sitter-bash@0.25.1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8116189Z + turndown@7.2.4
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8116532Z + ulid@3.0.2
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8116880Z + vscode-jsonrpc@9.0.3
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8117336Z + vscode-languageserver-types@3.18.4
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8118162Z + web-tree-sitter@0.25.10
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8118551Z + xdg-basedir@5.1.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8118894Z + yargs@18.2.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8119229Z + zod@4.6.6
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8119423Z 
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8119632Z 506 packages installed [8.13s]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8214394Z ##[group]Run mkdir -p ci-logs
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8214770Z ^[[36;1mmkdir -p ci-logs^[[0m
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8215228Z ^[[36;1mbun scripts/check-model-drift.mjs 2>&1 | tee ci-logs/model-drift.log^[[0m
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8271953Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8272332Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8272536Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8272779Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8273067Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:18.8273303Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.0366328Z {"checkedAt":"2026-10-22T13:00:19.036Z","provider":"opencode","url":"https://opencode.ai/zen/v1/models","liveCount":86,"builtinCount":2,"missing":[]}
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4756666Z {"checkedAt":"2026-10-22T13:00:19.475Z","provider":"kilo","url":"https://api.kilo.ai/api/gateway/models","liveCount":401,"builtinCount":3,"missing":[]}
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4876107Z ##[group]Run actions/upload-artifact@v7
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4876423Z with:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4876614Z   name: model-drift
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4876832Z   path: ci-logs/model-drift.log
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4877085Z   if-no-files-found: warn
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4877317Z   compression-level: 6
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4877530Z   overwrite: false
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4877752Z   include-hidden-files: false
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4877983Z   archive: true
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4878172Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4878351Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4878578Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4878840Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.4879061Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.6413322Z With the provided path, there will be 1 file uploaded
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.6420372Z Artifact name is valid!
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.6424352Z Root directory input is valid!
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.8444428Z Uploading artifact: model-drift.zip
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.8487017Z Beginning upload of artifact content to blob storage
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.9102716Z Uploaded bytes 314
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.9241532Z Finished uploading artifact content to blob storage!
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.9242631Z SHA256 digest of uploaded artifact is aea3223217688b4baf0144ca46e33d9ac6f41b566c4df7bc4299c21b8796f87b
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:19.9243890Z Finalizing artifact upload
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.3414981Z Artifact model-drift successfully finalized. Artifact ID 12427975764
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.3416048Z Artifact model-drift has been successfully uploaded! Final size is 314 bytes. Artifact ID is 12427975764
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.3419174Z Artifact download URL: https://github.com/link-assistant/agent/actions/runs/39782953415/artifacts/12427975764
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.3605327Z Post job cleanup.
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.5424902Z Post job cleanup.
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6434443Z [command]/usr/bin/git version
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6470055Z git version 2.55.0
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6512909Z Temporarily overriding HOME='/home/runner/work/_temp/ffc46a35-c178-4362-b990-aab59335f263' before making global git config changes
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6514979Z Adding repository directory to the temporary git global config as a safe directory
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6523025Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6556218Z Removing SSH command configuration
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6563582Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6625836Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6869116Z Removing HTTP extra header
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6877363Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.6919063Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.7208316Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.7223215Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.7260628Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	UNKNOWN STEP	2026-10-22T13:00:20.7673535Z Cleaning up orphan processes

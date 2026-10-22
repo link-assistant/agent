@@ -41,8 +41,11 @@ env:
   GIT_CONFIG_COUNT: '1'
   GIT_CONFIG_KEY_0: init.defaultBranch
   GIT_CONFIG_VALUE_0: main
-  # Note: -Dwarnings is disabled while Rust implementation is WIP
-  # Enable later with: RUSTFLAGS: -Dwarnings
+  # Every rustc and clippy warning fails the build, as in the Rust pipeline
+  # template. Without it the lint job passed while clippy reported warnings
+  # (issue #337). Cargo caps lints for dependencies, so only this crate is held
+  # to it.
+  RUSTFLAGS: -Dwarnings
 
 # Concurrency is declared per job rather than once for the whole workflow
 # (principle 10 of the CI/CD best practices, and the shape both pipeline
@@ -75,25 +78,19 @@ jobs:
         # would let a branch name execute shell code (zizmor template-injection).
         env:
           BASE_REF: ${{ github.base_ref }}
+        # Only a fragment this pull request adds or edits counts: unreleased
+        # fragments left by earlier pull requests used to satisfy the check,
+        # and a missing fragment only warned, so Rust changes could merge
+        # without ever being released (issue #337).
         run: |
-          # Get list of fragment files (excluding README)
-          FRAGMENTS=$(find rust/changelog.d -name "*.md" ! -name "README.md" 2>/dev/null | wc -l)
+          RANGE="origin/$BASE_REF...HEAD"
+          SOURCE_CHANGED=$(git diff --name-only "$RANGE" -- rust/src rust/tests rust/Cargo.toml | wc -l)
+          FRAGMENTS=$(git diff --name-only --diff-filter=AM "$RANGE" -- 'rust/changelog.d/*.md' | grep -cv '/README\.md$' || true)
 
-          # Get changed files in PR
-          CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF...HEAD")
-
-          # Check if any Rust source files changed
-          SOURCE_CHANGED=$(echo "$CHANGED_FILES" | grep -cE "^rust/(src/|tests/|Cargo\.toml)" || true)
-
+          echo "Rust source files changed: $SOURCE_CHANGED; changelog fragments added: $FRAGMENTS"
           if [ "$SOURCE_CHANGED" -gt 0 ] && [ "$FRAGMENTS" -eq 0 ]; then
-            echo "::warning::No changelog fragment found. Please add a changelog entry in rust/changelog.d/"
-            echo ""
-            echo "To create a changelog fragment:"
-            echo "  touch rust/changelog.d/\$(date +%Y%m%d_%H%M%S)_description.md"
-            echo ""
-            echo "See rust/changelog.d/README.md for more information."
-            # Note: This is a warning, not a failure, to allow flexibility
-            exit 0
+            echo "::error title=Missing Rust changelog fragment::Rust sources changed but no fragment was added to rust/changelog.d/. Create one with: touch rust/changelog.d/\$(date +%Y%m%d_%H%M%S)_description.md (see rust/changelog.d/README.md)."
+            exit 1
           fi
 
           echo "Changelog check passed"
@@ -132,7 +129,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.x'
+          node-version: '26.x'
 
       - name: Cache cargo registry
         uses: actions/cache@v5
@@ -149,8 +146,20 @@ jobs:
         run: cargo fmt --all -- --check
         working-directory: rust
 
+      - name: Fail on Cargo manifest warnings
+        run: bash ../scripts/check-cargo-warnings.sh
+        working-directory: rust
+
       - name: Run Clippy
         run: cargo clippy --all-targets --all-features
+        working-directory: rust
+
+      - name: Build documentation
+        # rustdoc-only lints (broken links, unclosed HTML tags) are not
+        # reported by clippy or the tests, so they are denied here.
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --all-features
         working-directory: rust
 
       - name: Check file size limit
@@ -265,7 +274,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.x'
+          node-version: '26.x'
 
       - name: Configure git
         run: |
@@ -275,104 +284,20 @@ jobs:
           # requiring extra approval for unattributed changes blocks it.
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Read crate name/version from the [package] section only. A plain
-      # `grep -Po '(?<=^name = ")'` also matches every [lib]/[[bin]]/[[test]]
-      # section, which produced a malformed crates.io URL and failed this job
-      # with curl exit code 3 (issue #287).
-      - name: Read crate metadata
-        id: crate
-        run: node scripts/rust-package-info.mjs
-
-      - name: Recover missing GitHub release for current version
-        id: recover
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          CURRENT_VERSION="${{ steps.crate.outputs.version }}"
-          TAG_EXISTS=false
-          RELEASE_EXISTS=false
-
-          if git rev-parse "rust-v$CURRENT_VERSION" >/dev/null 2>&1; then
-            TAG_EXISTS=true
-          fi
-
-          if gh api "repos/${{ github.repository }}/releases/tags/rust-v$CURRENT_VERSION" --silent 2>/dev/null; then
-            RELEASE_EXISTS=true
-          fi
-
-          if [ "$TAG_EXISTS" = "true" ] && [ "$RELEASE_EXISTS" = "false" ]; then
-            echo "Recovering: tag rust-v$CURRENT_VERSION exists but GitHub release is missing"
-            node scripts/create-github-release.mjs \
-              --release-version "$CURRENT_VERSION" \
-              --repository "${{ github.repository }}" \
-              --prefix "rust-"
-            node scripts/format-github-release.mjs \
-              --release-version "$CURRENT_VERSION" \
-              --repository "${{ github.repository }}" \
-              --commit-sha "$(git rev-list -1 "rust-v$CURRENT_VERSION")" \
-              --prefix "rust-"
-            echo "recovered=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "No recovery needed (tag=$TAG_EXISTS, release=$RELEASE_EXISTS)"
-            echo "recovered=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Determine bump type from changelog fragments
         id: bump_type
         run: node scripts/rust-get-bump-type.mjs
 
+      # Any missing part of the current release (tag, crates.io version,
+      # GitHub release) sends the job through publish and release, which skip
+      # what already exists. An unreachable crates.io fails the job instead of
+      # reading as "not published" (issue #337).
       - name: Check if version already released or no fragments
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          CURRENT_VERSION="${{ steps.crate.outputs.version }}"
-          CRATE_NAME="${{ steps.crate.outputs.name }}"
-
-          # Check if version is published on crates.io (source of truth for publish status).
-          # A network hiccup must not fail the job, so curl retries and its exit
-          # status is tolerated; an unreachable registry simply reads as "not published".
-          HTTP_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
-            --retry 3 --retry-delay 2 --retry-all-errors --max-time 30 \
-            -A "link-assistant-agent-ci" \
-            "https://crates.io/api/v1/crates/$CRATE_NAME/$CURRENT_VERSION" || echo "000")
-          echo "crates.io HTTP status: $HTTP_STATUS"
-          CRATES_PUBLISHED=false
-          if [ "$HTTP_STATUS" = "200" ]; then
-            CRATES_PUBLISHED=true
-          fi
-
-          TAG_EXISTS=false
-          if git rev-parse "rust-v$CURRENT_VERSION" >/dev/null 2>&1; then
-            TAG_EXISTS=true
-          fi
-
-          RELEASE_EXISTS=false
-          if gh api "repos/${{ github.repository }}/releases/tags/rust-v$CURRENT_VERSION" --silent 2>/dev/null; then
-            RELEASE_EXISTS=true
-          fi
-
-          echo "Tag exists: $TAG_EXISTS, Release exists: $RELEASE_EXISTS, Crates.io published: $CRATES_PUBLISHED"
-
-          if [ "${{ steps.bump_type.outputs.has_fragments }}" = "true" ]; then
-            echo "Found changelog fragments, proceeding with release"
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "skip_bump=false" >> "$GITHUB_OUTPUT"
-          elif [ "$TAG_EXISTS" = "true" ] && [ "$RELEASE_EXISTS" = "true" ] && [ "$CRATES_PUBLISHED" = "true" ]; then
-            echo "No changelog fragments and rust-v$CURRENT_VERSION fully released (tag + GitHub release + crates.io)"
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-          elif [ "$TAG_EXISTS" = "true" ] && [ "$RELEASE_EXISTS" = "false" ]; then
-            echo "Tag exists but GitHub release missing for rust-v$CURRENT_VERSION — recovering"
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "skip_bump=true" >> "$GITHUB_OUTPUT"
-          elif [ "$TAG_EXISTS" = "false" ]; then
-            echo "No changelog fragments but rust-v$CURRENT_VERSION not yet tagged"
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "skip_bump=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Version rust-v$CURRENT_VERSION appears fully released"
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-          fi
+          HAS_FRAGMENTS: ${{ steps.bump_type.outputs.has_fragments }}
+        run: node scripts/rust-release-state.mjs --repository "${{ github.repository }}"
 
       - name: Collect changelog and bump version
         id: version
@@ -392,12 +317,26 @@ jobs:
         run: cargo build --release
         working-directory: rust
 
+      # crates-io-auth-action reports a missing crates.io trusted publisher as
+      # `##[error]` even under continue-on-error, so every token-published
+      # release carried a false error annotation (issue #337). It only runs
+      # once a maintainer has configured the trusted publisher on crates.io
+      # and set the CRATES_IO_TRUSTED_PUBLISHING repository variable to true.
       - name: Authenticate with crates.io (trusted publishing)
         id: prm_auth
         # Trusted publishing first; the publish step falls back to the token secret.
         continue-on-error: true
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.check.outputs.should_release == 'true' && vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+
+      - name: Explain the crates.io credential
+        if: steps.check.outputs.should_release == 'true' && vars.CRATES_IO_TRUSTED_PUBLISHING != 'true'
+        run: >-
+          echo "::notice title=crates.io publishes with the token secret::Trusted
+          publishing is off. To publish through OIDC instead, add
+          ${GITHUB_REPOSITORY} / rust.yml as a trusted publisher of the
+          crate on crates.io, then set the CRATES_IO_TRUSTED_PUBLISHING
+          repository variable to true."
 
       - name: Publish to crates.io
         id: publish
@@ -450,7 +389,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.x'
+          node-version: '26.x'
 
       - name: Configure git
         run: |
@@ -483,12 +422,26 @@ jobs:
         run: cargo build --release
         working-directory: rust
 
+      # crates-io-auth-action reports a missing crates.io trusted publisher as
+      # `##[error]` even under continue-on-error, so every token-published
+      # release carried a false error annotation (issue #337). It only runs
+      # once a maintainer has configured the trusted publisher on crates.io
+      # and set the CRATES_IO_TRUSTED_PUBLISHING repository variable to true.
       - name: Authenticate with crates.io (trusted publishing)
         id: prm_auth
         # Trusted publishing first; the publish step falls back to the token secret.
         continue-on-error: true
-        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
+        if: (steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true') && vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+
+      - name: Explain the crates.io credential
+        if: (steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true') && vars.CRATES_IO_TRUSTED_PUBLISHING != 'true'
+        run: >-
+          echo "::notice title=crates.io publishes with the token secret::Trusted
+          publishing is off. To publish through OIDC instead, add
+          ${GITHUB_REPOSITORY} / rust.yml as a trusted publisher of the
+          crate on crates.io, then set the CRATES_IO_TRUSTED_PUBLISHING
+          repository variable to true."
 
       - name: Publish to crates.io
         id: publish
@@ -540,5 +493,9 @@ jobs:
       - name: Fail the run when a required job was cancelled or failed
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
-          IS_MAIN: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+          # A cancellation passes only when a newer commit superseded this
+          # run and the job cancels in progress; refs/pull/<n>/head also
+          # resolves for pull requests from forks.
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
         run: bash scripts/check-pipeline-status.sh

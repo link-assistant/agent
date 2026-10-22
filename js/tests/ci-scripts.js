@@ -35,11 +35,17 @@ import {
   isCrateVersionPublished,
 } from '../../scripts/crates-registry.mjs';
 import { isNonRetryableFailure } from '../../scripts/publish-failure-classifier.mjs';
+import { pushWithRebaseRetry } from '../../scripts/push-with-rebase-retry.mjs';
+import {
+  decideRustRelease,
+  readCratePublished,
+} from '../../scripts/rust-release-state.mjs';
 import {
   findVersionCommit,
   recoverJsRelease,
 } from '../../scripts/recover-js-release.mjs';
 import { jsReleaseSummary } from '../../scripts/js-release-summary.mjs';
+import { isEarlierAttemptRelease } from '../../scripts/release-rerun.mjs';
 import {
   assertChangesetsConsumed,
   listChangesets,
@@ -719,5 +725,150 @@ describe('changeset version result', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+// #337: instant releases never have changesets, so "main moved and no
+// changesets are left" ended a first attempt green without releasing.
+describe('release rerun detection', () => {
+  test('a first instant release attempt is never an earlier release', () => {
+    expect(
+      isEarlierAttemptRelease({
+        mode: 'instant',
+        changesetCount: 0,
+        runAttempt: '1',
+      })
+    ).toBe(false);
+    expect(
+      isEarlierAttemptRelease({ mode: 'instant', changesetCount: 0 })
+    ).toBe(false);
+  });
+
+  test('a rerun of an instant release may resume an earlier bump', () => {
+    expect(
+      isEarlierAttemptRelease({
+        mode: 'instant',
+        changesetCount: 0,
+        runAttempt: '2',
+      })
+    ).toBe(true);
+  });
+
+  test('consumed changesets mean an earlier attempt released', () => {
+    expect(
+      isEarlierAttemptRelease({
+        mode: 'changeset',
+        changesetCount: 0,
+        runAttempt: '1',
+      })
+    ).toBe(true);
+    expect(
+      isEarlierAttemptRelease({
+        mode: 'changeset',
+        changesetCount: 2,
+        runAttempt: '3',
+      })
+    ).toBe(false);
+  });
+});
+
+describe('Rust release state (#337)', () => {
+  const released = {
+    hasFragments: false,
+    tagExists: true,
+    releaseExists: true,
+    cratePublished: true,
+  };
+
+  test('nothing to do once tag, crate and GitHub release all exist', () => {
+    expect(decideRustRelease(released).shouldRelease).toBe(false);
+  });
+
+  test('fragments always release a new version', () => {
+    expect(decideRustRelease({ ...released, hasFragments: true })).toEqual(
+      expect.objectContaining({ shouldRelease: true, skipBump: false })
+    );
+  });
+
+  test('a tagged and released but unpublished crate is still published', () => {
+    const decision = decideRustRelease({ ...released, cratePublished: false });
+    expect(decision).toEqual(
+      expect.objectContaining({ shouldRelease: true, skipBump: true })
+    );
+    expect(decision.reason).toContain('crates.io version');
+  });
+
+  test('a bare tag goes through publish before the GitHub release', () => {
+    expect(
+      decideRustRelease({
+        ...released,
+        releaseExists: false,
+        cratePublished: false,
+      })
+    ).toEqual(expect.objectContaining({ shouldRelease: true, skipBump: true }));
+  });
+
+  test('a missing tag completes the current version without a bump', () => {
+    expect(decideRustRelease({ ...released, tagExists: false })).toEqual(
+      expect.objectContaining({ shouldRelease: true, skipBump: true })
+    );
+  });
+
+  test('a transient crates.io error is retried', async () => {
+    let calls = 0;
+    const lookup = async () => {
+      calls++;
+      if (calls === 1) {
+        throw new Error('crates.io responded with 503');
+      }
+      return true;
+    };
+    expect(
+      await readCratePublished('demo', '1.0.0', { lookup, delayMs: 0 })
+    ).toBe(true);
+    expect(calls).toBe(2);
+  });
+
+  test('an unreachable crates.io is an error, not "not published"', async () => {
+    const lookup = async () => {
+      throw new Error('fetch failed');
+    };
+    await expect(
+      readCratePublished('demo', '1.0.0', { lookup, delayMs: 0 })
+    ).rejects.toThrow('Cannot tell whether demo@1.0.0 is on crates.io');
+  });
+});
+
+describe('pushWithRebaseRetry (#337)', () => {
+  test('rebases and pushes again when main moved', async () => {
+    const calls = [];
+    let pushes = 0;
+    const attempt = await pushWithRebaseRetry({
+      push: async () => {
+        calls.push('push');
+        if (++pushes === 1) {
+          throw new Error('rejected: fetch first');
+        }
+      },
+      pullRebase: async () => calls.push('rebase'),
+      log: () => {},
+    });
+    expect(attempt).toBe(2);
+    expect(calls).toEqual(['push', 'rebase', 'push']);
+  });
+
+  test('gives up after the last attempt', async () => {
+    let rebases = 0;
+    await expect(
+      pushWithRebaseRetry({
+        push: async () => {
+          throw new Error('rejected');
+        },
+        pullRebase: async () => rebases++,
+        attempts: 3,
+        log: () => {},
+      })
+    ).rejects.toThrow('rejected');
+    expect(rebases).toBe(2);
   });
 });

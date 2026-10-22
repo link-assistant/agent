@@ -26,7 +26,7 @@ pub const DEFAULT_COMPACTION_MODELS_ENV: &str = "LINK_ASSISTANT_AGENT_DEFAULT_CO
 
 /// Default compaction safety margin as a percentage of usable context window.
 /// Increased from 15% to 25% to reduce probability of context overflow errors.
-/// @see https://github.com/link-assistant/agent/issues/249
+/// @see <https://github.com/link-assistant/agent/issues/249>
 pub const DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT: u32 = 25;
 
 /// Env var for overriding the default compaction safety margin in test runs and automation.

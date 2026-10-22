@@ -3,6 +3,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { classifyJobs } from '../../scripts/job-cancel-policy.mjs';
+
 /**
  * Policy checks for the GitHub Actions workflows.
  *
@@ -123,6 +125,41 @@ export function getTopLevelPermissions(body) {
     .slice(start + 1, end === -1 ? lines.length : end)
     .filter((line) => line.trim() !== '')
     .join('\n');
+}
+
+/**
+ * List the jobs a job `needs`, in the flow (`needs: [a, b]`), scalar
+ * (`needs: a`) or block form. Comments and blank lines inside the block form
+ * do not end the list.
+ * @param {string} jobBlock
+ * @returns {string[]}
+ */
+export function listNeededJobs(jobBlock) {
+  const lines = jobBlock.split('\n');
+  const start = lines.findIndex((line) => /^ {4}needs:/.test(line));
+  if (start === -1) {
+    return [];
+  }
+  const inline = lines[start].replace(/^ {4}needs:/, '').replace(/#.*$/, '');
+  if (inline.trim()) {
+    return inline
+      .replace(/[[\]]/g, '')
+      .split(',')
+      .map((name) => name.trim())
+      .filter(Boolean);
+  }
+  const needs = [];
+  for (const line of lines.slice(start + 1)) {
+    if (line.trim() === '' || /^\s*#/.test(line)) {
+      continue;
+    }
+    const item = line.match(/^ {6}- ([a-zA-Z0-9_-]+)\s*(#.*)?$/);
+    if (!item) {
+      break;
+    }
+    needs.push(item[1]);
+  }
+  return needs;
 }
 
 /**
@@ -307,6 +344,85 @@ describe('merge result validation', () => {
 
     expect(missing).toEqual([]);
   });
+});
+
+describe('pipeline status gate', () => {
+  // A job left out of the gate's `needs` can time out or fail while the gate
+  // reports success, and a workflow without a gate turns grey instead of red
+  // when timeout-minutes cancels its only job (#337).
+  test('every workflow has a pipeline-status gate that needs every other job', () => {
+    for (const { file, body } of workflows) {
+      const jobs = listJobs(body);
+      const gate = getJobBlock(body, 'pipeline-status');
+      expect([file, gate !== '']).toEqual([file, true]);
+      expect([file, gate.match(/^ {4}if:(.*)$/m)?.[1].trim()]).toEqual([
+        file,
+        'always()',
+      ]);
+      expect([file, listNeededJobs(gate).sort()]).toEqual([
+        file,
+        jobs.filter((job) => job !== 'pipeline-status').sort(),
+      ]);
+    }
+  });
+
+  // The gate excuses a cancellation only when it can tell that a newer run
+  // may cancel the job; an unreadable value fails superseded runs closed.
+  test('every job has a cancel-in-progress value the gate can evaluate', () => {
+    const unreadable = [];
+    for (const { file, body } of workflows) {
+      for (const { job, value, cancellable } of classifyJobs(
+        body,
+        listJobs(body),
+        'refs/pull/1/merge'
+      )) {
+        if (cancellable === null) {
+          unreadable.push(`${file}:${job}: ${value}`);
+        }
+      }
+    }
+    expect(unreadable).toEqual([]);
+  });
+
+  test('the needs parser reads every form', () => {
+    expect(listNeededJobs('  a:\n    needs: [lint, test]\n')).toEqual([
+      'lint',
+      'test',
+    ]);
+    expect(listNeededJobs('  a:\n    needs: lint\n')).toEqual(['lint']);
+    expect(
+      listNeededJobs(
+        '  a:\n    needs:\n      - lint\n\n      # tests\n      - test\n    steps: []\n'
+      )
+    ).toEqual(['lint', 'test']);
+  });
+});
+
+describe('release gating', () => {
+  // instant-release had no `needs` at all, so a manual release published while
+  // lint or the tests were failing (#337).
+  const PUBLISHERS = {
+    'js.yml': ['release', 'instant-release'],
+    'rust.yml': ['auto-release', 'manual-release'],
+  };
+
+  for (const [file, jobs] of Object.entries(PUBLISHERS)) {
+    for (const job of jobs) {
+      test(`${file}:${job} requires lint and test to succeed`, () => {
+        const block = getJobBlock(
+          workflows.find((workflow) => workflow.file === file).body,
+          job
+        );
+        const condition = block.match(/^ {4}if:(.*)$/m)?.[1] ?? '';
+        expect(listNeededJobs(block)).toEqual(
+          expect.arrayContaining(['lint', 'test'])
+        );
+        expect(condition).toContain("needs.lint.result == 'success'");
+        expect(condition).toContain("needs.test.result == 'success'");
+        expect(condition).toContain('!cancelled()');
+      });
+    }
+  }
 });
 
 describe('release tooling', () => {

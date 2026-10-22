@@ -21,6 +21,8 @@ import {
   needsCd,
   parseJsRootConfig,
 } from './js-paths.mjs';
+import { pushWithRebaseRetry } from './push-with-rebase-retry.mjs';
+import { isEarlierAttemptRelease } from './release-rerun.mjs';
 
 // Load dependencies through the shared use-m loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
@@ -193,7 +195,13 @@ async function main() {
       // Check if there are changesets to process
       const changesetCount = countChangesets();
 
-      if (changesetCount === 0) {
+      if (
+        isEarlierAttemptRelease({
+          mode,
+          changesetCount,
+          runAttempt: process.env.GITHUB_RUN_ATTEMPT,
+        })
+      ) {
         console.log('No changesets to process and remote has advanced.');
         console.log(
           'Assuming version bump was already completed in a previous attempt.'
@@ -256,8 +264,11 @@ async function main() {
       const escapedMessage = commitMessage.replace(/"/g, '\\"');
       await $`git commit -m "${escapedMessage}"`;
 
-      // Push directly to main
-      await $`git push origin main`;
+      // Push directly to main, rebasing when another merge landed first
+      await pushWithRebaseRetry({
+        push: () => $`git push origin main`,
+        pullRebase: () => $`git pull --rebase origin main`,
+      });
 
       console.log('\u2705 Version bump committed and pushed to main');
       setOutput('version_committed', 'true');

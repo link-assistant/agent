@@ -1,7 +1,7 @@
 import { Config } from '../config/file-config';
 import z from 'zod';
 import { Provider } from '../provider/provider';
-import { generateObject } from 'ai';
+import { generateText, Output } from 'ai';
 import PROMPT_GENERATE from './generate.txt';
 import { SystemPrompt } from '../session/system';
 import { Instance } from '../project/instance';
@@ -136,7 +136,10 @@ export namespace Agent {
     const system = SystemPrompt.header(defaultModel.providerID);
     system.push(PROMPT_GENERATE);
     const existing = await list();
-    const result = await generateObject({
+    // generateObject is deprecated in AI SDK 7 and printed a
+    // DeprecationWarning on every call (#337); structured output now goes
+    // through generateText's `output` setting.
+    const result = await generateText({
       temperature: 0.3,
       // The system prompt belongs in `instructions`, not in `prompt`: the AI SDK
       // warns that a system message inside the prompt enables prompt
@@ -152,13 +155,15 @@ export namespace Agent {
         },
       ],
       model: model.language,
-      schema: z.object({
-        identifier: z.string(),
-        whenToUse: z.string(),
-        systemPrompt: z.string(),
+      output: Output.object({
+        schema: z.object({
+          identifier: z.string(),
+          whenToUse: z.string(),
+          systemPrompt: z.string(),
+        }),
       }),
     });
-    return result.object;
+    return result.output;
   }
 }
 
