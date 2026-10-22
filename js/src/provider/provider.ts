@@ -1527,6 +1527,33 @@ export namespace Provider {
   }
 
   /**
+   * List the models an active provider serves right now, using its
+   * token-free listing endpoint (`/models`). `force` bypasses the cache.
+   */
+  export async function discoverModels(
+    providerID: string,
+    input: { force?: boolean } = {}
+  ): Promise<ModelDiscovery.DiscoveryResult> {
+    const provider = await getProvider(providerID);
+    if (!provider) {
+      return { status: 'skipped', models: [], error: 'provider not active' };
+    }
+    const options = provider.options ?? {};
+    return ModelDiscovery.discover({
+      providerID: provider.info.id,
+      npm: provider.info.npm,
+      baseURL: options['baseURL'] ?? EnvTemplate.resolve(provider.info.api),
+      apiKey:
+        typeof options['apiKey'] === 'string' ? options['apiKey'] : undefined,
+      headers: options['headers'],
+      // Providers that sign requests themselves (OAuth) list models the same way.
+      fetchImpl:
+        typeof options['fetch'] === 'function' ? options['fetch'] : undefined,
+      force: input.force,
+    });
+  }
+
+  /**
    * Look a model up in the provider's own model listing. OpenCode Zen keeps
    * its dedicated free-model lookup; every other provider with a token-free
    * listing endpoint goes through `ModelDiscovery` (#334).
@@ -1539,17 +1566,7 @@ export namespace Provider {
       return OpenCodeZen.getLiveFreeModelInfo(modelID);
     }
     const s = await state();
-    const provider = s.providers[providerID];
-    if (!provider) return undefined;
-    const options = provider.options ?? {};
-    const result = await ModelDiscovery.discover({
-      providerID,
-      npm: provider.info.npm,
-      baseURL: options['baseURL'] ?? EnvTemplate.resolve(provider.info.api),
-      apiKey:
-        typeof options['apiKey'] === 'string' ? options['apiKey'] : undefined,
-      headers: options['headers'],
-    });
+    const result = await discoverModels(providerID);
     const found = ModelDiscovery.findModel(result.models, modelID);
     if (!found) return undefined;
     return ModelDiscovery.toModelInfo(found, {

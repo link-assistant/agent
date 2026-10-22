@@ -448,15 +448,15 @@ export namespace ModelDiscovery {
     options: { npm?: string; metadata?: ModelsDev.Model } = {}
   ): ModelsDev.Model {
     const meta = options.metadata;
-    const context = model.context ?? meta?.limit.context ?? 128000;
+    const context = model.context ?? meta?.limit?.context ?? 128000;
     const output =
-      model.output ?? meta?.limit.output ?? Math.min(16384, context);
+      model.output ?? meta?.limit?.output ?? Math.min(16384, context);
     const input = model.input ?? meta?.modalities?.input ?? ['text'];
     const cost =
       model.cost ??
       (model.free
         ? { input: 0, output: 0 }
-        : meta
+        : meta?.cost
           ? { input: meta.cost.input, output: meta.cost.output }
           : { input: 0, output: 0 });
     return {

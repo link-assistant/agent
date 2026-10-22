@@ -650,3 +650,47 @@ describe('provider registry end to end (#334)', async () => {
     expect(result.databricks.error).toContain('DATABRICKS_HOST');
   });
 });
+
+describe('agent models --discover/--refresh/--free (#334)', async () => {
+  const proc = Bun.spawn({
+    cmd: ['bun', '../experiments/issue-334/models-cli.ts'],
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+  const [stdout, stderr, code] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ]);
+  if (code !== 0) throw new Error(`models probe failed: ${stdout}\n${stderr}`);
+  const result = JSON.parse(
+    stdout
+      .split('\n')
+      .find((line) => line.startsWith('RESULT '))!
+      .slice(7)
+  );
+  const models = (run: { lines: string[] }) =>
+    run.lines.filter((line) => line.startsWith('gpt4free/'));
+
+  test('plain listing shows the catalogue only', () => {
+    expect(models(result.plain)).toEqual(['gpt4free/auto']);
+  });
+
+  test('--refresh fetches the live listing, --discover reuses the cache', () => {
+    const live = [
+      'gpt4free/auto',
+      'gpt4free/Mock-Model',
+      'gpt4free/paid-model',
+    ];
+    expect(models(result.refresh)).toEqual(live);
+    expect(models(result.discoverCached)).toEqual(live);
+    expect(result.requests).toEqual(['GET /v1/models']);
+  });
+
+  test('--free hides priced models', () => {
+    expect(models(result.free)).toEqual([
+      'gpt4free/auto',
+      'gpt4free/Mock-Model',
+    ]);
+  });
+});

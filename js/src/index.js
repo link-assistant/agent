@@ -26,6 +26,7 @@ import {
 } from './json-standard/index.ts';
 import { McpCommand } from './cli/cmd/mcp.ts';
 import { AuthCommand } from './cli/cmd/auth.ts';
+import { ModelsCommand } from './cli/cmd/models.ts';
 import { FormatError } from './cli/error.ts';
 import { UI } from './cli/ui.ts';
 import { errorText } from './util/error-text.ts';
@@ -654,6 +655,8 @@ async function main() {
       .command(McpCommand)
       // Auth subcommand
       .command(AuthCommand)
+      // Models subcommand (list, --discover, --refresh, --free)
+      .command(ModelsCommand)
       // Default command for agent mode (when no subcommand specified)
       .command({
         command: '$0',
