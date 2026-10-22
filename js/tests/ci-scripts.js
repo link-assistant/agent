@@ -40,6 +40,7 @@ import {
   recoverJsRelease,
 } from '../../scripts/recover-js-release.mjs';
 import { jsReleaseSummary } from '../../scripts/js-release-summary.mjs';
+import { isEarlierAttemptRelease } from '../../scripts/release-rerun.mjs';
 import {
   assertChangesetsConsumed,
   listChangesets,
@@ -719,5 +720,49 @@ describe('changeset version result', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+// #337: instant releases never have changesets, so "main moved and no
+// changesets are left" ended a first attempt green without releasing.
+describe('release rerun detection', () => {
+  test('a first instant release attempt is never an earlier release', () => {
+    expect(
+      isEarlierAttemptRelease({
+        mode: 'instant',
+        changesetCount: 0,
+        runAttempt: '1',
+      })
+    ).toBe(false);
+    expect(
+      isEarlierAttemptRelease({ mode: 'instant', changesetCount: 0 })
+    ).toBe(false);
+  });
+
+  test('a rerun of an instant release may resume an earlier bump', () => {
+    expect(
+      isEarlierAttemptRelease({
+        mode: 'instant',
+        changesetCount: 0,
+        runAttempt: '2',
+      })
+    ).toBe(true);
+  });
+
+  test('consumed changesets mean an earlier attempt released', () => {
+    expect(
+      isEarlierAttemptRelease({
+        mode: 'changeset',
+        changesetCount: 0,
+        runAttempt: '1',
+      })
+    ).toBe(true);
+    expect(
+      isEarlierAttemptRelease({
+        mode: 'changeset',
+        changesetCount: 2,
+        runAttempt: '3',
+      })
+    ).toBe(false);
   });
 });

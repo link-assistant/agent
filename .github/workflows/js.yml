@@ -411,7 +411,11 @@ jobs:
   # only allows one workflow file to be registered as a trusted publisher
   instant-release:
     name: Instant Release
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_mode == 'instant'
+    # Publishing must wait for the same quality gates as the automated release
+    # and require their explicit success (#337): without `needs`, a manual
+    # release published while lint or the tests were failing.
+    needs: [lint, test, verbose-integration, package-install]
+    if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && github.event.inputs.release_mode == 'instant' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.verbose-integration.result == 'success' && needs.package-install.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:
