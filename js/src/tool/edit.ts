@@ -20,8 +20,12 @@ function normalizeLineEndings(text: string): string {
   return text.replaceAll('\r\n', '\n');
 }
 
+// The dominant line ending, so one stray CRLF line does not turn every
+// inserted line of an LF file into CRLF (upstream #53166). Ties keep LF.
 function detectLineEnding(text: string): '\n' | '\r\n' {
-  return text.includes('\r\n') ? '\r\n' : '\n';
+  const crlf = text.split('\r\n').length - 1;
+  const lf = text.split('\n').length - 1 - crlf;
+  return crlf > lf ? '\r\n' : '\n';
 }
 
 function convertToLineEnding(text: string, ending: '\n' | '\r\n'): string {

@@ -131,27 +131,22 @@ impl Tool for EditTool {
         }
 
         let raw = fs::read_to_string(&filepath).await?;
-        // The replacers work on LF text; remember the file's line ending and
-        // restore it on write so CRLF files are not converted to LF
-        // (upstream OpenCode #9443). `read_to_string` keeps a UTF-8 BOM as
-        // the first char, so it is preserved without extra handling.
-        let crlf = raw.contains("\r\n");
+        // The replacers rebuild matched text from `str::lines()` joined with
+        // LF, so they must run on the LF view of the file: on raw CRLF text a
+        // fuzzy match is never found again and the edit silently becomes a
+        // no-op. The result is mapped back to the file's own line endings so
+        // CRLF files are not converted to LF (upstream OpenCode #9443) and
+        // untouched lines of a mixed-ending file keep their bytes (upstream
+        // #53166). `read_to_string` keeps a UTF-8 BOM as the first char, so
+        // it is preserved without extra handling.
         let content_old = normalize_line_endings(&raw);
-
-        // Perform replacement
         let content_new = replace(
             &content_old,
             &normalize_line_endings(&params.old_string),
             &normalize_line_endings(&params.new_string),
             params.replace_all,
         )?;
-
-        // Write the file
-        let written = if crlf {
-            content_new.replace('\n', "\r\n")
-        } else {
-            content_new.clone()
-        };
+        let written = restore_line_endings(&raw, &content_old, &content_new);
         fs::write(&filepath, &written).await?;
 
         // Calculate diff
@@ -201,6 +196,46 @@ const BLOCK_ANCHOR_SIMILARITY_THRESHOLD: f64 = 0.65;
 /// Normalize line endings to Unix style
 fn normalize_line_endings(text: &str) -> String {
     text.replace("\r\n", "\n")
+}
+
+/// The dominant line ending of `text`; ties (including no line breaks) keep
+/// LF, so one stray CRLF line does not turn new lines of an LF file into CRLF.
+fn dominant_line_ending(text: &str) -> &'static str {
+    let crlf = text.matches("\r\n").count();
+    let lf = text.matches('\n').count() - crlf;
+    if crlf > lf {
+        "\r\n"
+    } else {
+        "\n"
+    }
+}
+
+/// Map an edit made on the LF view (`old_lf` -> `new_lf`) back onto `raw`:
+/// unchanged lines are copied from `raw` with their original line ending and
+/// inserted lines use the file's dominant line ending.
+fn restore_line_endings(raw: &str, old_lf: &str, new_lf: &str) -> String {
+    if !raw.contains("\r\n") {
+        return new_lf.to_string();
+    }
+    let ending = dominant_line_ending(raw);
+    // `normalize_line_endings` only rewrites CRLF to LF, so line i of `raw`
+    // is line i of `old_lf`.
+    let raw_lines: Vec<&str> = raw.split_inclusive('\n').collect();
+    let mut out = String::with_capacity(new_lf.len() + raw.len() - old_lf.len());
+    for change in TextDiff::from_lines(old_lf, new_lf).iter_all_changes() {
+        match change.tag() {
+            ChangeTag::Equal => match change.old_index().and_then(|i| raw_lines.get(i)) {
+                Some(line) => out.push_str(line),
+                None => out.push_str(change.value()),
+            },
+            ChangeTag::Insert if ending == "\r\n" => {
+                out.push_str(&change.value().replace('\n', "\r\n"))
+            }
+            ChangeTag::Insert => out.push_str(change.value()),
+            ChangeTag::Delete => {}
+        }
+    }
+    out
 }
 
 /// Create a unified diff string

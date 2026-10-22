@@ -351,3 +351,66 @@ fn test_block_anchor_accepts_close_middle() {
         Some("replaced")
     );
 }
+
+#[tokio::test]
+async fn test_edit_mixed_line_endings_keep_untouched_lines() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("mixed.txt");
+    // Mostly LF with one stray CRLF line (upstream OpenCode #53166).
+    fs::write(&file_path, "a\nb\nc\r\nd\ne\n").unwrap();
+
+    let ctx = create_context(temp.path());
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "d\ne",
+        "newString": "d\nd2\ne"
+    });
+    EditTool.execute(params, &ctx).await.unwrap();
+
+    // Before the fix every line became CRLF because the file contained one.
+    assert_eq!(
+        fs::read_to_string(&file_path).unwrap(),
+        "a\nb\nc\r\nd\nd2\ne\n"
+    );
+}
+
+#[tokio::test]
+async fn test_edit_crlf_file_with_fuzzy_match() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("crlf-fuzzy.txt");
+    fs::write(&file_path, "fn a() {\r\n    one();\r\n}\r\n").unwrap();
+
+    let ctx = create_context(temp.path());
+    // Indentation differs, so only the whitespace-tolerant replacers match.
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "fn a() {\n  one();\n}",
+        "newString": "fn a() {\n    two();\n}"
+    });
+    EditTool.execute(params, &ctx).await.unwrap();
+
+    assert_eq!(
+        fs::read_to_string(&file_path).unwrap(),
+        "fn a() {\r\n    two();\r\n}\r\n"
+    );
+}
+
+#[tokio::test]
+async fn test_edit_mostly_crlf_file_keeps_stray_lf_line() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("mostly-crlf.txt");
+    fs::write(&file_path, "a\r\nb\nc\r\nd\r\n").unwrap();
+
+    let ctx = create_context(temp.path());
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "c\nd",
+        "newString": "c\nc2\nd"
+    });
+    EditTool.execute(params, &ctx).await.unwrap();
+
+    assert_eq!(
+        fs::read_to_string(&file_path).unwrap(),
+        "a\r\nb\nc\r\nc2\r\nd\r\n"
+    );
+}

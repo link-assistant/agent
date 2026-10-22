@@ -162,6 +162,22 @@ describe('edit tool: encoding preservation', () => {
     expect(readFileSync(file, 'utf8')).toBe('x\ny\nc\n');
   });
 
+  test('mixed file uses its dominant line ending for new lines', async () => {
+    const dir = tempDir();
+    const file = join(dir, 'mixed-endings.txt');
+    // Mostly LF with one stray CRLF line (upstream #53166).
+    writeFileSync(file, 'a\nb\nc\r\nd\ne\n');
+    await inInstance(dir, async () => {
+      await run(ReadTool, { filePath: file });
+      await run(EditTool, {
+        filePath: file,
+        oldString: 'd\ne',
+        newString: 'd\nd2\ne',
+      });
+    });
+    expect(readFileSync(file, 'utf8')).toBe('a\nb\nc\r\nd\nd2\ne\n');
+  });
+
   test('UTF-8 BOM is preserved by edit', async () => {
     const dir = tempDir();
     const file = join(dir, 'bom.txt');
