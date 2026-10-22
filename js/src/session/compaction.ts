@@ -347,7 +347,8 @@ export namespace SessionCompaction {
         }
 
         return false;
-      })
+      }),
+      { providerID: model.providerID, modelID: model.modelID }
     );
     // Defensive check: ensure modelMessages is iterable (AI SDK 6.0.1 compatibility fix)
     const safeModelMessages = Array.isArray(modelMessages) ? modelMessages : [];
@@ -410,7 +411,8 @@ export namespace SessionCompaction {
                   args.params.prompt = ProviderTransform.message(
                     args.params.prompt,
                     model.providerID,
-                    model.modelID
+                    model.modelID,
+                    model.npm
                   );
                 }
                 return args.params;
@@ -420,6 +422,20 @@ export namespace SessionCompaction {
         }),
       })
     );
+    // The summary request itself overflowed: compacting again would send the
+    // same history, so stop with a clear error (upstream #14707).
+    if (result === 'compact') {
+      processor.message.error = new MessageV2.ContextOverflowError({
+        message:
+          'Conversation history too large to compact - exceeds model context limit',
+      }).toObject();
+      await Session.updateMessage(processor.message);
+      Bus.publish(Session.Event.Error, {
+        sessionID: input.sessionID,
+        error: processor.message.error,
+      });
+      return 'stop';
+    }
     if (result === 'continue') {
       const continueMsg = await Session.updateMessage({
         id: Identifier.ascending('message'),

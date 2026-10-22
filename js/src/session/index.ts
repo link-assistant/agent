@@ -757,11 +757,34 @@ export namespace Session {
               )
             )
           : 0;
-      const reasoningTokens = topLevelReasoningTokens || nestedReasoning;
+      // AI SDK 7 reports reasoning under outputTokenDetails.
+      const detailReasoning = safeNum(
+        toNumber(
+          (
+            effectiveUsage as {
+              outputTokenDetails?: { reasoningTokens?: unknown };
+            }
+          ).outputTokenDetails?.reasoningTokens,
+          'outputTokenDetails.reasoningTokens'
+        )
+      );
+      const reasoningTokens =
+        topLevelReasoningTokens || nestedReasoning || detailReasoning;
+
+      // outputTokens already includes reasoning, which is billed separately
+      // below, so take it out to avoid charging it twice (upstream #21047).
+      // Providers that report more reasoning than output count it apart.
+      const rawOutputTokens = safeNum(
+        toNumber(effectiveUsage.outputTokens, 'outputTokens')
+      );
+      const outputTokens =
+        reasoningTokens <= rawOutputTokens
+          ? rawOutputTokens - reasoningTokens
+          : rawOutputTokens;
 
       const tokens = {
         input: Math.max(0, adjustedInputTokens), // Ensure non-negative
-        output: safeNum(toNumber(effectiveUsage.outputTokens, 'outputTokens')),
+        output: outputTokens,
         reasoning: reasoningTokens,
         cache: {
           write: cacheWriteTokens,

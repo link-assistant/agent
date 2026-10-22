@@ -18,6 +18,7 @@ import { Snapshot } from '../snapshot';
 import { fn } from '../util/fn';
 import { Storage } from '../storage/storage';
 import { isUnreachableNetworkError } from '../util/network-error';
+import { STATUS_CODES } from 'node:http';
 
 export namespace MessageV2 {
   export const OutputLengthError = NamedError.create(
@@ -77,6 +78,78 @@ export namespace MessageV2 {
     })
   );
   export type TimeoutError = z.infer<typeof TimeoutError.Schema>;
+
+  /**
+   * The request exceeds the model's context window. Not retried as is: the
+   * session is compacted and the turn continues (upstream #14707).
+   */
+  export const ContextOverflowError = NamedError.create(
+    'ContextOverflowError',
+    z.object({
+      message: z.string(),
+      responseBody: z.string().optional(),
+    })
+  );
+  export type ContextOverflowError = z.infer<
+    typeof ContextOverflowError.Schema
+  >;
+
+  // Provider wordings for "prompt exceeds the context window", from upstream
+  // packages/ai/src/provider-error.ts.
+  const OVERFLOW_PATTERNS = [
+    /prompt is too long/i,
+    /input is too long for (?:the )?(?:requested|selected) model/i,
+    /too large for the model'?s configured input limit/i,
+    /exceeded this model context window limit/i,
+    /exceeds the context window/i,
+    /exceeds (?:the )?(?:model'?s )?maximum context length(?: of [\d,]+ tokens?|\s*\([\d,]+\))/i,
+    /input token count.*exceeds the maximum/i,
+    /number of input tokens exceeds maximum length/i,
+    /tokens in request more than max tokens allowed/i,
+    /maximum prompt length is \d+/i,
+    /reduce the length of the messages/i,
+    /requested input length \d+ exceeds maximum input length/i,
+    /maximum context length is \d+ tokens/i,
+    /exceeds (?:the )?maximum allowed input length of [\d,]+ tokens?/i,
+    /input(?: \(\d+ tokens\))? is longer than the model'?s context length/i,
+    /exceeds the limit of \d+/i,
+    /exceeds the available context size/i,
+    /greater than the context length/i,
+    /`inputs` tokens \+ `max_new_tokens` must be <= \d+/i,
+    /context window exceeds limit/i,
+    /exceeded model token limit/i,
+    /context[_ ]length[_ ]exceeded/i,
+    /context length is only \d+ tokens/i,
+    /input length.*exceeds.*context length/i,
+    /prompt (?:too long|exceeds max length|超长)/i,
+    /too large for model with \d+ maximum context length/i,
+    /prompt has [\d,]+ tokens?, but the configured context size is [\d,]+ tokens?/i,
+    /model_context_window_exceeded/i,
+    /range of input length should be/i,
+    /too many tokens/i,
+    /token limit exceeded/i,
+    /request_too_large/i,
+    /request entity too large/i,
+    /payload too large/i,
+    /request too large/i,
+  ];
+  // Rate limits also talk about "too many tokens"; they are not overflow.
+  const OVERFLOW_EXCLUDE_PATTERNS = [
+    /^(throttling error|service unavailable):/i,
+    /rate limit/i,
+    /too many requests/i,
+    /max[_ ]tokens must be less than/i,
+  ];
+
+  export function isContextOverflow(message: string | undefined) {
+    if (!message) return false;
+    if (OVERFLOW_EXCLUDE_PATTERNS.some((pattern) => pattern.test(message)))
+      return false;
+    return (
+      OVERFLOW_PATTERNS.some((pattern) => pattern.test(message)) ||
+      /^4(?:00|13)\s*(status code)?\s*\(no body\)/i.test(message)
+    );
+  }
 
   const PartBase = z.object({
     id: z.string(),
@@ -458,6 +531,7 @@ export namespace MessageV2 {
         OutputLengthError.Schema,
         AbortedError.Schema,
         APIError.Schema,
+        ContextOverflowError.Schema,
       ])
       .optional(),
     parentID: z.string(),
@@ -669,11 +743,18 @@ export namespace MessageV2 {
     throw new Error('unknown message type');
   }
 
+  /**
+   * @param target the model the messages are sent to. Assistant turns from a
+   * different model drop their provider metadata and replay reasoning as text,
+   * because signatures and item ids are only valid for the model that produced
+   * them (upstream 021e42c0bb1).
+   */
   export async function toModelMessage(
     input: {
       info: Info;
       parts: Part[];
-    }[]
+    }[],
+    target?: { providerID: string; modelID: string }
   ): Promise<ModelMessage[]> {
     const result: UIMessage[] = [];
 
@@ -728,12 +809,24 @@ export namespace MessageV2 {
           parts: [],
         };
         result.push(assistantMessage);
+        const differentModel =
+          target !== undefined &&
+          (target.providerID !== msg.info.providerID ||
+            target.modelID !== msg.info.modelID);
+        const metadata = <T>(value: T) => (differentModel ? undefined : value);
+        // Anthropic needs the empty separator between signed thinking blocks
+        // kept, so send ' ' rather than '' (upstream #21370).
+        const hasSignedReasoning = msg.parts.some(
+          (part) =>
+            part.type === 'reasoning' &&
+            part.metadata?.anthropic?.signature != null
+        );
         for (const part of msg.parts) {
           if (part.type === 'text')
             assistantMessage.parts.push({
               type: 'text',
-              text: part.text,
-              providerMetadata: part.metadata,
+              text: part.text === '' && hasSignedReasoning ? ' ' : part.text,
+              providerMetadata: metadata(part.metadata),
             });
           if (part.type === 'step-start')
             assistantMessage.parts.push({
@@ -772,7 +865,7 @@ export namespace MessageV2 {
                 output: part.state.time.compacted
                   ? '[Old tool result content cleared]'
                   : part.state.output,
-                callProviderMetadata: part.metadata,
+                callProviderMetadata: metadata(part.metadata),
               });
             }
             if (part.state.status === 'error')
@@ -782,10 +875,15 @@ export namespace MessageV2 {
                 toolCallId: part.callID,
                 input: part.state.input,
                 errorText: part.state.error,
-                callProviderMetadata: part.metadata,
+                callProviderMetadata: metadata(part.metadata),
               });
           }
           if (part.type === 'reasoning') {
+            if (differentModel) {
+              if (part.text.trim().length > 0)
+                assistantMessage.parts.push({ type: 'text', text: part.text });
+              continue;
+            }
             assistantMessage.parts.push({
               type: 'reasoning',
               text: part.text,
@@ -796,7 +894,13 @@ export namespace MessageV2 {
       }
     }
 
-    return await convertToModelMessages(result);
+    // A message whose parts all convert to nothing would become
+    // `content: []`, which Anthropic and Bedrock reject (upstream #4811).
+    return await convertToModelMessages(
+      result.filter((msg) =>
+        msg.parts.some((part) => part.type !== 'step-start')
+      )
+    );
   }
 
   export const stream = fn(
@@ -861,6 +965,30 @@ export namespace MessageV2 {
     return result;
   }
 
+  // Stream-error codes whose retryability the HTTP status gets wrong
+  // (upstream #23069).
+  const NON_RETRYABLE_PROVIDER_CODES = new Set([
+    'insufficient_quota',
+    'usage_not_included',
+    'invalid_prompt',
+  ]);
+  const RETRYABLE_PROVIDER_CODES = new Set([
+    'server_error',
+    'server_is_overloaded',
+    'overloaded_error',
+    'api_error',
+    'rate_limit_error',
+  ]);
+
+  function parseJsonObject(input: unknown) {
+    if (typeof input !== 'string') return;
+    try {
+      const parsed = JSON.parse(input);
+      if (parsed && typeof parsed === 'object')
+        return parsed as Record<string, any>;
+    } catch {}
+  }
+
   function normalizeProviderErrorObject(e: unknown) {
     if (!e || typeof e !== 'object') return;
 
@@ -869,21 +997,36 @@ export namespace MessageV2 {
       root['error'] && typeof root['error'] === 'object'
         ? (root['error'] as Record<string, unknown>)
         : root;
-    const rawCode =
-      candidate['code'] ??
-      candidate['statusCode'] ??
-      candidate['status'] ??
-      root['code'] ??
-      root['statusCode'] ??
-      root['status'];
-    const statusCode =
-      typeof rawCode === 'number'
-        ? rawCode
-        : typeof rawCode === 'string' && /^\d+$/.test(rawCode)
-          ? Number.parseInt(rawCode, 10)
-          : undefined;
+    // A numeric status must win over a string `code` such as "server_error",
+    // otherwise the object is not recognised at all (upstream #23069).
+    const statusCode = [
+      candidate['statusCode'],
+      candidate['status'],
+      root['statusCode'],
+      root['status'],
+      candidate['code'],
+      root['code'],
+    ]
+      .map((value) =>
+        typeof value === 'number'
+          ? value
+          : typeof value === 'string' && /^\d+$/.test(value)
+            ? Number.parseInt(value, 10)
+            : undefined
+      )
+      .find((value) => value !== undefined);
+    const code = [
+      candidate['code'],
+      root['code'],
+      candidate['type'],
+      root['type'],
+    ].find(
+      (value): value is string =>
+        typeof value === 'string' && value !== 'error' && !/^\d+$/.test(value)
+    );
 
-    if (statusCode === undefined) return;
+    if (statusCode === undefined && (code === undefined || e instanceof Error))
+      return;
 
     let responseBody: string | undefined;
     try {
@@ -897,15 +1040,83 @@ export namespace MessageV2 {
         ? candidate['message']
         : typeof root['message'] === 'string'
           ? root['message']
-          : `Provider returned HTTP ${statusCode}`;
+          : statusCode !== undefined
+            ? `Provider returned HTTP ${statusCode}`
+            : code!;
+
+    if (code === 'context_length_exceeded' || isContextOverflow(message)) {
+      return { overflow: true as const, message, statusCode, responseBody };
+    }
+
+    const sdkRetryable = [root['isRetryable'], candidate['isRetryable']].find(
+      (value): value is boolean => typeof value === 'boolean'
+    );
+    const isRetryable =
+      code && NON_RETRYABLE_PROVIDER_CODES.has(code)
+        ? false
+        : code && RETRYABLE_PROVIDER_CODES.has(code)
+          ? true
+          : (sdkRetryable ??
+            (statusCode === 429 ||
+              (statusCode !== undefined && statusCode >= 500)));
 
     return {
+      overflow: false as const,
       message,
       statusCode,
-      isRetryable:
-        statusCode === 429 || (statusCode >= 500 && statusCode < 600),
+      isRetryable,
       responseBody,
     };
+  }
+
+  // Adds the provider's explanation to a bare status text and keeps HTML
+  // gateway pages out of the message (upstream #13530, #14096).
+  function apiErrorMessage(e: APICallError) {
+    const message = e.message;
+    const body = e.responseBody;
+    const statusText = e.statusCode ? STATUS_CODES[e.statusCode] : undefined;
+    if (message === '') return (body || statusText || 'Unknown error').trim();
+    if (!body || (statusText && message !== statusText)) return message;
+
+    const json = parseJsonObject(body);
+    if (json) {
+      const detail = [json.message, json.error?.message, json.error].find(
+        (value): value is string => typeof value === 'string' && value !== ''
+      );
+      if (detail) return `${message}: ${detail}`.trim();
+    }
+
+    if (/^\s*<!doctype|^\s*<html/i.test(body)) {
+      if (e.statusCode === 401)
+        return 'Unauthorized: request was blocked by a gateway or proxy. Your authentication token may be missing or expired - try `agent auth login` to re-authenticate.';
+      if (e.statusCode === 403)
+        return 'Forbidden: request was blocked by a gateway or proxy. You may not have permission to access this resource - check your account and provider settings.';
+      return message;
+    }
+
+    return `${message}: ${body}`.trim();
+  }
+
+  // Plain errors that are really rate limits or overload (upstream retry.ts).
+  function isRateLimitMessage(message: string) {
+    const lower = message.toLowerCase();
+    if (
+      lower.includes('rate increased too quickly') ||
+      lower.includes('rate limit') ||
+      lower.includes('too many requests')
+    )
+      return true;
+    const json = parseJsonObject(message);
+    if (!json) return false;
+    const code = typeof json.code === 'string' ? json.code.toLowerCase() : '';
+    if (json.type === 'error' && json.error?.type === 'too_many_requests')
+      return true;
+    if (code.includes('exhausted') || code.includes('unavailable')) return true;
+    return (
+      json.type === 'error' &&
+      typeof json.error?.code === 'string' &&
+      json.error.code.includes('rate_limit')
+    );
   }
 
   export function fromError(e: unknown, ctx: { providerID: string }) {
@@ -953,23 +1164,53 @@ export namespace MessageV2 {
           },
           { cause: e }
         ).toObject();
-      case APICallError.isInstance(e):
+      case APICallError.isInstance(e): {
+        const message = apiErrorMessage(e);
+        const body = parseJsonObject(e.responseBody);
+        if (
+          isContextOverflow(message) ||
+          e.statusCode === 413 ||
+          body?.error?.code === 'context_length_exceeded'
+        ) {
+          return new MessageV2.ContextOverflowError(
+            { message, responseBody: e.responseBody },
+            { cause: e }
+          ).toObject();
+        }
+        const status = e.statusCode;
         return new MessageV2.APIError(
           {
-            message: e.message,
-            statusCode: e.statusCode,
+            message,
+            statusCode: status,
             // A refused connection / unresolvable host is not transient: the
             // AI SDK marks it retryable, but retrying it for the 7-day global
-            // budget makes the CLI hang forever (#290).
-            isRetryable: isUnreachableNetworkError(e) ? false : e.isRetryable,
+            // budget makes the CLI hang forever (#290). Any 5xx is transient
+            // even when the SDK says otherwise (upstream #22508), and OpenAI
+            // returns 404 for models that do exist (upstream #13579).
+            isRetryable: isUnreachableNetworkError(e)
+              ? false
+              : e.isRetryable ||
+                (status !== undefined && status >= 500) ||
+                (ctx.providerID.startsWith('openai') && status === 404),
             responseHeaders: e.responseHeaders,
             responseBody: e.responseBody,
           },
           { cause: e }
         ).toObject();
-      case normalizeProviderErrorObject(e) !== undefined: {
-        const providerError = normalizeProviderErrorObject(e)!;
-        return new MessageV2.APIError(providerError, { cause: e }).toObject();
+      }
+      case providerError !== undefined: {
+        const normalized = providerError!;
+        if (normalized.overflow === true) {
+          return new MessageV2.ContextOverflowError(
+            {
+              message: normalized.message,
+              responseBody: normalized.responseBody,
+            },
+            { cause: e }
+          ).toObject();
+        }
+        const { overflow: _, ...data } = normalized;
+        return new MessageV2.APIError(data, { cause: e }).toObject();
       }
       case e instanceof Error: {
         const message = e.message || e.toString();
@@ -992,6 +1233,29 @@ export namespace MessageV2 {
           e.name === 'TimeoutError';
         if (isTimeoutError) {
           return new MessageV2.TimeoutError(
+            { message, isRetryable: true },
+            { cause: e }
+          ).toObject();
+        }
+        // Bun throws ZlibError when a gzip body is cut off mid-transfer
+        // (upstream #18064).
+        if (
+          e.name === 'ZlibError' ||
+          String((e as { code?: unknown }).code ?? '').startsWith('Z_')
+        ) {
+          return new MessageV2.APIError(
+            { message, isRetryable: true },
+            { cause: e }
+          ).toObject();
+        }
+        if (isContextOverflow(message)) {
+          return new MessageV2.ContextOverflowError(
+            { message },
+            { cause: e }
+          ).toObject();
+        }
+        if (isRateLimitMessage(message)) {
+          return new MessageV2.APIError(
             { message, isRetryable: true },
             { cause: e }
           ).toObject();

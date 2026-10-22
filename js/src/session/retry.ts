@@ -8,6 +8,13 @@ export namespace SessionRetry {
   export const RETRY_INITIAL_DELAY = 2000;
   export const RETRY_BACKOFF_FACTOR = 2;
   export const RETRY_MAX_DELAY_NO_HEADERS = 30_000; // 30 seconds
+  // setTimeout fires immediately for anything above 2^31 - 1 ms, which turns a
+  // long retry-after into a tight retry loop (upstream #19224).
+  export const RETRY_MAX_DELAY = 2_147_483_647;
+
+  function cap(delay: number): number {
+    return Math.min(delay, RETRY_MAX_DELAY);
+  }
 
   // Maximum delay for a single retry attempt when NO retry-after header (default: 20 minutes)
   // This caps exponential backoff when headers are not available
@@ -122,7 +129,7 @@ export namespace SessionRetry {
 
   export async function sleep(ms: number, signal: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(resolve, ms);
+      const timeout = setTimeout(resolve, cap(ms));
       // Prevent sleep timer from keeping event loop alive (#213)
       if (timeout.unref) timeout.unref();
       signal.addEventListener(
@@ -142,7 +149,7 @@ export namespace SessionRetry {
    */
   function addJitter(delay: number): number {
     const jitter = Math.random() * 0.1 * delay;
-    return Math.round(delay + jitter);
+    return cap(Math.round(delay + jitter));
   }
 
   /**
@@ -273,9 +280,9 @@ export namespace SessionRetry {
    * Uses exponential backoff: 1s, 2s, 4s, etc.
    */
   export function socketErrorDelay(attempt: number): number {
-    return (
+    return cap(
       SOCKET_ERROR_INITIAL_DELAY *
-      Math.pow(SOCKET_ERROR_BACKOFF_FACTOR, attempt - 1)
+        Math.pow(SOCKET_ERROR_BACKOFF_FACTOR, attempt - 1)
     );
   }
 
@@ -286,6 +293,6 @@ export namespace SessionRetry {
    */
   export function timeoutDelay(attempt: number): number {
     const index = Math.min(attempt - 1, TIMEOUT_DELAYS.length - 1);
-    return TIMEOUT_DELAYS[index];
+    return cap(TIMEOUT_DELAYS[index]);
   }
 }
