@@ -140,7 +140,20 @@ impl Tool for BatchTool {
         // In practice, these are typically fast file operations, so sequential is fine
         let mut results: Vec<BatchCallResult> = Vec::new();
 
+        let settings = ctx.settings();
+
         for call in &active_calls {
+            // Read-only mode and --disable-tools cannot be bypassed through
+            // batch (JS batch.ts).
+            if settings.is_denied(&call.tool) {
+                results.push(BatchCallResult {
+                    tool: call.tool.clone(),
+                    success: false,
+                    output: None,
+                    error: Some(crate::compat::denied_message(&call.tool)),
+                });
+                continue;
+            }
             if disallowed.contains(call.tool.as_str()) {
                 results.push(BatchCallResult {
                     tool: call.tool.clone(),

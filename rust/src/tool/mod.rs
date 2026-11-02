@@ -106,6 +106,14 @@ impl ToolRegistry {
         }
     }
 
+    /// Registry without the tools denied by `settings` (read-only mode and
+    /// the disabled-tools list), like the JS registry's `deniedTools()`.
+    pub fn with_settings(settings: &crate::compat::ToolSettings) -> Self {
+        let mut registry = Self::new();
+        registry.tools.retain(|t| !settings.is_denied(t.id()));
+        registry
+    }
+
     /// Get a tool by its ID
     pub fn get(&self, id: &str) -> Option<&dyn Tool> {
         self.tools.iter().find(|t| t.id() == id).map(|t| t.as_ref())
