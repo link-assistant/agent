@@ -168,3 +168,55 @@ fn test_todoread_tool_id() {
     let tool = TodoReadTool;
     assert_eq!(tool.id(), "todoread");
 }
+
+/// The JS schema: content, status (any string, including cancelled),
+/// priority and id, without activeForm.
+#[tokio::test]
+async fn test_todo_accepts_js_schema() {
+    let temp = TempDir::new().unwrap();
+    let ctx = create_context(temp.path(), "ses_test_todo_js");
+    let todos = json!([
+        {"content": "Fix bug", "status": "cancelled", "priority": "high", "id": "1"},
+        {"content": "Ship", "status": "completed", "priority": "low", "id": "2"},
+        {"content": "Later", "status": "blocked", "priority": "medium", "id": "3"}
+    ]);
+    let result = TodoWriteTool
+        .execute(json!({ "todos": todos }), &ctx)
+        .await
+        .unwrap();
+    // JS counts every status other than "completed".
+    assert_eq!(result.title, "2 todos");
+    // The list is written back as given, as JS does.
+    assert_eq!(result.metadata["todos"], todos);
+    let output: serde_json::Value = serde_json::from_str(&result.output).unwrap();
+    assert_eq!(output, todos);
+
+    let read = TodoReadTool.execute(json!({}), &ctx).await.unwrap();
+    assert_eq!(read.metadata["todos"], todos);
+}
+
+/// The earlier Rust shape with activeForm still works and round-trips.
+#[tokio::test]
+async fn test_todo_keeps_active_form_shape() {
+    let temp = TempDir::new().unwrap();
+    let ctx = create_context(temp.path(), "ses_test_todo_active_form");
+    let todos = json!([
+        {"content": "Fix bug", "status": "in_progress", "activeForm": "Fixing bug"}
+    ]);
+    let result = TodoWriteTool
+        .execute(json!({ "todos": todos }), &ctx)
+        .await
+        .unwrap();
+    assert_eq!(result.metadata["todos"], todos);
+}
+
+#[test]
+fn test_todowrite_schema_matches_js() {
+    let schema = TodoWriteTool.parameters_schema();
+    let item = &schema["properties"]["todos"]["items"];
+    for key in ["content", "status", "priority", "id", "activeForm"] {
+        assert!(item["properties"][key].is_object(), "missing {}", key);
+    }
+    assert_eq!(item["properties"]["status"].get("enum"), None);
+    assert_eq!(item["required"], json!(["content", "status"]));
+}
