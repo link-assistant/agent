@@ -10,6 +10,7 @@ import { NamedError } from '../util/error';
 import z from 'zod/v4';
 import { Instance } from '../project/instance';
 import { withTimeout } from '../util/timeout';
+import { sanitizeUrl } from '../util/verbose-fetch';
 import { spawnSync } from 'node:child_process';
 
 export namespace MCP {
@@ -36,8 +37,6 @@ export namespace MCP {
 
   type Client = Awaited<ReturnType<typeof experimental_createMCPClient>>;
 
-  /** Bound on transport startup and `initialize` (upstream DEFAULT_TIMEOUT). */
-  const DEFAULT_CONNECT_TIMEOUT = 30_000;
   /** Documented default of the per-server `timeout` for listing tools. */
   const DEFAULT_LIST_TIMEOUT = 5000;
   const MAX_LIST_PAGES = 1000;
@@ -301,7 +300,8 @@ export namespace MCP {
     return experimental_createMCPClient({
       name: 'opencode',
       transport,
-      initializationOptions: { timeout },
+      // 0 means "no bound" (the AI SDK would otherwise abort immediately).
+      initializationOptions: timeout > 0 ? { timeout } : undefined,
     }).catch(async (error) => {
       await (transport as { close?: () => Promise<void> })
         .close?.()
@@ -319,7 +319,15 @@ export namespace MCP {
     let mcpClient: MCPClient | undefined;
     let stdio: StdioClientTransport | undefined;
     let status: Status | undefined = undefined;
-    const connectTimeout = mcp.timeout ?? DEFAULT_CONNECT_TIMEOUT;
+    // Bound on starting the server and `initialize` (main had none, upstream
+    // reuses `timeout`). `timeout` keeps its documented meaning (listing
+    // tools), so a short listing timeout does not start failing slow-starting
+    // servers, while a raised one also raises the default connect bound.
+    const connectTimeout =
+      mcp.connect_timeout ??
+      (config.mcpConnectTimeout > 0
+        ? Math.max(config.mcpConnectTimeout, mcp.timeout ?? 0)
+        : 0);
 
     if (mcp.type === 'remote') {
       if (!URL.canParse(mcp.url)) {
@@ -372,7 +380,7 @@ export namespace MCP {
               message: 'transport connection failed',
               key,
               transport: name,
-              url: mcp.url,
+              url: sanitizeUrl(mcp.url),
               error: lastError.message,
             }));
             status = {

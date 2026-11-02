@@ -66,10 +66,36 @@ async function within<T>(promise: Promise<T>, ms: number): Promise<T> {
 describe('MCP connect (upstream #6760, #25019)', () => {
   test('a server that never answers initialize is marked failed', async () => {
     const status = await withMcp(
-      { hung: local('hang', { timeout: 300 }) },
+      { hung: local('hang', { connect_timeout: 300 }) },
       () => within(MCP.status(), 5000)
     );
     expect(status.hung?.status).toBe('failed');
+  });
+
+  // Backward compatibility (#335): `timeout` only bounded listing tools on
+  // main, so a short `timeout` must not fail a server that starts slowly.
+  test('a short listing `timeout` does not bound the connect', async () => {
+    const status = await withMcp(
+      { slow: local('slowinit', { timeout: 300 }) },
+      () => within(MCP.status(), 10_000)
+    );
+    expect(status.slow).toEqual({ status: 'connected' });
+  });
+
+  test('`connect_timeout` bounds a slow initialize', async () => {
+    const status = await withMcp(
+      { slow: local('slowinit', { connect_timeout: 200 }) },
+      () => within(MCP.status(), 10_000)
+    );
+    expect(status.slow?.status).toBe('failed');
+  });
+
+  test('`connect_timeout: 0` disables the connect bound', async () => {
+    const status = await withMcp(
+      { slow: local('slowinit', { connect_timeout: 0 }) },
+      () => within(MCP.status(), 10_000)
+    );
+    expect(status.slow).toEqual({ status: 'connected' });
   });
 
   test('an invalid remote URL is reported as failed, not dropped', async () => {

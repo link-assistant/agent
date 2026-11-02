@@ -2,6 +2,7 @@
 // Behaviour is selected with the first argument:
 //   ok        tools capability, one `echo` tool, results chosen by `kind`
 //   hang      never answers `initialize`
+//   slowinit  answers `initialize` after 600 ms
 //   notools   prompts capability only
 //   dupcursor tools/list always returns the same nextCursor
 //   stall     answers the first tools/list, then never again
@@ -78,14 +79,20 @@ createInterface({ input: process.stdin }).on('line', (line) => {
     if (mode === 'hang') {
       return;
     }
-    send({
-      id: msg.id,
-      result: {
-        protocolVersion: msg.params.protocolVersion,
-        capabilities: mode === 'notools' ? { prompts: {} } : { tools: {} },
-        serverInfo: { name: 'fixture', version: '1.0.0' },
-      },
-    });
+    const reply = () =>
+      send({
+        id: msg.id,
+        result: {
+          protocolVersion: msg.params.protocolVersion,
+          capabilities: mode === 'notools' ? { prompts: {} } : { tools: {} },
+          serverInfo: { name: 'fixture', version: '1.0.0' },
+        },
+      });
+    if (mode === 'slowinit') {
+      setTimeout(reply, 600);
+    } else {
+      reply();
+    }
     return;
   }
   if (msg.method === 'tools/list') {
