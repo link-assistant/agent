@@ -311,6 +311,42 @@ Permission Options:
                                  invoked via batch.
                                  Env: LINK_ASSISTANT_AGENT_DISABLE_TOOLS
 
+Compatibility Options (issue #335):
+  Each option restores behaviour from before the OpenCode stability sync, or
+  tunes a new limit. Every option also has a LINK_ASSISTANT_AGENT_* env var.
+  --bash-shell <auto|legacy|path> Shell for the bash tool. "auto" (default):
+                                 $SHELL if POSIX, else bash, else /bin/sh;
+                                 "legacy": /bin/sh as before.
+                                 Env: LINK_ASSISTANT_AGENT_BASH_SHELL
+  --legacy-tool-output           Empty edit/write output, head-truncated bash
+                                 output, empty read past EOF (as before).
+                                 Env: LINK_ASSISTANT_AGENT_LEGACY_TOOL_OUTPUT
+  --legacy-edit-matching         Loose fuzzy edit matching; an empty oldString
+                                 overwrites an existing file (as before).
+                                 Env: LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING
+  --glob-follow-symlinks         Follow symlinked directories in glob/ls.
+                                 Env: LINK_ASSISTANT_AGENT_GLOB_FOLLOW_SYMLINKS
+  --no-grep-hidden               Do not search hidden files in grep.
+                                 Env: LINK_ASSISTANT_AGENT_GREP_HIDDEN=false
+  --grep-timeout-ms <ms>         Timeout of one grep search (default 30000,
+                                 0 = none). Env: LINK_ASSISTANT_AGENT_GREP_TIMEOUT_MS
+  --read-max-lines <n>           Max lines per read call (default 2000,
+                                 0 = no cap). Env: LINK_ASSISTANT_AGENT_READ_MAX_LINES
+  --read-max-bytes <n>           Max bytes per read call (default 51200,
+                                 0 = no cap). Env: LINK_ASSISTANT_AGENT_READ_MAX_BYTES
+  --legacy-error-names           Report ContextOverflowError as a
+                                 non-retryable APIError in JSON output.
+                                 Env: LINK_ASSISTANT_AGENT_LEGACY_ERROR_NAMES
+  --legacy-token-usage           tokens.output includes reasoning tokens.
+                                 Env: LINK_ASSISTANT_AGENT_LEGACY_TOKEN_USAGE
+  --legacy-loop-exit             End the turn on a "stop" finish even when
+                                 tools ran in that step.
+                                 Env: LINK_ASSISTANT_AGENT_LEGACY_LOOP_EXIT
+  --mcp-connect-timeout <ms>     Default MCP connect/initialize timeout
+                                 (default 30000, 0 = none). Per server:
+                                 "connect_timeout" in the mcp config.
+                                 Env: LINK_ASSISTANT_AGENT_MCP_CONNECT_TIMEOUT
+
 Stdin Mode Options:
   -p, --prompt                   Direct prompt (bypasses stdin reading)
   --disable-stdin                Disable stdin streaming (requires --prompt)
@@ -508,6 +544,13 @@ This will create a configuration file at `~/.config/link-assistant-agent/opencod
   }
 }
 ```
+
+**MCP timeouts:** each server entry accepts `timeout` (ms for listing tools,
+default 5000; unchanged meaning) and `connect_timeout` (ms for starting the
+server and finishing the `initialize` handshake, default
+`--mcp-connect-timeout`, 30000, or `timeout` if larger; `0` disables the
+bound). A server that does not connect in time is reported as `failed`
+instead of blocking the session.
 
 **Available Playwright Tools:**
 

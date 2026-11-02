@@ -290,6 +290,18 @@ export namespace SessionPrompt {
     );
   }
 
+  // Whether a finished step still has tool results to send back.
+  // --legacy-loop-exit / LINK_ASSISTANT_AGENT_LEGACY_LOOP_EXIT: only an
+  // 'unknown' finish was checked for tool calls before (issue #194).
+  export function toolCallsPending(
+    finish: string | undefined,
+    parts: MessageV2.Part[],
+    legacy: boolean = config.legacyLoopExit
+  ) {
+    if (legacy && finish !== 'unknown') return false;
+    return hasToolCalls(parts);
+  }
+
   export function cancel(sessionID: string) {
     log.info(() => ({ message: 'cancel', sessionID }));
     const s = state();
@@ -366,12 +378,10 @@ export namespace SessionPrompt {
         !!lastAssistant?.finish &&
         lastAssistant.finish !== 'tool-calls' &&
         lastUser.id < lastAssistant.id;
-      // --legacy-loop-exit / LINK_ASSISTANT_AGENT_LEGACY_LOOP_EXIT: only an
-      // 'unknown' finish was checked for tool calls before (issue #194).
-      const toolCallsMade =
-        config.legacyLoopExit && lastAssistant?.finish !== 'unknown'
-          ? false
-          : hasToolCalls(lastAssistantParts ?? []);
+      const toolCallsMade = toolCallsPending(
+        lastAssistant?.finish,
+        lastAssistantParts ?? []
+      );
       if (finishedTurn && toolCallsMade) {
         log.info(() => ({
           message: 'continuing loop - tool calls detected',

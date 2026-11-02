@@ -62,3 +62,20 @@ fix: sync reliability fixes for existing tools, the session loop, providers and 
   aborted, per-tool timeouts work for server names with `_`, the connect
   timeout is no longer `NaN`, and dispose stops grandchild processes.
 - `cancel()` rejects queued callers with an `AbortError`.
+- Memory: the SSE usage map is bounded, the usage tee branch is always read to
+  the end, retried 5xx/429 bodies are cancelled, retry sleeps and grep/bash
+  drop their abort listeners, `withTimeout` clears its timer on rejection,
+  disposed instances leave the cache, cancelled turns reject their pending
+  permission asks, and deleting a session drops its file read stamps.
+- Continuous and single-shot modes no longer wait forever for `session.idle`
+  when a prompt fails before its loop starts.
+- MCP servers accept `connect_timeout`; `timeout` keeps its previous meaning
+  (listing tools). Credentials in MCP and provider URLs are masked in verbose
+  logs.
+
+Backward compatibility: every user-visible change can be reverted with an
+option (each also has a `LINK_ASSISTANT_AGENT_*` env var): `--bash-shell legacy`,
+`--legacy-tool-output`, `--legacy-edit-matching`, `--glob-follow-symlinks`,
+`--no-grep-hidden`, `--grep-timeout-ms 0`, `--read-max-lines 0`,
+`--read-max-bytes 0`, `--legacy-error-names`, `--legacy-token-usage`,
+`--legacy-loop-exit` and `--mcp-connect-timeout 0`.

@@ -21,6 +21,7 @@ import { GlobTool } from '../src/tool/glob';
 import { FileTime } from '../src/file/time';
 import { Permission } from '../src/permission';
 import { Session } from '../src/session';
+import { SessionPrompt } from '../src/session/prompt';
 import { SessionRetry } from '../src/session/retry';
 import { RetryFetch } from '../src/provider/retry-fetch';
 import { legacyErrorObject } from '../src/util/legacy-error-names';
@@ -435,6 +436,46 @@ describe('--legacy-token-usage', () => {
     );
     expect(result.tokens.output).toBe(500);
     expect(result.tokens.reasoning).toBe(200);
+  });
+});
+
+describe('--legacy-loop-exit', () => {
+  const parts = [
+    {
+      id: 'prt',
+      sessionID: 's',
+      messageID: 'm',
+      type: 'tool',
+      callID: 'c',
+      tool: 'read',
+      state: {
+        status: 'completed',
+        input: {},
+        output: '',
+        title: '',
+        metadata: {},
+        time: { start: 0, end: 0 },
+      },
+    },
+  ] as any;
+
+  test('default continues after tool calls whatever the finish reason', () => {
+    expect(SessionPrompt.toolCallsPending('stop', parts, false)).toBe(true);
+    expect(SessionPrompt.toolCallsPending('unknown', parts, false)).toBe(true);
+    expect(SessionPrompt.toolCallsPending('stop', [], false)).toBe(false);
+  });
+
+  test('legacy only continues for an unknown finish', () => {
+    expect(SessionPrompt.toolCallsPending('stop', parts, true)).toBe(false);
+    expect(SessionPrompt.toolCallsPending('unknown', parts, true)).toBe(true);
+  });
+
+  test('reads the flag from config', async () => {
+    expect(SessionPrompt.toolCallsPending('stop', parts)).toBe(true);
+    const legacy = await withConfig({ legacyLoopExit: true }, () =>
+      SessionPrompt.toolCallsPending('stop', parts)
+    );
+    expect(legacy).toBe(false);
   });
 });
 
