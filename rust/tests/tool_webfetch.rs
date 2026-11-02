@@ -4,7 +4,7 @@
 //! and the original inline tests from rust/src/tool/webfetch.rs.
 
 use link_assistant_agent::tool::webfetch::{
-    decode_html_entities, extract_text_from_html, strip_remaining_tags,
+    decode_html_entities, extract_text_from_html, html_to_markdown, strip_remaining_tags,
 };
 
 #[test]
@@ -100,6 +100,7 @@ use tokio::net::TcpListener;
 #[derive(Default)]
 struct Seen {
     user_agents: Mutex<Vec<String>>,
+    accepts: Mutex<Vec<String>>,
     pulled: AtomicUsize,
 }
 
@@ -132,6 +133,12 @@ async fn serve() -> (String, Arc<Seen>) {
                     .unwrap_or("")
                     .to_string();
                 seen.user_agents.lock().unwrap().push(user_agent.clone());
+                let accept = request
+                    .lines()
+                    .find_map(|l| l.strip_prefix("accept: "))
+                    .unwrap_or("")
+                    .to_string();
+                seen.accepts.lock().unwrap().push(accept);
                 let reply = |status: &str, headers: &str, body: &str| {
                     format!(
                         "HTTP/1.1 {}\r\n{}Content-Length: {}\r\nConnection: close\r\n\r\n{}",
@@ -154,6 +161,10 @@ async fn serve() -> (String, Arc<Seen>) {
                     ),
                     "/cf" => reply("200 OK", "Content-Type: text/plain\r\n", "real page"),
                     "/forbidden" => reply("403 Forbidden", "", "no"),
+                    "/slow" => {
+                        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                        reply("200 OK", "Content-Type: text/plain\r\n", "late")
+                    }
                     "/huge" => {
                         let head = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n";
                         if socket.write_all(head.as_bytes()).await.is_err() {
@@ -257,4 +268,81 @@ async fn test_webfetch_stops_reading_an_unbounded_body() {
     // Give the server a moment to notice the closed connection.
     tokio::time::sleep(std::time::Duration::from_millis(200)).await;
     assert!(seen.pulled.load(Ordering::SeqCst) < 40);
+}
+
+// --- JS parity (#335) ---
+
+#[test]
+fn test_extract_text_skips_script_and_style_with_attributes() {
+    let html = r#"<p>Before</p><script type="text/javascript">var x = 1;</script><style media="all">.a{}</style><p>After</p>"#;
+    assert_eq!(extract_text_from_html(html), "BeforeAfter");
+    let html = "<p>A</p><SCRIPT\nsrc=\"x.js\">alert(1)</SCRIPT ><p>B</p>";
+    assert_eq!(extract_text_from_html(html), "AB");
+}
+
+#[test]
+fn test_html_to_markdown_is_safe_on_non_ascii() {
+    // `İ` grows when lowercased with full Unicode rules; offsets computed on
+    // the lowercased copy pointed into the wrong place (or inside a char).
+    let html = "<p>İİİİ</p><script>bad()</script><h1>Tİtle</h1><a href=\"/x\">İlink</a>";
+    let md = html_to_markdown(html);
+    assert!(!md.contains("bad()"), "{}", md);
+    assert!(md.contains("# Tİtle"), "{}", md);
+    assert!(md.contains("[İlink](/x)"), "{}", md);
+    assert!(md.contains("İİİİ"), "{}", md);
+}
+
+#[tokio::test]
+async fn test_webfetch_status_error_matches_js() {
+    let (base, _) = serve().await;
+    let error = WebFetchTool
+        .execute(
+            json!({"url": format!("{}/missing", base), "format": "text"}),
+            &context(),
+        )
+        .await
+        .unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("Request failed with status code: 404")
+            && !error.to_string().contains("Not Found"),
+        "{}",
+        error
+    );
+}
+
+#[tokio::test]
+async fn test_webfetch_timeout_message_matches_js() {
+    let (base, _) = serve().await;
+    let error = WebFetchTool
+        .execute(
+            json!({"url": format!("{}/slow", base), "format": "text", "timeout": 1}),
+            &context(),
+        )
+        .await
+        .unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("Request timed out after 1 seconds"),
+        "{}",
+        error
+    );
+}
+
+#[tokio::test]
+async fn test_webfetch_html_accept_header_matches_js() {
+    let (base, seen) = serve().await;
+    WebFetchTool
+        .execute(
+            json!({"url": format!("{}/html", base), "format": "html"}),
+            &context(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        seen.accepts.lock().unwrap()[0],
+        "text/html;q=1.0, application/xhtml+xml;q=0.9, text/plain;q=0.8, text/markdown;q=0.7, */*;q=0.1"
+    );
 }
