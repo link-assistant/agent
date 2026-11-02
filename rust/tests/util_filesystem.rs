@@ -50,3 +50,31 @@ fn test_relative_path_outside() {
     // Should return the absolute path when outside base
     assert!(!rel.to_string_lossy().is_empty());
 }
+
+/// Paths that do not exist use the fallback, which must compare whole
+/// components: `/a/bc` is not inside `/a/b`.
+#[test]
+fn test_contains_fallback_compares_components() {
+    let base = "/nonexistent-issue-335/a/b";
+    assert!(!Filesystem::contains(base, "/nonexistent-issue-335/a/bc"));
+    assert!(!Filesystem::contains(
+        base,
+        "/nonexistent-issue-335/a/bc/d.txt"
+    ));
+    assert!(Filesystem::contains(
+        base,
+        "/nonexistent-issue-335/a/b/c.txt"
+    ));
+    assert!(Filesystem::contains(base, base));
+}
+
+#[test]
+fn test_contains_existing_paths() {
+    let temp = tempfile::tempdir().unwrap();
+    let inner = temp.path().join("b");
+    let sibling = temp.path().join("bc");
+    std::fs::create_dir(&inner).unwrap();
+    std::fs::create_dir(&sibling).unwrap();
+    assert!(Filesystem::contains(temp.path(), &inner));
+    assert!(!Filesystem::contains(&inner, &sibling));
+}
