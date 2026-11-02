@@ -176,3 +176,58 @@ async fn test_exa_call_stops_reading_an_unbounded_body() {
         pulled
     );
 }
+
+// --- JS parity (#335) ---
+
+use link_assistant_agent::tool::websearch::{resolve_search_arguments, WebSearchParams};
+
+fn search_params(value: serde_json::Value) -> WebSearchParams {
+    serde_json::from_value(value).unwrap()
+}
+
+#[test]
+fn test_websearch_zero_results_means_default() {
+    // JS: `numResults || 8`.
+    let args = resolve_search_arguments(&search_params(serde_json::json!({
+        "query": "rust", "numResults": 0
+    })))
+    .unwrap();
+    assert_eq!(args["numResults"], 8);
+    assert_eq!(args["type"], "auto");
+    assert_eq!(args["livecrawl"], "fallback");
+    let args = resolve_search_arguments(&search_params(serde_json::json!({
+        "query": "rust", "numResults": 3, "type": "deep", "livecrawl": "preferred"
+    })))
+    .unwrap();
+    assert_eq!(args["numResults"], 3);
+    assert_eq!(args["type"], "deep");
+    assert_eq!(args["livecrawl"], "preferred");
+}
+
+#[test]
+fn test_websearch_rejects_unknown_enum_values() {
+    let err = resolve_search_arguments(&search_params(serde_json::json!({
+        "query": "rust", "livecrawl": "always"
+    })))
+    .unwrap_err();
+    assert!(err.to_string().contains("livecrawl"), "{}", err);
+    let err = resolve_search_arguments(&search_params(serde_json::json!({
+        "query": "rust", "type": "neural"
+    })))
+    .unwrap_err();
+    assert!(err.to_string().contains("type"), "{}", err);
+}
+
+#[tokio::test]
+async fn test_websearch_invalid_enum_fails_before_any_request() {
+    let ctx = link_assistant_agent::tool::ToolContext::new("s", "m", std::env::temp_dir());
+    let err = WebSearchTool
+        .execute(serde_json::json!({"query": "x", "type": "slow"}), &ctx)
+        .await
+        .unwrap_err();
+    assert!(
+        err.to_string().contains("expected one of auto, fast, deep"),
+        "{}",
+        err
+    );
+}
