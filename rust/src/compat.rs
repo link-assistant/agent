@@ -176,7 +176,7 @@ impl ToolSettings {
     pub fn is_denied(&self, tool: &str) -> bool {
         let tool = tool.trim().to_ascii_lowercase();
         (self.read_only && READ_ONLY_DENIED_TOOLS.contains(&tool.as_str()))
-            || self.disable_tools.iter().any(|t| *t == tool)
+            || self.disable_tools.contains(&tool)
     }
 
     /// `name=value` lines for verbose output.
