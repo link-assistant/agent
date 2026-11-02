@@ -75,3 +75,14 @@ fn test_ids_are_unique() {
     let unique: std::collections::HashSet<&String> = ids.iter().collect();
     assert_eq!(unique.len(), 100);
 }
+
+/// An empty id generates a new one, as JS does (`if (!given)`), instead of
+/// panicking.
+#[test]
+fn test_empty_given_id_generates_new() {
+    let a = ascending(Prefix::Session, Some(""));
+    let d = descending(Prefix::Message, Some(""));
+    assert!(a.starts_with("ses_") && a.len() > 4);
+    assert!(d.starts_with("msg_") && d.len() > 4);
+    assert_eq!(ascending(Prefix::Session, Some("ses_given")), "ses_given");
+}
