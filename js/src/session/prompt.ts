@@ -1,4 +1,5 @@
 import path from 'path';
+import { Permission } from '../permission';
 import os from 'os';
 import fs from 'fs/promises';
 import z from 'zod';
@@ -298,6 +299,7 @@ export namespace SessionPrompt {
       return;
     }
     match.abort.abort();
+    Permission.clearSession(sessionID);
     // Queued callers get a real AbortError instead of `undefined`
     // (upstream #16776).
     for (const item of match.callbacks) {
@@ -364,7 +366,12 @@ export namespace SessionPrompt {
         !!lastAssistant?.finish &&
         lastAssistant.finish !== 'tool-calls' &&
         lastUser.id < lastAssistant.id;
-      const toolCallsMade = hasToolCalls(lastAssistantParts ?? []);
+      // --legacy-loop-exit / LINK_ASSISTANT_AGENT_LEGACY_LOOP_EXIT: only an
+      // 'unknown' finish was checked for tool calls before (issue #194).
+      const toolCallsMade =
+        config.legacyLoopExit && lastAssistant?.finish !== 'unknown'
+          ? false
+          : hasToolCalls(lastAssistantParts ?? []);
       if (finishedTurn && toolCallsMade) {
         log.info(() => ({
           message: 'continuing loop - tool calls detected',

@@ -11,6 +11,7 @@ import { Permission } from '../permission';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { processResult } from './process-result';
+import { config } from '../config/config';
 
 // Output is limited to its last MAX_LINES lines and MAX_BYTES bytes, and the
 // metadata preview to its last MAX_METADATA_LENGTH characters (upstream
@@ -18,6 +19,10 @@ import { processResult } from './process-result';
 const MAX_BYTES = 30_000;
 const MAX_LINES = 2000;
 const MAX_METADATA_LENGTH = 30_000;
+// --legacy-tool-output: the head of the output was kept, up to this many
+// characters, followed by LEGACY_TRUNCATED.
+const LEGACY_MAX_OUTPUT_LENGTH = 30_000;
+const LEGACY_TRUNCATED = '\n\n(Output was truncated due to length limit)';
 const DEFAULT_TIMEOUT = 1 * 60 * 1000;
 const MAX_TIMEOUT = 10 * 60 * 1000;
 const KILL_SIGNAL = 'SIGTERM';
@@ -36,29 +41,45 @@ const killWindowsTree = async (pid: number | undefined) => {
   ).catch(() => {});
 };
 
-// Shells that cannot run the POSIX `-c` scripts models write
+// Shells known to run the POSIX `-c` scripts models write. Anything else in
+// $SHELL (fish, nu, tcsh, csh, xonsh, ...) would misparse them
 // (upstream b5d0c56b4c #3494, 238b907dd8 #5205).
-const UNSUPPORTED_SHELLS = new Set(['fish', 'nu']);
-const shells = new Map<string, string>();
+const POSIX_SHELLS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'mksh', 'ash']);
+const shells = new Map<string, string | undefined>();
 
-// Resolve the shell commands run in: $SHELL when it can run them, otherwise
-// zsh on macOS and bash elsewhere. Node's `shell: true` always uses /bin/sh,
-// which is dash on Debian/Ubuntu. Windows keeps the platform shell.
-export function selectShell(): string | undefined {
+// Resolve the shell commands run in (--bash-shell /
+// LINK_ASSISTANT_AGENT_BASH_SHELL):
+//   - "auto" (default): $SHELL when it is a POSIX shell, otherwise zsh on
+//     macOS and bash elsewhere, falling back to /bin/sh;
+//   - "legacy": Node's platform shell (`spawn(command, { shell: true })`,
+//     i.e. /bin/sh), the behaviour before issue #335;
+//   - anything else: that shell, run with `-c`.
+// Windows always keeps the platform shell.
+export function selectShell(
+  mode: string = config.bashShell
+): string | undefined {
   if (process.platform === 'win32') return undefined;
-  const preferred = process.env.SHELL ?? '';
-  const cached = shells.get(preferred);
-  if (cached) return cached;
+  const choice = (mode || 'auto').trim();
+  if (choice === 'legacy') return undefined;
+  const preferred = choice === 'auto' ? (process.env.SHELL ?? '') : choice;
+  const key = `${choice}\0${preferred}`;
+  if (shells.has(key)) return shells.get(key);
   let shell: string | undefined;
-  const name = path.basename(preferred).toLowerCase();
-  if (preferred && !UNSUPPORTED_SHELLS.has(name)) {
-    shell = Bun.which(preferred) ?? undefined;
+  if (choice !== 'auto') {
+    // An explicit shell is used as given; an unknown one fails loudly when
+    // spawned instead of silently running another shell.
+    shell = Bun.which(preferred) ?? preferred;
+  } else {
+    const name = path.basename(preferred).toLowerCase();
+    if (preferred && POSIX_SHELLS.has(name)) {
+      shell = Bun.which(preferred) ?? undefined;
+    }
+    shell ??=
+      process.platform === 'darwin'
+        ? '/bin/zsh'
+        : (Bun.which('bash') ?? '/bin/sh');
   }
-  shell ??=
-    process.platform === 'darwin'
-      ? '/bin/zsh'
-      : (Bun.which('bash') ?? '/bin/sh');
-  shells.set(preferred, shell);
+  shells.set(key, shell);
   return shell;
 }
 
@@ -237,10 +258,17 @@ export const BashTool = Tool.define('bash', {
     let used = 0;
     let dropped = false;
     let last = '';
+    // --legacy-tool-output keeps the head instead, so only the first
+    // LEGACY_MAX_OUTPUT_LENGTH + 1 characters are needed.
+    const legacy = config.legacyToolOutput;
+    let head = '';
     // A multi-byte character can be split across chunks of one stream.
     const decoders = new Map<string, TextDecoder>();
     const append = (text: string) => {
       if (!text) return;
+      if (legacy && head.length <= LEGACY_MAX_OUTPUT_LENGTH) {
+        head += text.slice(0, LEGACY_MAX_OUTPUT_LENGTH + 1 - head.length);
+      }
       const size = Buffer.byteLength(text, 'utf-8');
       chunks.push({ text, size });
       used += size;
@@ -275,10 +303,14 @@ export const BashTool = Tool.define('bash', {
     // (link-foundation/command-stream#207).
     // A cancelled command does not need to start at all.
     if (!cancel.aborted) {
+      // The runner gets its own signal. command-stream 2.4.0 never removes
+      // the abort listener it adds to options.signal, so passing the turn's
+      // long-lived signal would keep every runner (and its output) reachable
+      // until the turn ends or the timeout fires. Only the link below touches
+      // `cancel`, and it is removed when the command finishes.
       // On Windows the runner is stopped only after taskkill has stopped the
       // shell's process tree.
-      const stop =
-        process.platform === 'win32' ? new AbortController() : undefined;
+      const stop = new AbortController();
 
       // The file/args forms run the command string in a real shell. A
       // command string spec would route simple commands and pipelines through
@@ -293,35 +325,42 @@ export const BashTool = Tool.define('bash', {
         {
           cwd: Instance.directory,
           env: { ...process.env },
-          signal: stop?.signal ?? cancel,
+          signal: stop.signal,
           killSignal: KILL_SIGNAL,
           killGrace: 200,
           mirror: false,
-          capture: true,
+          // Output is read from stream() into the bounded buffer above;
+          // capturing would also keep the whole output in the runner.
+          capture: false,
           stdin: 'ignore',
         }
       );
 
       const stopTree = () => {
-        void killWindowsTree(command.child?.pid).finally(() => stop?.abort());
+        if (process.platform !== 'win32') return stop.abort();
+        void killWindowsTree(command.child?.pid).finally(() => stop.abort());
       };
-      if (stop) cancel.addEventListener('abort', stopTree, { once: true });
+      cancel.addEventListener('abort', stopTree, { once: true });
 
-      for await (const chunk of command.stream()) {
-        if (chunk.type === 'exit') {
-          exit = chunk.code;
-        } else {
-          let decoder = decoders.get(chunk.type);
-          if (!decoder) {
-            decoder = new TextDecoder();
-            decoders.set(chunk.type, decoder);
+      try {
+        for await (const chunk of command.stream()) {
+          if (chunk.type === 'exit') {
+            exit = chunk.code;
+          } else {
+            let decoder = decoders.get(chunk.type);
+            if (!decoder) {
+              decoder = new TextDecoder();
+              decoders.set(chunk.type, decoder);
+            }
+            append(decoder.decode(chunk.data, { stream: true }));
           }
-          append(decoder.decode(chunk.data, { stream: true }));
         }
+        for (const decoder of decoders.values()) append(decoder.decode());
+      } finally {
+        // ctx.abort outlives the call, so a listener left on it would keep
+        // this runner and its output reachable until the session ends.
+        cancel.removeEventListener('abort', stopTree);
       }
-      for (const decoder of decoders.values()) append(decoder.decode());
-
-      cancel.removeEventListener('abort', stopTree);
 
       // command-stream reports a shell that died from a signal as exit 0
       // (link-foundation/command-stream#208).
@@ -340,13 +379,21 @@ export const BashTool = Tool.define('bash', {
     if (timedOut || aborted) signal = KILL_SIGNAL;
     if (signal) exit = null;
 
-    const end = tail(
-      chunks.map((item) => item.text).join(''),
-      MAX_LINES,
-      MAX_BYTES
-    );
-    let output =
-      (dropped || end.cut ? '...output truncated...\n\n' : '') + end.text;
+    let output: string;
+    if (legacy) {
+      output =
+        head.length > LEGACY_MAX_OUTPUT_LENGTH
+          ? head.slice(0, LEGACY_MAX_OUTPUT_LENGTH) + LEGACY_TRUNCATED
+          : head;
+    } else {
+      const end = tail(
+        chunks.map((item) => item.text).join(''),
+        MAX_LINES,
+        MAX_BYTES
+      );
+      output =
+        (dropped || end.cut ? '...output truncated...\n\n' : '') + end.text;
+    }
 
     if (timedOut) {
       output += `\n\n(Command timed out after ${timeout} ms)`;

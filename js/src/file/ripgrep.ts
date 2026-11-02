@@ -10,6 +10,7 @@ import { $ } from 'bun';
 import { ZipReader, BlobReader, BlobWriter } from '@zip.js/zip.js';
 import { Log } from '../util/log';
 import { createVerboseFetch } from '../util/verbose-fetch';
+import { config as agentConfig } from '../config/config';
 
 export namespace Ripgrep {
   const log = Log.create({ service: 'ripgrep' });
@@ -221,12 +222,14 @@ export namespace Ripgrep {
     cwd: string;
     glob?: string[];
     signal?: AbortSignal;
+    follow?: boolean;
   }) {
     input.signal?.throwIfAborted();
 
-    // No `--follow`: following symlinked directories can walk huge or
-    // cyclic trees (upstream c0e71c4261 #11415). `--no-config` keeps a
-    // user's RIPGREP_CONFIG_PATH from changing the output we parse.
+    // No `--follow` by default: following symlinked directories can walk huge
+    // or cyclic trees (upstream c0e71c4261 #11415). --glob-follow-symlinks /
+    // LINK_ASSISTANT_AGENT_GLOB_FOLLOW_SYMLINKS restores it. `--no-config`
+    // keeps a user's RIPGREP_CONFIG_PATH from changing the output we parse.
     const args = [
       await filepath(),
       '--files',
@@ -234,6 +237,7 @@ export namespace Ripgrep {
       '--no-config',
       '--glob=!.git/*',
     ];
+    if (input.follow ?? agentConfig.globFollowSymlinks) args.push('--follow');
     if (input.glob) {
       for (const g of input.glob) {
         args.push(`--glob=${g}`);

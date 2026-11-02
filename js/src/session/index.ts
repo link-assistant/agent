@@ -1,9 +1,10 @@
 import { Decimal } from 'decimal.js';
+import { FileTime } from '../file/time';
 import z from 'zod';
 import { type LanguageModelUsage, type ProviderMetadata } from 'ai';
 import { Bus } from '../bus';
 import { Config } from '../config/file-config';
-import { isVerbose } from '../config/config';
+import { config, isVerbose } from '../config/config';
 import { Identifier } from '../id/id';
 import type { ModelsDev } from '../provider/models';
 import { Storage } from '../storage/storage';
@@ -328,6 +329,7 @@ export namespace Session {
         await Storage.remove(msg);
       }
       await Storage.remove(['session', project.id, sessionID]);
+      FileTime.clear(sessionID);
       Bus.publish(Event.Deleted, {
         info: session,
       });
@@ -777,8 +779,10 @@ export namespace Session {
       const rawOutputTokens = safeNum(
         toNumber(effectiveUsage.outputTokens, 'outputTokens')
       );
+      // --legacy-token-usage / LINK_ASSISTANT_AGENT_LEGACY_TOKEN_USAGE keeps
+      // the raw figure (reasoning counted in output, as before).
       const outputTokens =
-        reasoningTokens <= rawOutputTokens
+        !config.legacyTokenUsage && reasoningTokens <= rawOutputTokens
           ? rawOutputTokens - reasoningTokens
           : rawOutputTokens;
 

@@ -9,6 +9,7 @@ import { EOL } from 'os';
 import { select } from '@clack/prompts';
 import { createOpencodeClient, type OpencodeClient } from '@opencode-ai/sdk';
 import { Provider } from '../../provider/provider';
+import { legacyErrorObject } from '../../util/legacy-error-names';
 
 const TOOL: Record<string, [string, string]> = {
   todowrite: ['Todo', UI.Style.TEXT_WARNING_BOLD],
@@ -267,7 +268,12 @@ export const RunCommand = cmd({
             // Always include the human-readable string alongside the
             // machine-readable object so consumers never print
             // "[object Object]" (#289).
-            if (outputJsonEvent('error', { message: err, error: props.error }))
+            if (
+              outputJsonEvent('error', {
+                message: err,
+                error: legacyErrorObject(props.error),
+              })
+            )
               continue;
             UI.error(err);
           }

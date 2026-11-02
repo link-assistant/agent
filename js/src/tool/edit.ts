@@ -15,6 +15,7 @@ import { Instance } from '../project/instance';
 import { Snapshot } from '../snapshot';
 import { Permission } from '../permission';
 import { Bom } from '../util/bom';
+import { config } from '../config/config';
 
 function normalizeLineEndings(text: string): string {
   return text.replaceAll('\r\n', '\n');
@@ -82,7 +83,11 @@ export const EditTool = Tool.define('edit', {
     // the same file so parallel edits cannot drop each other's changes.
     await FileTime.withLock(filePath, async () => {
       if (params.oldString === '') {
-        if (await Bun.file(filePath).exists()) {
+        // --legacy-edit-matching: an empty oldString overwrote the file.
+        if (
+          !config.legacyEditMatching &&
+          (await Bun.file(filePath).exists())
+        ) {
           throw new Error(EMPTY_OLD_STRING_ERROR);
         }
         const next = Bom.split(params.newString);
@@ -138,7 +143,8 @@ export const EditTool = Tool.define('edit', {
       );
     });
 
-    const output = 'Edit applied successfully.';
+    // --legacy-tool-output: edit used to return an empty output.
+    const output = config.legacyToolOutput ? '' : 'Edit applied successfully.';
     const diagnostics = {};
 
     const filediff: Snapshot.FileDiff = {
@@ -173,8 +179,27 @@ export type Replacer = (
 // Similarity thresholds for block anchor fallback matching
 // (raised from 0.0 / 0.3 in upstream #30932: with 0.0 any block whose first
 // and last lines matched was replaced, even when the middle was unrelated)
+// --legacy-edit-matching / LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING restores
+// the old thresholds and drops the block-size and disproportionate-match
+// guards.
 const SINGLE_CANDIDATE_SIMILARITY_THRESHOLD = 0.65;
 const MULTIPLE_CANDIDATES_SIMILARITY_THRESHOLD = 0.65;
+const LEGACY_SINGLE_CANDIDATE_SIMILARITY_THRESHOLD = 0.0;
+const LEGACY_MULTIPLE_CANDIDATES_SIMILARITY_THRESHOLD = 0.3;
+
+function thresholds() {
+  return config.legacyEditMatching
+    ? {
+        single: LEGACY_SINGLE_CANDIDATE_SIMILARITY_THRESHOLD,
+        multiple: LEGACY_MULTIPLE_CANDIDATES_SIMILARITY_THRESHOLD,
+        maxLineDelta: (_size: number) => Infinity,
+      }
+    : {
+        single: SINGLE_CANDIDATE_SIMILARITY_THRESHOLD,
+        multiple: MULTIPLE_CANDIDATES_SIMILARITY_THRESHOLD,
+        maxLineDelta: (size: number) => Math.max(1, Math.floor(size * 0.25)),
+      };
+}
 
 /**
  * Levenshtein distance algorithm implementation
@@ -262,7 +287,8 @@ export const BlockAnchorReplacer: Replacer = function* (content, find) {
   const firstLineSearch = searchLines[0].trim();
   const lastLineSearch = searchLines[searchLines.length - 1].trim();
   const searchBlockSize = searchLines.length;
-  const maxLineDelta = Math.max(1, Math.floor(searchBlockSize * 0.25));
+  const limits = thresholds();
+  const maxLineDelta = limits.maxLineDelta(searchBlockSize);
 
   // Collect all candidate positions where both anchors match
   const candidates: Array<{ startLine: number; endLine: number }> = [];
@@ -308,7 +334,7 @@ export const BlockAnchorReplacer: Replacer = function* (content, find) {
         similarity += (1 - distance / maxLen) / linesToCheck;
 
         // Exit early when threshold is reached
-        if (similarity >= SINGLE_CANDIDATE_SIMILARITY_THRESHOLD) {
+        if (similarity >= limits.single) {
           break;
         }
       }
@@ -317,7 +343,7 @@ export const BlockAnchorReplacer: Replacer = function* (content, find) {
       similarity = 1.0;
     }
 
-    if (similarity >= SINGLE_CANDIDATE_SIMILARITY_THRESHOLD) {
+    if (similarity >= limits.single) {
       let matchStartIndex = 0;
       for (let k = 0; k < startLine; k++) {
         matchStartIndex += originalLines[k].length + 1;
@@ -369,7 +395,7 @@ export const BlockAnchorReplacer: Replacer = function* (content, find) {
   }
 
   // Threshold judgment
-  if (maxSimilarity >= MULTIPLE_CANDIDATES_SIMILARITY_THRESHOLD && bestMatch) {
+  if (maxSimilarity >= limits.multiple && bestMatch) {
     const { startLine, endLine } = bestMatch;
     let matchStartIndex = 0;
     for (let k = 0; k < startLine; k++) {
@@ -684,7 +710,10 @@ export function replace(
       const index = content.indexOf(search);
       if (index === -1) continue;
       notFound = false;
-      if (isDisproportionateMatch(search, oldString)) {
+      if (
+        !config.legacyEditMatching &&
+        isDisproportionateMatch(search, oldString)
+      ) {
         throw new Error(
           'Refusing replacement because the matched span is much larger than oldString. Re-read the file and provide the full exact oldString for the intended replacement.'
         );

@@ -12,9 +12,13 @@ import { formatBalancedLineWindow, formatColumnWindow } from './text-window';
 
 const DEFAULT_READ_LIMIT = 2000;
 const MAX_LINE_LENGTH = 2000;
-// upstream 1b82511fbd / c1b03b728a (#14009): bound the output in bytes too,
-// 2000 long lines would otherwise put megabytes into the context.
-const MAX_BYTES = 50 * 1024;
+// upstream 1b82511fbd / c1b03b728a (#14009): the output is bounded in bytes
+// too (config.readMaxBytes, 50 KB by default), 2000 long lines would otherwise
+// put megabytes into the context.
+
+function formatSize(bytes: number) {
+  return bytes % 1024 === 0 ? `${bytes / 1024} KB` : `${bytes} bytes`;
+}
 
 export const ReadTool = Tool.define('read', {
   description: DESCRIPTION,
@@ -39,7 +43,8 @@ export const ReadTool = Tool.define('read', {
   }),
   async execute(params, ctx) {
     let filepath = params.filePath;
-    if (!path.isAbsolute(filepath)) {
+    const relative = !path.isAbsolute(filepath);
+    if (relative) {
       // Relative to the session directory, like every other tool, not to the
       // worktree root (upstream 6cf2c3e3db).
       filepath = path.resolve(Instance.directory, filepath);
@@ -47,6 +52,19 @@ export const ReadTool = Tool.define('read', {
 
     // No restrictions - unrestricted file read
     let stat = await fs.promises.stat(filepath).catch(() => undefined);
+    if (!stat && relative && Instance.directory !== Instance.worktree) {
+      // Backward compatibility: relative paths used to resolve against the
+      // worktree root. Keep that working when the path does not exist under
+      // the session directory.
+      const fromWorktree = path.resolve(Instance.worktree, params.filePath);
+      const worktreeStat = await fs.promises
+        .stat(fromWorktree)
+        .catch(() => undefined);
+      if (worktreeStat) {
+        filepath = fromWorktree;
+        stat = worktreeStat;
+      }
+    }
     if (!stat) {
       const alternate = alternatePath(filepath);
       if (alternate) {
@@ -149,10 +167,16 @@ export const ReadTool = Tool.define('read', {
     const isBinary = await isBinaryFile(filepath, stat.size);
     if (isBinary) throw new Error(`Cannot read binary file: ${filepath}`);
 
-    // upstream 683d470fe4 (#51011): never return more than the default limit
+    // upstream 683d470fe4 (#51011): never return more than the default limit.
+    // --read-max-lines / --read-max-bytes tune both caps; 0 disables a cap.
+    const maxLines = config.readMaxLines > 0 ? config.readMaxLines : Infinity;
+    const maxBytes = config.readMaxBytes > 0 ? config.readMaxBytes : Infinity;
     const limit = Math.min(
-      normalizeNonNegativeInteger(params.limit, DEFAULT_READ_LIMIT),
-      DEFAULT_READ_LIMIT
+      normalizeNonNegativeInteger(
+        params.limit,
+        Math.min(DEFAULT_READ_LIMIT, maxLines)
+      ),
+      maxLines
     );
     const offset = normalizeNonNegativeInteger(params.offset, 0);
     const hasExplicitLineRange =
@@ -162,11 +186,17 @@ export const ReadTool = Tool.define('read', {
     const columnOffset = normalizeNonNegativeInteger(params.columnOffset, 0);
     const columnLimit = Math.min(
       normalizeNonNegativeInteger(params.columnLimit, MAX_LINE_LENGTH),
-      MAX_BYTES
+      maxBytes
     );
     const lines = splitLines(await file.text());
     // upstream c1b03b728a (#14009)
-    if (hasExplicitLineRange && lines.length > 0 && offset >= lines.length) {
+    // --legacy-tool-output keeps the old empty result past the end.
+    if (
+      !config.legacyToolOutput &&
+      hasExplicitLineRange &&
+      lines.length > 0 &&
+      offset >= lines.length
+    ) {
       throw new Error(
         `Offset ${offset} is out of range for this file (${lines.length} lines)`
       );
@@ -211,7 +241,7 @@ export const ReadTool = Tool.define('read', {
         const formatted = formatLine(item);
         const size = Buffer.byteLength(formatted, 'utf8') + 1;
         // Always show at least one line so the cap cannot return nothing.
-        if (bytes + size > MAX_BYTES && content.length > 0) {
+        if (bytes + size > maxBytes && content.length > 0) {
           capped = {
             first: part.lines[0].lineNumber,
             last: item.lineNumber - 1,
@@ -234,7 +264,7 @@ export const ReadTool = Tool.define('read', {
 
     if (capped) {
       // `offset` is 0-based, so the next unread line starts at `last`.
-      output += `\n\n(Output capped at 50 KB. Showing lines ${capped.first}-${capped.last}. Use offset=${capped.last} to continue.)`;
+      output += `\n\n(Output capped at ${formatSize(maxBytes)}. Showing lines ${capped.first}-${capped.last}. Use offset=${capped.last} to continue.)`;
     } else if (hasMoreLines) {
       output += `\n\n(File has more lines. Use 'offset' parameter to read beyond line ${lastReadLine})`;
     } else {

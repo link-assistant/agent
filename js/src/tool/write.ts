@@ -8,6 +8,7 @@ import { FileTime } from '../file/time';
 import { Bus } from '../bus';
 import { File } from '../file';
 import { Bom } from '../util/bom';
+import { config } from '../config/config';
 
 export const WriteTool = Tool.define('write', {
   description: DESCRIPTION,
@@ -60,7 +61,8 @@ export const WriteTool = Tool.define('write', {
         filepath,
         exists: exists,
       },
-      output: 'Wrote file successfully.',
+      // --legacy-tool-output: write used to return an empty output.
+      output: config.legacyToolOutput ? '' : 'Wrote file successfully.',
     };
   },
 });
