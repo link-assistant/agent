@@ -113,19 +113,13 @@ impl Tool for BatchTool {
         let disallowed: HashSet<&str> = DISALLOWED_IN_BATCH.iter().copied().collect();
         let filtered: HashSet<&str> = FILTERED_FROM_SUGGESTIONS.iter().copied().collect();
 
-        // Split calls into allowed (up to MAX) and discarded
-        let all_calls = params.tool_calls;
-        let tool_calls: Vec<BatchToolCall> = all_calls
-            .into_iter()
-            .take(MAX_BATCH_CALLS + 1) // take one extra to detect truncation
-            .collect();
-
-        let (active_calls, discarded_calls) = if tool_calls.len() > MAX_BATCH_CALLS {
-            let mut c = tool_calls;
-            let disc = c.split_off(MAX_BATCH_CALLS);
-            (c, disc)
+        // Calls past the limit are not run, and each one is reported (the
+        // earlier `.take(MAX + 1)` dropped calls 12 and later silently).
+        let mut active_calls = params.tool_calls;
+        let discarded_calls = if active_calls.len() > MAX_BATCH_CALLS {
+            active_calls.split_off(MAX_BATCH_CALLS)
         } else {
-            (tool_calls, vec![])
+            Vec::new()
         };
 
         let registry = ToolRegistry::new();
