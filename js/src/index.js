@@ -495,14 +495,13 @@ async function runServerMode(
     });
 
     // Subscribe to all bus events and output in selected format
-    const { unsub: eventUnsub, idlePromise: eventPromise } =
-      createBusEventSubscription({
-        sessionID,
-        eventHandler,
-        onError: () => {
-          hasError = true;
-        },
-      });
+    const { unsub: eventUnsub } = createBusEventSubscription({
+      sessionID,
+      eventHandler,
+      onError: () => {
+        hasError = true;
+      },
+    });
     unsub = eventUnsub;
 
     // Send message to session with specified model
@@ -527,20 +526,26 @@ async function runServerMode(
           temperature,
         }),
       }
-    ).catch((error) => {
-      hasError = true;
-      eventHandler.output({
-        type: 'error',
-        timestamp: Date.now(),
-        sessionID,
-        message: errorText(error),
-        error: error instanceof Error ? error.message : String(error),
+    )
+      // Read the reply to the end: it completes only after the prompt has
+      // returned, successful or not (issue #335).
+      .then((response) => response.text())
+      .catch((error) => {
+        hasError = true;
+        eventHandler.output({
+          type: 'error',
+          timestamp: Date.now(),
+          sessionID,
+          message: errorText(error),
+          error: error instanceof Error ? error.message : String(error),
+        });
       });
-    });
 
-    // Wait for session to become idle, then for the request rejection to be
-    // observed (see runDirectMode, #290).
-    await eventPromise;
+    // Wait for the request (its rejection must be observed, see
+    // runDirectMode, #290). `session.idle` is published before the reply is
+    // written, so the idle event has been handled by then; if the prompt
+    // failed before its loop started there is no idle event at all, and
+    // waiting for it hung the process (issue #335).
     await requestPromise;
   } finally {
     // Always clean up resources
@@ -592,14 +597,13 @@ async function runDirectMode(
     });
 
     // Subscribe to all bus events and output in selected format
-    const { unsub: eventUnsub, idlePromise: eventPromise } =
-      createBusEventSubscription({
-        sessionID,
-        eventHandler,
-        onError: () => {
-          hasError = true;
-        },
-      });
+    const { unsub: eventUnsub } = createBusEventSubscription({
+      sessionID,
+      eventHandler,
+      onError: () => {
+        hasError = true;
+      },
+    });
     unsub = eventUnsub;
 
     // Send message to session directly
@@ -629,11 +633,13 @@ async function runDirectMode(
       });
     });
 
-    // Wait for session to become idle, then for the prompt itself. A fatal
-    // failure publishes `session.idle` while unwinding, so awaiting only the
-    // idle event let the process exit before the rejection handler above ran
-    // — no error record, exit code 0 (#290).
-    await eventPromise;
+    // Wait for the prompt itself. A fatal failure publishes `session.idle`
+    // while unwinding, so awaiting only the idle event let the process exit
+    // before the rejection handler above ran — no error record, exit code 0
+    // (#290). `session.idle` is published synchronously before `prompt`
+    // settles, so its output has been written by then; and a prompt that
+    // fails before its loop starts never goes idle, so also waiting for the
+    // idle event hung the process (issue #335).
     await promptPromise;
   } finally {
     // Always clean up resources

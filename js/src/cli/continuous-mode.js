@@ -356,6 +356,10 @@ export async function runContinuousServerMode(
       const parts = [{ type: 'text', text: messageText }];
 
       // Create a promise to wait for this message to complete
+      // `stopIdleWait` ends the wait when the prompt settles without ever
+      // going idle (it can throw before the loop starts); otherwise the
+      // subscription leaked and the input queue hung (issue #335).
+      let stopIdleWait = () => {};
       const messagePromise = new Promise((resolve) => {
         const checkIdle = Bus.subscribeAll((event) => {
           if (
@@ -366,6 +370,10 @@ export async function runContinuousServerMode(
             resolve();
           }
         });
+        stopIdleWait = () => {
+          checkIdle();
+          resolve();
+        };
       });
 
       // Send message
@@ -383,21 +391,28 @@ export async function runContinuousServerMode(
             temperature,
           }),
         }
-      ).catch((error) => {
-        hasError = true;
-        eventHandler.output({
-          type: 'error',
-          timestamp: Date.now(),
-          sessionID,
-          message: errorText(error),
-          error: error instanceof Error ? error.message : String(error),
+      )
+        // Read the reply to the end: it completes only after the prompt has
+        // returned (and released the connection), successful or not.
+        .then((response) => response.text())
+        .catch((error) => {
+          hasError = true;
+          eventHandler.output({
+            type: 'error',
+            timestamp: Date.now(),
+            sessionID,
+            message: errorText(error),
+            error: error instanceof Error ? error.message : String(error),
+          });
         });
-      });
 
       // See the direct-mode comment below: the request rejection must be
-      // observed before the process can exit (#290).
-      await messagePromise;
+      // observed before the process can exit (#290). `session.idle` is
+      // published before the reply is written, so once the reply is complete
+      // the idle wait can stop.
       await requestPromise;
+      stopIdleWait();
+      await messagePromise;
       isProcessing = false;
 
       // Process next pending message if any
@@ -582,6 +597,10 @@ export async function runContinuousDirectMode(
       const parts = [{ type: 'text', text: messageText }];
 
       // Create a promise to wait for this message to complete
+      // `stopIdleWait` ends the wait when the prompt settles without ever
+      // going idle (it can throw before the loop starts); otherwise the
+      // subscription leaked and the input queue hung (issue #335).
+      let stopIdleWait = () => {};
       const messagePromise = new Promise((resolve) => {
         const checkIdle = Bus.subscribeAll((event) => {
           if (
@@ -592,6 +611,10 @@ export async function runContinuousDirectMode(
             resolve();
           }
         });
+        stopIdleWait = () => {
+          checkIdle();
+          resolve();
+        };
       });
 
       // Send message directly
@@ -618,8 +641,11 @@ export async function runContinuousDirectMode(
       // publishes `session.idle` while unwinding, so waiting only on the idle
       // event let the process exit before the rejection handler above ran —
       // no error record, exit code 0 (#290).
-      await messagePromise;
+      // `session.idle` is published synchronously before `prompt` settles,
+      // so after it settles the idle wait can stop.
       await promptPromise;
+      stopIdleWait();
+      await messagePromise;
       isProcessing = false;
 
       // Process next pending message if any

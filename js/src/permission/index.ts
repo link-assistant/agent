@@ -391,6 +391,28 @@ export namespace Permission {
     });
   }
 
+  /**
+   * Rejects and drops the pending asks of a session. Called when its turn is
+   * cancelled, so an aborted turn does not leave a pending promise (and its
+   * tool call) behind until the instance is disposed (issue #335).
+   */
+  export function clearSession(sessionID: Info['sessionID']) {
+    const { pending } = state();
+    const items = pending[sessionID];
+    if (!items) return;
+    delete pending[sessionID];
+    for (const item of Object.values(items)) {
+      item.reject(
+        new RejectedError(
+          item.info.sessionID,
+          item.info.id,
+          item.info.callID,
+          item.info.metadata
+        )
+      );
+    }
+  }
+
   export function respond(input: {
     sessionID: Info['sessionID'];
     permissionID: Info['id'];

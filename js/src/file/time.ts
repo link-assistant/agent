@@ -67,6 +67,11 @@ export namespace FileTime {
     read[sessionID][file] = stamp(file);
   }
 
+  /** Forgets a deleted session's read stamps (issue #335 leak audit). */
+  export function clear(sessionID: string) {
+    delete state().read[sessionID];
+  }
+
   export function get(sessionID: string, file: string) {
     return state().read[sessionID]?.[normalize(file)]?.read;
   }

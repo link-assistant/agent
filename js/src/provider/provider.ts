@@ -20,6 +20,7 @@ import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';
 import { RetryFetch } from './retry-fetch';
 import { SSEUsageExtractor } from '../util/sse-usage-extractor';
+import { sanitizeUrl } from '../util/verbose-fetch';
 import { OpenCodeZen } from './opencode-zen';
 import { Kilo } from './kilo';
 import { EnvTemplate } from './env-template';
@@ -1199,19 +1200,23 @@ export namespace Provider {
               const [sdkStream, usageStream] = response.body.tee();
               const sseReqId = SSEUsageExtractor.nextRequestId();
               (async () => {
+                const reader = usageStream.getReader();
                 try {
-                  const reader = usageStream.getReader();
+                  // Read the whole branch: a tee branch that stops being read
+                  // keeps buffering the rest of the response (issue #335).
                   const decoder = new TextDecoder();
-                  let body = '';
+                  const tracker = SSEUsageExtractor.createTracker();
                   while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    body += decoder.decode(value, { stream: true });
-                    if (body.length > 50000) break;
+                    tracker.push(decoder.decode(value, { stream: true }));
                   }
-                  SSEUsageExtractor.processStreamForUsage(sseReqId, body);
+                  tracker.push(decoder.decode());
+                  const usage = tracker.finish();
+                  if (usage) SSEUsageExtractor.storeUsage(sseReqId, usage);
                 } catch {
-                  // Never break the SDK stream
+                  // Never break the SDK stream; release the branch instead.
+                  reader.cancel().catch(() => {});
                 }
               })();
               return new Response(sdkStream, {
@@ -1237,12 +1242,14 @@ export namespace Provider {
             });
           }
 
-          const url =
+          // Logged only; query-string credentials are masked (issue #335).
+          const url = sanitizeUrl(
             typeof input === 'string'
               ? input
               : input instanceof URL
                 ? input.toString()
-                : input.url;
+                : input.url
+          );
           const method = init?.method ?? 'GET';
 
           // Wrap all verbose logging in try/catch so it never breaks the actual HTTP request.
@@ -1369,13 +1376,15 @@ export namespace Provider {
                   try {
                     const reader = logStream.getReader();
                     const decoder = new TextDecoder();
+                    const tracker = SSEUsageExtractor.createTracker();
                     let bodyPreview = '';
                     let truncated = false;
                     while (true) {
                       const { done, value } = await reader.read();
                       if (done) break;
+                      const chunk = decoder.decode(value, { stream: true });
+                      tracker.push(chunk);
                       if (!truncated) {
-                        const chunk = decoder.decode(value, { stream: true });
                         bodyPreview += chunk;
                         if (bodyPreview.length > responseBodyMaxChars) {
                           bodyPreview = bodyPreview.slice(
@@ -1386,11 +1395,12 @@ export namespace Provider {
                         }
                       }
                     }
-                    // Extract usage from raw SSE stream as AI SDK fallback
-                    SSEUsageExtractor.processStreamForUsage(
-                      sseRequestId,
-                      bodyPreview
-                    );
+                    // Extract usage from the whole raw SSE stream (not just
+                    // the logged preview) as AI SDK fallback.
+                    tracker.push(decoder.decode());
+                    const usage = tracker.finish();
+                    if (usage)
+                      SSEUsageExtractor.storeUsage(sseRequestId, usage);
                     // Use direct (non-lazy) logging for stream body
                     // See: https://github.com/link-assistant/agent/issues/211
                     log.info('HTTP response body (stream)', {

@@ -129,17 +129,23 @@ export namespace SessionRetry {
 
   export async function sleep(ms: number, signal: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(resolve, cap(ms));
+      if (signal.aborted) {
+        reject(new DOMException('Aborted', 'AbortError'));
+        return;
+      }
+      const onAbort = () => {
+        clearTimeout(timeout);
+        reject(new DOMException('Aborted', 'AbortError'));
+      };
+      const timeout = setTimeout(() => {
+        // Drop the listener once the delay elapses so retries do not pile
+        // listeners onto the turn's abort signal (issue #335).
+        signal.removeEventListener('abort', onAbort);
+        resolve();
+      }, cap(ms));
       // Prevent sleep timer from keeping event loop alive (#213)
       if (timeout.unref) timeout.unref();
-      signal.addEventListener(
-        'abort',
-        () => {
-          clearTimeout(timeout);
-          reject(new DOMException('Aborted', 'AbortError'));
-        },
-        { once: true }
-      );
+      signal.addEventListener('abort', onAbort, { once: true });
     });
   }
 

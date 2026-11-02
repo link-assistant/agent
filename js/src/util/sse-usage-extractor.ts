@@ -13,6 +13,13 @@ export interface SSEUsageData {
 }
 
 const pendingUsage = new Map<string, SSEUsageData>();
+/**
+ * Usage is only consumed when the provider response lacks it, so entries for
+ * every other streamed request used to stay in memory for the life of the
+ * process (issue #335 memory-leak audit). Only recent requests can still be
+ * consumed, so keep a bounded number and evict the oldest first.
+ */
+export const MAX_PENDING_SSE_USAGE = 64;
 let requestCounter = 0;
 
 export namespace SSEUsageExtractor {
@@ -77,24 +84,71 @@ export namespace SSEUsageExtractor {
     return lastUsage;
   }
 
+  /** Longest SSE line kept while waiting for its newline. */
+  export const MAX_SSE_LINE_CHARS = 1024 * 1024;
+
+  /**
+   * Incremental extractor for a streamed SSE body. Only the unfinished last
+   * line is buffered, so the whole stream can be read (usage arrives in the
+   * final events) with bounded memory. The previous code buffered the first
+   * 50 000 characters and stopped reading the tee branch, which both lost the
+   * usage of longer responses and left the tee buffering the rest of the
+   * response for a reader that never came back (issue #335).
+   */
+  export function createTracker() {
+    let partial = '';
+    let latest: SSEUsageData | undefined;
+    const scan = (text: string) => {
+      const usage = extractUsageFromSSEChunk(text);
+      if (usage) latest = usage;
+    };
+    return {
+      push(text: string) {
+        partial += text;
+        const end = partial.lastIndexOf('\n');
+        if (end === -1) {
+          if (partial.length > MAX_SSE_LINE_CHARS) partial = '';
+          return;
+        }
+        scan(partial.slice(0, end));
+        partial = partial.slice(end + 1);
+        if (partial.length > MAX_SSE_LINE_CHARS) partial = '';
+      },
+      finish(): SSEUsageData | undefined {
+        if (partial) scan(partial);
+        partial = '';
+        return latest;
+      },
+    };
+  }
+
+  /** Stores usage found by a tracker under `requestId`. */
+  export function storeUsage(requestId: string, usage: SSEUsageData) {
+    pendingUsage.delete(requestId);
+    pendingUsage.set(requestId, usage);
+    while (pendingUsage.size > MAX_PENDING_SSE_USAGE) {
+      const oldest = pendingUsage.keys().next().value;
+      if (oldest === undefined) break;
+      pendingUsage.delete(oldest);
+    }
+    if (isVerbose()) {
+      log.info('raw SSE usage extracted', {
+        requestId,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+        totalTokens: usage.totalTokens,
+        cachedTokens: usage.cachedTokens,
+        reasoningTokens: usage.reasoningTokens,
+      });
+    }
+  }
+
   export function processStreamForUsage(
     requestId: string,
     streamBody: string
   ): void {
     const usage = extractUsageFromSSEChunk(streamBody);
-    if (usage) {
-      pendingUsage.set(requestId, usage);
-      if (isVerbose()) {
-        log.info('raw SSE usage extracted', {
-          requestId,
-          promptTokens: usage.promptTokens,
-          completionTokens: usage.completionTokens,
-          totalTokens: usage.totalTokens,
-          cachedTokens: usage.cachedTokens,
-          reasoningTokens: usage.reasoningTokens,
-        });
-      }
-    }
+    if (usage) storeUsage(requestId, usage);
   }
 
   export function getUsage(requestId: string): SSEUsageData | undefined {
