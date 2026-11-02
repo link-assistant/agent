@@ -210,7 +210,7 @@ Tests: `js/tests/session-reliability.ts`,
 
 | #   | Defect (before)                                                                                      | Upstream                     | Fix                                                                                    |
 | --- | ---------------------------------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------- |
-| 4   | A server that never answered `initialize` blocked every session                                      | #6760, #19200                | Connect timeout (`timeout` or 30 s); the transport is closed on failure                |
+| 4   | A server that never answered `initialize` blocked every session                                      | #6760, #19200                | `connect_timeout` (default 30 s); the transport is closed on failure                   |
 | 8   | `tools/list` had no timeout, looped on a repeated cursor, ran sequentially and leaked failed clients | #31442, #13229, `e5abe1e78b` | Per-request timeout, 1000-page cap, repeated-cursor error, parallel listing, `close()` |
 | 9   | Results without `content`, with resources or with only `structuredContent` crashed or were dropped   | #7879, #32244, #57640        | `normalizeResult()`                                                                    |
 | 10  | An invalid URL or an exception during creation removed the server silently                           | #25019, #31595               | `failed` status with the reason                                                        |
@@ -317,3 +317,72 @@ New test files:
 - read/search: `js/tests/read-search-reliability-read.ts`, `js/tests/read-search-reliability-search.ts`
 - bash/web: `js/tests/bash-web-reliability.ts`
 - session/provider/MCP: `js/tests/session-reliability.ts`, `js/tests/provider-transform-reliability.ts`, `js/tests/mcp-reliability.ts`
+
+## 11. Review follow-up: compatibility, memory and parity
+
+The PR review asked to make sure nothing that worked before breaks, that
+every breaking change can be switched back (for example the JSON input and
+output), to look for memory leaks across the agent, and to check parity
+between the JavaScript and Rust versions. The three audits are in
+`experiments/issue-335/audit/`:
+
+- [`backward-compat-audit.md`](../../../experiments/issue-335/audit/backward-compat-audit.md)
+- [`memory-leak-audit.md`](../../../experiments/issue-335/audit/memory-leak-audit.md)
+- [`js-rust-parity-audit.md`](../../../experiments/issue-335/audit/js-rust-parity-audit.md)
+
+### 11.1 Compatibility options
+
+The JSON input format, the event types and the event envelope are unchanged.
+Old stored sessions still load: the storage schema was only widened. Each
+change that a script or a model could notice has an option that restores the
+previous behaviour. Every option is a CLI flag and a `LINK_ASSISTANT_AGENT_*`
+env var (`js/src/config/config.ts`, `COMPAT_DEFAULTS`).
+
+| Change                                                               | Option to restore the previous behaviour                      |
+| -------------------------------------------------------------------- | ------------------------------------------------------------- |
+| bash runs in `$SHELL` (if POSIX) or bash instead of `/bin/sh`        | `--bash-shell legacy` (or a shell path)                       |
+| bash keeps the tail of long output; edit/write return a confirmation | `--legacy-tool-output`                                        |
+| read past the end of a file is an error                              | `--legacy-tool-output`                                        |
+| edit rejects loose fuzzy matches and an empty `oldString` on a file  | `--legacy-edit-matching`                                      |
+| glob/ls do not follow symlinked directories                          | `--glob-follow-symlinks`                                      |
+| grep searches hidden files; grep times out after 30 s                | `--no-grep-hidden`, `--grep-timeout-ms 0`                     |
+| read returns at most 2000 lines / 50 KB                              | `--read-max-lines 0`, `--read-max-bytes 0`                    |
+| context overflow is `ContextOverflowError` in JSON output            | `--legacy-error-names` (reported as non-retryable `APIError`) |
+| `tokens.output` excludes reasoning tokens                            | `--legacy-token-usage`                                        |
+| a `stop` finish after tool calls continues the loop                  | `--legacy-loop-exit`                                          |
+| MCP connect is bounded (30 s)                                        | `--mcp-connect-timeout 0`, or `connect_timeout` per server    |
+
+MCP `timeout` keeps its previous meaning (listing tools). A first version of
+this PR also used it to bound connect, which broke slow servers configured
+with a short listing timeout, so connect got its own `connect_timeout`.
+
+Tests: `js/tests/compat-flags.ts` runs every option with its default and its
+legacy value, and checks the env-var wiring in a child process.
+
+### 11.2 Memory and resource leaks
+
+| #   | Leak (before)                                                                          | Fix                                                                                  |
+| --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 1   | SSE usage map grew by one entry per request                                            | Bounded to 64 entries, oldest evicted first                                          |
+| 2   | The usage tee branch stopped reading after 50 000 chars, so the tee buffered the rest  | Read to the end with a line tracker; only the unfinished line is kept                |
+| 3   | bash kept the whole output and was pinned by an abort listener on the turn signal      | Own `AbortController`, `capture: false`, bounded tail buffer                         |
+| 4   | grep buffered all rg output and stat-ed every match                                    | Streams rg output, one stat per file, stops after 10 000 matches                     |
+| 5   | FileTime read stamps stayed after a session was deleted                                | `FileTime.clear()` on `Session.remove`                                               |
+| 6   | Continuous/single-shot mode waited forever for `session.idle` if a prompt failed early | Wait for the prompt (or the HTTP request) to settle, then drop the idle subscription |
+| 7   | Retried 5xx/429 responses were dropped without cancelling the body                     | `response.body.cancel()` before retrying                                             |
+| 8   | Retry `sleep` left its abort listener on the turn signal                               | Listener removed when the delay elapses                                              |
+| 9   | `withTimeout` kept its timer when the promise rejected                                 | `finally(clearTimeout)`                                                              |
+| 10  | `Instance.dispose()` left the directory in the cache                                   | Removed from the cache                                                               |
+| 11  | Pending permission asks of a cancelled turn stayed until the instance was disposed     | `Permission.clearSession()` on cancel rejects them                                   |
+
+Left unchanged on purpose:
+
+- A client that disconnects from the HTTP server does not cancel the turn.
+  Clients that POST, disconnect and later poll the session rely on the turn
+  finishing.
+- The optional per-request provider timeout signal is not cleared early.
+  Clearing it would change the timeout semantics, and it holds no buffers.
+
+Tests: the leak regressions in `js/tests/compat-flags.ts`, plus
+`js/tests/sse-usage-extractor.ts`, `js/tests/bash-web-reliability.ts` and
+`js/tests/read-search-reliability-search.ts`.
