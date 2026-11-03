@@ -15,29 +15,37 @@ export interface DefaultConfigOptions {
   defaultCompactionSafetyMarginPercent?: number | string | null;
 }
 
-/** Default model used when no `--model` CLI argument is provided. */
-export const DEFAULT_MODEL = 'kilo/nemotron-3-super-free';
+/**
+ * Default model used when no `--model` CLI argument is provided.
+ *
+ * Kilo withdrew the free Nemotron 3 Super route; `kilo/nemotron-3-super-free`
+ * is now a deprecated alias for this model (#335).
+ */
+export const DEFAULT_MODEL = 'kilo/nemotron-3-ultra-free';
 
 /** Env var for overriding the default model in test runs and automation. */
 export const DEFAULT_MODEL_ENV = 'LINK_ASSISTANT_AGENT_DEFAULT_MODEL';
 
 /** Default compaction model used when no `--compaction-model` CLI argument is provided. */
-export const DEFAULT_COMPACTION_MODEL = 'kilo/nemotron-3-super-free';
+export const DEFAULT_COMPACTION_MODEL = 'kilo/nemotron-3-ultra-free';
 
 /** Env var for overriding the default compaction model in test runs and automation. */
 export const DEFAULT_COMPACTION_MODEL_ENV =
   'LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL';
 
 /**
- * Free Kilo models ordered by context capacity, followed by the session model.
+ * Served free Kilo models, followed by the session model. Both Kilo entries
+ * have a 1M-token context, so the order is the preferred model first, then
+ * the rate-limit fallback.
  * Compaction skips models whose context is too small or which hit a rate limit.
  * Provider prefixes keep default secondary calls away from Zen's restricted tier.
  * The special value "same" uses the model running the session.
  *
  * @see https://github.com/link-assistant/agent/issues/327
+ * @see https://github.com/link-assistant/agent/issues/335
  */
 export const DEFAULT_COMPACTION_MODELS =
-  '(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)';
+  '(kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)';
 
 /** Env var for overriding the default compaction cascade in test runs and automation. */
 export const DEFAULT_COMPACTION_MODELS_ENV =

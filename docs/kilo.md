@@ -20,18 +20,18 @@ Checked October 12, 2026. These models support reasoning and tool calls with zer
 
 | Agent model ID                             | Exact gateway ID                         | Context   | Agent output limit |
 | ------------------------------------------ | ---------------------------------------- | --------- | ------------------ |
-| **`kilo/nemotron-3-super-free` (default)** | `nvidia/nemotron-3-super-120b-a12b:free` | 262,144   | 32,768             |
-| `kilo/nemotron-3-ultra-free`               | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 | 65,536             |
+| **`kilo/nemotron-3-ultra-free` (default)** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 | 65,536             |
 | `kilo/nemotron-3.5-lightning-free`         | `nvidia/nemotron-3.5-lightning:free`     | 1,000,000 | 65,536             |
 
 ```bash
 echo "hello" | agent
-echo "hello" | agent --model kilo/nemotron-3-super-free
 echo "hello" | agent --model kilo/nemotron-3-ultra-free
 echo "hello" | agent --model kilo/nemotron-3.5-lightning-free
 ```
 
-Short names for these built-in aliases also resolve to Kilo. Session titles and compaction use served Kilo entries by default. The gateway's Super output capacity is larger than Agent's conservative 32,768 output cap.
+Short names for these built-in aliases also resolve to Kilo. Session titles and compaction use served Kilo entries by default.
+
+Kilo withdrew `nvidia/nemotron-3-super-120b-a12b:free`, the former default. `kilo/nemotron-3-super-free` (and the bare `nemotron-3-super-free`) remains a deprecated alias that runs on `kilo/nemotron-3-ultra-free` and logs a warning naming the replacement. See [issue #335](https://github.com/link-assistant/agent/issues/335).
 
 The former GLM-5, GLM 4.5 Air, MiniMax M2.5, Giga Potato, Trinity Large Preview, and DeepSeek R1 free gateway IDs have been withdrawn and their built-ins removed. See [issue #327](https://github.com/link-assistant/agent/issues/327).
 

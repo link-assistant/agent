@@ -339,7 +339,7 @@ describe('CompactionModelConfig with cascade', () => {
         { providerID: 'opencode', modelID: 'big-pickle', useSameModel: false },
         {
           providerID: 'opencode',
-          modelID: 'nemotron-3-super-free',
+          modelID: 'nemotron-3.5-lightning-free',
           useSameModel: false,
         },
         {

@@ -13,4 +13,4 @@ export function isFreeTierError(
 }
 
 export const FREE_TIER_ERROR_MESSAGE =
-  "OpenCode Zen's free tier is limited to OpenCode clients. Use kilo/nemotron-3-super-free (authenticate with agent auth login or KILO_API_KEY), or select a paid model.";
+  "OpenCode Zen's free tier is limited to OpenCode clients. Use kilo/nemotron-3-ultra-free (authenticate with agent auth login or KILO_API_KEY), or select a paid model.";

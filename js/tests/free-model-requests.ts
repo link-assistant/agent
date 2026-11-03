@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { runMockTurn } from '../../experiments/issue-327/mock-turn';
+import { DEFAULT_GATEWAY_MODEL, runMockTurn } from './fixtures/mock-turn';
 import { APICallError } from 'ai';
 import { MessageV2 } from '../src/session/message-v2';
 import { RetryFetch } from '../src/provider/retry-fetch';
@@ -11,14 +11,42 @@ describe('free model HTTP requests (#327)', () => {
     expect(result.exitCode, context).toBe(0);
     expect(result.requests.some((request) => request.stream)).toBe(true);
     expect(result.requests.some((request) => !request.stream)).toBe(true);
+    expect(DEFAULT_GATEWAY_MODEL).toBe(
+      'nvidia/nemotron-3-ultra-550b-a55b:free'
+    );
     expect(new Set(result.requests.map((request) => request.model))).toEqual(
-      new Set(['nvidia/nemotron-3-super-120b-a12b:free'])
+      new Set([DEFAULT_GATEWAY_MODEL])
     );
     expect(context).not.toContain('title API call failed');
     expect(result.stdout).toContain('hello');
   }, 60000);
+  test('deprecated kilo/nemotron-3-super-free runs on Ultra with a warning (#335)', async () => {
+    const result = await runMockTurn('kilo', {
+      args: ['--model', 'kilo/nemotron-3-super-free'],
+    });
+    const context = `${result.stdout}\n${result.stderr}`;
+    expect(result.exitCode, context).toBe(0);
+    expect(result.requests.length).toBeGreaterThan(0);
+    expect(new Set(result.requests.map((request) => request.model))).toEqual(
+      new Set(['nvidia/nemotron-3-ultra-550b-a55b:free'])
+    );
+    expect(context).not.toContain('nvidia/nemotron-3-super-120b-a12b:free');
+    const warnings = result.stdout
+      .split('\n')
+      .filter((line) => line.startsWith('{'))
+      .map((line) => JSON.parse(line))
+      .filter(
+        (line) =>
+          line.type === 'log' &&
+          line.level === 'warn' &&
+          line.deprecatedModel === 'kilo/nemotron-3-super-free'
+      );
+    expect(warnings.length).toBeGreaterThan(0);
+    expect(warnings[0].replacement).toBe('kilo/nemotron-3-ultra-free');
+    expect(result.stdout).toContain('hello');
+  }, 60000);
   test('Zen FreeTierError makes one request and exits with the client restriction', async () => {
-    const result = await runMockTurn('opencode', true);
+    const result = await runMockTurn('opencode', { refusal: true });
     expect(result.exitCode).toBe(1);
     expect(result.requests).toHaveLength(1);
     expect(`${result.stdout}\n${result.stderr}`).toContain('OpenCode clients');

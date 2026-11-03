@@ -24,7 +24,7 @@ This is an MVP implementation of an OpenCode-compatible CLI agent, focused on ma
 
 - ✅ **JSON Input/Output**: Compatible with `opencode run --format json`
 - ✅ **Plain Text Input**: Also accepts plain text messages (auto-converted to JSON format)
-- ✅ **Flexible Model Selection**: Defaults to free Kilo Nemotron 3 Super (Kilo authentication recommended), supports every [models.dev](https://models.dev) provider OpenCode supports ([full list](../docs/providers.md)), OpenCode's subscription logins, [gpt4free](../docs/gpt4free.md), Pollinations, local servers, [Formal AI](../docs/formal-ai.md) and [Claude OAuth](../docs/claude-oauth.md), with [live model discovery](../docs/model-discovery.md)
+- ✅ **Flexible Model Selection**: Defaults to free Kilo Nemotron 3 Ultra (Kilo authentication recommended), supports every [models.dev](https://models.dev) provider OpenCode supports ([full list](../docs/providers.md)), OpenCode's subscription logins, [gpt4free](../docs/gpt4free.md), Pollinations, local servers, [Formal AI](../docs/formal-ai.md) and [Claude OAuth](../docs/claude-oauth.md), with [live model discovery](../docs/model-discovery.md)
 - ✅ **No Restrictions**: Fully unrestricted file system and command execution access (no sandbox)
 - ✅ **Minimal Footprint**: Built with Bun.sh for maximum efficiency
 - ✅ **Full Tool Support**: 13 tools including websearch, codesearch, batch - all enabled by default
@@ -169,7 +169,7 @@ echo '{"message":"hi"}' | agent
 **With custom model:**
 
 ```bash
-echo "hi" | agent --model kilo/nemotron-3-super-free
+echo "hi" | agent --model kilo/nemotron-3-ultra-free
 ```
 
 ### More Examples
@@ -190,11 +190,10 @@ echo '{"message":"run command","tools":[{"name":"bash","params":{"command":"ls -
 **Using different models:**
 
 ```bash
-# Default model (free Nemotron 3 Super)
+# Default model (free Nemotron 3 Ultra)
 echo "hi" | agent
 
 # Built-in free models (authenticate with agent auth login or KILO_API_KEY)
-echo "hi" | agent --model kilo/nemotron-3-super-free
 echo "hi" | agent --model kilo/nemotron-3-ultra-free
 echo "hi" | agent --model kilo/nemotron-3.5-lightning-free
 
@@ -285,7 +284,7 @@ agent [options]
 
 Options:
   --model                        Model to use in format providerID/modelID
-                                 Default: kilo/nemotron-3-super-free
+                                 Default: kilo/nemotron-3-ultra-free
   --json-standard                JSON output format standard
                                  Choices: "opencode" (default), "claude" (experimental)
   --output-format                Alias for JSON output format

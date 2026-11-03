@@ -1,6 +1,6 @@
 # Models
 
-This agent supports every provider in the [models.dev](https://models.dev) catalogue (the one [OpenCode](https://github.com/anomalyco/opencode) uses), the subscription logins OpenCode offers, [gpt4free](docs/gpt4free.md), Pollinations and local inference servers. By default, it uses the free Nemotron 3 Super model on [Kilo Gateway](docs/kilo.md). Kilo authentication is recommended for reliable access.
+This agent supports every provider in the [models.dev](https://models.dev) catalogue (the one [OpenCode](https://github.com/anomalyco/opencode) uses), the subscription logins OpenCode offers, [gpt4free](docs/gpt4free.md), Pollinations and local inference servers. By default, it uses the free Nemotron 3 Ultra model on [Kilo Gateway](docs/kilo.md). Kilo authentication is recommended for reliable access.
 
 Model lists are loaded at runtime, not hard-coded: models.dev supplies the catalogue and each provider's own `/models` endpoint adds models released since. See [Model discovery](docs/model-discovery.md).
 
@@ -42,7 +42,7 @@ agent models --free --discover  # only models that cost nothing
 All models are accessed using the format `<provider>/<model-id>`. Use the `--model` option to specify which model to use:
 
 ```bash
-echo "hi" | agent --model kilo/nemotron-3-super-free
+echo "hi" | agent --model kilo/nemotron-3-ultra-free
 ```
 
 ## OpenCode Zen Pricing
@@ -79,19 +79,21 @@ Discontinued free models: `opencode/qwen3.6-plus-free`, `opencode/kimi-k2.5-free
 
 ## Default Model
 
-The default model is **Nemotron 3 Super Free** (`kilo/nemotron-3-super-free`), with a 262,144 token context window and a conservative 32,768 token output cap. Authenticate with `agent auth login` (Kilo Gateway) or set `KILO_API_KEY`. Its exact gateway ID is `nvidia/nemotron-3-super-120b-a12b:free`.
+The default model is **Nemotron 3 Ultra Free** (`kilo/nemotron-3-ultra-free`), with a 1,000,000 token context window and a 65,536 token output cap. Authenticate with `agent auth login` (Kilo Gateway) or set `KILO_API_KEY`. Its exact gateway ID is `nvidia/nemotron-3-ultra-550b-a55b:free`.
+
+> **Note:** Nemotron 3 Super Free (`kilo/nemotron-3-super-free`, gateway ID `nvidia/nemotron-3-super-120b-a12b:free`) was the default until Kilo withdrew it. The old ID is kept as a deprecated alias: it runs on `kilo/nemotron-3-ultra-free` and logs a warning naming the replacement. See [issue #335](https://github.com/link-assistant/agent/issues/335).
 
 For test runs and automation, the default model can be overridden with `LINK_ASSISTANT_AGENT_DEFAULT_MODEL`; an explicit `--model` option still takes precedence. The compaction defaults have matching override variables: `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL`, `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODELS`, and `LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_SAFETY_MARGIN_PERCENT`.
 
 ### Models for Compaction and Session Summaries
 
-Compaction and session summaries use the compaction model (`--compaction-model`, `--compaction-models`), not the model running the turn. The shipped default cascade starts with Kilo Nemotron 3 Super, then Ultra and 3.5 Lightning, followed by `same`; when `--model` points at another provider, entries from other providers are dropped so those secondary calls inherit `--model` instead of calling a provider you may hold no credentials for. A compaction model you name yourself is always used as written. See [issue #307](https://github.com/link-assistant/agent/issues/307).
+Compaction and session summaries use the compaction model (`--compaction-model`, `--compaction-models`), not the model running the turn. The shipped default cascade starts with Kilo Nemotron 3 Ultra, then 3.5 Lightning as the rate-limit fallback (both 1M context), followed by `same`; when `--model` points at another provider, entries from other providers are dropped so those secondary calls inherit `--model` instead of calling a provider you may hold no credentials for. A compaction model you name yourself is always used as written. See [issue #307](https://github.com/link-assistant/agent/issues/307).
 
 A model that has no context window to run out of can say so in the provider config, as `"limit": { "context": null }` or `"unlimited": true` on the model. Compaction, context diagnostics, and session summarization are all skipped for such a model — no `--no-summarize-session` needed.
 
 > **Note:** Qwen 3.6 Plus Free (`opencode/qwen3.6-plus-free`) was previously the default free model, but OpenCode Zen ended the free promotion in April 2026. The model now requires an OpenCode Go subscription. See [issue #242](https://github.com/link-assistant/agent/issues/242).
 
-> **Note:** Nemotron 3 Super Free was withdrawn from Zen, along with MiniMax M2.5 Free, Hy3 Preview Free, and Ling 2.6 Flash Free. Use `kilo/nemotron-3-super-free` instead. See [issue #327](https://github.com/link-assistant/agent/issues/327).
+> **Note:** Nemotron 3 Super Free was withdrawn from Zen, along with MiniMax M2.5 Free, Hy3 Preview Free, and Ling 2.6 Flash Free. Use `kilo/nemotron-3-ultra-free` instead. See [issue #327](https://github.com/link-assistant/agent/issues/327).
 
 > **Note:** Kimi K2.5 Free (`opencode/kimi-k2.5-free`) was previously the default free model, but it was removed from the OpenCode Zen provider in March 2026. See [Case Study #208](docs/case-studies/issue-208/README.md) for details.
 
@@ -99,9 +101,8 @@ A model that has no context window to run out of can say so in the provider conf
 
 ### Free Models (in order of recommendation)
 
-1. **Nemotron 3 Super** (`kilo/nemotron-3-super-free`) — default (262,144 context).
-2. **Nemotron 3 Ultra** (`kilo/nemotron-3-ultra-free`) — 1,000,000 context.
-3. **Nemotron 3.5 Lightning** (`kilo/nemotron-3.5-lightning-free`) — 1,000,000 context.
+1. **Nemotron 3 Ultra** (`kilo/nemotron-3-ultra-free`) — default (1,000,000 context).
+2. **Nemotron 3.5 Lightning** (`kilo/nemotron-3.5-lightning-free`) — 1,000,000 context.
 
 These built-in IDs were checked against the [Kilo catalog](https://api.kilo.ai/api/gateway/models) on October 12, 2026. See [Free Models](FREE_MODELS.md) for withdrawals and the scheduled drift check.
 
@@ -111,7 +112,7 @@ These built-in IDs were checked against the [Kilo catalog](https://api.kilo.ai/a
 
 ```bash
 # Authenticate with agent auth login (Kilo Gateway) or KILO_API_KEY
-# Uses kilo/nemotron-3-super-free by default
+# Uses kilo/nemotron-3-ultra-free by default
 echo "hello" | agent
 ```
 
@@ -119,7 +120,6 @@ echo "hello" | agent
 
 ```bash
 # Built-in free Kilo models (authentication recommended)
-echo "hello" | agent --model kilo/nemotron-3-super-free
 echo "hello" | agent --model kilo/nemotron-3-ultra-free
 echo "hello" | agent --model kilo/nemotron-3.5-lightning-free
 
@@ -267,12 +267,10 @@ Kilo authentication is recommended for reliable inference even when token pricin
 
 | Model                          | Agent model ID                     | Context   | Agent output limit |
 | ------------------------------ | ---------------------------------- | --------- | ------------------ |
-| **Nemotron 3 Super (default)** | `kilo/nemotron-3-super-free`       | 262,144   | 32,768             |
-| Nemotron 3 Ultra               | `kilo/nemotron-3-ultra-free`       | 1,000,000 | 65,536             |
+| **Nemotron 3 Ultra (default)** | `kilo/nemotron-3-ultra-free`       | 1,000,000 | 65,536             |
 | Nemotron 3.5 Lightning         | `kilo/nemotron-3.5-lightning-free` | 1,000,000 | 65,536             |
 
 ```bash
-echo "hello" | agent --model kilo/nemotron-3-super-free
 echo "hello" | agent --model kilo/nemotron-3-ultra-free
 echo "hello" | agent --model kilo/nemotron-3.5-lightning-free
 ```

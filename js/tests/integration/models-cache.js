@@ -89,9 +89,9 @@ describe('ModelsDev module', () => {
     await Instance.provide({
       directory: process.cwd(),
       fn: async () => {
-        const model = await Provider.getModel('kilo', 'nemotron-3-super-free');
+        const model = await Provider.getModel('kilo', 'nemotron-3-ultra-free');
         expect(model.language.modelId).toBe(
-          'nvidia/nemotron-3-super-120b-a12b:free'
+          'nvidia/nemotron-3-ultra-550b-a55b:free'
         );
         expect(model.info.cost.input).toBe(0);
       },

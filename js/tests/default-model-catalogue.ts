@@ -42,7 +42,7 @@ function catalogueFetch(zen: unknown, metadata: unknown): typeof fetch {
 
 describe('shipped model catalogue (#328)', () => {
   test('no-argument runs select a currently served model', () => {
-    expect(getDefaultModel({ env: {} })).toBe('kilo/nemotron-3-super-free');
+    expect(getDefaultModel({ env: {} })).toBe('kilo/nemotron-3-ultra-free');
   });
 
   test('every shipped compaction entry is currently supported', () => {
@@ -71,7 +71,6 @@ describe('shipped model catalogue (#328)', () => {
 
   test('same resolves to the default and duplicate entries are checked once', () => {
     expect(shippedModelIDs()).toEqual([
-      'kilo/nemotron-3-super-free',
       'kilo/nemotron-3-ultra-free',
       'kilo/nemotron-3.5-lightning-free',
     ]);
@@ -178,18 +177,18 @@ describe('Kilo defaults after merging #329', () => {
   test('reports the shipped alias when its exact gateway ID is withdrawn', () => {
     expect(
       unavailableModels(
-        ['kilo/nemotron-3-super-free'],
+        ['kilo/nemotron-3-ultra-free'],
         currentIDs,
         currentMetadata,
-        new Set(['nvidia/nemotron-3-ultra-550b-a55b:free'])
+        new Set(['nvidia/nemotron-3.5-lightning:free'])
       )
-    ).toEqual(['kilo/nemotron-3-super-free']);
+    ).toEqual(['kilo/nemotron-3-ultra-free']);
   });
 
   test('accepts an explicit gateway ID as well as a built-in alias', () => {
     expect(
       unavailableModels(
-        ['kilo/nvidia/nemotron-3-super-120b-a12b:free'],
+        ['kilo/nvidia/nemotron-3-ultra-550b-a55b:free'],
         new Set(),
         {},
         kiloIDs
@@ -205,11 +204,13 @@ describe('Kilo defaults after merging #329', () => {
           ? { data: [] }
           : url === MODELS_DEV_URL
             ? currentMetadata
-            : { data: [{ id: 'nemotron-3-super-free' }] }
+            : { data: [{ id: 'nemotron-3-ultra-free' }] }
       )) as typeof fetch;
     await expect(
       checkDefaultModels({ fetchFn, warn: (s) => warnings.push(s) })
-    ).rejects.toThrow('Unavailable shipped models: kilo/nemotron-3-super-free');
+    ).rejects.toThrow(
+      'Unavailable shipped models: kilo/nemotron-3-ultra-free, kilo/nemotron-3.5-lightning-free'
+    );
     expect(warnings).toEqual([
       `Catalogue unavailable: ${kiloURL}: invalid or empty model catalog`,
     ]);

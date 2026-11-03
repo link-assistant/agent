@@ -208,18 +208,18 @@ describe('OpenCode Zen live model endpoint (#266)', () => {
     expect(info).toBeUndefined();
   });
 
-  test('provider sorting prioritizes Nemotron 3 Super among current free models', async () => {
+  test('provider sorting prioritizes Nemotron 3 Ultra among current free models', async () => {
     const { Provider } = await import('../src/provider/provider');
     const sorted = Provider.sort([
       { id: 'big-pickle' },
       { id: 'gpt-5-nano' },
-      { id: 'nemotron-3-super-free' },
+      { id: 'nemotron-3-ultra-free' },
       { id: 'ling-2.6-flash-free' },
       { id: 'hy3-preview-free' },
       { id: 'minimax-m2.5-free' },
     ] as any);
 
-    expect(sorted[0].id).toBe('nemotron-3-super-free');
+    expect(sorted[0].id).toBe('nemotron-3-ultra-free');
   });
 });
 
