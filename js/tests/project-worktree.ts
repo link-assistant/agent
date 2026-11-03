@@ -35,6 +35,17 @@ function git(cwd: string, ...args: string[]) {
   return result.stdout.trim();
 }
 
+// The worktree is what git reports (on Windows `C:/Users/...` with forward
+// slashes and long names, unlike `os.tmpdir()`), so compare against git.
+function toplevel(directory: string) {
+  return git(
+    directory,
+    'rev-parse',
+    '--path-format=absolute',
+    '--show-toplevel'
+  );
+}
+
 function detect(directory: string) {
   const result = spawnSync(process.execPath, [fixture, directory], {
     encoding: 'utf8',
@@ -77,7 +88,7 @@ describe('Project.fromDirectory with a .git file', () => {
     expect(first.status).toBe(0);
     expect(first.project).toEqual({
       id: rootCommit,
-      worktree: path.join(root, 'wt'),
+      worktree: toplevel(path.join(root, 'wt')),
     });
     // The id is cached in the common git directory, like upstream.
     expect(
@@ -95,7 +106,7 @@ describe('Project.fromDirectory with a .git file', () => {
     expect(result.status).toBe(0);
     expect(result.project).toEqual({
       id: rootCommit,
-      worktree: path.join(root, 'main'),
+      worktree: toplevel(path.join(root, 'main')),
     });
     expect(
       fs.readFileSync(path.join(root, 'main', '.git', 'opencode'), 'utf8')
