@@ -101,21 +101,21 @@ Reproductions: [`experiments/issue-335/edit-write/`](../../../experiments/issue-
 Tests: `js/tests/edit-write-reliability.ts`, `rust/tests/tool_edit.rs`,
 `rust/tests/tool_write.rs`.
 
-| Defect (before)                                                                                  | Upstream         | Fix                                                                                                               | JS  | Rust                            |
-| ------------------------------------------------------------------------------------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------- | --- | ------------------------------- |
-| Parallel edits of one file read the same content; the last write won and other edits were lost   | #4388, #23483    | `FileTime.withLock` serializes read-modify-write per normalized path; `edit` and `write` both take it             | ✅  | n/a (sequential)                |
-| Block-anchor fuzzy match accepted **any** block whose first and last lines matched               | #30932           | Similarity thresholds 0.0/0.3 → 0.65; block size must be within 25 % of `oldString`; disproportionate-match guard | ✅  | ✅                              |
-| Empty `oldString` on an existing file silently replaced the whole file                           | #30932           | Rejected with an explicit error; still allowed for creating a new file                                            | ✅  | ✅                              |
-| `replace(content, '', …)` looped forever                                                         | (found here)     | `replace()` rejects an empty `oldString`                                                                          | ✅  | ✅                              |
-| CRLF files: LF `oldString` did not match, or the edited part was written with LF                 | #9443            | `oldString`/`newString` converted to the file's line ending                                                       | ✅  | ✅                              |
-| Mixed-ending files: one CRLF anywhere made all inserted lines CRLF; Rust rewrote untouched lines | #53166           | Dominant line ending for new lines; Rust maps the result back line by line                                        | ✅  | ✅                              |
-| Rust: fuzzy matches on CRLF files reported success but did not change the file                   | (found here)     | Replacers run on the LF view; endings restored afterwards                                                         | —   | ✅                              |
-| UTF-8 BOM dropped by `edit` and `write`                                                          | #23797           | `Bom` helper splits/re-adds the BOM; no double BOM                                                                | ✅  | ✅                              |
-| `replaceAll` treated `$&`, `$1`, `$'` in `newString` as patterns                                 | (String#replace) | `split/join` instead of `String#replaceAll`                                                                       | ✅  | n/a (Rust `replace` is literal) |
-| "Modified since read" false positives for files with a future mtime; misses within the same ms   | #17835           | FileTime stores an `{mtime, size}` stamp and compares for equality                                                | ✅  | n/a (no FileTime)               |
-| `dir/./a.txt` and `dir/a.txt` were different FileTime keys                                       | #20367           | Keys normalized with `path.resolve` + `realpath`                                                                  | ✅  | n/a                             |
-| `edit` right after `write` failed with "You must read the file"                                  | —                | `write` records a read                                                                                            | ✅  | n/a                             |
-| Empty output after a successful edit/write confused some models                                  | `66f9bdab32`     | "Edit applied successfully." / "Wrote file successfully."                                                         | ✅  | ✅                              |
+| Defect (before)                                                                                  | Upstream         | Fix                                                                                                               | JS  | Rust                             |
+| ------------------------------------------------------------------------------------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------- | --- | -------------------------------- |
+| Parallel edits of one file read the same content; the last write won and other edits were lost   | #4388, #23483    | `FileTime.withLock` serializes read-modify-write per normalized path; `edit` and `write` both take it             | ✅  | — (no session; calls sequential) |
+| Block-anchor fuzzy match accepted **any** block whose first and last lines matched               | #30932           | Similarity thresholds 0.0/0.3 → 0.65; block size must be within 25 % of `oldString`; disproportionate-match guard | ✅  | ✅                               |
+| Empty `oldString` on an existing file silently replaced the whole file                           | #30932           | Rejected with an explicit error; still allowed for creating a new file                                            | ✅  | ✅                               |
+| `replace(content, '', …)` looped forever                                                         | (found here)     | `replace()` rejects an empty `oldString`                                                                          | ✅  | ✅                               |
+| CRLF files: LF `oldString` did not match, or the edited part was written with LF                 | #9443            | `oldString`/`newString` converted to the file's line ending                                                       | ✅  | ✅                               |
+| Mixed-ending files: one CRLF anywhere made all inserted lines CRLF; Rust rewrote untouched lines | #53166           | Dominant line ending for new lines; Rust maps the result back line by line                                        | ✅  | ✅                               |
+| Rust: fuzzy matches on CRLF files reported success but did not change the file                   | (found here)     | Replacers run on the LF view; endings restored afterwards                                                         | —   | ✅                               |
+| UTF-8 BOM dropped by `edit` and `write`                                                          | #23797           | `Bom` helper splits/re-adds the BOM; no double BOM                                                                | ✅  | ✅                               |
+| `replaceAll` treated `$&`, `$1`, `$'` in `newString` as patterns                                 | (String#replace) | `split/join` instead of `String#replaceAll`                                                                       | ✅  | already literal                  |
+| "Modified since read" false positives for files with a future mtime; misses within the same ms   | #17835           | FileTime stores an `{mtime, size}` stamp and compares for equality                                                | ✅  | — (no FileTime)                  |
+| `dir/./a.txt` and `dir/a.txt` were different FileTime keys                                       | #20367           | Keys normalized with `path.resolve` + `realpath`                                                                  | ✅  | — (no FileTime)                  |
+| `edit` right after `write` failed with "You must read the file"                                  | —                | `write` records a read                                                                                            | ✅  | — (no FileTime)                  |
+| Empty output after a successful edit/write confused some models                                  | `66f9bdab32`     | "Edit applied successfully." / "Wrote file successfully."                                                         | ✅  | ✅                               |
 
 ## 5. Read/search and bash/web tools (reports B and C)
 
@@ -130,39 +130,39 @@ Tests: `js/tests/read-search-reliability-read.ts`,
 
 ### 5.1 Read, grep, glob, ls
 
-| Defect (before)                                                                          | Upstream                      | Fix                                                                                  | JS  | Rust            |
-| ---------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------ | --- | --------------- |
-| `glob`/`ls` hung after 100 results: rg blocked on a full stdout pipe while we awaited it | #10833, `76ee87ead8`          | Cancel the stream and kill rg in `finally`; abort signal passed through              | ✅  | ✅ (100 limit)  |
-| `grep` returned "No files found" when rg exited 2 because one path was unreadable        | #8612, ripgrep 11 exit status | Exit 2 keeps matches and adds "(Some paths were inaccessible and skipped)"           | ✅  | n/a             |
-| `grep` read stdout before stderr (deadlock on large stderr), could not be cancelled      | #39238, `4d2696e027`          | Pipes drained together; `ctx.abort` + 30 s timeout; clear errors for bad regex/paths | ✅  | n/a             |
-| `grep` skipped hidden files (`.github/`)                                                 | #7501                         | `--hidden` and `--glob=!**/.git/**`                                                  | ✅  | ✅              |
-| `glob` followed symlinked directories (cyclic/huge trees); user rg config changed output | #11415                        | No `--follow`; `--no-config`; ENOTDIR for a file path                                | ✅  | n/a             |
-| `read` resolved relative paths against the worktree root, unlike every other tool        | `6cf2c3e3db`                  | Resolved against the session directory                                               | ✅  | n/a             |
-| `read` could return megabytes (2000 lines × 2000 chars, unlimited `limit`)               | #14009, #51011                | 50 KB cap with an `offset=` hint; `limit` ≤ 2000                                     | ✅  | ✅              |
-| `read` loaded a whole file to sniff 4 KB for binary content                              | #14009                        | Reads a 4 KB sample                                                                  | ✅  | ✅              |
-| `read` of CRLF files leaked `\r`; a trailing newline counted as an extra line            | `c1b03b728a`, `683d470fe4`    | Split on `\r?\n`, drop the final empty line                                          | ✅  | ✅ (guard test) |
-| Screenshot names with U+202F / curly quotes were "not found"                             | #45807, #50953                | Unique directory entry matched after canonicalizing                                  | ✅  | ✅              |
-| Reading a directory or past the end gave confusing output                                | #33255, #33260                | Explicit errors                                                                      | ✅  | ✅              |
-| SVG/BMP/TIFF/ICO/AVIF sent as images                                                     | #21114                        | **Not ported** — the fork supports these on purpose (86f24ac, maintainer request)    | —   | —               |
+| Defect (before)                                                                          | Upstream                      | Fix                                                                                  | JS  | Rust                                      |
+| ---------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------ | --- | ----------------------------------------- |
+| `glob`/`ls` hung after 100 results: rg blocked on a full stdout pipe while we awaited it | #10833, `76ee87ead8`          | Cancel the stream and kill rg in `finally`; abort signal passed through              | ✅  | ✅ (100 limit)                            |
+| `grep` returned "No files found" when rg exited 2 because one path was unreadable        | #8612, ripgrep 11 exit status | Exit 2 keeps matches and adds "(Some paths were inaccessible and skipped)"           | ✅  | ✅ (walk keeps matches, same note)        |
+| `grep` read stdout before stderr (deadlock on large stderr), could not be cancelled      | #39238, `4d2696e027`          | Pipes drained together; `ctx.abort` + 30 s timeout; clear errors for bad regex/paths | ✅  | ✅ (in-process walk; cancel + 30 s limit) |
+| `grep` skipped hidden files (`.github/`)                                                 | #7501                         | `--hidden` and `--glob=!**/.git/**`                                                  | ✅  | ✅                                        |
+| `glob` followed symlinked directories (cyclic/huge trees); user rg config changed output | #11415                        | No `--follow`; `--no-config`; ENOTDIR for a file path                                | ✅  | ✅ (no symlinks by default)               |
+| `read` resolved relative paths against the worktree root, unlike every other tool        | `6cf2c3e3db`                  | Resolved against the session directory                                               | ✅  | already (`resolve_path`)                  |
+| `read` could return megabytes (2000 lines × 2000 chars, unlimited `limit`)               | #14009, #51011                | 50 KB cap with an `offset=` hint; `limit` ≤ 2000                                     | ✅  | ✅                                        |
+| `read` loaded a whole file to sniff 4 KB for binary content                              | #14009                        | Reads a 4 KB sample                                                                  | ✅  | ✅                                        |
+| `read` of CRLF files leaked `\r`; a trailing newline counted as an extra line            | `c1b03b728a`, `683d470fe4`    | Split on `\r?\n`, drop the final empty line                                          | ✅  | ✅ (guard test)                           |
+| Screenshot names with U+202F / curly quotes were "not found"                             | #45807, #50953                | Unique directory entry matched after canonicalizing                                  | ✅  | ✅                                        |
+| Reading a directory or past the end gave confusing output                                | #33255, #33260                | Explicit errors                                                                      | ✅  | ✅                                        |
+| SVG/BMP/TIFF/ICO/AVIF sent as images                                                     | #21114                        | **Not ported** — the fork supports these on purpose (86f24ac, maintainer request)    | —   | —                                         |
 
 ### 5.2 Bash, webfetch, websearch, codesearch, task
 
-| Defect (before)                                                                                      | Upstream        | Fix                                                                                           | JS  | Rust            |
-| ---------------------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------- | --- | --------------- |
-| `bash` ran `/bin/sh` (dash on Debian/Ubuntu), so bash syntax failed                                  | #3494, #5205    | `$SHELL` if usable, else bash (zsh on macOS); fish/nu fall back                               | ✅  | already bash    |
-| Long output kept the start and dropped the end, where errors are                                     | #22660, #39403  | Keep the last 2000 lines / 30 KB with a `...output truncated...` prefix                       | ✅  | ✅              |
-| Truncation could split a UTF-8 character (Rust panicked)                                             | —               | Per-stream `TextDecoder`; cut on character boundaries                                         | ✅  | ✅              |
-| Every output chunk re-published the whole output as metadata                                         | #22660, #41007  | Bounded preview                                                                               | ✅  | n/a             |
-| `echo x > file` matched an `echo*` allow rule in read-only/plan mode                                 | #6737 (adapted) | Write redirects checked as a separate `>` command; `/dev/null` and `2>&1` exempt              | ✅  | already handled |
-| tree-sitter trees leaked in the WASM heap                                                            | #24861          | `tree.delete()` in `finally`                                                                  | ✅  | n/a             |
-| Rust `bash` deadlocked when stderr filled its pipe; lost output on timeout; signals unreported       | (found here)    | Both pipes read concurrently; partial output kept; signal name reported                       | n/a | ✅              |
-| `Tool.define` stacked another execute wrapper on every init                                          | #16952          | Copy the definition before wrapping                                                           | ✅  | n/a             |
-| Web tools: timeout did not cover the body; 5 MB limit checked only after reading it all              | #21378, #33259  | `AbortSignal.timeout`; bounded streaming reader (`util/read-bounded.ts`, `read_body_bounded`) | ✅  | ✅              |
-| Cloudflare challenge 403 returned as an error                                                        | #10328, #8284   | One retry with an honest user agent; a plain 403 is not retried                               | ✅  | ✅              |
-| `webfetch` required `format`                                                                         | #6345, #30215   | Optional, markdown by default                                                                 | ✅  | ✅              |
-| HTML-to-text dropped text that follows a `<script>`/`<style>` element                                | #26309          | Skipped                                                                                       | ✅  | n/a             |
-| Exa: `EXA_API_KEY` ignored, plain-JSON replies rejected, errors unlabeled, stale year in description | #16362, #13559  | Shared client (`util/exa-mcp.ts`, Rust equivalent)                                            | ✅  | ✅              |
-| `task` kept its event subscription after an error                                                    | #9992           | `try/finally` around `unsub()`                                                                | ✅  | n/a             |
+| Defect (before)                                                                                      | Upstream        | Fix                                                                                           | JS  | Rust                              |
+| ---------------------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------- | --- | --------------------------------- |
+| `bash` ran `/bin/sh` (dash on Debian/Ubuntu), so bash syntax failed                                  | #3494, #5205    | `$SHELL` if usable, else bash (zsh on macOS); fish/nu fall back                               | ✅  | ✅ (`$SHELL` if POSIX, else bash) |
+| Long output kept the start and dropped the end, where errors are                                     | #22660, #39403  | Keep the last 2000 lines / 30 KB with a `...output truncated...` prefix                       | ✅  | ✅                                |
+| Truncation could split a UTF-8 character (Rust panicked)                                             | —               | Per-stream `TextDecoder`; cut on character boundaries                                         | ✅  | ✅                                |
+| Every output chunk re-published the whole output as metadata                                         | #22660, #41007  | Bounded preview                                                                               | ✅  | n/a                               |
+| `echo x > file` matched an `echo*` allow rule in read-only/plan mode                                 | #6737 (adapted) | Write redirects checked as a separate `>` command; `/dev/null` and `2>&1` exempt              | ✅  | already handled                   |
+| tree-sitter trees leaked in the WASM heap                                                            | #24861          | `tree.delete()` in `finally`                                                                  | ✅  | n/a                               |
+| Rust `bash` deadlocked when stderr filled its pipe; lost output on timeout; signals unreported       | (found here)    | Both pipes read concurrently; partial output kept; signal name reported                       | n/a | ✅                                |
+| `Tool.define` stacked another execute wrapper on every init                                          | #16952          | Copy the definition before wrapping                                                           | ✅  | n/a                               |
+| Web tools: timeout did not cover the body; 5 MB limit checked only after reading it all              | #21378, #33259  | `AbortSignal.timeout`; bounded streaming reader (`util/read-bounded.ts`, `read_body_bounded`) | ✅  | ✅                                |
+| Cloudflare challenge 403 returned as an error                                                        | #10328, #8284   | One retry with an honest user agent; a plain 403 is not retried                               | ✅  | ✅                                |
+| `webfetch` required `format`                                                                         | #6345, #30215   | Optional, markdown by default                                                                 | ✅  | ✅                                |
+| HTML-to-text dropped text that follows a `<script>`/`<style>` element                                | #26309          | Skipped                                                                                       | ✅  | ✅ (tags with attributes)         |
+| Exa: `EXA_API_KEY` ignored, plain-JSON replies rejected, errors unlabeled, stale year in description | #16362, #13559  | Shared client (`util/exa-mcp.ts`, Rust equivalent)                                            | ✅  | ✅                                |
+| `task` kept its event subscription after an error                                                    | #9992           | `try/finally` around `unsub()`                                                                | ✅  | n/a                               |
 
 ## 6. Session, provider and MCP fixes (report D)
 
@@ -297,7 +297,8 @@ Tests: `js/tests/session-reliability.ts`,
 
 ## 10. Verification
 
-Run on 2026-10-22 with Bun 1.4.3 on Linux.
+First run on 2026-10-22 with Bun 1.4.3 on Linux; the review follow-up (§11)
+was checked on 2026-11-03 with Bun 1.4.4 and in CI on every push.
 
 | Check                                                                 | Result                               |
 | --------------------------------------------------------------------- | ------------------------------------ |
@@ -306,6 +307,8 @@ Run on 2026-10-22 with Bun 1.4.3 on Linux.
 | `cd rust && cargo fmt --all -- --check`                               | clean                                |
 | `cd rust && cargo clippy --all-targets --all-features -- -D warnings` | clean                                |
 | `cd rust && cargo test`                                               | 479 pass, 0 fail                     |
+| Review follow-up: `cd rust && cargo test` (with §11.3)                | 563 pass, 0 fail (84 suites)         |
+| Review follow-up: `js/tests/compat-flags.ts`                          | 34 pass, 0 fail                      |
 
 The regression tests were written first, to reproduce each defect, and the
 fixes were made afterwards. The reproduction scripts in `experiments/issue-335/` show the original
@@ -317,6 +320,7 @@ New test files:
 - read/search: `js/tests/read-search-reliability-read.ts`, `js/tests/read-search-reliability-search.ts`
 - bash/web: `js/tests/bash-web-reliability.ts`
 - session/provider/MCP: `js/tests/session-reliability.ts`, `js/tests/provider-transform-reliability.ts`, `js/tests/mcp-reliability.ts`
+- review follow-up: `js/tests/compat-flags.ts` (every compatibility option in both states, leak regressions); Rust: `rust/tests/compat.rs` and the tool parity tests in `rust/tests/tool_*.rs`
 
 ## 11. Review follow-up: compatibility, memory and parity
 
@@ -386,3 +390,36 @@ Left unchanged on purpose:
 Tests: the leak regressions in `js/tests/compat-flags.ts`, plus
 `js/tests/sse-usage-extractor.ts`, `js/tests/bash-web-reliability.ts` and
 `js/tests/read-search-reliability-search.ts`.
+
+### 11.3 JavaScript and Rust parity
+
+The Rust port has the tools and the CLI, but no LLM, session, provider or
+MCP layer (that was so before this PR). For the tools, the audit
+([`js-rust-parity-audit.md`](../../../experiments/issue-335/audit/js-rust-parity-audit.md))
+compared every tool with the JS code as the reference, and the fixes are in
+[`rust-parity-fixes.md`](../../../experiments/issue-335/audit/rust-parity-fixes.md):
+
+- `grep`, `glob`, `list`, `read` and `edit` give the JS output, errors and
+  limits (the edit diff is the jsdiff format, checked against output of the
+  JS code); `bash` selects the shell like JS, closes stdin and kills the
+  process group; `todo` accepts the JS schema; `batch` reports every call
+  past the limit; `webfetch` and `websearch` match the JS messages and
+  parameters.
+- Latent bugs found on the way: a panic in `permission.rs` on non-ASCII
+  text before `&&`/`||`, a prefix match in `Filesystem::contains`
+  (`/a/bc` was "inside" `/a/b`), and a panic on an empty given id.
+- The same compatibility switches as in JS (`rust/src/compat.rs`): each is
+  a `LINK_ASSISTANT_AGENT_*` env var with a matching CLI flag, and each
+  legacy value restores what the previous Rust release did.
+  `--read-only` and `--disable-tools` were added for parity with JS.
+
+Left as they are, with reasons:
+
+- No FileTime and no per-file lock in Rust: each CLI run is a separate
+  process without a session, and `batch` runs calls one after another, so
+  a lock is never contended and a read stamp cannot outlive the process.
+- `permission.rs` is not consulted by the tools, because the Rust CLI never
+  runs tools for a model.
+- Small output differences listed under "Deliberate divergences" in
+  `rust-parity-fixes.md` (bash default timeout 2 min vs 1 min, stdout and
+  stderr joined with a separator, the markdown converter).
