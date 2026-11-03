@@ -136,7 +136,7 @@ echo '{"message":"hi"}' | agent
 **With custom model:**
 
 ```bash
-echo "hi" | agent --model kilo/nemotron-3-super-free
+echo "hi" | agent --model kilo/nemotron-3-ultra-free
 ```
 
 **Direct prompt mode:**
