@@ -6,7 +6,7 @@ import {
 } from './argv.ts';
 import { Log } from '../util/log.ts';
 import { ExtraProviders } from '../provider/extra-providers.ts';
-import { Kilo } from '../provider/kilo.ts';
+import { resolveKiloDeprecatedAlias } from '../provider/kilo-deprecation.ts';
 import {
   DEFAULT_PROVIDER_ID,
   DEFAULT_MODEL_ID,
@@ -40,7 +40,7 @@ export class ModelResolutionError extends Error {
  * @returns {string}
  */
 function replaceDeprecatedModel(providerID, modelID) {
-  return providerID === 'kilo' ? Kilo.resolveDeprecatedAlias(modelID) : modelID;
+  return providerID === 'kilo' ? resolveKiloDeprecatedAlias(modelID) : modelID;
 }
 
 /**

@@ -23,6 +23,7 @@ import { SSEUsageExtractor } from '../util/sse-usage-extractor';
 import { sanitizeUrl } from '../util/verbose-fetch';
 import { OpenCodeZen } from './opencode-zen';
 import { Kilo } from './kilo';
+import { resolveKiloDeprecatedAlias } from './kilo-deprecation';
 import { EnvTemplate } from './env-template';
 import { ExtraProviders } from './extra-providers';
 import { ModelDiscovery } from './model-discovery';
@@ -1659,7 +1660,7 @@ export namespace Provider {
   export async function getModel(providerID: string, modelID: string) {
     providerID = ExtraProviders.canonicalID(providerID);
     // Sessions and configs may still name a withdrawn Kilo alias (#335).
-    if (providerID === 'kilo') modelID = Kilo.resolveDeprecatedAlias(modelID);
+    if (providerID === 'kilo') modelID = resolveKiloDeprecatedAlias(modelID);
     const key = `${providerID}/${modelID}`;
     const s = await state();
     if (s.models.has(key)) return s.models.get(key)!;
@@ -2008,7 +2009,7 @@ export namespace Provider {
       providerID,
       // Withdrawn Kilo aliases keep working with a warning (#335).
       modelID:
-        providerID === 'kilo' ? Kilo.resolveDeprecatedAlias(modelID) : modelID,
+        providerID === 'kilo' ? resolveKiloDeprecatedAlias(modelID) : modelID,
     };
   }
 
@@ -2030,7 +2031,7 @@ export namespace Provider {
 
     // A withdrawn built-in alias resolves to its Kilo replacement (#335).
     if (Kilo.deprecatedAliasTarget(modelID)) {
-      const replacement = Kilo.resolveDeprecatedAlias(modelID);
+      const replacement = resolveKiloDeprecatedAlias(modelID);
       if (s.providers.kilo?.info.models[replacement]) {
         return { providerID: 'kilo', modelID: replacement };
       }

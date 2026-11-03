@@ -1,4 +1,3 @@
-import { Log } from '../util/log';
 import type { ModelsDev } from './models';
 
 /** Built-in aliases use exact IDs from https://api.kilo.ai/api/gateway/models. */
@@ -54,29 +53,16 @@ export namespace Kilo {
     'nemotron-3-super-free': 'nemotron-3-ultra-free',
   };
 
-  const log = Log.create({ service: 'kilo' });
-
-  /** Replacement for a deprecated alias, or `undefined`. Logs nothing. */
+  /**
+   * Replacement for a deprecated alias, or `undefined`. Logs nothing; use
+   * `resolveKiloDeprecatedAlias` from `./kilo-deprecation` to also warn.
+   * This module stays free of runtime dependencies because
+   * `scripts/check-default-models.mjs` imports it without installed packages.
+   */
   export function deprecatedAliasTarget(modelID: string): string | undefined {
     return Object.hasOwn(DEPRECATED_ALIASES, modelID)
       ? DEPRECATED_ALIASES[modelID]
       : undefined;
-  }
-
-  /**
-   * Map a deprecated alias to its replacement and warn about it; any other
-   * model ID is returned unchanged.
-   */
-  export function resolveDeprecatedAlias(modelID: string): string {
-    const replacement = deprecatedAliasTarget(modelID);
-    if (!replacement) return modelID;
-    log.warn(() => ({
-      message: `kilo/${modelID} is deprecated and no longer served by Kilo; using kilo/${replacement} instead`,
-      deprecatedModel: `kilo/${modelID}`,
-      replacement: `kilo/${replacement}`,
-      hint: `Pass --model kilo/${replacement} to silence this warning`,
-    }));
-    return replacement;
   }
 
   /**
