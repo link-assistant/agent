@@ -41,7 +41,8 @@ describe('free model HTTP requests (#327)', () => {
           line.level === 'warn' &&
           line.deprecatedModel === 'kilo/nemotron-3-super-free'
       );
-    expect(warnings.length).toBeGreaterThan(0);
+    // The warning is logged once per alias and process.
+    expect(warnings.length, JSON.stringify(warnings)).toBe(1);
     expect(warnings[0].replacement).toBe('kilo/nemotron-3-ultra-free');
     expect(result.stdout).toContain('hello');
   }, 60000);
