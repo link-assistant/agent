@@ -45,7 +45,12 @@ export namespace Project {
     }
     let worktree = path.dirname(git);
     const timer = log.time('git.rev-parse');
-    let id = await Bun.file(path.join(git, 'opencode'))
+    // In a git worktree or submodule `.git` is a file, so the id cache lives in
+    // the common git directory instead (as upstream does). Writing to
+    // `.git/opencode` there used to reject with ENOTDIR; the rejection was not
+    // handled and the CLI exited with an UnhandledRejection (issue #335).
+    const cacheDir = await gitCacheDir(git, worktree);
+    let id = await Bun.file(path.join(cacheDir, 'opencode'))
       .text()
       .then((x) => x.trim())
       .catch(() => {});
@@ -63,7 +68,16 @@ export namespace Project {
             .toSorted()
         );
       id = roots[0];
-      if (id) Bun.file(path.join(git, 'opencode')).write(id);
+      // The cache is best effort: a read-only or unusual `.git` must not fail
+      // project detection.
+      if (id)
+        await Bun.write(path.join(cacheDir, 'opencode'), id).catch((error) =>
+          log.info(() => ({
+            message: 'project id cache not written',
+            path: path.join(cacheDir, 'opencode'),
+            error: String(error),
+          }))
+        );
     }
     timer.stop();
     if (!id) {
@@ -93,6 +107,25 @@ export namespace Project {
     };
     await Storage.write<Info>(['project', id], project);
     return project;
+  }
+
+  /**
+   * Directory that holds the project id cache: `.git` itself when it is a
+   * directory, otherwise the common git directory reported by git (worktrees
+   * and submodules have a `.git` file pointing elsewhere).
+   */
+  async function gitCacheDir(git: string, worktree: string): Promise<string> {
+    const stat = await fs.stat(git).catch(() => undefined);
+    if (stat?.isDirectory()) return git;
+    const common =
+      await $`git rev-parse --path-format=absolute --git-common-dir`
+        .quiet()
+        .nothrow()
+        .cwd(worktree)
+        .text()
+        .then((x) => x.trim())
+        .catch(() => '');
+    return common || git;
   }
 
   export async function setInitialized(projectID: string) {
