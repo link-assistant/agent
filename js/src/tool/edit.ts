@@ -84,10 +84,7 @@ export const EditTool = Tool.define('edit', {
     await FileTime.withLock(filePath, async () => {
       if (params.oldString === '') {
         // --legacy-edit-matching: an empty oldString overwrote the file.
-        if (
-          !config.legacyEditMatching &&
-          (await Bun.file(filePath).exists())
-        ) {
+        if (!config.legacyEditMatching && (await Bun.file(filePath).exists())) {
           throw new Error(EMPTY_OLD_STRING_ERROR);
         }
         const next = Bom.split(params.newString);

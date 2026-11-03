@@ -155,7 +155,8 @@ export const GrepTool = Tool.define('grep', {
 
     const limit = RESULT_LIMIT;
     const truncated = matches.length > limit || !collectedAll;
-    const finalMatches = matches.length > limit ? matches.slice(0, limit) : matches;
+    const finalMatches =
+      matches.length > limit ? matches.slice(0, limit) : matches;
 
     if (finalMatches.length === 0) {
       return {
@@ -241,7 +242,8 @@ async function parseMatch(
   const lineNum = event.data?.line_number;
   const rawLineText = event.data?.lines?.text;
   const submatch = event.data?.submatches?.[0];
-  if (!filePath || !lineNum || typeof rawLineText !== 'string') return undefined;
+  if (!filePath || !lineNum || typeof rawLineText !== 'string')
+    return undefined;
 
   // One stat per file, not per matching line.
   if (!mtimes.has(filePath)) {

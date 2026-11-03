@@ -44,7 +44,15 @@ const killWindowsTree = async (pid: number | undefined) => {
 // Shells known to run the POSIX `-c` scripts models write. Anything else in
 // $SHELL (fish, nu, tcsh, csh, xonsh, ...) would misparse them
 // (upstream b5d0c56b4c #3494, 238b907dd8 #5205).
-const POSIX_SHELLS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'mksh', 'ash']);
+const POSIX_SHELLS = new Set([
+  'sh',
+  'bash',
+  'zsh',
+  'dash',
+  'ksh',
+  'mksh',
+  'ash',
+]);
 const shells = new Map<string, string | undefined>();
 
 // Resolve the shell commands run in (--bash-shell /
