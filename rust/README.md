@@ -17,23 +17,25 @@
 - Plain text input support (auto-converted to JSON)
 - Core CLI argument parsing
 - Session and message ID generation
-- Tool framework with 7 implemented tools:
+- Tool framework with these tools (they follow the JavaScript tools; see
+  [Tool compatibility switches](#tool-compatibility-switches)):
   - `bash` - Execute shell commands
   - `read` - Read file contents
   - `write` - Write files
   - `edit` - Edit files with string replacement
+  - `multiedit` - Several edits of one file
   - `list` - List directory contents
   - `glob` - File pattern matching
   - `grep` - Text search with regex support
+  - `webfetch` - Fetch a URL as text, markdown or HTML
+  - `websearch` and `codesearch` - Exa search
+  - `batch` - Run up to 10 tool calls in one call
+  - `todowrite` and `todoread` - Session todo list
 
 ### Not Yet Implemented
 
 - LLM API integration (currently echoes input)
-- WebSearch and CodeSearch tools
-- Batch tool
 - Task tool (subagent support)
-- Todo tool
-- WebFetch tool
 - MCP (Model Context Protocol) support
 - Session resume/continue functionality
 - Authentication system
@@ -118,6 +120,35 @@ Options:
   -h, --help                             Print help
   -V, --version                          Print version
 ```
+
+Run `agent --help` for the full list.
+
+### Tool compatibility switches
+
+The tools follow the JavaScript implementation. Where that changed what an
+earlier Rust release did, a switch restores the earlier behaviour. Each
+switch is an environment variable (the same name as on the JavaScript side)
+with a matching CLI flag; the flag wins over the variable.
+
+| Environment variable | Flag | Default | Effect |
+| --- | --- | --- | --- |
+| `LINK_ASSISTANT_AGENT_BASH_SHELL` | `--bash-shell` | `auto` | Shell for `bash`: `auto` ($SHELL when it is sh, bash, zsh, dash, ksh, mksh or ash, else bash, else /bin/sh), `legacy` (`bash -c`) or a shell path or name |
+| `LINK_ASSISTANT_AGENT_LEGACY_TOOL_OUTPUT` | `--legacy-tool-output` | `false` | Earlier output formats: empty edit/write output, earlier error texts and diff format, head-kept bash output, relative glob paths, files-only grep, ... |
+| `LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING` | `--legacy-edit-matching` | `false` | Earlier edit matching: an empty `oldString` overwrites an existing file, unguarded block-anchor matching, no BOM handling, no refusal of disproportionate fuzzy matches |
+| `LINK_ASSISTANT_AGENT_GLOB_FOLLOW_SYMLINKS` | `--glob-follow-symlinks` | `false` | `glob`, `grep` and `list` follow symbolic links |
+| `LINK_ASSISTANT_AGENT_GREP_HIDDEN` | `--grep-hidden` | `true` | `false` makes `grep` skip hidden files |
+| `LINK_ASSISTANT_AGENT_GREP_TIMEOUT_MS` | `--grep-timeout-ms` | `30000` | `grep` time limit, 0 = none |
+| `LINK_ASSISTANT_AGENT_READ_MAX_LINES` | `--read-max-lines` | `2000` | Largest `limit` for `read`, 0 = no cap |
+| `LINK_ASSISTANT_AGENT_READ_MAX_BYTES` | `--read-max-bytes` | `51200` | Largest `read` output, 0 = no cap |
+| `LINK_ASSISTANT_AGENT_READ_ONLY` | `--read-only` | `false` | Drop `bash`, `edit`, `write`, `multiedit` and `patch` |
+| `LINK_ASSISTANT_AGENT_DISABLE_TOOLS` | `--disable-tools` | empty | Comma-separated tool ids to drop |
+
+Boolean flags accept `--flag`, `--flag=true` and `--flag=false`; boolean
+variables accept `true`/`1` and `false`/`0`.
+
+The Rust CLI runs each tool call in its own process without session state,
+so the edit tool does not require a prior read of the file (the JavaScript
+`FileTime` check) and needs no per-file lock.
 
 ## Development
 
