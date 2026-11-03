@@ -8,6 +8,7 @@ pub mod batch;
 pub mod codesearch;
 pub mod context;
 pub mod edit;
+pub mod edit_match;
 pub mod glob;
 pub mod grep;
 pub mod invalid;
