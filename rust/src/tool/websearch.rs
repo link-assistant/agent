@@ -57,6 +57,42 @@ pub struct WebSearchParams {
     pub context_max_characters: Option<u32>,
 }
 
+/// Accepted `livecrawl` values (JS zod enum).
+pub const LIVECRAWL_VALUES: &[&str] = &["fallback", "preferred"];
+/// Accepted `type` values (JS zod enum).
+pub const SEARCH_TYPE_VALUES: &[&str] = &["auto", "fast", "deep"];
+
+/// The values sent to Exa: defaults applied as in JS (`numResults || 8`, so
+/// 0 also means 8) and the enum parameters checked.
+pub fn resolve_search_arguments(params: &WebSearchParams) -> Result<Value> {
+    let check = |name: &str, value: &Option<String>, allowed: &[&str], default: &str| match value
+        .as_deref()
+    {
+        None => Ok(default.to_string()),
+        Some(v) if allowed.contains(&v) => Ok(v.to_string()),
+        Some(v) => Err(AgentError::invalid_arguments(
+            "websearch",
+            format!(
+                "Invalid {} '{}': expected one of {}",
+                name,
+                v,
+                allowed.join(", ")
+            ),
+        )),
+    };
+    let arguments = McpSearchArguments {
+        query: params.query.clone(),
+        search_type: check("type", &params.search_type, SEARCH_TYPE_VALUES, "auto")?,
+        num_results: params
+            .num_results
+            .filter(|n| *n > 0)
+            .unwrap_or(DEFAULT_NUM_RESULTS),
+        livecrawl: check("livecrawl", &params.livecrawl, LIVECRAWL_VALUES, "fallback")?,
+        context_max_characters: params.context_max_characters,
+    };
+    Ok(serde_json::to_value(arguments).unwrap_or(Value::Null))
+}
+
 #[derive(Debug, Serialize)]
 struct McpSearchRequest {
     jsonrpc: String,
@@ -68,7 +104,7 @@ struct McpSearchRequest {
 #[derive(Debug, Serialize)]
 struct McpSearchParams {
     name: String,
-    arguments: McpSearchArguments,
+    arguments: Value,
 }
 
 #[derive(Debug, Serialize)]
@@ -221,13 +257,7 @@ impl Tool for WebSearchTool {
             method: "tools/call".to_string(),
             params: McpSearchParams {
                 name: "web_search_exa".to_string(),
-                arguments: McpSearchArguments {
-                    query: params.query.clone(),
-                    search_type: params.search_type.unwrap_or_else(|| "auto".to_string()),
-                    num_results: params.num_results.unwrap_or(DEFAULT_NUM_RESULTS),
-                    livecrawl: params.livecrawl.unwrap_or_else(|| "fallback".to_string()),
-                    context_max_characters: params.context_max_characters,
-                },
+                arguments: resolve_search_arguments(&params)?,
             },
         };
 

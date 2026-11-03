@@ -28,6 +28,10 @@ walkdir = "2.5.0"
 glob = "0.3.4"
 regex = "1.13.1"
 ignore = "0.4.33"
+globset = "0.4.20"
+
+# Unicode normalization (NFC file name lookup, as JS String#normalize)
+unicode-normalization = "0.1"
 
 # Error handling
 thiserror = "2.0.21"
@@ -61,6 +65,10 @@ rand = "0.10.3"
 
 # Base64 encoding
 base64 = "0.23.1"
+
+[target.'cfg(unix)'.dependencies]
+# Process-group signalling for the bash tool
+libc = "0.2.191"
 
 [dev-dependencies]
 tempfile = "3.27.0"

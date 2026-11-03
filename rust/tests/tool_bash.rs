@@ -337,3 +337,239 @@ async fn test_bash_signal_is_reported() {
     assert_eq!(result.metadata["exit"], serde_json::Value::Null);
     assert_eq!(result.metadata["signal"], "SIGKILL");
 }
+
+// --- JS parity and compat switches (#335) ---
+
+use link_assistant_agent::compat::ToolSettings;
+use link_assistant_agent::tool::bash::select_shell;
+
+fn context_with(dir: &std::path::Path, settings: ToolSettings) -> ToolContext {
+    create_context(dir).with_settings(settings)
+}
+
+fn legacy_output() -> ToolSettings {
+    ToolSettings {
+        legacy_tool_output: true,
+        ..ToolSettings::default()
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn test_select_shell() {
+    assert_eq!(select_shell("legacy", Some("/bin/sh")), "bash");
+    assert_eq!(select_shell("/bin/sh", Some("/bin/zsh")), "/bin/sh");
+    // A POSIX $SHELL is used.
+    assert_eq!(select_shell("auto", Some("/bin/sh")), "/bin/sh");
+    assert_eq!(select_shell("", Some("/bin/sh")), "/bin/sh");
+    // fish cannot run POSIX commands; bash from PATH is used instead.
+    let fallback = select_shell("auto", Some("/usr/bin/fish"));
+    assert_eq!(fallback, select_shell("auto", None));
+    if which::which("bash").is_ok() {
+        assert!(fallback.ends_with("bash"), "{}", fallback);
+    }
+    // A $SHELL that cannot be found is skipped.
+    assert_eq!(
+        select_shell("auto", Some("/nonexistent/bash")),
+        select_shell("auto", None)
+    );
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn test_bash_shell_setting_selects_the_program() {
+    let temp = TempDir::new().unwrap();
+    let run = |shell: &str| {
+        let ctx = context_with(
+            temp.path(),
+            ToolSettings {
+                bash_shell: shell.to_string(),
+                ..ToolSettings::default()
+            },
+        );
+        async move {
+            BashTool
+                .execute(json!({"command": "echo $0"}), &ctx)
+                .await
+                .unwrap()
+                .output
+        }
+    };
+    assert_eq!(run("/bin/sh").await, "/bin/sh\n");
+    assert_eq!(run("legacy").await, "bash\n");
+}
+
+#[tokio::test]
+async fn test_bash_spawn_error_names_the_shell() {
+    let temp = TempDir::new().unwrap();
+    let ctx = context_with(
+        temp.path(),
+        ToolSettings {
+            bash_shell: "/nonexistent/shell".to_string(),
+            ..ToolSettings::default()
+        },
+    );
+    let err = BashTool
+        .execute(json!({"command": "true"}), &ctx)
+        .await
+        .unwrap_err();
+    assert!(err.to_string().contains("/nonexistent/shell"), "{}", err);
+}
+
+#[tokio::test]
+async fn test_bash_stdin_is_closed() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "cat; echo done", "timeout": 5000}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result.output, "done\n");
+    assert_eq!(result.metadata["timedOut"], false);
+}
+
+#[tokio::test]
+async fn test_bash_metadata_matches_js() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "echo hi", "description": "Says hi"}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    let m = &result.metadata;
+    assert_eq!(m["exitCode"], 0);
+    assert_eq!(m["exit"], 0);
+    assert_eq!(m["timedOut"], false);
+    assert_eq!(m["aborted"], false);
+    assert_eq!(m["description"], "Says hi");
+    assert_eq!(m["command"], "echo hi");
+    assert_eq!(m["output"], "hi\n");
+    assert!(m.get("signal").is_some());
+}
+
+/// A timeout kills the whole process group, not only the shell.
+#[cfg(unix)]
+#[tokio::test]
+async fn test_bash_timeout_kills_the_process_group() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "sleep 30 & echo $! > child.pid; wait", "timeout": 300}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result.metadata["timedOut"], true);
+    let pid = std::fs::read_to_string(temp.path().join("child.pid")).unwrap();
+    let pid = pid.trim().to_string();
+    // The killed child may stay a zombie briefly until it is reaped.
+    let mut alive = true;
+    for _ in 0..40 {
+        let out = std::process::Command::new("ps")
+            .args(["-o", "stat=", "-p", &pid])
+            .output()
+            .unwrap();
+        let stat = String::from_utf8_lossy(&out.stdout).trim().to_string();
+        if stat.is_empty() || stat.starts_with('Z') {
+            alive = false;
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(50));
+    }
+    assert!(!alive, "background child {} survived the timeout", pid);
+}
+
+/// A background job of a command that finished normally keeps running.
+#[cfg(unix)]
+#[tokio::test]
+async fn test_bash_background_job_survives_normal_exit() {
+    let temp = TempDir::new().unwrap();
+    BashTool
+        .execute(
+            json!({"command": "sleep 2 >/dev/null 2>&1 & echo $! > child.pid"}),
+            &create_context(temp.path()),
+        )
+        .await
+        .unwrap();
+    let pid = std::fs::read_to_string(temp.path().join("child.pid")).unwrap();
+    let out = std::process::Command::new("ps")
+        .args(["-o", "stat=", "-p", pid.trim()])
+        .output()
+        .unwrap();
+    let stat = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    assert!(!stat.is_empty() && !stat.starts_with('Z'), "{:?}", stat);
+    let _ = std::process::Command::new("kill").arg(pid.trim()).status();
+}
+
+#[tokio::test]
+async fn test_bash_legacy_output_keeps_the_head() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "echo first; for i in $(seq 1 5000); do echo line-$i-xxxxxxxx; done"}),
+            &context_with(temp.path(), legacy_output()),
+        )
+        .await
+        .unwrap();
+    assert!(
+        result.output.starts_with("first\nline-1-"),
+        "{}",
+        &result.output[..40]
+    );
+    assert!(result.output.ends_with("\n... (output truncated)"));
+    assert_eq!(
+        result.output.len(),
+        30_000 + "\n... (output truncated)".len()
+    );
+    assert!(!result.output.contains("...output truncated...\n\n"));
+
+    // Default: the tail is kept.
+    let result = BashTool
+        .execute(
+            json!({"command": "echo first; for i in $(seq 1 5000); do echo line-$i-xxxxxxxx; done"}),
+            &context_with(temp.path(), ToolSettings::default()),
+        )
+        .await
+        .unwrap();
+    assert!(result.output.starts_with("...output truncated...\n\n"));
+    assert!(result.output.contains("line-5000-"));
+}
+
+#[tokio::test]
+async fn test_bash_legacy_truncation_respects_utf8() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "printf a; for i in $(seq 1 20000); do printf 'é'; done"}),
+            &context_with(temp.path(), legacy_output()),
+        )
+        .await
+        .unwrap();
+    assert!(result.output.ends_with("\n... (output truncated)"));
+    let body = result.output.trim_end_matches("\n... (output truncated)");
+    assert_eq!(body.len(), 29_999);
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn test_bash_legacy_output_reports_signal_as_minus_one() {
+    let temp = TempDir::new().unwrap();
+    let result = BashTool
+        .execute(
+            json!({"command": "kill -9 $$"}),
+            &context_with(temp.path(), legacy_output()),
+        )
+        .await
+        .unwrap();
+    assert!(result.is_error);
+    assert!(
+        result.output.starts_with("Exit code -1\n"),
+        "{}",
+        result.output
+    );
+    assert_eq!(result.metadata["exitCode"], -1);
+}

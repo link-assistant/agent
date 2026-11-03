@@ -113,19 +113,13 @@ impl Tool for BatchTool {
         let disallowed: HashSet<&str> = DISALLOWED_IN_BATCH.iter().copied().collect();
         let filtered: HashSet<&str> = FILTERED_FROM_SUGGESTIONS.iter().copied().collect();
 
-        // Split calls into allowed (up to MAX) and discarded
-        let all_calls = params.tool_calls;
-        let tool_calls: Vec<BatchToolCall> = all_calls
-            .into_iter()
-            .take(MAX_BATCH_CALLS + 1) // take one extra to detect truncation
-            .collect();
-
-        let (active_calls, discarded_calls) = if tool_calls.len() > MAX_BATCH_CALLS {
-            let mut c = tool_calls;
-            let disc = c.split_off(MAX_BATCH_CALLS);
-            (c, disc)
+        // Calls past the limit are not run, and each one is reported (the
+        // earlier `.take(MAX + 1)` dropped calls 12 and later silently).
+        let mut active_calls = params.tool_calls;
+        let discarded_calls = if active_calls.len() > MAX_BATCH_CALLS {
+            active_calls.split_off(MAX_BATCH_CALLS)
         } else {
-            (tool_calls, vec![])
+            Vec::new()
         };
 
         let registry = ToolRegistry::new();
@@ -140,7 +134,20 @@ impl Tool for BatchTool {
         // In practice, these are typically fast file operations, so sequential is fine
         let mut results: Vec<BatchCallResult> = Vec::new();
 
+        let settings = ctx.settings();
+
         for call in &active_calls {
+            // Read-only mode and --disable-tools cannot be bypassed through
+            // batch (JS batch.ts).
+            if settings.is_denied(&call.tool) {
+                results.push(BatchCallResult {
+                    tool: call.tool.clone(),
+                    success: false,
+                    output: None,
+                    error: Some(crate::compat::denied_message(&call.tool)),
+                });
+                continue;
+            }
             if disallowed.contains(call.tool.as_str()) {
                 results.push(BatchCallResult {
                     tool: call.tool.clone(),

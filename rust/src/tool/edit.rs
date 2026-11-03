@@ -1,7 +1,32 @@
 //! Edit tool implementation
 //!
 //! Performs string replacement in files with various fallback strategies,
-//! matching the JavaScript implementation's edit tool behavior.
+//! matching the JavaScript implementation's edit tool:
+//!
+//! - matching uses the JS replacers ([`super::edit_match`]): a block-anchor
+//!   match picks the most similar block, every fuzzy candidate much larger
+//!   than `oldString` is refused with an error and a fuzzy candidate must be
+//!   unique;
+//! - a UTF-8 BOM is kept out of the matched text and written back;
+//! - the line endings of the file are kept (also for untouched lines of a
+//!   mixed file);
+//! - `metadata.diff` is the JS unified diff (`Index:` header, `@@` hunks,
+//!   common indentation removed) and `filediff` holds the file text with
+//!   its own line endings;
+//! - a missing file is `File <path> not found`, a directory is `Path is a
+//!   directory, not a file: <path>`.
+//!
+//! `LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING=true` restores the earlier
+//! matching rules (the `try_*_replace` functions with the unguarded block
+//! anchor match, no BOM handling, and an empty `oldString` overwriting an
+//! existing file) and
+//! `LINK_ASSISTANT_AGENT_LEGACY_TOOL_OUTPUT=true` the earlier errors, diff
+//! format and LF-only `filediff`.
+//!
+//! Unlike JS, the edit tool does not require the file to be read first in
+//! the same session: each CLI invocation is a separate process without
+//! session state, and batch runs its calls one after another, so no
+//! per-file lock is needed either.
 
 use async_trait::async_trait;
 use serde::Deserialize;
@@ -9,6 +34,7 @@ use serde_json::{json, Value};
 use similar::{ChangeTag, TextDiff};
 use tokio::fs;
 
+use super::edit_match::{self, count_changes, trim_diff, two_files_patch};
 use super::{context::ToolContext, Tool, ToolResult};
 use crate::error::{AgentError, Result};
 
@@ -79,6 +105,17 @@ impl Tool for EditTool {
         let params: EditParams = serde_json::from_value(params)
             .map_err(|e| AgentError::invalid_arguments("edit", e.to_string()))?;
 
+        let settings = ctx.settings();
+        let legacy_output = settings.legacy_tool_output;
+        let legacy_matching = settings.legacy_edit_matching;
+
+        if !legacy_output && params.file_path.is_empty() {
+            return Err(AgentError::invalid_arguments(
+                "edit",
+                "filePath is required",
+            ));
+        }
+
         if params.old_string == params.new_string {
             return Err(AgentError::invalid_arguments(
                 "edit",
@@ -88,20 +125,34 @@ impl Tool for EditTool {
 
         let filepath = ctx.resolve_path(&params.file_path);
         let title = ctx.relative_path(&filepath);
+        let path_text = filepath.to_string_lossy().to_string();
 
         // Handle new file creation (oldString is empty)
         if params.old_string.is_empty() {
             // Upstream OpenCode #30932: an empty oldString used to silently
-            // replace the whole existing file.
-            if filepath.exists() {
+            // replace the whole existing file (still done with legacy edit
+            // matching).
+            if !legacy_matching && filepath.exists() {
                 return Err(AgentError::tool_execution("edit", EMPTY_OLD_STRING_ERROR));
             }
             if let Some(parent) = filepath.parent() {
                 fs::create_dir_all(parent).await?;
             }
+            // Written as given: a leading BOM is kept once, as in JS.
             fs::write(&filepath, &params.new_string).await?;
 
-            let diff = create_diff("", &params.new_string, &filepath.to_string_lossy());
+            let (diff, after, additions) = if legacy_output {
+                (
+                    create_diff("", &params.new_string, &path_text),
+                    params.new_string.clone(),
+                    params.new_string.lines().count(),
+                )
+            } else {
+                let after = split_bom(&params.new_string).1.to_string();
+                let diff = trim_diff(&two_files_patch(&path_text, "", &after));
+                let additions = count_changes("", &after).0;
+                (diff, after, additions)
+            };
 
             return Ok(ToolResult {
                 is_error: false,
@@ -111,10 +162,10 @@ impl Tool for EditTool {
                     "diagnostics": {},
                     "diff": diff,
                     "filediff": {
-                        "file": filepath.to_string_lossy(),
+                        "file": path_text,
                         "before": "",
-                        "after": params.new_string,
-                        "additions": params.new_string.lines().count(),
+                        "after": after,
+                        "additions": additions,
                         "deletions": 0,
                     }
                 }),
@@ -123,46 +174,71 @@ impl Tool for EditTool {
         }
 
         // Read existing file
-        if !filepath.exists() {
-            return Err(AgentError::file_not_found(
-                filepath.to_string_lossy(),
-                vec![],
-            ));
+        match fs::metadata(&filepath).await {
+            Err(_) if legacy_output => {
+                return Err(AgentError::file_not_found(path_text, vec![]));
+            }
+            Err(_) => {
+                return Err(AgentError::tool_execution(
+                    "edit",
+                    format!("File {} not found", path_text),
+                ));
+            }
+            Ok(info) if info.is_dir() && !legacy_output => {
+                return Err(AgentError::tool_execution(
+                    "edit",
+                    format!("Path is a directory, not a file: {}", path_text),
+                ));
+            }
+            Ok(_) => {}
         }
 
         let raw = fs::read_to_string(&filepath).await?;
-        // The replacers rebuild matched text from `str::lines()` joined with
-        // LF, so they must run on the LF view of the file: on raw CRLF text a
-        // fuzzy match is never found again and the edit silently becomes a
-        // no-op. The result is mapped back to the file's own line endings so
-        // CRLF files are not converted to LF (upstream OpenCode #9443) and
-        // untouched lines of a mixed-ending file keep their bytes (upstream
-        // #53166). `read_to_string` keeps a UTF-8 BOM as the first char, so
-        // it is preserved without extra handling.
-        let content_old = normalize_line_endings(&raw);
-        let content_new = replace(
-            &content_old,
-            &normalize_line_endings(&params.old_string),
-            &normalize_line_endings(&params.new_string),
-            params.replace_all,
-        )?;
-        let written = restore_line_endings(&raw, &content_old, &content_new);
-        fs::write(&filepath, &written).await?;
-
-        // Calculate diff
-        let diff = create_diff(&content_old, &content_new, &filepath.to_string_lossy());
-
-        // Count additions and deletions
-        let text_diff = TextDiff::from_lines(&content_old, &content_new);
-        let mut additions = 0;
-        let mut deletions = 0;
-        for change in text_diff.iter_all_changes() {
-            match change.tag() {
-                ChangeTag::Insert => additions += 1,
-                ChangeTag::Delete => deletions += 1,
-                ChangeTag::Equal => {}
-            }
+        // The JS edit tool matches the text after the BOM and writes the BOM
+        // back; the earlier matching kept it as the first char.
+        let (had_bom, source) = if legacy_matching {
+            (false, raw.as_str())
+        } else {
+            split_bom(&raw)
+        };
+        // The replacers rebuild matched text from lines joined with LF, so
+        // they run on the LF view of the file: on raw CRLF text a fuzzy match
+        // is never found again and the edit silently becomes a no-op. The
+        // result is mapped back to the file's own line endings so CRLF files
+        // are not converted to LF (upstream OpenCode #9443) and untouched
+        // lines of a mixed-ending file keep their bytes (upstream #53166).
+        let content_old = normalize_line_endings(source);
+        let old_string = normalize_line_endings(&params.old_string);
+        let new_string = normalize_line_endings(&params.new_string);
+        let content_new = if legacy_matching {
+            replace(&content_old, &old_string, &new_string, params.replace_all)?
+        } else {
+            edit_match::replace(&content_old, &old_string, &new_string, params.replace_all)
+                .map_err(|e| AgentError::tool_execution("edit", e))?
+        };
+        let restored = restore_line_endings(source, &content_old, &content_new);
+        let (new_bom, after) = if legacy_matching {
+            (false, restored.as_str())
+        } else {
+            split_bom(&restored)
+        };
+        if had_bom || new_bom {
+            fs::write(&filepath, format!("\u{feff}{}", after)).await?;
+        } else {
+            fs::write(&filepath, after).await?;
         }
+
+        let (diff, before, after) = if legacy_output {
+            (
+                create_diff(&content_old, &content_new, &path_text),
+                content_old,
+                content_new,
+            )
+        } else {
+            let diff = two_files_patch(&path_text, &content_old, &normalize_line_endings(after));
+            (trim_diff(&diff), source.to_string(), after.to_string())
+        };
+        let (additions, deletions) = count_changes(&before, &after);
 
         Ok(ToolResult {
             is_error: false,
@@ -172,9 +248,9 @@ impl Tool for EditTool {
                 "diagnostics": {},
                 "diff": diff,
                 "filediff": {
-                    "file": filepath.to_string_lossy(),
-                    "before": content_old,
-                    "after": content_new,
+                    "file": path_text,
+                    "before": before,
+                    "after": after,
                     "additions": additions,
                     "deletions": deletions,
                 }
@@ -184,9 +260,17 @@ impl Tool for EditTool {
     }
 }
 
+/// Split a leading UTF-8 BOM off `text` (JS `Bom.split`).
+fn split_bom(text: &str) -> (bool, &str) {
+    match text.strip_prefix('\u{feff}') {
+        Some(rest) => (true, rest),
+        None => (false, text),
+    }
+}
+
 const EDIT_SUCCESS_OUTPUT: &str = "Edit applied successfully.";
 
-const EMPTY_OLD_STRING_ERROR: &str = "oldString cannot be empty when editing an existing file. Provide the exact text to replace, or use write for an intentional full-file replacement.";
+use edit_match::EMPTY_OLD_STRING_ERROR;
 
 /// Minimum average similarity of the middle lines for a block-anchor match
 /// (upstream OpenCode #30932 raised it from 0.0, which accepted any block
@@ -238,7 +322,7 @@ fn restore_line_endings(raw: &str, old_lf: &str, new_lf: &str) -> String {
     out
 }
 
-/// Create a unified diff string
+/// The earlier diff format (legacy tool output)
 fn create_diff(old: &str, new: &str, path: &str) -> String {
     let diff = TextDiff::from_lines(old, new);
 
@@ -268,8 +352,9 @@ fn create_diff(old: &str, new: &str, path: &str) -> String {
     result
 }
 
-/// Perform string replacement with fallback strategies
-/// Mirrors the JavaScript implementation's replace() function with all 9 strategies.
+/// The earlier matching rules (legacy edit matching): the `try_*_replace`
+/// strategies in the JS order, with the unguarded block anchor match of
+/// earlier releases.
 fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool) -> Result<String> {
     if old_string.is_empty() {
         return Err(AgentError::tool_execution("edit", EMPTY_OLD_STRING_ERROR));
@@ -286,7 +371,8 @@ fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool)
     }
 
     // Strategy 3: BlockAnchorReplacer
-    if let Some(result) = try_block_anchor_replace(content, old_string, new_string, replace_all) {
+    if let Some(result) = block_anchor_replace(content, old_string, new_string, replace_all, false)
+    {
         return Ok(result);
     }
 
@@ -472,6 +558,19 @@ pub fn try_block_anchor_replace(
     new: &str,
     replace_all: bool,
 ) -> Option<String> {
+    block_anchor_replace(content, old, new, replace_all, true)
+}
+
+/// Block anchor matching; without `guarded` any block between matching
+/// first and last lines is taken, as in releases before the upstream
+/// OpenCode #30932 sync (legacy edit matching).
+fn block_anchor_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    replace_all: bool,
+    guarded: bool,
+) -> Option<String> {
     let content_lines: Vec<&str> = content.lines().collect();
     let search_lines: Vec<&str> = old.lines().collect();
 
@@ -497,7 +596,9 @@ pub fn try_block_anchor_replace(
                 // Guards from upstream OpenCode #30932: the block must have
                 // about the same size as oldString and similar middle lines,
                 // otherwise unrelated code between the anchors is deleted.
-                if block.len().abs_diff(search_size) <= max_line_delta
+                if !guarded {
+                    matches.push(block.join("\n"));
+                } else if block.len().abs_diff(search_size) <= max_line_delta
                     && middle_similarity(block, &search_lines) >= BLOCK_ANCHOR_SIMILARITY_THRESHOLD
                 {
                     let matched: String = block.join("\n");

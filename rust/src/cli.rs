@@ -190,6 +190,63 @@ pub struct Args {
     /// Env: LINK_ASSISTANT_AGENT_PERMISSION. See docs/permissions.md.
     #[arg(long, default_value_t = crate::permission::default_permission())]
     pub permission: String,
+
+    /// Shell for the bash tool: "auto" (default: $SHELL when it is sh, bash,
+    /// zsh, dash, ksh, mksh or ash, else bash, else /bin/sh), "legacy"
+    /// (`bash -c`, as in earlier releases) or a shell path or name.
+    /// Env: LINK_ASSISTANT_AGENT_BASH_SHELL.
+    #[arg(long, value_name = "SHELL")]
+    pub bash_shell: Option<String>,
+
+    /// Restore the earlier tool output formats (empty edit/write output,
+    /// head-kept bash output, relative glob paths, files-only grep, ...).
+    /// Env: LINK_ASSISTANT_AGENT_LEGACY_TOOL_OUTPUT.
+    #[arg(long, value_name = "BOOL", num_args = 0..=1, require_equals = true, default_missing_value = "true", value_parser = clap::builder::BoolishValueParser::new())]
+    pub legacy_tool_output: Option<bool>,
+
+    /// Restore the earlier edit matching: an empty oldString overwrites an
+    /// existing file, block-anchor matching takes any block between the
+    /// anchor lines, a UTF-8 BOM is part of the matched text and fuzzy
+    /// matches much larger than oldString are not refused.
+    /// Env: LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING.
+    #[arg(long, value_name = "BOOL", num_args = 0..=1, require_equals = true, default_missing_value = "true", value_parser = clap::builder::BoolishValueParser::new())]
+    pub legacy_edit_matching: Option<bool>,
+
+    /// Follow symbolic links in the glob, grep and list tools (default false).
+    /// Env: LINK_ASSISTANT_AGENT_GLOB_FOLLOW_SYMLINKS.
+    #[arg(long, value_name = "BOOL", num_args = 0..=1, require_equals = true, default_missing_value = "true", value_parser = clap::builder::BoolishValueParser::new())]
+    pub glob_follow_symlinks: Option<bool>,
+
+    /// Search hidden files with grep (default true; `--grep-hidden=false`
+    /// skips dotfiles as earlier releases did).
+    /// Env: LINK_ASSISTANT_AGENT_GREP_HIDDEN.
+    #[arg(long, value_name = "BOOL", num_args = 0..=1, require_equals = true, default_missing_value = "true", value_parser = clap::builder::BoolishValueParser::new())]
+    pub grep_hidden: Option<bool>,
+
+    /// Grep time limit in milliseconds (default 30000, 0 = none).
+    /// Env: LINK_ASSISTANT_AGENT_GREP_TIMEOUT_MS.
+    #[arg(long, value_name = "MS")]
+    pub grep_timeout_ms: Option<u64>,
+
+    /// Largest `limit` the read tool accepts (default 2000, 0 = no cap).
+    /// Env: LINK_ASSISTANT_AGENT_READ_MAX_LINES.
+    #[arg(long, value_name = "LINES")]
+    pub read_max_lines: Option<u64>,
+
+    /// Largest read output in bytes (default 51200, 0 = no cap).
+    /// Env: LINK_ASSISTANT_AGENT_READ_MAX_BYTES.
+    #[arg(long, value_name = "BYTES")]
+    pub read_max_bytes: Option<u64>,
+
+    /// Disable the tools that change files or run commands (bash, edit,
+    /// write, multiedit, patch). Env: LINK_ASSISTANT_AGENT_READ_ONLY.
+    #[arg(long, value_name = "BOOL", num_args = 0..=1, require_equals = true, default_missing_value = "true", value_parser = clap::builder::BoolishValueParser::new())]
+    pub read_only: Option<bool>,
+
+    /// Comma-separated tool ids to disable, e.g. "bash,webfetch".
+    /// Env: LINK_ASSISTANT_AGENT_DISABLE_TOOLS.
+    #[arg(long, value_name = "TOOLS")]
+    pub disable_tools: Option<String>,
 }
 
 impl Args {
@@ -235,6 +292,43 @@ impl Args {
     /// Effective summarize-session: defaults to true, --no-summarize-session sets to false
     pub fn summarize_session(&self) -> bool {
         !self.no_summarize_session
+    }
+
+    /// Environment variables implied by the tool compatibility flags. Only
+    /// flags given on the command line appear; the rest keep their
+    /// environment value or default.
+    pub fn tool_settings_env_overrides(&self) -> Vec<(&'static str, String)> {
+        use crate::compat::*;
+        let mut out = Vec::new();
+        if let Some(v) = &self.bash_shell {
+            out.push((BASH_SHELL_ENV, v.clone()));
+        }
+        let flags = [
+            (LEGACY_TOOL_OUTPUT_ENV, self.legacy_tool_output),
+            (LEGACY_EDIT_MATCHING_ENV, self.legacy_edit_matching),
+            (GLOB_FOLLOW_SYMLINKS_ENV, self.glob_follow_symlinks),
+            (GREP_HIDDEN_ENV, self.grep_hidden),
+            (READ_ONLY_ENV, self.read_only),
+        ];
+        for (name, value) in flags {
+            if let Some(v) = value {
+                out.push((name, v.to_string()));
+            }
+        }
+        let numbers = [
+            (GREP_TIMEOUT_MS_ENV, self.grep_timeout_ms),
+            (READ_MAX_LINES_ENV, self.read_max_lines),
+            (READ_MAX_BYTES_ENV, self.read_max_bytes),
+        ];
+        for (name, value) in numbers {
+            if let Some(v) = value {
+                out.push((name, v.to_string()));
+            }
+        }
+        if let Some(v) = &self.disable_tools {
+            out.push((DISABLE_TOOLS_ENV, v.clone()));
+        }
+        out
     }
 
     /// Resolve the active permission policy from --permission-mode and
@@ -368,6 +462,13 @@ fn resolve_system_messages(args: &Args) -> Result<(Option<String>, Option<String
 
 /// Run the CLI with parsed arguments
 pub async fn run(args: Args) -> Result<()> {
+    // Tools read their compatibility switches from the environment when they
+    // run, so a flag is applied by setting its variable once, before any tool
+    // or task starts.
+    for (name, value) in args.tool_settings_env_overrides() {
+        std::env::set_var(name, value);
+    }
+
     let working_dir = args
         .working_directory
         .clone()
@@ -677,6 +778,17 @@ async fn run_with_input(
                 args.compact_json,
             );
         }
+
+        for line in crate::compat::settings().describe() {
+            output_event(
+                &OutputEvent::Text {
+                    timestamp: timestamp_ms(),
+                    session_id: session_id.clone(),
+                    text: line,
+                },
+                args.compact_json,
+            );
+        }
     }
 
     if args.dry_run {
@@ -697,8 +809,9 @@ async fn run_with_input(
         // Create tool context
         let _ctx = ToolContext::new(&session_id, &message_id, working_dir);
 
-        // Initialize tool registry
-        let registry = ToolRegistry::new();
+        // Initialize tool registry without the tools denied by --read-only
+        // and --disable-tools
+        let registry = ToolRegistry::with_settings(&crate::compat::settings());
 
         // For now, just output a simple response
         // In a full implementation, this would call the LLM API

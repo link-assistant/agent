@@ -8,6 +8,7 @@ pub mod batch;
 pub mod codesearch;
 pub mod context;
 pub mod edit;
+pub mod edit_match;
 pub mod glob;
 pub mod grep;
 pub mod invalid;
@@ -104,6 +105,14 @@ impl ToolRegistry {
                 Box::new(multiedit::MultiEditTool),
             ],
         }
+    }
+
+    /// Registry without the tools denied by `settings` (read-only mode and
+    /// the disabled-tools list), like the JS registry's `deniedTools()`.
+    pub fn with_settings(settings: &crate::compat::ToolSettings) -> Self {
+        let mut registry = Self::new();
+        registry.tools.retain(|t| !settings.is_denied(t.id()));
+        registry
     }
 
     /// Get a tool by its ID

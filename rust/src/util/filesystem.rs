@@ -57,10 +57,9 @@ impl Filesystem {
         if let (Ok(p), Ok(c)) = (parent.canonicalize(), child.canonicalize()) {
             c.starts_with(&p)
         } else {
-            // Fallback: simple prefix check
-            let parent_str = parent.to_string_lossy();
-            let child_str = child.to_string_lossy();
-            child_str.starts_with(parent_str.as_ref())
+            // Fallback: compare whole components, so `/a/bc` is not inside
+            // `/a/b` (JS: `!relative(parent, child).startsWith("..")`).
+            child.starts_with(parent)
         }
     }
 

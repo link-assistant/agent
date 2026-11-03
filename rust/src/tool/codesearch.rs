@@ -96,6 +96,9 @@ impl Tool for CodeSearchTool {
         let params: CodeSearchParams = serde_json::from_value(params)
             .map_err(|e| AgentError::invalid_arguments("codesearch", e.to_string()))?;
 
+        // JS rejects a tokensNum outside 1000..=50000; Rust clamps it into
+        // that range instead, so a call that worked before keeps working.
+        // This divergence is deliberate (issue #335 audit).
         let tokens_num = params
             .tokens_num
             .unwrap_or(DEFAULT_TOKENS_NUM)

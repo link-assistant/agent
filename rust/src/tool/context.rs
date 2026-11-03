@@ -5,6 +5,8 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::compat::ToolSettings;
+
 /// Context passed to tool executions
 #[derive(Debug, Clone)]
 pub struct ToolContext {
@@ -22,6 +24,9 @@ pub struct ToolContext {
     pub provider_id: Option<String>,
     /// Model ID being used
     pub model_id: Option<String>,
+    /// Compatibility switches. `None` reads them from the environment each
+    /// time a tool asks (see [`crate::compat`]).
+    pub settings: Option<ToolSettings>,
 }
 
 impl ToolContext {
@@ -39,6 +44,7 @@ impl ToolContext {
             call_id: None,
             provider_id: None,
             model_id: None,
+            settings: None,
         }
     }
 
@@ -57,6 +63,18 @@ impl ToolContext {
         self.provider_id = Some(provider_id.into());
         self.model_id = Some(model_id.into());
         self
+    }
+
+    /// Use fixed compatibility settings instead of the environment.
+    pub fn with_settings(mut self, settings: ToolSettings) -> Self {
+        self.settings = Some(settings);
+        self
+    }
+
+    /// Effective compatibility settings: the ones given with
+    /// [`ToolContext::with_settings`], else the current environment.
+    pub fn settings(&self) -> ToolSettings {
+        self.settings.clone().unwrap_or_else(ToolSettings::from_env)
     }
 
     /// Resolve a path relative to the working directory
