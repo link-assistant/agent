@@ -300,15 +300,17 @@ Tests: `js/tests/session-reliability.ts`,
 First run on 2026-10-22 with Bun 1.4.3 on Linux; the review follow-up (§11)
 was checked on 2026-11-03 with Bun 1.4.4 and in CI on every push.
 
-| Check                                                                 | Result                               |
-| --------------------------------------------------------------------- | ------------------------------------ |
-| `cd js && bun test --timeout 30000 ./tests/*.js ./tests/*.ts`         | 1150 pass, 4 todo, 0 fail (91 files) |
-| `cd js && npm run check` (eslint, prettier, file size)                | clean                                |
-| `cd rust && cargo fmt --all -- --check`                               | clean                                |
-| `cd rust && cargo clippy --all-targets --all-features -- -D warnings` | clean                                |
-| `cd rust && cargo test`                                               | 479 pass, 0 fail                     |
-| Review follow-up: `cd rust && cargo test` (with §11.3)                | 563 pass, 0 fail (84 suites)         |
-| Review follow-up: `js/tests/compat-flags.ts`                          | 34 pass, 0 fail                      |
+| Check                                                                                     | Result                               |
+| ----------------------------------------------------------------------------------------- | ------------------------------------ |
+| `cd js && bun test --timeout 30000 ./tests/*.js ./tests/*.ts`                             | 1150 pass, 4 todo, 0 fail (91 files) |
+| `cd js && npm run check` (eslint, prettier, file size)                                    | clean                                |
+| `cd rust && cargo fmt --all -- --check`                                                   | clean                                |
+| `cd rust && cargo clippy --all-targets --all-features -- -D warnings`                     | clean                                |
+| `cd rust && cargo test`                                                                   | 479 pass, 0 fail                     |
+| Review follow-up: `cd rust && cargo test` (with §11.3)                                    | 563 pass, 0 fail (84 suites)         |
+| Review follow-up: `js/tests/compat-flags.ts`                                              | 34 pass, 0 fail                      |
+| CI follow-up (§11.4): 10 focused JS test files after the dependency refresh               | 187 pass, 0 fail                     |
+| CI follow-up: `bun scripts/check-model-drift.mjs`, `node scripts/check-npm-freshness.mjs` | exit 0                               |
 
 The regression tests were written first, to reproduce each defect, and the
 fixes were made afterwards. The reproduction scripts in `experiments/issue-335/` show the original
@@ -321,6 +323,7 @@ New test files:
 - bash/web: `js/tests/bash-web-reliability.ts`
 - session/provider/MCP: `js/tests/session-reliability.ts`, `js/tests/provider-transform-reliability.ts`, `js/tests/mcp-reliability.ts`
 - review follow-up: `js/tests/compat-flags.ts` (every compatibility option in both states, leak regressions); Rust: `rust/tests/compat.rs` and the tool parity tests in `rust/tests/tool_*.rs`
+- CI follow-up: `js/tests/project-worktree.ts` (git worktree crash), Kilo alias tests in `js/tests/free-model-catalog.ts` and `js/tests/model-drift.ts`
 
 ## 11. Review follow-up: compatibility, memory and parity
 
@@ -423,3 +426,28 @@ Left as they are, with reasons:
 - Small output differences listed under "Deliberate divergences" in
   `rust-parity-fixes.md` (bash default timeout 2 min vs 1 min, stdout and
   stderr joined with a separator, the markdown converter).
+
+### 11.4 CI checks that also failed on `main`, and a worktree crash
+
+Three CI checks failed on `main` as well as on this PR. Each is fixed here
+without a manual step:
+
+| Check                | Cause on `main`                                                                                                                                                      | Fix                                                                                                                                                                                                                                                                                                                              |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Security             | `body-parser` 2.3.0 (GHSA-27r3-jxmh-p828, high)                                                                                                                      | Lockfiles bumped to 2.4.0                                                                                                                                                                                                                                                                                                        |
+| Free Model Drift     | Kilo withdrew `nvidia/nemotron-3-super-120b-a12b:free`, which was the default model and the first compaction model (JS and Rust)                                     | Default and compaction default are now `kilo/nemotron-3-ultra-free` (still served, 1M context); cascade `(kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)`. `kilo/nemotron-3-super-free` stays accepted as a deprecated alias that runs on Ultra and logs a warning, so existing `--model` values keep working |
+| Dependency Freshness | About 40 direct npm dependencies behind their latest release                                                                                                         | All bumped (no source changes were needed; the code paths of `command-stream` 2.6 and `standard-json` 0.4 were checked). `solid-js` unpinned (opentui#689 is closed)                                                                                                                                                             |
+| Dependency Freshness | `lino-arguments` 0.4.0 throws `Ambiguous environment aliases` at startup when the host has e.g. both `http_proxy` and `HTTP_PROXY` (common on proxy and CI machines) | Kept on `^0.3.0` and pinned to [link-foundation/lino-arguments#50](https://github.com/link-foundation/lino-arguments/issues/50), reported with a reproduction                                                                                                                                                                    |
+
+While checking the dependency refresh, the tests failed only inside a git
+worktree. The cause was a crash in project detection, unrelated to the
+dependencies: `Project.fromDirectory` wrote its id cache to `.git/opencode`
+without awaiting or handling the write. In a git worktree or submodule `.git`
+is a file, the write rejected with `ENOTDIR`, and the CLI's
+`unhandledRejection` handler exited with code 1, on every run because the
+cache was never written. The id is now cached in the common git directory
+(`git rev-parse --git-common-dir`, as upstream does), and a failed cache
+write is only logged. Reproduction:
+`experiments/issue-335/project-worktree.ts`; regression test:
+`js/tests/project-worktree.ts` (fails before the fix, passes after). The
+Rust port has no project id cache.
