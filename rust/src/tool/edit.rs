@@ -17,7 +17,9 @@
 //!   directory, not a file: <path>".
 //!
 //! `LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING=true` restores the earlier
-//! matching rules (the `try_*_replace` functions) and
+//! matching rules (the `try_*_replace` functions with the unguarded block
+//! anchor match, no BOM handling, and an empty `oldString` overwriting an
+//! existing file) and
 //! `LINK_ASSISTANT_AGENT_LEGACY_TOOL_OUTPUT=true` the earlier errors, diff
 //! format and LF-only `filediff`.
 //!
@@ -128,8 +130,9 @@ impl Tool for EditTool {
         // Handle new file creation (oldString is empty)
         if params.old_string.is_empty() {
             // Upstream OpenCode #30932: an empty oldString used to silently
-            // replace the whole existing file.
-            if filepath.exists() {
+            // replace the whole existing file (still done with legacy edit
+            // matching).
+            if !legacy_matching && filepath.exists() {
                 return Err(AgentError::tool_execution("edit", EMPTY_OLD_STRING_ERROR));
             }
             if let Some(parent) = filepath.parent() {
@@ -350,7 +353,8 @@ fn create_diff(old: &str, new: &str, path: &str) -> String {
 }
 
 /// The earlier matching rules (legacy edit matching): the `try_*_replace`
-/// strategies in the JS order.
+/// strategies in the JS order, with the unguarded block anchor match of
+/// earlier releases.
 fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool) -> Result<String> {
     if old_string.is_empty() {
         return Err(AgentError::tool_execution("edit", EMPTY_OLD_STRING_ERROR));
@@ -367,7 +371,8 @@ fn replace(content: &str, old_string: &str, new_string: &str, replace_all: bool)
     }
 
     // Strategy 3: BlockAnchorReplacer
-    if let Some(result) = try_block_anchor_replace(content, old_string, new_string, replace_all) {
+    if let Some(result) = block_anchor_replace(content, old_string, new_string, replace_all, false)
+    {
         return Ok(result);
     }
 
@@ -553,6 +558,19 @@ pub fn try_block_anchor_replace(
     new: &str,
     replace_all: bool,
 ) -> Option<String> {
+    block_anchor_replace(content, old, new, replace_all, true)
+}
+
+/// Block anchor matching; without `guarded` any block between matching
+/// first and last lines is taken, as in releases before the upstream
+/// OpenCode #30932 sync (legacy edit matching).
+fn block_anchor_replace(
+    content: &str,
+    old: &str,
+    new: &str,
+    replace_all: bool,
+    guarded: bool,
+) -> Option<String> {
     let content_lines: Vec<&str> = content.lines().collect();
     let search_lines: Vec<&str> = old.lines().collect();
 
@@ -578,7 +596,9 @@ pub fn try_block_anchor_replace(
                 // Guards from upstream OpenCode #30932: the block must have
                 // about the same size as oldString and similar middle lines,
                 // otherwise unrelated code between the anchors is deleted.
-                if block.len().abs_diff(search_size) <= max_line_delta
+                if !guarded {
+                    matches.push(block.join("\n"));
+                } else if block.len().abs_diff(search_size) <= max_line_delta
                     && middle_similarity(block, &search_lines) >= BLOCK_ANCHOR_SIMILARITY_THRESHOLD
                 {
                     let matched: String = block.join("\n");

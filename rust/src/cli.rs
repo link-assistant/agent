@@ -205,7 +205,9 @@ pub struct Args {
     pub legacy_tool_output: Option<bool>,
 
     /// Restore the earlier edit matching: an empty oldString overwrites an
-    /// existing file and block-anchor matching uses the old thresholds.
+    /// existing file, block-anchor matching takes any block between the
+    /// anchor lines, a UTF-8 BOM is part of the matched text and fuzzy
+    /// matches much larger than oldString are not refused.
     /// Env: LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING.
     #[arg(long, value_name = "BOOL", num_args = 0..=1, require_equals = true, default_missing_value = "true", value_parser = clap::builder::BoolishValueParser::new())]
     pub legacy_edit_matching: Option<bool>,

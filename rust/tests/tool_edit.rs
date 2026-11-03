@@ -759,3 +759,47 @@ async fn test_edit_matches_first_line_after_bom() {
         .unwrap_err();
     assert!(err.to_string().contains("not found"), "{}", err);
 }
+
+#[tokio::test]
+async fn test_legacy_edit_matching_empty_old_string_overwrites() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("keep.txt");
+    fs::write(&file_path, "precious\n").unwrap();
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "",
+        "newString": "gone"
+    });
+    EditTool
+        .execute(params, &legacy_matching_context(temp.path()))
+        .await
+        .unwrap();
+    assert_eq!(fs::read_to_string(&file_path).unwrap(), "gone");
+}
+
+#[tokio::test]
+async fn test_legacy_edit_matching_unguarded_block_anchor() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("anchor.txt");
+    let original = "start\nalpha beta gamma\nend\n";
+    fs::write(&file_path, original).unwrap();
+    let params = json!({
+        "filePath": file_path.to_string_lossy(),
+        "oldString": "start\nzzzzzzzzzzzzzzzz\nend",
+        "newString": "x"
+    });
+
+    let err = EditTool
+        .execute(params.clone(), &create_context(temp.path()))
+        .await
+        .unwrap_err();
+    assert!(err.to_string().contains("not found"), "{}", err);
+    assert_eq!(fs::read_to_string(&file_path).unwrap(), original);
+
+    // Earlier releases took any block between the anchor lines
+    EditTool
+        .execute(params, &legacy_matching_context(temp.path()))
+        .await
+        .unwrap();
+    assert_eq!(fs::read_to_string(&file_path).unwrap(), "x\n");
+}
