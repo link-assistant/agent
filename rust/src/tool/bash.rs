@@ -50,7 +50,7 @@ const POSIX_SHELLS: &[&str] = &["sh", "bash", "zsh", "dash", "ksh", "mksh", "ash
 /// The program that runs commands for a `BASH_SHELL` setting.
 ///
 /// - `legacy`: `bash`, as every earlier release did;
-/// - `auto` (or empty): `$SHELL` when it is one of [`POSIX_SHELLS`] and can be
+/// - `auto` (or empty): `$SHELL` when it is one of `POSIX_SHELLS` and can be
 ///   found, otherwise `bash` from `PATH`, otherwise `/bin/zsh` on macOS (as
 ///   JS) and `/bin/sh` elsewhere. On Windows `auto` keeps `bash`;
 /// - anything else: used as given.

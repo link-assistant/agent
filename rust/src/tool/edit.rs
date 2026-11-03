@@ -13,8 +13,8 @@
 //! - `metadata.diff` is the JS unified diff (`Index:` header, `@@` hunks,
 //!   common indentation removed) and `filediff` holds the file text with
 //!   its own line endings;
-//! - a missing file is "File <path> not found", a directory is "Path is a
-//!   directory, not a file: <path>".
+//! - a missing file is `File <path> not found`, a directory is `Path is a
+//!   directory, not a file: <path>`.
 //!
 //! `LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING=true` restores the earlier
 //! matching rules (the `try_*_replace` functions with the unguarded block
