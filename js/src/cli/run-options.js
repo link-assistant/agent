@@ -191,7 +191,7 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
       .option('compaction-model', {
         type: 'string',
         description:
-          'Model to use for context compaction and session summaries, in format providerID/modelID. Use "same" to use the base model. Default: kilo/nemotron-3-super-free (free, Kilo authentication recommended, 262K context), which falls back to the --model model when --model points at another provider. Overridden by --compaction-models if both are specified.',
+          'Model to use for context compaction and session summaries, in format providerID/modelID. Use "same" to use the base model. Default: kilo/nemotron-3-ultra-free (free, Kilo authentication recommended, 1M context), which falls back to the --model model when --model points at another provider. Overridden by --compaction-models if both are specified.',
         default: defaultCompactionModel,
       })
       .option('compaction-models', {
@@ -200,7 +200,7 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
           'Ordered cascade of compaction models in links notation sequence format: "(model1 model2 ... same)". ' +
           "Models are tried from smallest/cheapest context to largest. If used context exceeds a model's limit or its rate limit is reached, the next model is tried. " +
           'The special value "same" uses the base model. Overrides --compaction-model when specified. ' +
-          'The default cascade is OpenCode-specific: when --model points at another provider, its entries from other providers are dropped so secondary calls inherit --model. A cascade given explicitly is used as written.',
+          'The default cascade is Kilo-specific: when --model points at another provider, its entries from other providers are dropped so secondary calls inherit --model. A cascade given explicitly is used as written.',
         default: defaultCompactionModels,
       })
       .option('compaction-safety-margin', {

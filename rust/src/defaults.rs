@@ -4,22 +4,26 @@
 //! automation to override those defaults without editing source files.
 
 /// Default model used when no `--model` CLI argument is provided.
-pub const DEFAULT_MODEL: &str = "kilo/nemotron-3-super-free";
+///
+/// Kilo withdrew the free Nemotron 3 Super route, so the default moved to
+/// Nemotron 3 Ultra (#335), matching the JavaScript implementation.
+pub const DEFAULT_MODEL: &str = "kilo/nemotron-3-ultra-free";
 
 /// Env var for overriding the default model in test runs and automation.
 pub const DEFAULT_MODEL_ENV: &str = "LINK_ASSISTANT_AGENT_DEFAULT_MODEL";
 
 /// Default compaction model used when no `--compaction-model` CLI argument is provided.
 /// Uses the same served Kilo model as the JavaScript implementation.
-pub const DEFAULT_COMPACTION_MODEL: &str = "kilo/nemotron-3-super-free";
+pub const DEFAULT_COMPACTION_MODEL: &str = "kilo/nemotron-3-ultra-free";
 
 /// Env var for overriding the default compaction model in test runs and automation.
 pub const DEFAULT_COMPACTION_MODEL_ENV: &str = "LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODEL";
 
-/// Default compaction models cascade, ordered by context capacity.
+/// Default compaction models cascade: served free Kilo models (both with a
+/// 1M-token context, preferred model first), then the session model.
 /// During compaction, the system tries each model in order.
 pub const DEFAULT_COMPACTION_MODELS: &str =
-    "(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)";
+    "(kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)";
 
 /// Env var for overriding the default compaction cascade in test runs and automation.
 pub const DEFAULT_COMPACTION_MODELS_ENV: &str = "LINK_ASSISTANT_AGENT_DEFAULT_COMPACTION_MODELS";

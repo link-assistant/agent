@@ -1,3 +1,4 @@
+import { Log } from '../util/log';
 import type { ModelsDev } from './models';
 
 /** Built-in aliases use exact IDs from https://api.kilo.ai/api/gateway/models. */
@@ -25,14 +26,7 @@ export namespace Kilo {
     };
   }
 
-  // Super's output cap is deliberately conservative for existing integrations.
   export const FREE_MODELS: Record<string, ModelsDev.Model> = {
-    'nemotron-3-super-free': freeModel(
-      'nvidia/nemotron-3-super-120b-a12b:free',
-      'Nemotron 3 Super (Free)',
-      262144,
-      32768
-    ),
     'nemotron-3-ultra-free': freeModel(
       'nvidia/nemotron-3-ultra-550b-a55b:free',
       'Nemotron 3 Ultra (Free)',
@@ -46,6 +40,44 @@ export namespace Kilo {
       65536
     ),
   };
+
+  /**
+   * Withdrawn built-in aliases that keep working temporarily. Each one maps to
+   * the served alias in `FREE_MODELS` that replaces it, and every resolution
+   * logs a warning naming the replacement. These are not catalog entries, so
+   * the drift check (`scripts/check-model-drift.mjs`) does not look them up.
+   *
+   * Kilo stopped serving `nvidia/nemotron-3-super-120b-a12b:free`; only the
+   * paid Super model remains on the gateway (#335).
+   */
+  export const DEPRECATED_ALIASES: Readonly<Record<string, string>> = {
+    'nemotron-3-super-free': 'nemotron-3-ultra-free',
+  };
+
+  const log = Log.create({ service: 'kilo' });
+
+  /** Replacement for a deprecated alias, or `undefined`. Logs nothing. */
+  export function deprecatedAliasTarget(modelID: string): string | undefined {
+    return Object.hasOwn(DEPRECATED_ALIASES, modelID)
+      ? DEPRECATED_ALIASES[modelID]
+      : undefined;
+  }
+
+  /**
+   * Map a deprecated alias to its replacement and warn about it; any other
+   * model ID is returned unchanged.
+   */
+  export function resolveDeprecatedAlias(modelID: string): string {
+    const replacement = deprecatedAliasTarget(modelID);
+    if (!replacement) return modelID;
+    log.warn(() => ({
+      message: `kilo/${modelID} is deprecated and no longer served by Kilo; using kilo/${replacement} instead`,
+      deprecatedModel: `kilo/${modelID}`,
+      replacement: `kilo/${replacement}`,
+      hint: `Pass --model kilo/${replacement} to silence this warning`,
+    }));
+    return replacement;
+  }
 
   /**
    * Text models models.dev lists for Kilo. Their IDs are the same on the

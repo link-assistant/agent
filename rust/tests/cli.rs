@@ -366,19 +366,19 @@ fn test_args_all_options_combined() {
 
 #[test]
 fn test_default_model_matches_js() {
-    assert_eq!(DEFAULT_MODEL, "kilo/nemotron-3-super-free");
+    assert_eq!(DEFAULT_MODEL, "kilo/nemotron-3-ultra-free");
 }
 
 #[test]
 fn test_default_compaction_model_matches_js() {
-    assert_eq!(DEFAULT_COMPACTION_MODEL, "kilo/nemotron-3-super-free");
+    assert_eq!(DEFAULT_COMPACTION_MODEL, "kilo/nemotron-3-ultra-free");
 }
 
 #[test]
 fn test_default_compaction_models_matches_js() {
     assert_eq!(
         DEFAULT_COMPACTION_MODELS,
-        "(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)"
+        "(kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)"
     );
 }
 

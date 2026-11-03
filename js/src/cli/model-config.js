@@ -6,6 +6,7 @@ import {
 } from './argv.ts';
 import { Log } from '../util/log.ts';
 import { ExtraProviders } from '../provider/extra-providers.ts';
+import { Kilo } from '../provider/kilo.ts';
 import {
   DEFAULT_PROVIDER_ID,
   DEFAULT_MODEL_ID,
@@ -29,6 +30,17 @@ export class ModelResolutionError extends Error {
     );
     this.name = 'ModelResolutionError';
   }
+}
+
+/**
+ * Map a withdrawn built-in Kilo alias to its replacement, with a warning (#335).
+ * Other providers and model IDs are returned unchanged.
+ * @param {string} providerID
+ * @param {string} modelID
+ * @returns {string}
+ */
+function replaceDeprecatedModel(providerID, modelID) {
+  return providerID === 'kilo' ? Kilo.resolveDeprecatedAlias(modelID) : modelID;
 }
 
 /**
@@ -127,7 +139,7 @@ export async function parseModelConfig(
     const modelParts = modelArg.split('/');
     // Accept alternative spellings such as `g4f/...` for `gpt4free/...` (#334)
     providerID = ExtraProviders.canonicalID(modelParts[0]);
-    modelID = modelParts.slice(1).join('/');
+    modelID = replaceDeprecatedModel(providerID, modelParts.slice(1).join('/'));
 
     // Validate that providerID and modelID are not empty
     // Do NOT fall back to defaults - if the user provided an invalid format, fail clearly (#196)
@@ -347,7 +359,7 @@ async function resolveCompactionModelEntry(
     const parts = modelArg.split('/');
     return {
       providerID: parts[0],
-      modelID: parts.slice(1).join('/'),
+      modelID: replaceDeprecatedModel(parts[0], parts.slice(1).join('/')),
       useSameModel: false,
     };
   }
@@ -399,7 +411,7 @@ async function resolveEntryWithinProvider(
     }
     return {
       providerID: parts[0],
-      modelID: parts.slice(1).join('/'),
+      modelID: replaceDeprecatedModel(parts[0], parts.slice(1).join('/')),
       useSameModel: false,
     };
   }
@@ -408,7 +420,11 @@ async function resolveEntryWithinProvider(
   if (!(await Provider.hasModel(baseProviderID, modelArg))) {
     return null;
   }
-  return { providerID: baseProviderID, modelID: modelArg, useSameModel: false };
+  return {
+    providerID: baseProviderID,
+    modelID: replaceDeprecatedModel(baseProviderID, modelArg),
+    useSameModel: false,
+  };
 }
 
 /**

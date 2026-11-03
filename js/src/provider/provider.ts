@@ -1564,6 +1564,12 @@ export namespace Provider {
     const provider = s.providers[ExtraProviders.canonicalID(providerID)];
     if (!provider) return false;
     if (provider.info.models[modelID]) return true;
+    // Deprecated Kilo aliases still resolve to their replacement (#335).
+    const replacement =
+      provider.info.id === 'kilo'
+        ? Kilo.deprecatedAliasTarget(modelID)
+        : undefined;
+    if (replacement && provider.info.models[replacement]) return true;
     return ExtraProviders.allowsUnknownModels(provider.info.id);
   }
 
@@ -1652,6 +1658,8 @@ export namespace Provider {
 
   export async function getModel(providerID: string, modelID: string) {
     providerID = ExtraProviders.canonicalID(providerID);
+    // Sessions and configs may still name a withdrawn Kilo alias (#335).
+    if (providerID === 'kilo') modelID = Kilo.resolveDeprecatedAlias(modelID);
     const key = `${providerID}/${modelID}`;
     const s = await state();
     if (s.models.has(key)) return s.models.get(key)!;
@@ -1920,7 +1928,6 @@ export namespace Provider {
     'gpt-5-nano',
     'nemotron-3.5-lightning-free',
     'nemotron-3-ultra-free',
-    'nemotron-3-super-free',
     'gpt-5',
     'claude-sonnet-4',
     'gemini-3-pro',
@@ -1994,10 +2001,14 @@ export namespace Provider {
   }
 
   export function parseModel(model: string) {
-    const [providerID, ...rest] = model.split('/');
+    const [rawProviderID, ...rest] = model.split('/');
+    const providerID = ExtraProviders.canonicalID(rawProviderID);
+    const modelID = rest.join('/');
     return {
-      providerID: ExtraProviders.canonicalID(providerID),
-      modelID: rest.join('/'),
+      providerID,
+      // Withdrawn Kilo aliases keep working with a warning (#335).
+      modelID:
+        providerID === 'kilo' ? Kilo.resolveDeprecatedAlias(modelID) : modelID,
     };
   }
 
@@ -2016,6 +2027,14 @@ export namespace Provider {
     modelID: string
   ): Promise<{ providerID: string; modelID: string } | undefined> {
     const s = await state();
+
+    // A withdrawn built-in alias resolves to its Kilo replacement (#335).
+    if (Kilo.deprecatedAliasTarget(modelID)) {
+      const replacement = Kilo.resolveDeprecatedAlias(modelID);
+      if (s.providers.kilo?.info.models[replacement]) {
+        return { providerID: 'kilo', modelID: replacement };
+      }
+    }
 
     if (Object.hasOwn(Kilo.FREE_MODELS, modelID)) {
       const kiloProvider = s.providers.kilo;
@@ -2090,8 +2109,9 @@ export namespace Provider {
    * or a clear error explaining why it's not available.
    *
    * Examples:
-   * - "kilo/nemotron-3-super-free" -> { providerID: "kilo", modelID: "nemotron-3-super-free" }
-   * - "nemotron-3-super-free" -> { providerID: "kilo", modelID: "nemotron-3-super-free" } (resolved)
+   * - "kilo/nemotron-3-ultra-free" -> { providerID: "kilo", modelID: "nemotron-3-ultra-free" }
+   * - "nemotron-3-ultra-free" -> { providerID: "kilo", modelID: "nemotron-3-ultra-free" } (resolved)
+   * - "nemotron-3-super-free" -> { providerID: "kilo", modelID: "nemotron-3-ultra-free" } (deprecated alias, warns)
    * - "big-pickle" -> { providerID: "opencode", modelID: "big-pickle" } (resolved)
    * - "nonexistent-model" -> throws ModelNotFoundError
    *
@@ -2152,7 +2172,7 @@ export namespace Provider {
    * When one provider hits rate limits, the system can try an alternative.
    *
    * Note: This is only used for models without explicit provider specification.
-   * If user specifies "kilo/nemotron-3-super-free", no fallback will occur.
+   * If user specifies "kilo/nemotron-3-ultra-free", no fallback will occur.
    */
   const SHARED_FREE_MODELS: Record<string, string[]> = {
     'nemotron-3.5-lightning-free': ['kilo', 'opencode'],
@@ -2163,7 +2183,7 @@ export namespace Provider {
    * This function returns a list of alternative providers that offer the same model.
    *
    * Note: This only returns alternatives for models without explicit provider specification.
-   * If the original request had an explicit provider (like "kilo/nemotron-3-super-free"), this returns empty array.
+   * If the original request had an explicit provider (like "kilo/nemotron-3-ultra-free"), this returns empty array.
    *
    * @param modelID - The model ID to find alternatives for
    * @param failedProviderID - The provider that failed
