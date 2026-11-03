@@ -72,6 +72,27 @@ fix: sync reliability fixes for existing tools, the session loop, providers and 
 - MCP servers accept `connect_timeout`; `timeout` keeps its previous meaning
   (listing tools). Credentials in MCP and provider URLs are masked in verbose
   logs.
+- The default model and default compaction model are now
+  `kilo/nemotron-3-ultra-free` (1M context), and the default compaction
+  cascade is `(kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)`,
+  because Kilo withdrew Nemotron 3 Super. `kilo/nemotron-3-super-free` (and the
+  bare `nemotron-3-super-free`) stays accepted as a deprecated alias that runs
+  on `kilo/nemotron-3-ultra-free` and logs one warning naming the
+  replacement. The free-model drift check skips deprecated aliases and
+  requires every alias target to be a built-in model.
+- Git worktrees and submodules no longer crash the CLI: the project id cache
+  was written to `.git/opencode` while `.git` is a file there, and the
+  unhandled ENOTDIR rejection ended the process. The id is now cached in the
+  common git directory (as upstream does), and a failed cache write is only
+  logged.
+- npm dependencies are refreshed to their latest releases (the `ai` SDK and
+  every `@ai-sdk/*` provider, `@agentclientprotocol/sdk`,
+  `@modelcontextprotocol/sdk`, `@opencode-ai/sdk`, `@opentui/*` 0.8,
+  `command-stream`, `hono`, `remeda`, `google-auth-library`, `glob` 14,
+  `minimatch` 11 and the rest). `solid-js` is no longer pinned and the
+  obsolete `seroval` override is dropped. `lino-arguments` stays on 0.3.x:
+  0.4.0 throws "Ambiguous environment aliases" at startup when both spellings
+  of a variable are set (for example `http_proxy` and `HTTP_PROXY`).
 
 Backward compatibility: every user-visible change can be reverted with an
 option (each also has a `LINK_ASSISTANT_AGENT_*` env var): `--bash-shell legacy`,
