@@ -124,3 +124,32 @@ fn test_write_tool_parameters_schema() {
     assert!(schema["properties"]["filePath"].is_object());
     assert!(schema["properties"]["content"].is_object());
 }
+
+// --- Reliability fixes synced from upstream OpenCode (issue #335) ---
+
+#[tokio::test]
+async fn test_write_returns_confirmation_output() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("confirm.txt");
+    let ctx = create_context(temp.path());
+    let params = json!({ "content": "x", "filePath": file_path.to_string_lossy() });
+    let result = WriteTool.execute(params, &ctx).await.unwrap();
+    assert_eq!(result.output, "Wrote file successfully.");
+}
+
+#[tokio::test]
+async fn test_write_keeps_existing_utf8_bom() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("bom.txt");
+    fs::write(&file_path, "\u{feff}old\n").unwrap();
+    let ctx = create_context(temp.path());
+
+    let params = json!({ "content": "new\n", "filePath": file_path.to_string_lossy() });
+    WriteTool.execute(params, &ctx).await.unwrap();
+    assert_eq!(fs::read_to_string(&file_path).unwrap(), "\u{feff}new\n");
+
+    // A BOM supplied in content is not duplicated.
+    let params = json!({ "content": "\u{feff}again\n", "filePath": file_path.to_string_lossy() });
+    WriteTool.execute(params, &ctx).await.unwrap();
+    assert_eq!(fs::read_to_string(&file_path).unwrap(), "\u{feff}again\n");
+}

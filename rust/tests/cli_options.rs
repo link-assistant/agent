@@ -21,13 +21,13 @@ fn agent_cmd() -> assert_cmd::Command {
 
 #[test]
 fn model_option_default() {
-    // Default model should be kilo/nemotron-3-super-free (matching JS).
+    // Default model should be kilo/nemotron-3-ultra-free (matching JS).
     agent_cmd()
         .args(["--dry-run", "--verbose", "-p", "hello"])
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Model: kilo/nemotron-3-super-free",
+            "Model: kilo/nemotron-3-ultra-free",
         ));
 }
 
@@ -608,7 +608,7 @@ fn compaction_model_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Compaction model: kilo/nemotron-3-super-free",
+            "Compaction model: kilo/nemotron-3-ultra-free",
         ));
 }
 
@@ -667,7 +667,7 @@ fn compaction_models_default() {
         .assert()
         .success()
         .stdout(predicate::str::contains(
-            "Compaction models: (kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)",
+            "Compaction models: (kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)",
         ));
 }
 

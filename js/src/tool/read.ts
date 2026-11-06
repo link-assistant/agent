@@ -12,6 +12,13 @@ import { formatBalancedLineWindow, formatColumnWindow } from './text-window';
 
 const DEFAULT_READ_LIMIT = 2000;
 const MAX_LINE_LENGTH = 2000;
+// upstream 1b82511fbd / c1b03b728a (#14009): the output is bounded in bytes
+// too (config.readMaxBytes, 50 KB by default), 2000 long lines would otherwise
+// put megabytes into the context.
+
+function formatSize(bytes: number) {
+  return bytes % 1024 === 0 ? `${bytes / 1024} KB` : `${bytes} bytes`;
+}
 
 export const ReadTool = Tool.define('read', {
   description: DESCRIPTION,
@@ -36,18 +43,42 @@ export const ReadTool = Tool.define('read', {
   }),
   async execute(params, ctx) {
     let filepath = params.filePath;
-    if (!path.isAbsolute(filepath)) {
-      filepath = path.join(Instance.worktree, filepath);
+    const relative = !path.isAbsolute(filepath);
+    if (relative) {
+      // Relative to the session directory, like every other tool, not to the
+      // worktree root (upstream 6cf2c3e3db).
+      filepath = path.resolve(Instance.directory, filepath);
     }
-    const title = path.relative(Instance.worktree, filepath);
 
     // No restrictions - unrestricted file read
-    const file = Bun.file(filepath);
-    if (!(await file.exists())) {
+    let stat = await fs.promises.stat(filepath).catch(() => undefined);
+    if (!stat && relative && Instance.directory !== Instance.worktree) {
+      // Backward compatibility: relative paths used to resolve against the
+      // worktree root. Keep that working when the path does not exist under
+      // the session directory.
+      const fromWorktree = path.resolve(Instance.worktree, params.filePath);
+      const worktreeStat = await fs.promises
+        .stat(fromWorktree)
+        .catch(() => undefined);
+      if (worktreeStat) {
+        filepath = fromWorktree;
+        stat = worktreeStat;
+      }
+    }
+    if (!stat) {
+      const alternate = alternatePath(filepath);
+      if (alternate) {
+        filepath = alternate;
+        stat = await fs.promises.stat(filepath).catch(() => undefined);
+      }
+    }
+    const title = path.relative(Instance.worktree, filepath);
+    if (!stat) {
       const dir = path.dirname(filepath);
       const base = path.basename(filepath);
 
-      const dirEntries = fs.readdirSync(dir);
+      // A missing parent directory is still just "File not found".
+      const dirEntries = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
       const suggestions = dirEntries
         .filter(
           (entry) =>
@@ -65,6 +96,16 @@ export const ReadTool = Tool.define('read', {
 
       throw new Error(`File not found: ${filepath}`);
     }
+    // upstream 823d327401 / ff837fe949 (#33255/#33260)
+    if (stat.isDirectory()) {
+      throw new Error(
+        `Path is a directory, not a file: ${filepath}. Use the ls or glob tool to list it.`
+      );
+    }
+    if (!stat.isFile()) {
+      throw new Error(`Path is not a regular file: ${filepath}`);
+    }
+    const file = Bun.file(filepath);
 
     const isImage = isImageFile(filepath);
     const supportsImages = await (async () => {
@@ -85,9 +126,8 @@ export const ReadTool = Tool.define('read', {
           `Failed to read image: ${filepath}, model may not be able to read images`
         );
       }
+      const bytes = await file.bytes();
       if (verifyImages) {
-        const bytes = new Uint8Array(await file.arrayBuffer());
-
         // Validate image format matches file extension
         if (!validateImageFormat(bytes, isImage)) {
           throw new Error(
@@ -118,54 +158,101 @@ export const ReadTool = Tool.define('read', {
             messageID: ctx.messageID,
             type: 'file',
             mime,
-            url: `data:${mime};base64,${Buffer.from(await file.bytes()).toString('base64')}`,
+            url: `data:${mime};base64,${Buffer.from(bytes).toString('base64')}`,
           },
         ],
       };
     }
 
-    const isBinary = await isBinaryFile(filepath, file);
+    const isBinary = await isBinaryFile(filepath, stat.size);
     if (isBinary) throw new Error(`Cannot read binary file: ${filepath}`);
 
-    const limit = normalizeNonNegativeInteger(params.limit, DEFAULT_READ_LIMIT);
+    // upstream 683d470fe4 (#51011): never return more than the default limit.
+    // --read-max-lines / --read-max-bytes tune both caps; 0 disables a cap.
+    const maxLines = config.readMaxLines > 0 ? config.readMaxLines : Infinity;
+    const maxBytes = config.readMaxBytes > 0 ? config.readMaxBytes : Infinity;
+    const limit = Math.min(
+      normalizeNonNegativeInteger(
+        params.limit,
+        Math.min(DEFAULT_READ_LIMIT, maxLines)
+      ),
+      maxLines
+    );
     const offset = normalizeNonNegativeInteger(params.offset, 0);
     const hasExplicitLineRange =
       params.offset !== undefined || params.limit !== undefined;
     const hasExplicitColumnRange =
       params.columnOffset !== undefined || params.columnLimit !== undefined;
     const columnOffset = normalizeNonNegativeInteger(params.columnOffset, 0);
-    const columnLimit = normalizeNonNegativeInteger(
-      params.columnLimit,
-      MAX_LINE_LENGTH
+    const columnLimit = Math.min(
+      normalizeNonNegativeInteger(params.columnLimit, MAX_LINE_LENGTH),
+      maxBytes
     );
-    const lines = await file.text().then((text) => text.split('\n'));
+    const lines = splitLines(await file.text());
+    // upstream c1b03b728a (#14009)
+    // --legacy-tool-output keeps the old empty result past the end.
+    if (
+      !config.legacyToolOutput &&
+      hasExplicitLineRange &&
+      lines.length > 0 &&
+      offset >= lines.length
+    ) {
+      throw new Error(
+        `Offset ${offset} is out of range for this file (${lines.length} lines)`
+      );
+    }
     const selected = selectLines({
       lines,
       offset,
       limit,
       summarizeMiddle: !hasExplicitLineRange,
     });
-    const content = selected.parts.flatMap((part) => {
-      if (part.type === 'omitted') {
-        return [`... [omitted lines ${part.start}..${part.end}] ...`];
-      }
+    const formatLine = ({
+      line,
+      lineNumber,
+    }: {
+      line: string;
+      lineNumber: number;
+    }) => {
+      const formattedLine = hasExplicitColumnRange
+        ? formatColumnWindow({
+            line,
+            lineNumber,
+            offset: columnOffset,
+            limit: columnLimit,
+          })
+        : formatBalancedLineWindow({
+            line,
+            lineNumber,
+            limit: MAX_LINE_LENGTH,
+          });
+      return `${lineNumber.toString().padStart(5, '0')}| ${formattedLine}`;
+    };
 
-      return part.lines.map(({ line, lineNumber }) => {
-        const formattedLine = hasExplicitColumnRange
-          ? formatColumnWindow({
-              line,
-              lineNumber,
-              offset: columnOffset,
-              limit: columnLimit,
-            })
-          : formatBalancedLineWindow({
-              line,
-              lineNumber,
-              limit: MAX_LINE_LENGTH,
-            });
-        return `${lineNumber.toString().padStart(5, '0')}| ${formattedLine}`;
-      });
-    });
+    const content: string[] = [];
+    let bytes = 0;
+    let capped: { first: number; last: number } | undefined;
+    for (const part of selected.parts) {
+      if (part.type === 'omitted') {
+        content.push(`... [omitted lines ${part.start}..${part.end}] ...`);
+        continue;
+      }
+      for (const item of part.lines) {
+        const formatted = formatLine(item);
+        const size = Buffer.byteLength(formatted, 'utf8') + 1;
+        // Always show at least one line so the cap cannot return nothing.
+        if (bytes + size > maxBytes && content.length > 0) {
+          capped = {
+            first: part.lines[0].lineNumber,
+            last: item.lineNumber - 1,
+          };
+          break;
+        }
+        content.push(formatted);
+        bytes += size;
+      }
+      if (capped) break;
+    }
     const preview = content.slice(0, 20).join('\n');
 
     let output = '<file>\n';
@@ -175,7 +262,10 @@ export const ReadTool = Tool.define('read', {
     const lastReadLine = selected.lastLine;
     const hasMoreLines = hasExplicitLineRange && totalLines > lastReadLine;
 
-    if (hasMoreLines) {
+    if (capped) {
+      // `offset` is 0-based, so the next unread line starts at `last`.
+      output += `\n\n(Output capped at ${formatSize(maxBytes)}. Showing lines ${capped.first}-${capped.last}. Use offset=${capped.last} to continue.)`;
+    } else if (hasMoreLines) {
       output += `\n\n(File has more lines. Use 'offset' parameter to read beyond line ${lastReadLine})`;
     } else {
       output += `\n\n(End of file - total ${totalLines} lines)`;
@@ -194,6 +284,40 @@ export const ReadTool = Tool.define('read', {
     };
   },
 });
+
+// CRLF files must not leak `\r` into the output, and a trailing newline ends
+// the last line instead of starting an empty one (upstream c1b03b728a,
+// 683d470fe4).
+function splitLines(text: string) {
+  const lines = text.split(/\r?\n/);
+  if (lines.length > 1 && lines[lines.length - 1] === '') lines.pop();
+  return lines;
+}
+
+// macOS puts U+202F (narrow no-break space) before AM/PM in screenshot names
+// and models type a plain space; curly apostrophes get straightened the same
+// way. Use the only directory entry that matches after canonicalizing both
+// (upstream d484f070d1 #45807, b47824fb63 #50953).
+function canonicalName(name: string) {
+  return name
+    .normalize('NFC')
+    .replace(/[\u00a0\u202f]/g, ' ')
+    .replace(/[\u2018\u2019]/g, "'");
+}
+
+function alternatePath(filepath: string): string | undefined {
+  const dir = path.dirname(filepath);
+  const base = canonicalName(path.basename(filepath));
+  let entries: string[];
+  try {
+    entries = fs.readdirSync(dir);
+  } catch {
+    return undefined;
+  }
+  const matches = entries.filter((entry) => canonicalName(entry) === base);
+  if (matches.length !== 1) return undefined;
+  return path.join(dir, matches[0]);
+}
 
 function normalizeNonNegativeInteger(
   value: number | undefined,
@@ -386,7 +510,7 @@ function validateImageFormat(
 
 async function isBinaryFile(
   filepath: string,
-  file: Bun.BunFile
+  fileSize: number
 ): Promise<boolean> {
   const ext = path.extname(filepath).toLowerCase();
   // binary check for common non-text extensions
@@ -424,14 +548,18 @@ async function isBinaryFile(
       break;
   }
 
-  const stat = await file.stat();
-  const fileSize = stat.size;
   if (fileSize === 0) return false;
 
+  // Sample only the first 4 KB instead of loading the whole file
+  // (upstream c1b03b728a #14009).
   const bufferSize = Math.min(4096, fileSize);
-  const buffer = await file.arrayBuffer();
-  if (buffer.byteLength === 0) return false;
-  const bytes = new Uint8Array(buffer.slice(0, bufferSize));
+  const fh = await fs.promises.open(filepath, 'r');
+  const sample = Buffer.alloc(bufferSize);
+  const { bytesRead } = await fh
+    .read(sample, 0, bufferSize, 0)
+    .finally(() => fh.close());
+  if (bytesRead === 0) return false;
+  const bytes = sample.subarray(0, bytesRead);
 
   let nonPrintableCount = 0;
   for (let i = 0; i < bytes.length; i++) {

@@ -3,6 +3,7 @@
 //! Mirrors test coverage from js/tests/integration/read.tools.test.js
 //! and the original inline tests from rust/src/tool/read.rs.
 
+use link_assistant_agent::compat::ToolSettings;
 use link_assistant_agent::tool::read::ReadTool;
 use link_assistant_agent::tool::{Tool, ToolContext};
 use serde_json::json;
@@ -213,4 +214,422 @@ fn test_read_tool_parameters_schema() {
     let tool = ReadTool;
     let schema = tool.parameters_schema();
     assert!(schema["properties"]["filePath"].is_object());
+}
+
+// Read reliability fixes ported from upstream OpenCode (issue #335).
+
+#[tokio::test]
+async fn test_read_png_is_still_an_image() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("pic.png");
+    fs::write(
+        &file_path,
+        [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0],
+    )
+    .unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    let attachments = result.attachments.unwrap();
+    assert_eq!(attachments[0].mime, "image/png");
+}
+
+#[tokio::test]
+async fn test_read_output_capped_at_50kb() {
+    // upstream #14009: output is capped by bytes, not just lines.
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("wide.txt");
+    let content: Vec<String> = (0..2000).map(|i| format!("{:x<5000}", i)).collect();
+    fs::write(&file_path, content.join("\n")).unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+
+    assert!(result.output.len() < 60_000, "{}", result.output.len());
+    let marker = "(Output capped at 50 KB. Showing lines 1-";
+    let start = result.output.find(marker).expect("cap hint") + marker.len();
+    let rest = &result.output[start..];
+    let last: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+    assert!(rest.contains(&format!(". Use offset={} to continue.)", last)));
+}
+
+#[tokio::test]
+async fn test_read_limit_clamped_to_2000() {
+    // upstream #51011
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("long.txt");
+    let content: Vec<String> = (1..=3000).map(|i| format!("line {}", i)).collect();
+    fs::write(&file_path, content.join("\n")).unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy(), "limit": 100000 });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+
+    assert!(result.output.contains("02000| line 2000"));
+    assert!(!result.output.contains("02001| line 2001"));
+    assert!(result.output.contains("beyond line 2000"));
+}
+
+#[tokio::test]
+async fn test_read_binary_sniff_of_large_file() {
+    // Only the first 4 KB is sampled to detect binary data (upstream #14009).
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("big.dat");
+    let mut bytes = vec![0u8; 8 * 1024 * 1024];
+    bytes[..4].copy_from_slice(b"\x7fELF");
+    fs::write(&file_path, bytes).unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy() });
+
+    let err = tool.execute(params, &ctx).await.unwrap_err();
+    assert!(err.to_string().contains("Cannot read binary file"));
+}
+
+#[tokio::test]
+async fn test_read_narrow_no_break_space_name() {
+    // macOS screenshot names use U+202F before AM/PM (upstream #45807).
+    let temp = TempDir::new().unwrap();
+    fs::write(
+        temp.path().join("shot at 10\u{202f}AM.txt"),
+        "narrow space\n",
+    )
+    .unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": temp.path().join("shot at 10 AM.txt").to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("narrow space"));
+}
+
+#[tokio::test]
+async fn test_read_curly_apostrophe_name() {
+    // upstream #50953
+    let temp = TempDir::new().unwrap();
+    fs::write(temp.path().join("it\u{2019}s.txt"), "curly quote\n").unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": temp.path().join("it's.txt").to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("curly quote"));
+}
+
+#[tokio::test]
+async fn test_read_directory_is_reported() {
+    // upstream #33255/#33260
+    let temp = TempDir::new().unwrap();
+    fs::create_dir(temp.path().join("folder")).unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": temp.path().join("folder").to_string_lossy() });
+
+    let err = tool.execute(params, &ctx).await.unwrap_err();
+    assert!(
+        err.to_string().contains("Path is a directory, not a file"),
+        "{}",
+        err
+    );
+}
+
+#[tokio::test]
+async fn test_read_offset_past_end_is_reported() {
+    // upstream #14009
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("short.txt");
+    fs::write(&file_path, "one\ntwo\nthree\n").unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy(), "offset": 10, "limit": 5 });
+
+    let err = tool.execute(params, &ctx).await.unwrap_err();
+    assert!(
+        err.to_string()
+            .contains("Offset 10 is out of range for this file (3 lines)"),
+        "{}",
+        err
+    );
+}
+
+#[tokio::test]
+async fn test_read_empty_file_with_offset() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("empty.txt");
+    fs::write(&file_path, "").unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy(), "offset": 0 });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("<file>"));
+}
+
+#[tokio::test]
+async fn test_read_crlf_line_count() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("crlf.txt");
+    fs::write(&file_path, "a\r\nb\r\n").unwrap();
+
+    let tool = ReadTool;
+    let ctx = create_context(temp.path());
+    let params = json!({ "filePath": file_path.to_string_lossy() });
+
+    let result = tool.execute(params, &ctx).await.unwrap();
+    assert!(result.output.contains("total 2 lines"));
+    assert!(!result.output.contains('\r'));
+}
+
+// --- JS parity (#335) ---
+
+fn settings_context(dir: &Path, settings: ToolSettings) -> ToolContext {
+    ToolContext::new("ses_test", "msg_test", dir).with_settings(settings)
+}
+
+async fn read_with(ctx: &ToolContext, params: serde_json::Value) -> String {
+    ReadTool.execute(params, ctx).await.unwrap().output
+}
+
+/// JS splits "" into [""], so an empty file has one empty line.
+#[tokio::test]
+async fn test_read_empty_file_is_one_line() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("empty.txt");
+    fs::write(&file_path, "").unwrap();
+    let ctx = settings_context(temp.path(), ToolSettings::default());
+    let output = read_with(&ctx, json!({ "filePath": file_path.to_string_lossy() })).await;
+    assert_eq!(
+        output,
+        "<file>\n00001| \n\n(End of file - total 1 lines)\n</file>"
+    );
+
+    let legacy = settings_context(temp.path(), ToolSettings::legacy());
+    let output = read_with(&legacy, json!({ "filePath": file_path.to_string_lossy() })).await;
+    assert_eq!(output, "<file>\n\n\n(End of file - total 0 lines)\n</file>");
+}
+
+#[tokio::test]
+async fn test_read_line_splitting_matches_js() {
+    let temp = TempDir::new().unwrap();
+    let ctx = settings_context(temp.path(), ToolSettings::default());
+    let cases = [
+        ("a\r\nb", 2),
+        ("a\n\n", 2),
+        ("\n", 1),
+        ("a\r\n\r\n", 2),
+        ("a\nb\n", 2),
+    ];
+    for (index, (content, lines)) in cases.iter().enumerate() {
+        let file_path = temp.path().join(format!("split-{}.txt", index));
+        fs::write(&file_path, content).unwrap();
+        let output = read_with(&ctx, json!({ "filePath": file_path.to_string_lossy() })).await;
+        assert!(
+            output.contains(&format!("(End of file - total {} lines)", lines)),
+            "{:?}: {}",
+            content,
+            output
+        );
+        assert!(!output.contains('\r'), "{:?}", content);
+    }
+}
+
+#[tokio::test]
+async fn test_read_strips_bom() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("bom.txt");
+    fs::write(&file_path, "\u{feff}first\nsecond\n").unwrap();
+    let ctx = settings_context(temp.path(), ToolSettings::default());
+    let output = read_with(&ctx, json!({ "filePath": file_path.to_string_lossy() })).await;
+    assert!(output.contains("00001| first\n"), "{}", output);
+    assert!(!output.contains('\u{feff}'));
+
+    // Only the leading BOM is dropped
+    fs::write(&file_path, "a\n\u{feff}b\n").unwrap();
+    let output = read_with(&ctx, json!({ "filePath": file_path.to_string_lossy() })).await;
+    assert!(output.contains("00002| \u{feff}b"), "{}", output);
+
+    fs::write(&file_path, "\u{feff}first\n").unwrap();
+    let legacy = settings_context(temp.path(), ToolSettings::legacy());
+    let output = read_with(&legacy, json!({ "filePath": file_path.to_string_lossy() })).await;
+    assert!(output.contains("00001| \u{feff}first"), "{}", output);
+}
+
+/// JS `z.coerce.number()` + `normalizeNonNegativeInteger`.
+#[tokio::test]
+async fn test_read_accepts_numeric_strings_negatives_and_floats() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("numbers.txt");
+    fs::write(&file_path, "one\ntwo\nthree\nfour\n").unwrap();
+    let ctx = settings_context(temp.path(), ToolSettings::default());
+    let path = file_path.to_string_lossy();
+
+    let output = read_with(
+        &ctx,
+        json!({ "filePath": path, "offset": "1", "limit": "2" }),
+    )
+    .await;
+    assert!(output.contains("00002| two\n00003| three\n"), "{}", output);
+    assert!(!output.contains("one") && !output.contains("four"));
+
+    let output = read_with(
+        &ctx,
+        json!({ "filePath": path, "offset": 1.9, "limit": 1.2 }),
+    )
+    .await;
+    assert!(output.contains("00002| two\n\n"), "{}", output);
+
+    let output = read_with(
+        &ctx,
+        json!({ "filePath": path, "offset": -5, "limit": " 1 " }),
+    )
+    .await;
+    assert!(output.contains("00001| one\n\n"), "{}", output);
+
+    let output = read_with(&ctx, json!({ "filePath": path, "offset": null })).await;
+    assert!(
+        output.contains("(End of file - total 4 lines)"),
+        "{}",
+        output
+    );
+
+    let output = read_with(
+        &ctx,
+        json!({ "filePath": path, "offset": 0, "columnOffset": "1", "columnLimit": "2" }),
+    )
+    .await;
+    assert!(
+        output.contains("00001| [omitted columns 1..1 of line 1] ... ne\n"),
+        "{}",
+        output
+    );
+
+    let err = ReadTool
+        .execute(json!({ "filePath": path, "offset": "abc" }), &ctx)
+        .await
+        .unwrap_err();
+    assert!(err.to_string().contains("expected a number"), "{}", err);
+}
+
+/// Earlier releases returned no lines for an offset past the end.
+#[tokio::test]
+async fn test_read_legacy_offset_past_end_returns_no_lines() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("short.txt");
+    fs::write(&file_path, "one\ntwo\nthree\n").unwrap();
+    let ctx = settings_context(temp.path(), ToolSettings::legacy());
+    let output = read_with(
+        &ctx,
+        json!({ "filePath": file_path.to_string_lossy(), "offset": 10, "limit": 5 }),
+    )
+    .await;
+    assert_eq!(output, "<file>\n\n\n(End of file - total 3 lines)\n</file>");
+}
+
+#[tokio::test]
+async fn test_read_max_lines_setting() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("ten.txt");
+    let content: String = (1..=10).map(|n| format!("line {}\n", n)).collect();
+    fs::write(&file_path, content).unwrap();
+    let path = file_path.to_string_lossy();
+    let ctx = settings_context(
+        temp.path(),
+        ToolSettings {
+            read_max_lines: 3,
+            ..ToolSettings::default()
+        },
+    );
+
+    let output = read_with(&ctx, json!({ "filePath": path })).await;
+    assert_eq!(
+        output,
+        "<file>\n00001| line 1\n00002| line 2\n... [omitted lines 3..9] ...\n00010| line 10\n\n(End of file - total 10 lines)\n</file>"
+    );
+
+    let output = read_with(&ctx, json!({ "filePath": path, "offset": 2, "limit": 100 })).await;
+    assert!(
+        output.contains("00003| line 3\n00004| line 4\n00005| line 5\n\n(File has more lines. Use 'offset' parameter to read beyond line 5)"),
+        "{}",
+        output
+    );
+
+    // 0 removes the cap
+    let big = temp.path().join("big.txt");
+    let content: String = (1..=2500).map(|n| format!("line {}\n", n)).collect();
+    fs::write(&big, content).unwrap();
+    let unlimited = settings_context(
+        temp.path(),
+        ToolSettings {
+            read_max_lines: 0,
+            read_max_bytes: 0,
+            ..ToolSettings::default()
+        },
+    );
+    let output = read_with(&unlimited, json!({ "filePath": big.to_string_lossy() })).await;
+    assert!(!output.contains("omitted lines"));
+    assert!(output.contains("01250| line 1250\n"));
+    assert!(output.contains("(End of file - total 2500 lines)"));
+}
+
+#[tokio::test]
+async fn test_read_max_bytes_setting() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("bytes.txt");
+    let content: String = (1..=50).map(|n| format!("line {}\n", n)).collect();
+    fs::write(&file_path, content).unwrap();
+    let ctx = settings_context(
+        temp.path(),
+        ToolSettings {
+            read_max_bytes: 40,
+            ..ToolSettings::default()
+        },
+    );
+    let output = read_with(&ctx, json!({ "filePath": file_path.to_string_lossy() })).await;
+    // Each line is "0000N| line N\n" = 15 bytes, so two fit
+    assert!(
+        output.contains(
+            "00002| line 2\n\n(Output capped at 40 bytes. Showing lines 1-2. Use offset=2 to continue.)"
+        ),
+        "{}",
+        output
+    );
+}
+
+/// The summary of a long file keeps exactly the first and last halves.
+#[tokio::test]
+async fn test_read_streamed_summary_of_long_file() {
+    let temp = TempDir::new().unwrap();
+    let file_path = temp.path().join("long.txt");
+    let content: String = (1..=5000).map(|n| format!("{}\n", n)).collect();
+    fs::write(&file_path, content).unwrap();
+    let ctx = settings_context(temp.path(), ToolSettings::default());
+    let output = read_with(&ctx, json!({ "filePath": file_path.to_string_lossy() })).await;
+    assert!(output.contains("01000| 1000\n... [omitted lines 1001..4000] ...\n04001| 4001\n"));
+    assert!(output.contains("05000| 5000\n\n(End of file - total 5000 lines)"));
+    assert_eq!(output.matches("| ").count(), 2000);
+}
+
+/// A name typed precomposed finds the file stored decomposed (NFC).
+#[tokio::test]
+async fn test_read_nfc_name() {
+    let temp = TempDir::new().unwrap();
+    fs::write(temp.path().join("cafe\u{301}.txt"), "decomposed\n").unwrap();
+    let ctx = settings_context(temp.path(), ToolSettings::default());
+    let wanted = temp.path().join("caf\u{e9}.txt");
+    let output = read_with(&ctx, json!({ "filePath": wanted.to_string_lossy() })).await;
+    assert!(output.contains("00001| decomposed"), "{}", output);
 }

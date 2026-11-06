@@ -1,8 +1,97 @@
-import type { ModelMessage } from 'ai';
-import { unique } from 'remeda';
+import type { ModelMessage, ToolResultPart } from 'ai';
+import { mergeDeep, unique } from 'remeda';
 import type { JSONSchema } from 'zod/v4/core';
 
 export namespace ProviderTransform {
+  /**
+   * Replace lone UTF-16 surrogates, which strict JSON parsers reject with a
+   * 400 on every later turn (upstream #25934).
+   */
+  export function sanitizeSurrogates(content: string) {
+    return content.replace(
+      /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g,
+      '�'
+    );
+  }
+
+  function sanitizeToolResult(part: ToolResultPart) {
+    const output = part.output;
+    if (output.type === 'text' || output.type === 'error-text') {
+      return {
+        ...part,
+        output: { ...output, value: sanitizeSurrogates(output.value) },
+      };
+    }
+    if (output.type === 'content') {
+      return {
+        ...part,
+        output: {
+          ...output,
+          value: output.value.map((item) =>
+            item.type === 'text'
+              ? { ...item, text: sanitizeSurrogates(item.text) }
+              : item
+          ),
+        },
+      };
+    }
+    return part;
+  }
+
+  function sanitizeMessages(msgs: ModelMessage[]): ModelMessage[] {
+    return msgs.map((msg) => {
+      if (typeof msg.content === 'string') {
+        return {
+          ...msg,
+          content: sanitizeSurrogates(msg.content),
+        } as typeof msg;
+      }
+      if (!Array.isArray(msg.content)) return msg;
+      return {
+        ...msg,
+        content: msg.content.map((part: any) => {
+          if (part.type === 'text' || part.type === 'reasoning') {
+            return { ...part, text: sanitizeSurrogates(part.text) };
+          }
+          if (part.type === 'tool-result') return sanitizeToolResult(part);
+          return part;
+        }),
+      } as typeof msg;
+    });
+  }
+
+  /**
+   * Anthropic and Bedrock reject empty text blocks; keep reasoning that is
+   * signed or redacted (upstream #14586, #26276).
+   */
+  function dropEmptyParts(msgs: ModelMessage[], npm?: string) {
+    if (npm !== '@ai-sdk/anthropic' && npm !== '@ai-sdk/amazon-bedrock') {
+      return msgs;
+    }
+    const ns = npm === '@ai-sdk/anthropic' ? 'anthropic' : 'bedrock';
+    return msgs
+      .map((msg) => {
+        if (typeof msg.content === 'string') {
+          return msg.content === '' ? undefined : msg;
+        }
+        if (!Array.isArray(msg.content)) return msg;
+        const filtered = (msg.content as any[]).filter((part) => {
+          if (part.type === 'text') return part.text !== '';
+          if (part.type === 'reasoning') {
+            return (
+              part.text.trim().length > 0 ||
+              part.providerOptions?.[ns]?.signature != null ||
+              part.providerOptions?.[ns]?.redactedData != null
+            );
+          }
+          return true;
+        });
+        if (filtered.length === 0) return undefined;
+        return { ...msg, content: filtered } as typeof msg;
+      })
+      .filter((msg): msg is ModelMessage => msg !== undefined);
+  }
+
   function normalizeMessages(
     msgs: ModelMessage[],
     providerID: string,
@@ -84,7 +173,8 @@ export namespace ProviderTransform {
 
   function applyCaching(
     msgs: ModelMessage[],
-    providerID: string
+    providerID: string,
+    npm?: string
   ): ModelMessage[] {
     const system = msgs.filter((msg) => msg.role === 'system').slice(0, 2);
     const final = msgs.filter((msg) => msg.role !== 'system').slice(-2);
@@ -96,35 +186,43 @@ export namespace ProviderTransform {
       openrouter: {
         cache_control: { type: 'ephemeral' },
       },
+      // Bedrock only accepts the 'default' cache point (upstream #11664).
       bedrock: {
-        cachePoint: { type: 'ephemeral' },
+        cachePoint: { type: 'default' },
       },
       openaiCompatible: {
         cache_control: { type: 'ephemeral' },
       },
     };
 
+    // Bedrock reads the cache point from the message (upstream #18959).
+    const useMessageLevelOptions =
+      providerID === 'anthropic' ||
+      providerID.includes('bedrock') ||
+      npm === '@ai-sdk/amazon-bedrock';
+
     for (const msg of unique([...system, ...final])) {
       const shouldUseContentOptions =
-        providerID !== 'anthropic' &&
+        !useMessageLevelOptions &&
         Array.isArray(msg.content) &&
         msg.content.length > 0;
 
+      // Deep-merge so signatures already in providerOptions survive (upstream #10323).
       if (shouldUseContentOptions) {
         const lastContent = msg.content[msg.content.length - 1];
         if (lastContent && typeof lastContent === 'object') {
-          lastContent.providerOptions = {
-            ...lastContent.providerOptions,
-            ...providerOptions,
-          };
+          lastContent.providerOptions = mergeDeep(
+            lastContent.providerOptions ?? {},
+            providerOptions
+          ) as typeof lastContent.providerOptions;
           continue;
         }
       }
 
-      msg.providerOptions = {
-        ...msg.providerOptions,
-        ...providerOptions,
-      };
+      msg.providerOptions = mergeDeep(
+        msg.providerOptions ?? {},
+        providerOptions
+      ) as typeof msg.providerOptions;
     }
 
     return msgs;
@@ -133,15 +231,18 @@ export namespace ProviderTransform {
   export function message(
     msgs: ModelMessage[],
     providerID: string,
-    modelID: string
+    modelID: string,
+    npm?: string
   ) {
+    msgs = sanitizeMessages(msgs);
+    msgs = dropEmptyParts(msgs, npm);
     msgs = normalizeMessages(msgs, providerID, modelID);
     if (
       providerID === 'anthropic' ||
       modelID.includes('anthropic') ||
       modelID.includes('claude')
     ) {
-      msgs = applyCaching(msgs, providerID);
+      msgs = applyCaching(msgs, providerID, npm);
     }
 
     return msgs;
@@ -280,11 +381,32 @@ export namespace ProviderTransform {
     return standardLimit;
   }
 
+  /**
+   * Moonshot expands $ref before validating and rejects sibling keywords, and
+   * it does not accept tuple-style `items` arrays (upstream #24730).
+   */
+  function sanitizeMoonshot(node: unknown): unknown {
+    if (node === null || typeof node !== 'object') return node;
+    if (Array.isArray(node)) return node.map(sanitizeMoonshot);
+    if ('$ref' in node && typeof node.$ref === 'string') {
+      return { $ref: node.$ref };
+    }
+    const result: Record<string, unknown> = Object.fromEntries(
+      Object.entries(node).map(([key, value]) => [key, sanitizeMoonshot(value)])
+    );
+    if (Array.isArray(result.items)) result.items = result.items[0] ?? {};
+    return result;
+  }
+
   export function schema(
-    _providerID: string,
-    _modelID: string,
+    providerID: string,
+    modelID: string,
     schema: JSONSchema.BaseSchema
   ) {
+    if (providerID === 'moonshotai' || modelID.toLowerCase().includes('kimi')) {
+      schema = sanitizeMoonshot(schema) as JSONSchema.BaseSchema;
+    }
+
     /*
     if (["openai", "azure"].includes(providerID)) {
       if (schema.type === "object" && schema.properties) {

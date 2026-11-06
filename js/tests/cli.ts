@@ -364,16 +364,16 @@ describe('cli', () => {
   });
 
   test('test_default_model_matches_js', () => {
-    expect(DEFAULT_MODEL).toBe('kilo/nemotron-3-super-free');
+    expect(DEFAULT_MODEL).toBe('kilo/nemotron-3-ultra-free');
   });
 
   test('test_default_compaction_model_matches_js', () => {
-    expect(DEFAULT_COMPACTION_MODEL).toBe('kilo/nemotron-3-super-free');
+    expect(DEFAULT_COMPACTION_MODEL).toBe('kilo/nemotron-3-ultra-free');
   });
 
   test('test_default_compaction_models_matches_js', () => {
     expect(DEFAULT_COMPACTION_MODELS).toBe(
-      '(kilo/nemotron-3-super-free kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)'
+      '(kilo/nemotron-3-ultra-free kilo/nemotron-3.5-lightning-free same)'
     );
   });
 

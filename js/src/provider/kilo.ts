@@ -25,14 +25,7 @@ export namespace Kilo {
     };
   }
 
-  // Super's output cap is deliberately conservative for existing integrations.
   export const FREE_MODELS: Record<string, ModelsDev.Model> = {
-    'nemotron-3-super-free': freeModel(
-      'nvidia/nemotron-3-super-120b-a12b:free',
-      'Nemotron 3 Super (Free)',
-      262144,
-      32768
-    ),
     'nemotron-3-ultra-free': freeModel(
       'nvidia/nemotron-3-ultra-550b-a55b:free',
       'Nemotron 3 Ultra (Free)',
@@ -46,6 +39,31 @@ export namespace Kilo {
       65536
     ),
   };
+
+  /**
+   * Withdrawn built-in aliases that keep working temporarily. Each one maps to
+   * the served alias in `FREE_MODELS` that replaces it, and every resolution
+   * logs a warning naming the replacement. These are not catalog entries, so
+   * the drift check (`scripts/check-model-drift.mjs`) does not look them up.
+   *
+   * Kilo stopped serving `nvidia/nemotron-3-super-120b-a12b:free`; only the
+   * paid Super model remains on the gateway (#335).
+   */
+  export const DEPRECATED_ALIASES: Readonly<Record<string, string>> = {
+    'nemotron-3-super-free': 'nemotron-3-ultra-free',
+  };
+
+  /**
+   * Replacement for a deprecated alias, or `undefined`. Logs nothing; use
+   * `resolveKiloDeprecatedAlias` from `./kilo-deprecation` to also warn.
+   * This module stays free of runtime dependencies because
+   * `scripts/check-default-models.mjs` imports it without installed packages.
+   */
+  export function deprecatedAliasTarget(modelID: string): string | undefined {
+    return Object.hasOwn(DEPRECATED_ALIASES, modelID)
+      ? DEPRECATED_ALIASES[modelID]
+      : undefined;
+  }
 
   /**
    * Text models models.dev lists for Kilo. Their IDs are the same on the

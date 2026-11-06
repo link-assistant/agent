@@ -10,6 +10,7 @@ import { $ } from 'bun';
 import { ZipReader, BlobReader, BlobWriter } from '@zip.js/zip.js';
 import { Log } from '../util/log';
 import { createVerboseFetch } from '../util/verbose-fetch';
+import { config as agentConfig } from '../config/config';
 
 export namespace Ripgrep {
   const log = Log.create({ service: 'ripgrep' });
@@ -217,14 +218,26 @@ export namespace Ripgrep {
     return filepath;
   }
 
-  export async function* files(input: { cwd: string; glob?: string[] }) {
+  export async function* files(input: {
+    cwd: string;
+    glob?: string[];
+    signal?: AbortSignal;
+    follow?: boolean;
+  }) {
+    input.signal?.throwIfAborted();
+
+    // No `--follow` by default: following symlinked directories can walk huge
+    // or cyclic trees (upstream c0e71c4261 #11415). --glob-follow-symlinks /
+    // LINK_ASSISTANT_AGENT_GLOB_FOLLOW_SYMLINKS restores it. `--no-config`
+    // keeps a user's RIPGREP_CONFIG_PATH from changing the output we parse.
     const args = [
       await filepath(),
       '--files',
-      '--follow',
       '--hidden',
+      '--no-config',
       '--glob=!.git/*',
     ];
+    if (input.follow ?? agentConfig.globFollowSymlinks) args.push('--follow');
     if (input.glob) {
       for (const g of input.glob) {
         args.push(`--glob=${g}`);
@@ -233,12 +246,24 @@ export namespace Ripgrep {
 
     // Bun.spawn should throw this, but it incorrectly reports that the executable does not exist.
     // See https://github.com/oven-sh/bun/issues/24012
-    if (!(await fs.stat(input.cwd).catch(() => undefined))?.isDirectory()) {
+    const info = await fs.stat(input.cwd).catch(() => undefined);
+    if (!info) {
       throw Object.assign(
         new Error(`No such file or directory: '${input.cwd}'`),
         {
           code: 'ENOENT',
           errno: -2,
+          path: input.cwd,
+        }
+      );
+    }
+    // upstream f753103e82 (#38890)
+    if (!info.isDirectory()) {
+      throw Object.assign(
+        new Error(`Search path is not a directory: ${input.cwd}`),
+        {
+          code: 'ENOTDIR',
+          errno: -20,
           path: input.cwd,
         }
       );
@@ -249,6 +274,7 @@ export namespace Ripgrep {
       stdout: 'pipe',
       stderr: 'ignore',
       maxBuffer: 1024 * 1024 * 20,
+      signal: input.signal,
     });
 
     const reader = proc.stdout.getReader();
@@ -257,11 +283,13 @@ export namespace Ripgrep {
 
     try {
       while (true) {
+        input.signal?.throwIfAborted();
         const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
+        // Handle both Unix (\n) and Windows (\r\n) line endings (upstream 5af35117db)
+        const lines = buffer.split(/\r?\n/);
         buffer = lines.pop() || '';
 
         for (const line of lines) {
@@ -271,7 +299,12 @@ export namespace Ripgrep {
 
       if (buffer) yield buffer;
     } finally {
-      reader.releaseLock();
+      // The consumer may stop early (glob/ls stop at 100 results). Waiting
+      // for rg to exit without draining its stdout deadlocks once the pipe
+      // buffer is full, so cancel the stream and kill rg first (upstream
+      // e5b33f8a5e #10833, 76ee87ead8, 3bda0ce123).
+      await reader.cancel().catch(() => {});
+      if (proc.exitCode === null) proc.kill();
       await proc.exited;
     }
   }

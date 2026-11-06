@@ -27,7 +27,7 @@ describe('model drift checker (#327)', () => {
     expect(code).toBe(1);
     expect(stdout).toContain('"provider":"opencode"');
     expect(stdout).toContain('"provider":"kilo"');
-    expect(stderr).toContain('nvidia/nemotron-3-super-120b-a12b:free');
+    expect(stderr).toContain('nvidia/nemotron-3-ultra-550b-a55b:free');
     expect(stderr).toContain('nemotron-3.5-lightning-free');
   });
   test('compares gateway IDs, not the user-facing Kilo aliases', () => {
@@ -35,10 +35,43 @@ describe('model drift checker (#327)', () => {
       Object.values(Kilo.FREE_MODELS).map((model) => model.id)
     );
     expect(missingModels(Kilo.FREE_MODELS, live)).toEqual([]);
-    live.delete('nvidia/nemotron-3-super-120b-a12b:free');
+    live.delete('nvidia/nemotron-3-ultra-550b-a55b:free');
     expect(missingModels(Kilo.FREE_MODELS, live)).toEqual([
-      'nemotron-3-super-free -> nvidia/nemotron-3-super-120b-a12b:free',
+      'nemotron-3-ultra-free -> nvidia/nemotron-3-ultra-550b-a55b:free',
     ]);
+  });
+  test('deprecated Kilo aliases are not catalog entries (#335)', async () => {
+    const withdrawn = 'nvidia/nemotron-3-super-120b-a12b:free';
+    expect(Object.keys(Kilo.FREE_MODELS)).not.toContain(
+      'nemotron-3-super-free'
+    );
+    expect(Kilo.DEPRECATED_ALIASES['nemotron-3-super-free']).toBe(
+      'nemotron-3-ultra-free'
+    );
+    // Every replacement is a built-in alias, so the drift check covers it.
+    for (const target of Object.values(Kilo.DEPRECATED_ALIASES)) {
+      expect(Object.hasOwn(Kilo.FREE_MODELS, target)).toBe(true);
+    }
+    // A live catalog without the withdrawn Super route passes the check.
+    const proc = Bun.spawn({
+      cmd: [
+        'bun',
+        '--eval',
+        `const ids = [...${JSON.stringify(
+          Object.values(Kilo.FREE_MODELS).map((model) => model.id)
+        )}, ...Object.keys(${JSON.stringify(OpenCodeZen.FREE_MODEL_OVERRIDES)})];
+         globalThis.fetch = async () => new Response(JSON.stringify({data: ids.map((id) => ({id}))}));
+         await import('../scripts/check-model-drift.mjs');`,
+      ],
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+    const [code, stderr] = await Promise.all([
+      proc.exited,
+      new Response(proc.stderr).text(),
+    ]);
+    expect(stderr).not.toContain(withdrawn);
+    expect(code).toBe(0);
   });
   test('detects a withdrawn Zen model while allowing extra live models', () => {
     const expected = Object.fromEntries(

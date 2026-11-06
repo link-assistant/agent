@@ -49,7 +49,9 @@ export const MultiEditTool = Tool.define('multiedit', {
       metadata: {
         results: results.map((r) => r.metadata),
       },
-      output: results.at(-1)!.output,
+      // `edits: []` applies nothing; return an empty output like the Rust
+      // tool instead of throwing a TypeError (issue #335 parity audit).
+      output: results.at(-1)?.output ?? '',
     };
   },
 });

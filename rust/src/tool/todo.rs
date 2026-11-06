@@ -15,7 +15,8 @@ use std::sync::{Mutex, OnceLock};
 use super::{context::ToolContext, Tool, ToolResult};
 use crate::error::{AgentError, Result};
 
-/// Todo item status
+/// Todo item status. JS takes any string (`pending`, `in_progress`,
+/// `completed`, `cancelled`); a value outside the known set is kept as given.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TodoStatus {
     #[serde(rename = "pending")]
@@ -24,18 +25,34 @@ pub enum TodoStatus {
     InProgress,
     #[serde(rename = "completed")]
     Completed,
+    #[serde(rename = "cancelled")]
+    Cancelled,
+    #[serde(untagged)]
+    Other(String),
 }
 
-/// A single todo item
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// A single todo item. Both the JS shape (`content`, `status`, `priority`,
+/// `id`) and the earlier Rust shape (`content`, `status`, `activeForm`) are
+/// accepted; fields that were not given are not written back.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TodoItem {
-    /// Todo content (imperative form, e.g. "Fix bug")
+    /// Brief description of the task
     pub content: String,
     /// Current status
     pub status: TodoStatus,
-    /// Present continuous form (e.g. "Fixing bug")
-    #[serde(rename = "activeForm")]
-    pub active_form: String,
+    /// Priority level: high, medium, low (JS)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub priority: Option<String>,
+    /// Unique identifier (JS)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Present continuous form (e.g. "Fixing bug"), earlier Rust shape
+    #[serde(
+        rename = "activeForm",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub active_form: Option<String>,
 }
 
 /// Global in-memory todo storage (session_id -> todos)
@@ -89,18 +106,26 @@ impl Tool for TodoWriteTool {
                         "properties": {
                             "content": {
                                 "type": "string",
-                                "description": "The imperative form of the task"
+                                "description": "Brief description of the task"
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "in_progress", "completed"]
+                                "description": "Current status of the task: pending, in_progress, completed, cancelled"
+                            },
+                            "priority": {
+                                "type": "string",
+                                "description": "Priority level of the task: high, medium, low"
+                            },
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the todo item"
                             },
                             "activeForm": {
                                 "type": "string",
-                                "description": "The present continuous form of the task"
+                                "description": "Optional present continuous form of the task"
                             }
                         },
-                        "required": ["content", "status", "activeForm"]
+                        "required": ["content", "status"]
                     }
                 }
             },

@@ -6,12 +6,23 @@ import { Branding } from '../branding';
 import { Log } from '../util/log';
 import { Instance } from '../project/instance';
 import { lazy } from '../util/lazy';
-import { Language } from 'web-tree-sitter';
+import { Language, type Node } from 'web-tree-sitter';
 import { Permission } from '../permission';
 import { fileURLToPath } from 'url';
+import path from 'path';
 import { processResult } from './process-result';
+import { config } from '../config/config';
 
-const MAX_OUTPUT_LENGTH = 30_000;
+// Output is limited to its last MAX_LINES lines and MAX_BYTES bytes, and the
+// metadata preview to its last MAX_METADATA_LENGTH characters (upstream
+// 307251bf3c #22660, 754ea99d86 #39403, 2092350cfa #41007).
+const MAX_BYTES = 30_000;
+const MAX_LINES = 2000;
+const MAX_METADATA_LENGTH = 30_000;
+// --legacy-tool-output: the head of the output was kept, up to this many
+// characters, followed by LEGACY_TRUNCATED.
+const LEGACY_MAX_OUTPUT_LENGTH = 30_000;
+const LEGACY_TRUNCATED = '\n\n(Output was truncated due to length limit)';
 const DEFAULT_TIMEOUT = 1 * 60 * 1000;
 const MAX_TIMEOUT = 10 * 60 * 1000;
 const KILL_SIGNAL = 'SIGTERM';
@@ -29,6 +40,113 @@ const killWindowsTree = async (pid: number | undefined) => {
     { mirror: false, capture: false, stdin: 'ignore' }
   ).catch(() => {});
 };
+
+// Shells known to run the POSIX `-c` scripts models write. Anything else in
+// $SHELL (fish, nu, tcsh, csh, xonsh, ...) would misparse them
+// (upstream b5d0c56b4c #3494, 238b907dd8 #5205).
+const POSIX_SHELLS = new Set([
+  'sh',
+  'bash',
+  'zsh',
+  'dash',
+  'ksh',
+  'mksh',
+  'ash',
+]);
+const shells = new Map<string, string | undefined>();
+
+// Resolve the shell commands run in (--bash-shell /
+// LINK_ASSISTANT_AGENT_BASH_SHELL):
+//   - "auto" (default): $SHELL when it is a POSIX shell, otherwise zsh on
+//     macOS and bash elsewhere, falling back to /bin/sh;
+//   - "legacy": Node's platform shell (`spawn(command, { shell: true })`,
+//     i.e. /bin/sh), the behaviour before issue #335;
+//   - anything else: that shell, run with `-c`.
+// Windows always keeps the platform shell.
+export function selectShell(
+  mode: string = config.bashShell
+): string | undefined {
+  if (process.platform === 'win32') return undefined;
+  const choice = (mode || 'auto').trim();
+  if (choice === 'legacy') return undefined;
+  const preferred = choice === 'auto' ? (process.env.SHELL ?? '') : choice;
+  const key = `${choice}\0${preferred}`;
+  if (shells.has(key)) return shells.get(key);
+  let shell: string | undefined;
+  if (choice !== 'auto') {
+    // An explicit shell is used as given; an unknown one fails loudly when
+    // spawned instead of silently running another shell.
+    shell = Bun.which(preferred) ?? preferred;
+  } else {
+    const name = path.basename(preferred).toLowerCase();
+    if (preferred && POSIX_SHELLS.has(name)) {
+      shell = Bun.which(preferred) ?? undefined;
+    }
+    shell ??=
+      process.platform === 'darwin'
+        ? '/bin/zsh'
+        : (Bun.which('bash') ?? '/bin/sh');
+  }
+  shells.set(key, shell);
+  return shell;
+}
+
+const WRITE_REDIRECTS = new Set(['>', '>>', '>|', '&>', '&>>', '>&']);
+
+// Output redirects that write a file. They are siblings of the command node,
+// so the token scan below does not see them, and `echo x > file` would match
+// an `echo*` allow rule in plan/readonly mode. Discarding output into
+// /dev/null and duplicating descriptors (`2>&1`) write nothing.
+// Adapted from upstream e7ff7143b6 (#6737), which has no readonly mode.
+function writeRedirects(root: Node): string[] {
+  const found: string[] = [];
+  for (const node of root.descendantsOfType('file_redirect')) {
+    if (!node) continue;
+    let operator = '';
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i);
+      if (child && WRITE_REDIRECTS.has(child.type)) operator = child.type;
+    }
+    if (!operator) continue;
+    const destination =
+      node.childForFieldName('destination')?.text ?? node.lastChild?.text;
+    if (destination === '/dev/null') continue;
+    if (operator === '>&' && /^(\d+|-)$/.test(destination ?? '')) continue;
+    found.push(node.text);
+  }
+  return found;
+}
+
+// Keep the end of the output, where errors are printed, cutting at line
+// boundaries and never inside a UTF-8 sequence.
+function tail(text: string, maxLines: number, maxBytes: number) {
+  const lines = text.split('\n');
+  if (lines.length <= maxLines && Buffer.byteLength(text, 'utf-8') <= maxBytes)
+    return { text, cut: false };
+  const out: string[] = [];
+  let bytes = 0;
+  for (let i = lines.length - 1; i >= 0 && out.length < maxLines; i--) {
+    const size =
+      Buffer.byteLength(lines[i], 'utf-8') + (out.length > 0 ? 1 : 0);
+    if (bytes + size > maxBytes) {
+      if (out.length === 0) {
+        const buf = Buffer.from(lines[i], 'utf-8');
+        let start = Math.max(0, buf.length - maxBytes);
+        while (start < buf.length && (buf[start] & 0xc0) === 0x80) start++;
+        out.unshift(buf.subarray(start).toString('utf-8'));
+      }
+      break;
+    }
+    out.unshift(lines[i]);
+    bytes += size;
+  }
+  return { text: out.join('\n'), cut: true };
+}
+
+function preview(text: string) {
+  if (text.length <= MAX_METADATA_LENGTH) return text;
+  return '...\n\n' + text.slice(-MAX_METADATA_LENGTH);
+}
 
 const resolveWasm = (asset: string) => {
   if (asset.startsWith('file://')) return fileURLToPath(asset);
@@ -101,24 +219,34 @@ export const BashTool = Tool.define('bash', {
         throw new Error('Failed to parse command');
       }
       const commands: string[][] = [];
-      for (const node of tree.rootNode.descendantsOfType('command')) {
-        if (!node) continue;
-        const command: string[] = [];
-        for (let i = 0; i < node.childCount; i++) {
-          const child = node.child(i);
-          if (!child) continue;
-          if (
-            child.type !== 'command_name' &&
-            child.type !== 'word' &&
-            child.type !== 'string' &&
-            child.type !== 'raw_string' &&
-            child.type !== 'concatenation'
-          ) {
-            continue;
+      // Trees live in the WASM heap and are not garbage-collected; free each
+      // one before a permission ask can wait (upstream d4bf70be06, #24861).
+      try {
+        for (const node of tree.rootNode.descendantsOfType('command')) {
+          if (!node) continue;
+          const command: string[] = [];
+          for (let i = 0; i < node.childCount; i++) {
+            const child = node.child(i);
+            if (!child) continue;
+            if (
+              child.type !== 'command_name' &&
+              child.type !== 'word' &&
+              child.type !== 'string' &&
+              child.type !== 'raw_string' &&
+              child.type !== 'concatenation'
+            ) {
+              continue;
+            }
+            command.push(child.text);
           }
-          command.push(child.text);
+          commands.push(command);
         }
-        commands.push(command);
+        // A `>` head matches only the catch-all pattern, so a write redirect
+        // gets the mode's fallback action: deny in readonly, ask in plan.
+        const redirects = writeRedirects(tree.rootNode);
+        if (redirects.length > 0) commands.push(['>', ...redirects]);
+      } finally {
+        tree.delete();
       }
       await Permission.checkBashTokens({
         commands,
@@ -132,7 +260,40 @@ export const BashTool = Tool.define('bash', {
     const timeoutSignal = AbortSignal.timeout(timeout);
     const cancel = AbortSignal.any([ctx.abort, timeoutSignal]);
 
-    let output = '';
+    // Only the last 2 * MAX_BYTES of output are kept in memory.
+    const keep = MAX_BYTES * 2;
+    const chunks: { text: string; size: number }[] = [];
+    let used = 0;
+    let dropped = false;
+    let last = '';
+    // --legacy-tool-output keeps the head instead, so only the first
+    // LEGACY_MAX_OUTPUT_LENGTH + 1 characters are needed.
+    const legacy = config.legacyToolOutput;
+    let head = '';
+    // A multi-byte character can be split across chunks of one stream.
+    const decoders = new Map<string, TextDecoder>();
+    const append = (text: string) => {
+      if (!text) return;
+      if (legacy && head.length <= LEGACY_MAX_OUTPUT_LENGTH) {
+        head += text.slice(0, LEGACY_MAX_OUTPUT_LENGTH + 1 - head.length);
+      }
+      const size = Buffer.byteLength(text, 'utf-8');
+      chunks.push({ text, size });
+      used += size;
+      while (used > keep && chunks.length > 1) {
+        used -= chunks.shift()!.size;
+        dropped = true;
+      }
+      // Each update is stored and published, so send a bounded preview
+      // instead of the whole output so far.
+      last = preview(last + text);
+      ctx.metadata({
+        metadata: {
+          output: last,
+          description: params.description,
+        },
+      });
+    };
 
     // Initialize metadata with empty output
     ctx.metadata({
@@ -150,49 +311,64 @@ export const BashTool = Tool.define('bash', {
     // (link-foundation/command-stream#207).
     // A cancelled command does not need to start at all.
     if (!cancel.aborted) {
+      // The runner gets its own signal. command-stream 2.4.0 never removes
+      // the abort listener it adds to options.signal, so passing the turn's
+      // long-lived signal would keep every runner (and its output) reachable
+      // until the turn ends or the timeout fires. Only the link below touches
+      // `cancel`, and it is removed when the command finishes.
       // On Windows the runner is stopped only after taskkill has stopped the
       // shell's process tree.
-      const stop =
-        process.platform === 'win32' ? new AbortController() : undefined;
+      const stop = new AbortController();
 
-      // The file/args shell form spawns the command string through Node's
-      // platform shell, as `spawn(command, { shell: true })` does. A command
-      // string spec would route simple commands and pipelines through
+      // The file/args forms run the command string in a real shell. A
+      // command string spec would route simple commands and pipelines through
       // command-stream's JavaScript builtins (`ls`, `exit`, `cd`, ...) instead.
+      // Windows keeps Node's platform shell (`spawn(command, { shell: true
+      // })`); elsewhere the selected shell runs it with `-c`.
+      const shell = selectShell();
       const command = new ProcessRunner(
-        { mode: 'shell', file: params.command, args: [] },
+        shell
+          ? { mode: 'exec', file: shell, args: ['-c', params.command] }
+          : { mode: 'shell', file: params.command, args: [] },
         {
           cwd: Instance.directory,
           env: { ...process.env },
-          signal: stop?.signal ?? cancel,
+          signal: stop.signal,
           killSignal: KILL_SIGNAL,
           killGrace: 200,
           mirror: false,
-          capture: true,
+          // Output is read from stream() into the bounded buffer above;
+          // capturing would also keep the whole output in the runner.
+          capture: false,
           stdin: 'ignore',
         }
       );
 
       const stopTree = () => {
-        void killWindowsTree(command.child?.pid).finally(() => stop?.abort());
+        if (process.platform !== 'win32') return stop.abort();
+        void killWindowsTree(command.child?.pid).finally(() => stop.abort());
       };
-      if (stop) cancel.addEventListener('abort', stopTree, { once: true });
+      cancel.addEventListener('abort', stopTree, { once: true });
 
-      for await (const chunk of command.stream()) {
-        if (chunk.type === 'exit') {
-          exit = chunk.code;
-        } else {
-          output += chunk.data.toString();
-          ctx.metadata({
-            metadata: {
-              output,
-              description: params.description,
-            },
-          });
+      try {
+        for await (const chunk of command.stream()) {
+          if (chunk.type === 'exit') {
+            exit = chunk.code;
+          } else {
+            let decoder = decoders.get(chunk.type);
+            if (!decoder) {
+              decoder = new TextDecoder();
+              decoders.set(chunk.type, decoder);
+            }
+            append(decoder.decode(chunk.data, { stream: true }));
+          }
         }
+        for (const decoder of decoders.values()) append(decoder.decode());
+      } finally {
+        // ctx.abort outlives the call, so a listener left on it would keep
+        // this runner and its output reachable until the session ends.
+        cancel.removeEventListener('abort', stopTree);
       }
-
-      cancel.removeEventListener('abort', stopTree);
 
       // command-stream reports a shell that died from a signal as exit 0
       // (link-foundation/command-stream#208).
@@ -211,9 +387,20 @@ export const BashTool = Tool.define('bash', {
     if (timedOut || aborted) signal = KILL_SIGNAL;
     if (signal) exit = null;
 
-    if (output.length > MAX_OUTPUT_LENGTH) {
-      output = output.slice(0, MAX_OUTPUT_LENGTH);
-      output += '\n\n(Output was truncated due to length limit)';
+    let output: string;
+    if (legacy) {
+      output =
+        head.length > LEGACY_MAX_OUTPUT_LENGTH
+          ? head.slice(0, LEGACY_MAX_OUTPUT_LENGTH) + LEGACY_TRUNCATED
+          : head;
+    } else {
+      const end = tail(
+        chunks.map((item) => item.text).join(''),
+        MAX_LINES,
+        MAX_BYTES
+      );
+      output =
+        (dropped || end.cut ? '...output truncated...\n\n' : '') + end.text;
     }
 
     if (timedOut) {

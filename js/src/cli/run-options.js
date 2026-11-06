@@ -158,82 +158,148 @@ export function buildRunOptions(yargs, defaultOptions = {}) {
         }, true)
       : parser;
 
-  return normalizedParser
-    .option('generate-title', {
-      type: 'boolean',
-      description:
-        'Generate session titles using AI (default: false). Disabling saves tokens and prevents rate limit issues.',
-      default: false,
-    })
-    .option('retry-timeout', {
-      type: 'number',
-      description:
-        'Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)',
-    })
-    .option('retry-on-rate-limits', {
-      type: 'boolean',
-      description:
-        'Retry AI completions API requests when rate limited (HTTP 429). Use --no-retry-on-rate-limits in integration tests to fail fast instead of waiting.',
-      default: true,
-    })
-    .option('output-response-model', {
-      type: 'boolean',
-      description: 'Include model info in step_finish output',
-      default: true,
-    })
-    .option('summarize-session', {
-      type: 'boolean',
-      description:
-        'Generate AI session summaries (default: true). Use --no-summarize-session to disable. Automatically off for a model declared as having no context limit (`unlimited: true` or `limit.context: null` in the provider config).',
-      default: true,
-    })
-    .option('compaction-model', {
-      type: 'string',
-      description:
-        'Model to use for context compaction and session summaries, in format providerID/modelID. Use "same" to use the base model. Default: kilo/nemotron-3-super-free (free, Kilo authentication recommended, 262K context), which falls back to the --model model when --model points at another provider. Overridden by --compaction-models if both are specified.',
-      default: defaultCompactionModel,
-    })
-    .option('compaction-models', {
-      type: 'string',
-      description:
-        'Ordered cascade of compaction models in links notation sequence format: "(model1 model2 ... same)". ' +
-        "Models are tried from smallest/cheapest context to largest. If used context exceeds a model's limit or its rate limit is reached, the next model is tried. " +
-        'The special value "same" uses the base model. Overrides --compaction-model when specified. ' +
-        'The default cascade is OpenCode-specific: when --model points at another provider, its entries from other providers are dropped so secondary calls inherit --model. A cascade given explicitly is used as written.',
-      default: defaultCompactionModels,
-    })
-    .option('compaction-safety-margin', {
-      type: 'number',
-      description:
-        'Safety margin (%) of usable context window before triggering compaction. Only applies when the compaction model has equal or smaller context than the base model. Default: 25.',
-      default: defaultCompactionSafetyMarginPercent,
-    })
-    .option('temperature', {
-      type: 'number',
-      description:
-        'Override the temperature for model completions. When not set, the default per-model temperature is used.',
-    })
-    .option('read-only', {
-      type: 'boolean',
-      description:
-        'Enforceable read-only / planning mode. Disables all filesystem-mutating and shell tools (bash, edit, write, multiedit, patch) so the agent can only read, search and plan. Maps to agent-commander --read-only.',
-      default: false,
-    })
-    .option('disable-tools', {
-      type: 'string',
-      description:
-        'Comma-separated list of tool ids to disable (e.g. "bash,write,edit"). Disabled tools are never exposed to the model and are rejected if invoked via batch.',
-    })
-    .option('permission-mode', {
-      type: 'string',
-      choices: ['auto', 'plan', 'readonly', 'ask'],
-      description:
-        'Permission policy for mutating tools. "auto" (default) allows everything; "plan" allows read-only shell and asks before mutations; "readonly" denies all mutations; "ask" asks before every mutating tool. Approvals are driven over JSON (permission_request / permission_response).',
-      default: 'auto',
-    })
-    .option('permission', {
-      type: 'string',
-      description:
-        'OpenCode-compatible permission override as JSON, merged on top of --permission-mode. Example: \'{"edit":"ask","bash":{"git push*":"ask","*":"allow"},"webfetch":"allow"}\'.',
-    });
+  return (
+    normalizedParser
+      .option('generate-title', {
+        type: 'boolean',
+        description:
+          'Generate session titles using AI (default: false). Disabling saves tokens and prevents rate limit issues.',
+        default: false,
+      })
+      .option('retry-timeout', {
+        type: 'number',
+        description:
+          'Maximum total retry time in seconds for rate limit errors (default: 604800 = 7 days)',
+      })
+      .option('retry-on-rate-limits', {
+        type: 'boolean',
+        description:
+          'Retry AI completions API requests when rate limited (HTTP 429). Use --no-retry-on-rate-limits in integration tests to fail fast instead of waiting.',
+        default: true,
+      })
+      .option('output-response-model', {
+        type: 'boolean',
+        description: 'Include model info in step_finish output',
+        default: true,
+      })
+      .option('summarize-session', {
+        type: 'boolean',
+        description:
+          'Generate AI session summaries (default: true). Use --no-summarize-session to disable. Automatically off for a model declared as having no context limit (`unlimited: true` or `limit.context: null` in the provider config).',
+        default: true,
+      })
+      .option('compaction-model', {
+        type: 'string',
+        description:
+          'Model to use for context compaction and session summaries, in format providerID/modelID. Use "same" to use the base model. Default: kilo/nemotron-3-ultra-free (free, Kilo authentication recommended, 1M context), which falls back to the --model model when --model points at another provider. Overridden by --compaction-models if both are specified.',
+        default: defaultCompactionModel,
+      })
+      .option('compaction-models', {
+        type: 'string',
+        description:
+          'Ordered cascade of compaction models in links notation sequence format: "(model1 model2 ... same)". ' +
+          "Models are tried from smallest/cheapest context to largest. If used context exceeds a model's limit or its rate limit is reached, the next model is tried. " +
+          'The special value "same" uses the base model. Overrides --compaction-model when specified. ' +
+          'The default cascade is Kilo-specific: when --model points at another provider, its entries from other providers are dropped so secondary calls inherit --model. A cascade given explicitly is used as written.',
+        default: defaultCompactionModels,
+      })
+      .option('compaction-safety-margin', {
+        type: 'number',
+        description:
+          'Safety margin (%) of usable context window before triggering compaction. Only applies when the compaction model has equal or smaller context than the base model. Default: 25.',
+        default: defaultCompactionSafetyMarginPercent,
+      })
+      .option('temperature', {
+        type: 'number',
+        description:
+          'Override the temperature for model completions. When not set, the default per-model temperature is used.',
+      })
+      .option('read-only', {
+        type: 'boolean',
+        description:
+          'Enforceable read-only / planning mode. Disables all filesystem-mutating and shell tools (bash, edit, write, multiedit, patch) so the agent can only read, search and plan. Maps to agent-commander --read-only.',
+        default: false,
+      })
+      .option('disable-tools', {
+        type: 'string',
+        description:
+          'Comma-separated list of tool ids to disable (e.g. "bash,write,edit"). Disabled tools are never exposed to the model and are rejected if invoked via batch.',
+      })
+      .option('permission-mode', {
+        type: 'string',
+        choices: ['auto', 'plan', 'readonly', 'ask'],
+        description:
+          'Permission policy for mutating tools. "auto" (default) allows everything; "plan" allows read-only shell and asks before mutations; "readonly" denies all mutations; "ask" asks before every mutating tool. Approvals are driven over JSON (permission_request / permission_response).',
+        default: 'auto',
+      })
+      .option('permission', {
+        type: 'string',
+        description:
+          'OpenCode-compatible permission override as JSON, merged on top of --permission-mode. Example: \'{"edit":"ask","bash":{"git push*":"ask","*":"allow"},"webfetch":"allow"}\'.',
+      })
+      // Compatibility switches (issue #335). They are resolved (together with
+      // their LINK_ASSISTANT_AGENT_* env vars) by initConfig() in
+      // src/config/config.ts; they are declared here so they show up in --help.
+      // No defaults here, so an env var is not shadowed by a yargs default.
+      .option('bash-shell', {
+        type: 'string',
+        description:
+          'Shell for the bash tool: "auto" (default, $SHELL if POSIX, else bash, else /bin/sh), "legacy" (/bin/sh as before) or a shell path. Env: LINK_ASSISTANT_AGENT_BASH_SHELL',
+      })
+      .option('legacy-tool-output', {
+        type: 'boolean',
+        description:
+          'Restore previous tool output formats (empty edit/write output, head-truncated bash output, empty read past EOF). Env: LINK_ASSISTANT_AGENT_LEGACY_TOOL_OUTPUT',
+      })
+      .option('legacy-edit-matching', {
+        type: 'boolean',
+        description:
+          'Restore previous edit matching (empty oldString overwrites a file, loose fuzzy thresholds). Env: LINK_ASSISTANT_AGENT_LEGACY_EDIT_MATCHING',
+      })
+      .option('glob-follow-symlinks', {
+        type: 'boolean',
+        description:
+          'Follow symlinked directories in glob and ls (previous behaviour). Env: LINK_ASSISTANT_AGENT_GLOB_FOLLOW_SYMLINKS',
+      })
+      .option('grep-hidden', {
+        type: 'boolean',
+        description:
+          'Search hidden files in grep (default true; --no-grep-hidden restores previous behaviour). Env: LINK_ASSISTANT_AGENT_GREP_HIDDEN',
+      })
+      .option('grep-timeout-ms', {
+        type: 'number',
+        description:
+          'Timeout of one grep search in ms (default 30000, 0 = none). Env: LINK_ASSISTANT_AGENT_GREP_TIMEOUT_MS',
+      })
+      .option('read-max-lines', {
+        type: 'number',
+        description:
+          'Max lines one read call returns (default 2000, 0 = no cap). Env: LINK_ASSISTANT_AGENT_READ_MAX_LINES',
+      })
+      .option('read-max-bytes', {
+        type: 'number',
+        description:
+          'Max bytes one read call returns (default 51200, 0 = no cap). Env: LINK_ASSISTANT_AGENT_READ_MAX_BYTES',
+      })
+      .option('legacy-error-names', {
+        type: 'boolean',
+        description:
+          'Report ContextOverflowError as APIError in JSON output (previous name). Env: LINK_ASSISTANT_AGENT_LEGACY_ERROR_NAMES',
+      })
+      .option('legacy-token-usage', {
+        type: 'boolean',
+        description:
+          'Report tokens.output including reasoning tokens (previous accounting). Env: LINK_ASSISTANT_AGENT_LEGACY_TOKEN_USAGE',
+      })
+      .option('legacy-loop-exit', {
+        type: 'boolean',
+        description:
+          'End the turn on a "stop" finish even if tools ran in that step (previous behaviour). Env: LINK_ASSISTANT_AGENT_LEGACY_LOOP_EXIT',
+      })
+      .option('mcp-connect-timeout', {
+        type: 'number',
+        description:
+          'Default MCP connect/initialize timeout in ms (default 30000, 0 = none). Env: LINK_ASSISTANT_AGENT_MCP_CONNECT_TIMEOUT',
+      })
+  );
 }

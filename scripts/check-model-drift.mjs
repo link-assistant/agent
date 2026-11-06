@@ -15,6 +15,19 @@ const catalogs = [
 ];
 
 let failed = false;
+
+// Deprecated Kilo aliases (#335) name withdrawn gateway IDs on purpose, so they
+// are not looked up in the live catalog. Their replacements must be built-in
+// aliases, which the loop below does check.
+for (const [alias, target] of Object.entries(Kilo.DEPRECATED_ALIASES)) {
+  if (!Object.hasOwn(Kilo.FREE_MODELS, target)) {
+    failed = true;
+    console.error(
+      `kilo: deprecated alias ${alias} points at unknown built-in model ${target}`
+    );
+  }
+}
+
 for (const { provider, url, models } of catalogs) {
   try {
     const live = await fetchCatalog(url, provider);

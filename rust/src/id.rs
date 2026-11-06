@@ -102,7 +102,8 @@ pub fn create(prefix: Prefix, descending: bool, timestamp: Option<u64>) -> Strin
 
 /// Generate an ascending (chronologically ordered) identifier
 pub fn ascending(prefix: Prefix, given: Option<&str>) -> String {
-    match given {
+    // An empty id counts as none, as in JS (`if (!given)`).
+    match given.filter(|id| !id.is_empty()) {
         Some(id) => {
             let expected_prefix = prefix.as_str();
             if !id.starts_with(expected_prefix) {
@@ -116,7 +117,8 @@ pub fn ascending(prefix: Prefix, given: Option<&str>) -> String {
 
 /// Generate a descending (reverse chronologically ordered) identifier
 pub fn descending(prefix: Prefix, given: Option<&str>) -> String {
-    match given {
+    // An empty id counts as none, as in JS (`if (!given)`).
+    match given.filter(|id| !id.is_empty()) {
         Some(id) => {
             let expected_prefix = prefix.as_str();
             if !id.starts_with(expected_prefix) {

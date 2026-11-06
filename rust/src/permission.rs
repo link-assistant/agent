@@ -511,8 +511,10 @@ fn split_segments(command: &str) -> Vec<&str> {
     let mut start = 0;
     let mut i = 0;
     while i < bytes.len() {
-        let two = &command[i..(i + 2).min(command.len())];
-        if two == "&&" || two == "||" {
+        // Compare bytes: slicing `command` at `i + 2` panicked when that
+        // fell inside a multi-byte character (`echo é && ls`).
+        let next = bytes.get(i + 1).copied();
+        if (bytes[i] == b'&' && next == Some(b'&')) || (bytes[i] == b'|' && next == Some(b'|')) {
             segments.push(command[start..i].trim());
             i += 2;
             start = i;
@@ -763,6 +765,19 @@ mod tests {
         let patterns = readonly_bash(Action::Deny);
         let res = evaluate_bash("find . -name '*.tmp' -delete", &patterns);
         assert_eq!(res.action, Action::Deny);
+    }
+
+    #[test]
+    fn evaluate_bash_handles_non_ascii_before_operator() {
+        let patterns = readonly_bash(Action::Deny);
+        assert_eq!(split_segments("echo é && ls"), vec!["echo é", "ls"]);
+        assert_eq!(
+            split_segments("echo ü||ls;pwd|cat"),
+            vec!["echo ü", "ls", "pwd", "cat"]
+        );
+        assert_eq!(split_segments("echo é"), vec!["echo é"]);
+        let res = evaluate_bash("echo é && ls", &patterns);
+        assert_eq!(res.action, Action::Allow);
     }
 
     #[test]

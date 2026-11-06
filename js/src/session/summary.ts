@@ -281,7 +281,10 @@ export namespace SessionSummary {
         ?.parts.findLast((p) => p.type === 'text')?.text;
       if (!summary || diffs.length > 0) {
         // Pre-convert messages to ModelMessage format (async in AI SDK 6.0+)
-        const modelMessages = await MessageV2.toModelMessage(messages);
+        const modelMessages = await MessageV2.toModelMessage(messages, {
+          providerID: model.providerID,
+          modelID: model.modelID,
+        });
         const conversationContent = JSON.stringify(modelMessages);
 
         if (isVerbose()) {

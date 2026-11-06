@@ -20,8 +20,10 @@ import { createEchoModel } from './echo';
 import { createCacheModel } from './cache';
 import { RetryFetch } from './retry-fetch';
 import { SSEUsageExtractor } from '../util/sse-usage-extractor';
+import { sanitizeUrl } from '../util/verbose-fetch';
 import { OpenCodeZen } from './opencode-zen';
 import { Kilo } from './kilo';
+import { resolveKiloDeprecatedAlias } from './kilo-deprecation';
 import { EnvTemplate } from './env-template';
 import { ExtraProviders } from './extra-providers';
 import { ModelDiscovery } from './model-discovery';
@@ -1199,19 +1201,23 @@ export namespace Provider {
               const [sdkStream, usageStream] = response.body.tee();
               const sseReqId = SSEUsageExtractor.nextRequestId();
               (async () => {
+                const reader = usageStream.getReader();
                 try {
-                  const reader = usageStream.getReader();
+                  // Read the whole branch: a tee branch that stops being read
+                  // keeps buffering the rest of the response (issue #335).
                   const decoder = new TextDecoder();
-                  let body = '';
+                  const tracker = SSEUsageExtractor.createTracker();
                   while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    body += decoder.decode(value, { stream: true });
-                    if (body.length > 50000) break;
+                    tracker.push(decoder.decode(value, { stream: true }));
                   }
-                  SSEUsageExtractor.processStreamForUsage(sseReqId, body);
+                  tracker.push(decoder.decode());
+                  const usage = tracker.finish();
+                  if (usage) SSEUsageExtractor.storeUsage(sseReqId, usage);
                 } catch {
-                  // Never break the SDK stream
+                  // Never break the SDK stream; release the branch instead.
+                  reader.cancel().catch(() => {});
                 }
               })();
               return new Response(sdkStream, {
@@ -1237,12 +1243,14 @@ export namespace Provider {
             });
           }
 
-          const url =
+          // Logged only; query-string credentials are masked (issue #335).
+          const url = sanitizeUrl(
             typeof input === 'string'
               ? input
               : input instanceof URL
                 ? input.toString()
-                : input.url;
+                : input.url
+          );
           const method = init?.method ?? 'GET';
 
           // Wrap all verbose logging in try/catch so it never breaks the actual HTTP request.
@@ -1369,13 +1377,15 @@ export namespace Provider {
                   try {
                     const reader = logStream.getReader();
                     const decoder = new TextDecoder();
+                    const tracker = SSEUsageExtractor.createTracker();
                     let bodyPreview = '';
                     let truncated = false;
                     while (true) {
                       const { done, value } = await reader.read();
                       if (done) break;
+                      const chunk = decoder.decode(value, { stream: true });
+                      tracker.push(chunk);
                       if (!truncated) {
-                        const chunk = decoder.decode(value, { stream: true });
                         bodyPreview += chunk;
                         if (bodyPreview.length > responseBodyMaxChars) {
                           bodyPreview = bodyPreview.slice(
@@ -1386,11 +1396,12 @@ export namespace Provider {
                         }
                       }
                     }
-                    // Extract usage from raw SSE stream as AI SDK fallback
-                    SSEUsageExtractor.processStreamForUsage(
-                      sseRequestId,
-                      bodyPreview
-                    );
+                    // Extract usage from the whole raw SSE stream (not just
+                    // the logged preview) as AI SDK fallback.
+                    tracker.push(decoder.decode());
+                    const usage = tracker.finish();
+                    if (usage)
+                      SSEUsageExtractor.storeUsage(sseRequestId, usage);
                     // Use direct (non-lazy) logging for stream body
                     // See: https://github.com/link-assistant/agent/issues/211
                     log.info('HTTP response body (stream)', {
@@ -1554,6 +1565,12 @@ export namespace Provider {
     const provider = s.providers[ExtraProviders.canonicalID(providerID)];
     if (!provider) return false;
     if (provider.info.models[modelID]) return true;
+    // Deprecated Kilo aliases still resolve to their replacement (#335).
+    const replacement =
+      provider.info.id === 'kilo'
+        ? Kilo.deprecatedAliasTarget(modelID)
+        : undefined;
+    if (replacement && provider.info.models[replacement]) return true;
     return ExtraProviders.allowsUnknownModels(provider.info.id);
   }
 
@@ -1642,6 +1659,8 @@ export namespace Provider {
 
   export async function getModel(providerID: string, modelID: string) {
     providerID = ExtraProviders.canonicalID(providerID);
+    // Sessions and configs may still name a withdrawn Kilo alias (#335).
+    if (providerID === 'kilo') modelID = resolveKiloDeprecatedAlias(modelID);
     const key = `${providerID}/${modelID}`;
     const s = await state();
     if (s.models.has(key)) return s.models.get(key)!;
@@ -1910,7 +1929,6 @@ export namespace Provider {
     'gpt-5-nano',
     'nemotron-3.5-lightning-free',
     'nemotron-3-ultra-free',
-    'nemotron-3-super-free',
     'gpt-5',
     'claude-sonnet-4',
     'gemini-3-pro',
@@ -1984,10 +2002,14 @@ export namespace Provider {
   }
 
   export function parseModel(model: string) {
-    const [providerID, ...rest] = model.split('/');
+    const [rawProviderID, ...rest] = model.split('/');
+    const providerID = ExtraProviders.canonicalID(rawProviderID);
+    const modelID = rest.join('/');
     return {
-      providerID: ExtraProviders.canonicalID(providerID),
-      modelID: rest.join('/'),
+      providerID,
+      // Withdrawn Kilo aliases keep working with a warning (#335).
+      modelID:
+        providerID === 'kilo' ? resolveKiloDeprecatedAlias(modelID) : modelID,
     };
   }
 
@@ -2006,6 +2028,14 @@ export namespace Provider {
     modelID: string
   ): Promise<{ providerID: string; modelID: string } | undefined> {
     const s = await state();
+
+    // A withdrawn built-in alias resolves to its Kilo replacement (#335).
+    if (Kilo.deprecatedAliasTarget(modelID)) {
+      const replacement = resolveKiloDeprecatedAlias(modelID);
+      if (s.providers.kilo?.info.models[replacement]) {
+        return { providerID: 'kilo', modelID: replacement };
+      }
+    }
 
     if (Object.hasOwn(Kilo.FREE_MODELS, modelID)) {
       const kiloProvider = s.providers.kilo;
@@ -2080,8 +2110,9 @@ export namespace Provider {
    * or a clear error explaining why it's not available.
    *
    * Examples:
-   * - "kilo/nemotron-3-super-free" -> { providerID: "kilo", modelID: "nemotron-3-super-free" }
-   * - "nemotron-3-super-free" -> { providerID: "kilo", modelID: "nemotron-3-super-free" } (resolved)
+   * - "kilo/nemotron-3-ultra-free" -> { providerID: "kilo", modelID: "nemotron-3-ultra-free" }
+   * - "nemotron-3-ultra-free" -> { providerID: "kilo", modelID: "nemotron-3-ultra-free" } (resolved)
+   * - "nemotron-3-super-free" -> { providerID: "kilo", modelID: "nemotron-3-ultra-free" } (deprecated alias, warns)
    * - "big-pickle" -> { providerID: "opencode", modelID: "big-pickle" } (resolved)
    * - "nonexistent-model" -> throws ModelNotFoundError
    *
@@ -2142,7 +2173,7 @@ export namespace Provider {
    * When one provider hits rate limits, the system can try an alternative.
    *
    * Note: This is only used for models without explicit provider specification.
-   * If user specifies "kilo/nemotron-3-super-free", no fallback will occur.
+   * If user specifies "kilo/nemotron-3-ultra-free", no fallback will occur.
    */
   const SHARED_FREE_MODELS: Record<string, string[]> = {
     'nemotron-3.5-lightning-free': ['kilo', 'opencode'],
@@ -2153,7 +2184,7 @@ export namespace Provider {
    * This function returns a list of alternative providers that offer the same model.
    *
    * Note: This only returns alternatives for models without explicit provider specification.
-   * If the original request had an explicit provider (like "kilo/nemotron-3-super-free"), this returns empty array.
+   * If the original request had an explicit provider (like "kilo/nemotron-3-ultra-free"), this returns empty array.
    *
    * @param modelID - The model ID to find alternatives for
    * @param failedProviderID - The provider that failed

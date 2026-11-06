@@ -101,6 +101,40 @@ export namespace SessionProcessor {
     let snapshot: string | undefined;
     let blocked = false;
     let attempt = 0;
+    let needsCompaction = false;
+
+    // Providers may send tool-call / tool-result without tool-input-start
+    // (provider-executed tools, some OpenAI-compatible gateways); the part
+    // must still exist or the call is silently dropped (upstream #24151).
+    async function ensureToolCall(
+      id: string,
+      toolName: string,
+      providerExecuted?: boolean
+    ) {
+      const existing = toolcalls[id];
+      if (existing) {
+        if (!providerExecuted || existing.metadata?.providerExecuted)
+          return existing;
+        const part = (await Session.updatePart({
+          ...existing,
+          metadata: { ...existing.metadata, providerExecuted: true },
+        })) as MessageV2.ToolPart;
+        toolcalls[id] = part;
+        return part;
+      }
+      const part = (await Session.updatePart({
+        id: Identifier.ascending('part'),
+        messageID: input.assistantMessage.id,
+        sessionID: input.assistantMessage.sessionID,
+        type: 'tool',
+        tool: toolName,
+        callID: id,
+        state: { status: 'pending', input: {}, raw: '' },
+        metadata: providerExecuted ? { providerExecuted: true } : undefined,
+      })) as MessageV2.ToolPart;
+      toolcalls[id] = part;
+      return part;
+    }
 
     const result = {
       get message() {
@@ -112,9 +146,11 @@ export namespace SessionProcessor {
       async process(fn: () => StreamTextResult<Record<string, AITool>, never>) {
         log.info(() => ({ message: 'process' }));
         while (true) {
+          // Outside the try so cleanup can finalize parts left open by an
+          // interrupted stream (upstream #16776).
+          let currentText: MessageV2.TextPart | undefined;
+          let reasoningMap: Record<string, MessageV2.ReasoningPart> = {};
           try {
-            let currentText: MessageV2.TextPart | undefined;
-            let reasoningMap: Record<string, MessageV2.ReasoningPart> = {};
             const stream = fn();
 
             for await (const value of stream.stream) {
@@ -192,19 +228,36 @@ export namespace SessionProcessor {
                   break;
 
                 case 'tool-call': {
-                  const match = toolcalls[value.toolCallId];
-                  if (match) {
+                  const match = await ensureToolCall(
+                    value.toolCallId,
+                    value.toolName,
+                    value.providerExecuted
+                  );
+                  {
+                    // Invalid tool calls carry the raw string; the part schema
+                    // needs a record (upstream #14862).
+                    const toolInput =
+                      value.input &&
+                      typeof value.input === 'object' &&
+                      !Array.isArray(value.input)
+                        ? (value.input as Record<string, any>)
+                        : { value: value.input };
                     const part = await Session.updatePart({
                       ...match,
                       tool: value.toolName,
-                      state: {
-                        status: 'running',
-                        input: value.input,
-                        time: {
-                          start: Date.now(),
-                        },
-                      },
-                      metadata: value.providerMetadata,
+                      state:
+                        match.state.status === 'running'
+                          ? { ...match.state, input: toolInput }
+                          : {
+                              status: 'running',
+                              input: toolInput,
+                              time: {
+                                start: Date.now(),
+                              },
+                            },
+                      metadata: match.metadata?.providerExecuted
+                        ? { ...value.providerMetadata, providerExecuted: true }
+                        : value.providerMetadata,
                     });
                     toolcalls[value.toolCallId] = part as MessageV2.ToolPart;
 
@@ -230,17 +283,53 @@ export namespace SessionProcessor {
                   break;
                 }
                 case 'tool-result': {
-                  const match = toolcalls[value.toolCallId];
-                  if (match && match.state.status === 'running') {
+                  const match = await ensureToolCall(
+                    value.toolCallId,
+                    value.toolName,
+                    value.providerExecuted
+                  );
+                  if (
+                    match.state.status === 'running' ||
+                    match.state.status === 'pending'
+                  ) {
+                    const output = value.output as unknown;
+                    const toolInput =
+                      value.input &&
+                      typeof value.input === 'object' &&
+                      !Array.isArray(value.input)
+                        ? (value.input as Record<string, any>)
+                        : { value: value.input };
+                    const time = {
+                      start:
+                        match.state.status === 'running'
+                          ? match.state.time.start
+                          : Date.now(),
+                      end: Date.now(),
+                    };
                     await Session.updatePart({
                       ...match,
-                      state: Tool.toState(value.output, {
-                        input: value.input,
-                        time: {
-                          start: match.state.time.start,
-                          end: Date.now(),
-                        },
-                      }),
+                      // Provider-executed tools return raw values rather than
+                      // a Tool.Result.
+                      state:
+                        output &&
+                        typeof output === 'object' &&
+                        typeof (output as { output?: unknown }).output ===
+                          'string'
+                          ? Tool.toState(output as Tool.Result, {
+                              input: toolInput,
+                              time,
+                            })
+                          : {
+                              status: 'completed',
+                              input: toolInput,
+                              output:
+                                typeof output === 'string'
+                                  ? output
+                                  : (JSON.stringify(output) ?? ''),
+                              title: '',
+                              metadata: {},
+                              time,
+                            },
                     });
 
                     delete toolcalls[value.toolCallId];
@@ -558,7 +647,7 @@ export namespace SessionProcessor {
                   if (currentText) {
                     currentText.text = currentText.text.trimEnd();
                     currentText.time = {
-                      start: Date.now(),
+                      start: currentText.time?.start ?? Date.now(),
                       end: Date.now(),
                     };
                     if (value.providerMetadata)
@@ -611,130 +700,162 @@ export namespace SessionProcessor {
               ).toObject();
             }
 
-            // Check if error is retryable (APIError, SocketConnectionError, TimeoutError)
-            const isRetryableAPIError =
-              error?.name === 'APIError' && error.data.isRetryable;
-            const isRetryableSocketError =
-              error?.name === 'SocketConnectionError' &&
-              error.data.isRetryable &&
-              attempt < SessionRetry.SOCKET_ERROR_MAX_RETRIES;
-            const isRetryableTimeoutError =
-              error?.name === 'TimeoutError' &&
-              error.data.isRetryable &&
-              attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
-
-            // For API errors (rate limits), check if we're within the retry timeout
-            // See: https://github.com/link-assistant/agent/issues/157
-            const retryCheck = isRetryableAPIError
-              ? SessionRetry.shouldRetry(
-                  input.sessionID,
-                  error.data.statusCode?.toString() ?? 'unknown'
-                )
-              : { shouldRetry: true, elapsedTime: 0, maxTime: 0 };
-
-            if (
-              (isRetryableAPIError && retryCheck.shouldRetry) ||
-              isRetryableSocketError ||
-              isRetryableTimeoutError
-            ) {
-              attempt++;
-              // Use error-specific delay calculation
-              // SessionRetry.delay may throw RetryTimeoutExceededError if retry-after exceeds timeout
-              let delay: number;
-              try {
-                delay =
-                  error?.name === 'SocketConnectionError'
-                    ? SessionRetry.socketErrorDelay(attempt)
-                    : error?.name === 'TimeoutError'
-                      ? SessionRetry.timeoutDelay(attempt)
-                      : SessionRetry.delay(error, attempt);
-              } catch (delayError) {
-                // If retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT, fail immediately
-                if (
-                  delayError instanceof SessionRetry.RetryTimeoutExceededError
-                ) {
-                  log.error(() => ({
-                    message: 'retry-after exceeds timeout, failing immediately',
-                    retryAfterMs: delayError.retryAfterMs,
-                    maxTimeoutMs: delayError.maxTimeoutMs,
-                  }));
-                  SessionRetry.clearRetryState(input.sessionID);
-                  // Create a specific error for this case
-                  input.assistantMessage.error = {
-                    name: 'RetryTimeoutExceededError',
-                    data: {
-                      message: delayError.message,
-                      isRetryable: false,
-                      retryAfterMs: delayError.retryAfterMs,
-                      maxTimeoutMs: delayError.maxTimeoutMs,
-                    },
-                  } as MessageV2.Error;
-                  Bus.publish(Session.Event.Error, {
-                    sessionID: input.assistantMessage.sessionID,
-                    error: input.assistantMessage.error,
-                  });
-                  break;
-                }
-                throw delayError;
-              }
-              log.info(() => ({
-                message: 'retrying',
-                errorType: error?.name,
-                attempt,
-                delay,
-                elapsedRetryTime: retryCheck.elapsedTime,
-                maxRetryTime: retryCheck.maxTime,
-              }));
-              SessionStatus.set(input.sessionID, {
-                type: 'retry',
-                attempt,
-                message: error.data.message,
-                next: Date.now() + delay,
-              });
-              // Update retry state to track total time
-              SessionRetry.updateRetryState(input.sessionID, delay);
-              await SessionRetry.sleep(delay, input.abort).catch(() => {});
-              continue;
-            }
-
-            // Clear retry state on non-retryable error
-            SessionRetry.clearRetryState(input.sessionID);
-
-            // Detect model-not-supported errors from provider response body.
-            // OpenCode and similar proxies return HTTP 401 with
-            // {"type":"ModelError","message":"Model X not supported"}.
-            // Without this check the error looks like an auth failure (401),
-            // but it's actually a model-availability issue.
-            // See: https://github.com/link-assistant/agent/issues/208
-            if (
-              error?.name === 'APIError' &&
-              error.data.statusCode === 401 &&
-              error.data.responseBody
-            ) {
-              const isModelError = isModelNotSupportedError(
-                error.data.responseBody
-              );
-              if (isModelError) {
-                log.error(() => ({
-                  message:
-                    'model not supported by provider — this is NOT an auth error',
-                  hint: 'The model was found in the local cache but the provider rejected it. The model may have been removed or is temporarily unavailable.',
+            // Overflow is handled by compacting the session and trying again,
+            // not by retrying the same oversized request (upstream #14707).
+            if (error?.name === 'ContextOverflowError') {
+              SessionRetry.clearRetryState(input.sessionID);
+              if (
+                config.disableAutocompact &&
+                !input.assistantMessage.summary
+              ) {
+                input.assistantMessage.error = error;
+                Bus.publish(Session.Event.Error, {
+                  sessionID: input.assistantMessage.sessionID,
+                  error: input.assistantMessage.error,
+                });
+              } else {
+                log.info(() => ({
+                  message: 'context overflow, requesting compaction',
                   providerID: input.providerID,
                   modelID: input.model.id,
-                  statusCode: error.data.statusCode,
-                  responseBody: error.data.responseBody,
-                  suggestion:
-                    'Try a different model or check the provider status. Use --model <provider>/<model-id> to specify an alternative.',
-                  issue: 'https://github.com/link-assistant/agent/issues/208',
                 }));
+                needsCompaction = true;
               }
-            }
+            } else {
+              // Check if error is retryable (APIError, SocketConnectionError, TimeoutError)
+              const isRetryableAPIError =
+                error?.name === 'APIError' && error.data.isRetryable;
+              const isRetryableSocketError =
+                error?.name === 'SocketConnectionError' &&
+                error.data.isRetryable &&
+                attempt < SessionRetry.SOCKET_ERROR_MAX_RETRIES;
+              const isRetryableTimeoutError =
+                error?.name === 'TimeoutError' &&
+                error.data.isRetryable &&
+                attempt < SessionRetry.TIMEOUT_MAX_RETRIES;
 
-            input.assistantMessage.error = error;
-            Bus.publish(Session.Event.Error, {
-              sessionID: input.assistantMessage.sessionID,
-              error: input.assistantMessage.error,
-            });
+              // For API errors (rate limits), check if we're within the retry timeout
+              // See: https://github.com/link-assistant/agent/issues/157
+              const retryCheck = isRetryableAPIError
+                ? SessionRetry.shouldRetry(
+                    input.sessionID,
+                    error.data.statusCode?.toString() ?? 'unknown'
+                  )
+                : { shouldRetry: true, elapsedTime: 0, maxTime: 0 };
+
+              let delay: number | undefined;
+              if (
+                (isRetryableAPIError && retryCheck.shouldRetry) ||
+                isRetryableSocketError ||
+                isRetryableTimeoutError
+              ) {
+                attempt++;
+                // Use error-specific delay calculation
+                // SessionRetry.delay may throw RetryTimeoutExceededError if retry-after exceeds timeout
+                try {
+                  delay =
+                    error?.name === 'SocketConnectionError'
+                      ? SessionRetry.socketErrorDelay(attempt)
+                      : error?.name === 'TimeoutError'
+                        ? SessionRetry.timeoutDelay(attempt)
+                        : SessionRetry.delay(error, attempt);
+                } catch (delayError) {
+                  // If retry-after exceeds LINK_ASSISTANT_AGENT_RETRY_TIMEOUT, fail immediately
+                  if (
+                    delayError instanceof SessionRetry.RetryTimeoutExceededError
+                  ) {
+                    log.error(() => ({
+                      message:
+                        'retry-after exceeds timeout, failing immediately',
+                      retryAfterMs: delayError.retryAfterMs,
+                      maxTimeoutMs: delayError.maxTimeoutMs,
+                    }));
+                    // Report it like any other final error below. Leaving
+                    // the loop with `break` skipped the cleanup and returned
+                    // undefined, so the prompt loop started another step.
+                    error = new MessageV2.RetryTimeoutExceededError(
+                      {
+                        message: delayError.message,
+                        isRetryable: false,
+                        retryAfterMs: delayError.retryAfterMs,
+                        maxTimeoutMs: delayError.maxTimeoutMs,
+                      },
+                      { cause: delayError }
+                    ).toObject();
+                  } else throw delayError;
+                }
+              }
+              if (delay !== undefined) {
+                log.info(() => ({
+                  message: 'retrying',
+                  errorType: error?.name,
+                  attempt,
+                  delay,
+                  elapsedRetryTime: retryCheck.elapsedTime,
+                  maxRetryTime: retryCheck.maxTime,
+                }));
+                SessionStatus.set(input.sessionID, {
+                  type: 'retry',
+                  attempt,
+                  message: error.data.message,
+                  next: Date.now() + delay,
+                });
+                // Update retry state to track total time
+                SessionRetry.updateRetryState(input.sessionID, delay);
+                await SessionRetry.sleep(delay, input.abort).catch(() => {});
+                continue;
+              }
+
+              // Clear retry state on non-retryable error
+              SessionRetry.clearRetryState(input.sessionID);
+
+              // Detect model-not-supported errors from provider response body.
+              // OpenCode and similar proxies return HTTP 401 with
+              // {"type":"ModelError","message":"Model X not supported"}.
+              // Without this check the error looks like an auth failure (401),
+              // but it's actually a model-availability issue.
+              // See: https://github.com/link-assistant/agent/issues/208
+              if (
+                error?.name === 'APIError' &&
+                error.data.statusCode === 401 &&
+                error.data.responseBody
+              ) {
+                const isModelError = isModelNotSupportedError(
+                  error.data.responseBody
+                );
+                if (isModelError) {
+                  log.error(() => ({
+                    message:
+                      'model not supported by provider — this is NOT an auth error',
+                    hint: 'The model was found in the local cache but the provider rejected it. The model may have been removed or is temporarily unavailable.',
+                    providerID: input.providerID,
+                    modelID: input.model.id,
+                    statusCode: error.data.statusCode,
+                    responseBody: error.data.responseBody,
+                    suggestion:
+                      'Try a different model or check the provider status. Use --model <provider>/<model-id> to specify an alternative.',
+                    issue: 'https://github.com/link-assistant/agent/issues/208',
+                  }));
+                }
+              }
+
+              input.assistantMessage.error = error;
+              Bus.publish(Session.Event.Error, {
+                sessionID: input.assistantMessage.sessionID,
+                error: input.assistantMessage.error,
+              });
+            }
+          }
+          const end = Date.now();
+          if (currentText && currentText.time?.end === undefined) {
+            currentText.text = currentText.text.trimEnd();
+            currentText.time = { start: currentText.time?.start ?? end, end };
+            await Session.updatePart(currentText);
+          }
+          for (const part of Object.values(reasoningMap)) {
+            part.text = part.text.trimEnd();
+            part.time = { start: part.time.start ?? end, end };
+            await Session.updatePart(part);
           }
           const p = await MessageV2.parts(input.assistantMessage.id);
           for (const part of p) {
@@ -743,15 +864,27 @@ export namespace SessionProcessor {
               part.state.status !== 'completed' &&
               part.state.status !== 'error'
             ) {
+              // Keep the real start and flag the part so the loop does not
+              // treat an aborted call as one to continue from (upstream
+              // #16776).
               await Session.updatePart({
                 ...part,
                 state: {
                   ...part.state,
                   status: 'error',
                   error: 'Tool execution aborted',
+                  metadata: {
+                    ...(part.state.status === 'running'
+                      ? part.state.metadata
+                      : undefined),
+                    interrupted: true,
+                  },
                   time: {
-                    start: Date.now(),
-                    end: Date.now(),
+                    start:
+                      part.state.status === 'running'
+                        ? part.state.time.start
+                        : end,
+                    end,
                   },
                 },
               });
@@ -760,6 +893,7 @@ export namespace SessionProcessor {
           input.assistantMessage.time.completed = Date.now();
           await Session.updateMessage(input.assistantMessage);
           if (blocked) return 'stop';
+          if (needsCompaction) return 'compact';
           if (input.assistantMessage.error) return 'stop';
           return 'continue';
         }

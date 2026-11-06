@@ -74,6 +74,43 @@ export function sanitizeHeaders(
   return sanitized;
 }
 
+const SENSITIVE_QUERY_PARAMS = new Set([
+  'exaapikey',
+  'apikey',
+  'api_key',
+  'api-key',
+  'key',
+  'token',
+  'access_token',
+  'auth',
+  'secret',
+]);
+
+/**
+ * Mask credentials passed as URL query parameters (for example the Exa MCP
+ * URL carries `exaApiKey=...`) so verbose logs do not leak them (issue #335).
+ * Unparseable URLs are returned unchanged.
+ */
+export function sanitizeUrl(raw: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return raw;
+  }
+  let changed = false;
+  if (parsed.password) {
+    parsed.password = 'REDACTED';
+    changed = true;
+  }
+  for (const name of Array.from(parsed.searchParams.keys())) {
+    if (!SENSITIVE_QUERY_PARAMS.has(name.toLowerCase())) continue;
+    parsed.searchParams.set(name, '[REDACTED]');
+    changed = true;
+  }
+  return changed ? parsed.toString() : raw;
+}
+
 /**
  * Create a body preview string, truncated to maxChars.
  */
@@ -147,12 +184,14 @@ export function createVerboseFetch(
     globalHttpCallCount++;
     const callNum = globalHttpCallCount;
 
-    const url =
+    const rawUrl =
       typeof input === 'string'
         ? input
         : input instanceof URL
           ? input.toString()
           : input.url;
+    // Only used for logging; never sent anywhere.
+    const url = sanitizeUrl(rawUrl);
     const method = init?.method ?? 'GET';
 
     // Prepare request details for logging (error-resilient)

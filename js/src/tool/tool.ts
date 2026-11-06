@@ -87,7 +87,10 @@ export namespace Tool {
     return {
       id,
       init: async () => {
-        const toolInfo = init instanceof Function ? await init() : init;
+        // Copy object-defined tools so each init() wraps the original
+        // execute once instead of stacking another wrapper on the shared
+        // object (upstream 81d3ac3bf0, #16952).
+        const toolInfo = init instanceof Function ? await init() : { ...init };
         const execute = toolInfo.execute;
         toolInfo.execute = (args, ctx) => {
           try {

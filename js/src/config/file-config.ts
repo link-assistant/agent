@@ -435,6 +435,14 @@ export namespace Config {
         .describe(
           'Timeout in ms for fetching tools from the MCP server. Defaults to 5000 (5 seconds) if not specified.'
         ),
+      connect_timeout: z
+        .number()
+        .int()
+        .nonnegative()
+        .optional()
+        .describe(
+          'Timeout in ms for starting the MCP server and completing the initialize handshake. Defaults to --mcp-connect-timeout / LINK_ASSISTANT_AGENT_MCP_CONNECT_TIMEOUT (30000). 0 disables the bound.'
+        ),
       tool_call_timeout: z
         .number()
         .int()
@@ -474,6 +482,14 @@ export namespace Config {
         .optional()
         .describe(
           'Timeout in ms for fetching tools from the MCP server. Defaults to 5000 (5 seconds) if not specified.'
+        ),
+      connect_timeout: z
+        .number()
+        .int()
+        .nonnegative()
+        .optional()
+        .describe(
+          'Timeout in ms for starting the MCP server and completing the initialize handshake. Defaults to --mcp-connect-timeout / LINK_ASSISTANT_AGENT_MCP_CONNECT_TIMEOUT (30000). 0 disables the bound.'
         ),
       tool_call_timeout: z
         .number()

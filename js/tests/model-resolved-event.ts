@@ -296,9 +296,31 @@ describe('model_resolved emission', () => {
     expect(event.requested).toBeNull();
     expect(event.source).toBe('default');
     expect(event.providerID).toBe('kilo');
-    expect(event.modelID).toBe('nemotron-3-super-free');
+    expect(event.modelID).toBe('nemotron-3-ultra-free');
     expect(event.matchesRequest).toBe(true);
   });
+
+  for (const selector of [
+    'kilo/nemotron-3-super-free',
+    'nemotron-3-super-free',
+  ]) {
+    test(`deprecated ${selector} resolves to kilo/nemotron-3-ultra-free (#335)`, async () => {
+      const result = await runParseModelConfig({
+        selector,
+        argv: { 'compact-json': true },
+      });
+      expectSuccess(result);
+
+      expect(result.events).toHaveLength(1);
+      const [event] = result.events;
+      expect(event.requested).toBe(selector);
+      expect(event.providerID).toBe('kilo');
+      expect(event.modelID).toBe('nemotron-3-ultra-free');
+      expect(event.source).toBe('cli');
+      // The run uses a different model than the one named, and says so.
+      expect(event.matchesRequest).toBe(false);
+    });
+  }
 
   test('an operator default reports source "config", not "default"', async () => {
     const result = await runParseModelConfig({

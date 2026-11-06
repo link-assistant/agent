@@ -57,7 +57,11 @@ export const Instance = {
   },
   async dispose() {
     Log.Default.info('disposing instance', { directory: Instance.directory });
-    await State.dispose(Instance.directory);
+    const directory = Instance.directory;
+    await State.dispose(directory);
+    // Drop the resolved context too; it used to stay cached for every
+    // directory ever served (issue #335).
+    cache.delete(directory);
     await Project.prune();
   },
   async disposeAll() {

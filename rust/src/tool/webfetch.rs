@@ -19,11 +19,20 @@ const DEFAULT_TIMEOUT_SECS: u64 = 30;
 /// Maximum timeout in seconds
 const MAX_TIMEOUT_SECS: u64 = 120;
 
+/// Browser UA sent first (upstream 774c24e76e, #8284).
+const BROWSER_USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36";
+
+/// Honest UA for the Cloudflare challenge retry (upstream b978ca11da, #10328).
+const HONEST_USER_AGENT: &str = "agent";
+
+/// Error for a body over the size limit.
+pub const TOO_LARGE: &str = "Response too large (exceeds 5MB limit)";
+
 /// Tool description
 const DESCRIPTION: &str = r#"Fetches content from a specified URL and processes it using an AI model.
 
 Usage:
-- Takes a URL and a format (text, markdown, or html)
+- Takes a URL and an optional format (text, markdown, or html; markdown by default)
 - Fetches the URL content
 - For markdown/text formats, converts HTML to readable format
 - Returns the processed content
@@ -34,11 +43,60 @@ Usage:
 pub struct WebFetchParams {
     /// The URL to fetch content from
     pub url: String,
-    /// The format to return the content in
+    /// The format to return the content in. Optional so models that omit it
+    /// still get markdown (upstream fd973d242e, #6345).
+    #[serde(default = "default_format")]
     pub format: String,
     /// Optional timeout in seconds (max 120)
     #[serde(default)]
     pub timeout: Option<u64>,
+}
+
+fn default_format() -> String {
+    "markdown".to_string()
+}
+
+/// Read a response body, failing as soon as it exceeds `max` bytes instead of
+/// buffering an oversized, chunked or endless body before checking its size
+/// (upstream 69f1ec22e3, #33259).
+pub async fn read_body_bounded(
+    mut response: reqwest::Response,
+    max: usize,
+) -> std::result::Result<Vec<u8>, BodyError> {
+    if response
+        .content_length()
+        .is_some_and(|length| length as usize > max)
+    {
+        return Err(BodyError::TooLarge);
+    }
+    let mut body = Vec::new();
+    while let Some(chunk) = response.chunk().await.map_err(BodyError::Http)? {
+        if body.len() + chunk.len() > max {
+            return Err(BodyError::TooLarge);
+        }
+        body.extend_from_slice(&chunk);
+    }
+    Ok(body)
+}
+
+/// Failure of [`read_body_bounded`].
+#[derive(Debug)]
+pub enum BodyError {
+    TooLarge,
+    /// The client timeout, in seconds, expired while the body was read.
+    Timeout(u64),
+    Http(reqwest::Error),
+}
+
+impl std::fmt::Display for BodyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BodyError::TooLarge => f.write_str(TOO_LARGE),
+            BodyError::Http(e) if e.is_timeout() => f.write_str("Request timed out"),
+            BodyError::Timeout(secs) => write!(f, "Request timed out after {} seconds", secs),
+            BodyError::Http(e) => write!(f, "{}", e),
+        }
+    }
 }
 
 /// WebFetch tool implementation
@@ -65,14 +123,14 @@ impl Tool for WebFetchTool {
                 "format": {
                     "type": "string",
                     "enum": ["text", "markdown", "html"],
-                    "description": "The format to return the content in (text, markdown, or html)"
+                    "description": "The format to return the content in (text, markdown, or html). Defaults to markdown."
                 },
                 "timeout": {
                     "type": "number",
                     "description": "Optional timeout in seconds (max 120)"
                 }
             },
-            "required": ["url", "format"]
+            "required": ["url"]
         })
     }
 
@@ -99,45 +157,55 @@ impl Tool for WebFetchTool {
         let accept_header = match params.format.as_str() {
             "markdown" => "text/markdown;q=1.0, text/x-markdown;q=0.9, text/plain;q=0.8, text/html;q=0.7, */*;q=0.1",
             "text" => "text/plain;q=1.0, text/markdown;q=0.9, text/html;q=0.8, */*;q=0.1",
-            "html" => "text/html;q=1.0, application/xhtml+xml;q=0.9, text/plain;q=0.8, */*;q=0.1",
+            "html" => "text/html;q=1.0, application/xhtml+xml;q=0.9, text/plain;q=0.8, text/markdown;q=0.7, */*;q=0.1",
             _ => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         };
 
+        // The client timeout also covers reading the body.
         let client = reqwest::Client::builder()
             .timeout(timeout_duration)
-            .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
             .build()
             .map_err(|e| AgentError::tool_execution("webfetch", e.to_string()))?;
 
-        let response = client
-            .get(&params.url)
-            .header("Accept", accept_header)
-            .header("Accept-Language", "en-US,en;q=0.9")
-            .send()
-            .await
-            .map_err(|e| {
-                if e.is_timeout() {
-                    AgentError::tool_execution("webfetch", "Request timed out")
-                } else {
-                    AgentError::tool_execution("webfetch", e.to_string())
-                }
-            })?;
+        let send = |user_agent: &'static str| {
+            client
+                .get(&params.url)
+                .header("User-Agent", user_agent)
+                .header("Accept", accept_header)
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .send()
+        };
+        let request_error = |e: reqwest::Error| {
+            if e.is_timeout() {
+                AgentError::tool_execution(
+                    "webfetch",
+                    format!("Request timed out after {} seconds", timeout_secs),
+                )
+            } else {
+                AgentError::tool_execution("webfetch", e.to_string())
+            }
+        };
+
+        let mut response = send(BROWSER_USER_AGENT).await.map_err(request_error)?;
+        // Cloudflare challenges a Chrome UA whose TLS fingerprint is not
+        // Chrome's, and lets an honest UA through.
+        if response.status() == reqwest::StatusCode::FORBIDDEN
+            && response
+                .headers()
+                .get("cf-mitigated")
+                .is_some_and(|v| v == "challenge")
+        {
+            response = send(HONEST_USER_AGENT).await.map_err(request_error)?;
+        }
 
         if !response.status().is_success() {
             return Err(AgentError::tool_execution(
                 "webfetch",
-                format!("Request failed with status code: {}", response.status()),
+                format!(
+                    "Request failed with status code: {}",
+                    response.status().as_u16()
+                ),
             ));
-        }
-
-        // Check content length
-        if let Some(content_length) = response.content_length() {
-            if content_length as usize > MAX_RESPONSE_SIZE {
-                return Err(AgentError::tool_execution(
-                    "webfetch",
-                    "Response too large (exceeds 5MB limit)",
-                ));
-            }
         }
 
         let content_type = response
@@ -147,17 +215,15 @@ impl Tool for WebFetchTool {
             .unwrap_or("")
             .to_string();
 
-        let bytes = response
-            .bytes()
+        let bytes = read_body_bounded(response, MAX_RESPONSE_SIZE)
             .await
-            .map_err(|e| AgentError::tool_execution("webfetch", e.to_string()))?;
-
-        if bytes.len() > MAX_RESPONSE_SIZE {
-            return Err(AgentError::tool_execution(
-                "webfetch",
-                "Response too large (exceeds 5MB limit)",
-            ));
-        }
+            .map_err(|e| match e {
+                BodyError::Http(e) if e.is_timeout() => AgentError::tool_execution(
+                    "webfetch",
+                    BodyError::Timeout(timeout_secs).to_string(),
+                ),
+                e => AgentError::tool_execution("webfetch", e.to_string()),
+            })?;
 
         let content = String::from_utf8_lossy(&bytes).into_owned();
         let title = format!("{} ({})", params.url, content_type);
@@ -209,7 +275,15 @@ pub fn extract_text_from_html(html: &str) -> String {
             }
             '>' => {
                 in_tag = false;
-                let tag = tag_buffer.trim().to_lowercase();
+                // Compare the tag name only: `<script type="...">` and
+                // `<style media="...">` used to fall through and their
+                // content was kept as text.
+                let tag = tag_buffer
+                    .split(|c: char| c.is_whitespace() || c == '>')
+                    .find(|t| !t.is_empty())
+                    .unwrap_or("")
+                    .trim_end_matches('/')
+                    .to_ascii_lowercase();
                 // Check for script/style open/close tags
                 if tag == "script"
                     || tag == "style"
@@ -254,7 +328,7 @@ pub fn extract_text_from_html(html: &str) -> String {
 }
 
 /// Convert HTML to basic markdown format
-fn html_to_markdown(html: &str) -> String {
+pub fn html_to_markdown(html: &str) -> String {
     // Basic HTML-to-markdown conversion
     // Strip script/style tags and their content first
     let mut result = html.to_string();
@@ -287,8 +361,10 @@ fn remove_tag_with_content(html: &str, tag: &str) -> String {
     let open = format!("<{}", tag);
     let close = format!("</{}>", tag);
     let mut result = html.to_string();
-    while let Some(start) = result.to_lowercase().find(&open) {
-        if let Some(end) = result.to_lowercase()[start..].find(&close) {
+    // `to_ascii_lowercase` keeps byte offsets: `to_lowercase` changes the
+    // length of some characters (`İ`) and the offsets then point elsewhere.
+    while let Some(start) = result.to_ascii_lowercase().find(&open) {
+        if let Some(end) = result.to_ascii_lowercase()[start..].find(&close) {
             result.replace_range(start..start + end + close.len(), "");
         } else {
             break;
@@ -309,7 +385,7 @@ fn convert_headings(html: &str) -> String {
 
 fn replace_tag_with_prefix(html: &str, tag: &str, prefix: &str) -> String {
     let close = format!("</{}>", tag);
-    let lower = html.to_lowercase();
+    let lower = html.to_ascii_lowercase();
     let mut result = html.to_string();
 
     // Find the first occurrence of the opening tag
@@ -336,7 +412,7 @@ fn convert_links(html: &str) -> String {
     // Very basic: <a href="url">text</a> -> [text](url)
     let mut result = html.to_string();
     loop {
-        let lower = result.to_lowercase();
+        let lower = result.to_ascii_lowercase();
         if let Some(start) = lower.find("<a ") {
             let href_start = lower[start..].find("href=\"");
             let href = href_start.and_then(|h| {

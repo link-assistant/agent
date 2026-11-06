@@ -76,13 +76,23 @@ impl Tool for WriteTool {
             }
         }
 
+        // Keep an existing UTF-8 BOM and never write it twice
+        // (upstream OpenCode #23797).
+        let content = params.content.strip_prefix('\u{feff}');
+        let had_bom = exists && starts_with_bom(&filepath).await;
+        let content = match content {
+            Some(text) => format!("\u{feff}{}", text),
+            None if had_bom => format!("\u{feff}{}", params.content),
+            None => params.content.clone(),
+        };
+
         // Write the file
-        fs::write(&filepath, &params.content).await?;
+        fs::write(&filepath, &content).await?;
 
         Ok(ToolResult {
             is_error: false,
             title,
-            output: String::new(),
+            output: "Wrote file successfully.".to_string(),
             metadata: json!({
                 "diagnostics": {},
                 "filepath": filepath.to_string_lossy(),
@@ -90,5 +100,15 @@ impl Tool for WriteTool {
             }),
             attachments: None,
         })
+    }
+}
+
+/// Reads only the first three bytes to detect a UTF-8 BOM.
+async fn starts_with_bom(path: &std::path::Path) -> bool {
+    use tokio::io::AsyncReadExt;
+    let mut head = [0u8; 3];
+    match fs::File::open(path).await {
+        Ok(mut file) => file.read_exact(&mut head).await.is_ok() && head == [0xef, 0xbb, 0xbf],
+        Err(_) => false,
     }
 }

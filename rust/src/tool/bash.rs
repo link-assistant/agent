@@ -1,12 +1,25 @@
 //! Bash tool implementation
 //!
 //! Executes shell commands, matching the JavaScript implementation's bash tool behavior.
+//!
+//! Divergences from JS that are kept on purpose:
+//! - the default timeout is 2 minutes (JS: 1 minute), as in every earlier
+//!   Rust release;
+//! - stdout and stderr are captured separately and joined as
+//!   `stdout + "\n--- stderr ---\n" + stderr` (JS interleaves them as they
+//!   arrive).
+//!
+//! `LINK_ASSISTANT_AGENT_BASH_SHELL` selects the shell (`auto`, `legacy` for
+//! `bash -c`, or a path), and `LINK_ASSISTANT_AGENT_LEGACY_TOOL_OUTPUT=true`
+//! restores the earlier head-keeping truncation and the `-1` exit code of a
+//! shell killed by a signal.
 
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::process::Stdio;
-use tokio::io::AsyncReadExt;
+use std::process::{ExitStatus, Stdio};
+use std::sync::{Arc, Mutex};
+use tokio::io::{AsyncRead, AsyncReadExt};
 use tokio::process::Command;
 use tokio::time::{timeout, Duration};
 
@@ -19,8 +32,91 @@ const DEFAULT_TIMEOUT_MS: u64 = 120_000;
 /// Maximum timeout in milliseconds (10 minutes)
 const MAX_TIMEOUT_MS: u64 = 600_000;
 
-/// Maximum output length before truncation
-const MAX_OUTPUT_LENGTH: usize = 30_000;
+/// Output is limited to its last MAX_LINES lines and MAX_BYTES bytes
+/// (upstream 307251bf3c, #22660).
+const MAX_BYTES: usize = 30_000;
+const MAX_LINES: usize = 2000;
+
+/// Prefix of output whose beginning was dropped.
+const TRUNCATED: &str = "...output truncated...\n\n";
+
+/// Suffix of output whose end was dropped (legacy output).
+const LEGACY_TRUNCATED: &str = "\n... (output truncated)";
+
+/// Shells that `auto` takes from `$SHELL`: they all run `-c <command>` with
+/// POSIX syntax. Others (fish, nu, csh, ...) fall back to bash.
+const POSIX_SHELLS: &[&str] = &["sh", "bash", "zsh", "dash", "ksh", "mksh", "ash"];
+
+/// The program that runs commands for a `BASH_SHELL` setting.
+///
+/// - `legacy`: `bash`, as every earlier release did;
+/// - `auto` (or empty): `$SHELL` when it is one of `POSIX_SHELLS` and can be
+///   found, otherwise `bash` from `PATH`, otherwise `/bin/zsh` on macOS (as
+///   JS) and `/bin/sh` elsewhere. On Windows `auto` keeps `bash`;
+/// - anything else: used as given.
+pub fn select_shell(setting: &str, shell_env: Option<&str>) -> String {
+    match setting.trim() {
+        "legacy" => "bash".to_string(),
+        "" | "auto" => {
+            if cfg!(windows) {
+                return "bash".to_string();
+            }
+            if let Some(preferred) = shell_env.map(str::trim).filter(|s| !s.is_empty()) {
+                let name = std::path::Path::new(preferred)
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_ascii_lowercase())
+                    .unwrap_or_default();
+                if POSIX_SHELLS.contains(&name.as_str()) {
+                    if let Ok(found) = which::which(preferred) {
+                        return found.to_string_lossy().into_owned();
+                    }
+                }
+            }
+            if let Ok(bash) = which::which("bash") {
+                return bash.to_string_lossy().into_owned();
+            }
+            if cfg!(target_os = "macos") {
+                "/bin/zsh".to_string()
+            } else {
+                "/bin/sh".to_string()
+            }
+        }
+        other => other.to_string(),
+    }
+}
+
+/// Kills the command's whole process group when dropped while armed, so a
+/// timed-out or cancelled command does not leave its children running.
+struct GroupGuard {
+    #[cfg_attr(not(unix), allow(dead_code))]
+    pid: Option<u32>,
+    armed: bool,
+}
+
+impl GroupGuard {
+    fn kill(&mut self) {
+        if !self.armed {
+            return;
+        }
+        self.armed = false;
+        #[cfg(unix)]
+        if let Some(pid) = self.pid.and_then(|p| i32::try_from(p).ok()) {
+            if pid > 0 {
+                // SAFETY: killpg only sends a signal. The group id is the
+                // shell's pid, which `process_group(0)` made a group leader.
+                unsafe {
+                    libc::killpg(pid, libc::SIGKILL);
+                }
+            }
+        }
+    }
+}
+
+impl Drop for GroupGuard {
+    fn drop(&mut self) {
+        self.kill();
+    }
+}
 
 /// Tool description
 const DESCRIPTION: &str = r#"Executes a given bash command in a persistent shell session.
@@ -28,7 +124,7 @@ const DESCRIPTION: &str = r#"Executes a given bash command in a persistent shell
 Usage:
 - Use for terminal operations like git, npm, docker, etc.
 - Commands have a default timeout of 2 minutes (max 10 minutes)
-- Output exceeding 30000 characters will be truncated
+- Output beyond 2000 lines or 30000 bytes is truncated: the beginning is dropped and the end, where errors usually are, is kept
 - Always quote file paths containing spaces"#;
 
 /// Parameters for the bash tool
@@ -89,7 +185,7 @@ impl Tool for BashTool {
             .min(MAX_TIMEOUT_MS);
         let timeout_duration = Duration::from_millis(timeout_ms);
 
-        let title = params.description.unwrap_or_else(|| {
+        let title = params.description.clone().unwrap_or_else(|| {
             // Extract first part of command for title
             params
                 .command
@@ -99,102 +195,297 @@ impl Tool for BashTool {
                 .join(" ")
         });
 
-        // Execute command
-        let result = timeout(
-            timeout_duration,
-            execute_command(&params.command, &ctx.working_directory),
-        )
-        .await;
+        let settings = ctx.settings();
+        let legacy = settings.legacy_tool_output;
+        let shell = select_shell(&settings.bash_shell, std::env::var("SHELL").ok().as_deref());
 
-        match result {
-            Ok(Ok((stdout, stderr, exit_code))) => {
-                let mut output = String::new();
+        let stdout = Arc::new(Mutex::new(Capture::new(legacy)));
+        let stderr = Arc::new(Mutex::new(Capture::new(legacy)));
 
-                if !stdout.is_empty() {
-                    output.push_str(&stdout);
-                }
+        let mut command = Command::new(&shell);
+        command
+            .arg("-c")
+            .arg(&params.command)
+            .current_dir(&ctx.working_directory)
+            // A command that reads stdin gets EOF instead of waiting on (or
+            // stealing) the agent's own input (JS: `stdin: 'ignore'`).
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .kill_on_drop(true);
+        // Its own process group, so a timeout stops the children too.
+        #[cfg(unix)]
+        command.process_group(0);
+        let mut child = command
+            .spawn()
+            .map_err(|e| AgentError::tool_execution("bash", format!("{}: {}", shell, e)))?;
+        let mut group = GroupGuard {
+            pid: child.id(),
+            armed: true,
+        };
 
-                if !stderr.is_empty() {
-                    if !output.is_empty() {
-                        output.push_str("\n--- stderr ---\n");
-                    }
-                    output.push_str(&stderr);
-                }
+        // Read both pipes at once: reading stdout to EOF first deadlocked a
+        // command that filled the stderr pipe before closing stdout.
+        let out = child.stdout.take();
+        let err = child.stderr.take();
+        let run = async {
+            let (a, b) = tokio::join!(pump(out, stdout.clone()), pump(err, stderr.clone()));
+            a?;
+            b?;
+            child.wait().await
+        };
+        let result = timeout(timeout_duration, run).await;
 
-                // Truncate if too long
-                if output.len() > MAX_OUTPUT_LENGTH {
-                    output.truncate(MAX_OUTPUT_LENGTH);
-                    output.push_str("\n... (output truncated)");
-                }
-
-                if exit_code != 0 {
-                    output = format!("Exit code {}\n{}", exit_code, output);
-                }
-
-                Ok(ToolResult {
-                    is_error: exit_code != 0,
-                    title,
-                    output: output.clone(),
-                    metadata: json!({
-                        "exitCode": exit_code,
-                        "exit": exit_code,
-                        "output": output,
-                        "command": params.command,
-                    }),
-                    attachments: None,
-                })
+        let status = match result {
+            Ok(Ok(status)) => {
+                // The shell exited: children it left in the background on
+                // purpose keep running, as before.
+                group.armed = false;
+                Some(status)
             }
-            Ok(Err(e)) => Err(AgentError::tool_execution("bash", e.to_string())),
+            Ok(Err(e)) => return Err(AgentError::tool_execution("bash", e.to_string())),
             Err(_) => {
-                let output = format!(
+                group.kill();
+                let _ = child.kill().await;
+                None
+            }
+        };
+
+        let output = if legacy {
+            combine_legacy(&stdout.lock().unwrap(), &stderr.lock().unwrap())
+        } else {
+            combine(&stdout.lock().unwrap(), &stderr.lock().unwrap())
+        };
+
+        let Some(status) = status else {
+            // Keep what the command printed before the timeout (upstream
+            // 210be4b749, #39559).
+            let output = if output.is_empty() {
+                format!(
                     "Exit code unavailable\nCommand timed out after {}ms",
                     timeout_ms
-                );
-                Ok(ToolResult {
-                    is_error: true,
-                    title,
-                    output: output.clone(),
-                    metadata: json!({
-                        "exitCode": null,
-                        "exit": null,
-                        "output": output,
-                        "command": params.command,
-                        "timedOut": true,
-                    }),
-                    attachments: None,
-                })
-            }
+                )
+            } else {
+                format!(
+                    "Exit code unavailable\n{}\n\nCommand timed out after {}ms",
+                    output, timeout_ms
+                )
+            };
+            return Ok(ToolResult {
+                is_error: true,
+                title,
+                output: output.clone(),
+                metadata: json!({
+                    "exitCode": null,
+                    "exit": null,
+                    "signal": null,
+                    "output": output,
+                    "command": params.command,
+                    "timedOut": true,
+                    "aborted": false,
+                    "description": params.description,
+                }),
+                attachments: None,
+            });
+        };
+
+        // A shell killed by a signal has no exit code; report the signal
+        // instead of "-1" (upstream e22c1622e0, #51145).
+        let mut exit_code = status.code();
+        let signal = signal_name(status);
+        if legacy && exit_code.is_none() {
+            // Earlier releases reported a signal kill as exit code -1.
+            exit_code = Some(-1);
         }
+        let is_error = exit_code != Some(0);
+        let output = match (exit_code, &signal) {
+            (Some(0), _) => output,
+            (Some(code), _) => format!("Exit code {}\n{}", code, output),
+            (None, Some(signal)) => {
+                format!("Exit code unavailable (signal {})\n{}", signal, output)
+            }
+            (None, None) => format!("Exit code unavailable\n{}", output),
+        };
+
+        Ok(ToolResult {
+            is_error,
+            title,
+            output: output.clone(),
+            metadata: json!({
+                "exitCode": exit_code,
+                "exit": exit_code,
+                "signal": signal,
+                "output": output,
+                "command": params.command,
+                "timedOut": false,
+                "aborted": false,
+                "description": params.description,
+            }),
+            attachments: None,
+        })
     }
 }
 
-/// Execute a shell command and return (stdout, stderr, exit_code)
-async fn execute_command(
-    command: &str,
-    working_dir: &std::path::Path,
-) -> std::io::Result<(String, String, i32)> {
-    let mut child = Command::new("bash")
-        .arg("-c")
-        .arg(command)
-        .current_dir(working_dir)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .kill_on_drop(true)
-        .spawn()?;
+/// The end of one output stream (or its beginning, for legacy output). At
+/// most twice the returned size is kept, so a command that prints without
+/// end does not grow memory.
+#[derive(Default)]
+struct Capture {
+    bytes: Vec<u8>,
+    dropped: bool,
+    keep_head: bool,
+}
 
-    let mut stdout = String::new();
-    let mut stderr = String::new();
-
-    if let Some(ref mut out) = child.stdout {
-        out.read_to_string(&mut stdout).await?;
+impl Capture {
+    fn new(keep_head: bool) -> Self {
+        Self {
+            keep_head,
+            ..Self::default()
+        }
     }
 
-    if let Some(ref mut err) = child.stderr {
-        err.read_to_string(&mut stderr).await?;
+    fn push(&mut self, data: &[u8]) {
+        if self.keep_head {
+            // One byte over the limit is enough to know it was exceeded.
+            let room = (MAX_BYTES + 1).saturating_sub(self.bytes.len());
+            self.bytes.extend_from_slice(&data[..data.len().min(room)]);
+            self.dropped |= data.len() > room;
+            return;
+        }
+        self.bytes.extend_from_slice(data);
+        let keep = MAX_BYTES * 2;
+        // Drain in batches so each byte is moved a bounded number of times.
+        if self.bytes.len() > keep * 2 {
+            let cut = self.bytes.len() - keep;
+            self.bytes.drain(..cut);
+            self.dropped = true;
+        }
     }
 
-    let status = child.wait().await?;
-    let exit_code = status.code().unwrap_or(-1);
+    fn text(&self) -> String {
+        let mut start = 0;
+        if self.dropped && !self.keep_head {
+            // Do not start inside a UTF-8 sequence.
+            while start < self.bytes.len() && (self.bytes[start] & 0xC0) == 0x80 {
+                start += 1;
+            }
+        }
+        String::from_utf8_lossy(&self.bytes[start..]).into_owned()
+    }
+}
 
-    Ok((stdout, stderr, exit_code))
+async fn pump<R: AsyncRead + Unpin>(
+    reader: Option<R>,
+    capture: Arc<Mutex<Capture>>,
+) -> std::io::Result<()> {
+    let Some(mut reader) = reader else {
+        return Ok(());
+    };
+    let mut buf = [0u8; 8192];
+    loop {
+        let n = reader.read(&mut buf).await?;
+        if n == 0 {
+            return Ok(());
+        }
+        capture.lock().unwrap().push(&buf[..n]);
+    }
+}
+
+/// Join stdout and stderr and keep the end of the result.
+fn combine(stdout: &Capture, stderr: &Capture) -> String {
+    let mut output = stdout.text();
+    let err = stderr.text();
+    if !err.is_empty() {
+        if !output.is_empty() {
+            output.push_str("\n--- stderr ---\n");
+        }
+        output.push_str(&err);
+    }
+    let (text, cut) = tail(&output, MAX_LINES, MAX_BYTES);
+    if cut || stdout.dropped || stderr.dropped {
+        format!("{}{}", TRUNCATED, text)
+    } else {
+        text
+    }
+}
+
+/// Earlier output: join the streams, keep the first [`MAX_BYTES`] bytes (cut
+/// at a character boundary) and mark the cut at the end.
+fn combine_legacy(stdout: &Capture, stderr: &Capture) -> String {
+    let mut output = stdout.text();
+    let err = stderr.text();
+    if !err.is_empty() {
+        if !output.is_empty() {
+            output.push_str("\n--- stderr ---\n");
+        }
+        output.push_str(&err);
+    }
+    if output.len() > MAX_BYTES {
+        let mut end = MAX_BYTES;
+        while !output.is_char_boundary(end) {
+            end -= 1;
+        }
+        output.truncate(end);
+        output.push_str(LEGACY_TRUNCATED);
+    }
+    output
+}
+
+/// Keep the last `max_lines` lines and `max_bytes` bytes of `text`, cutting
+/// at line boundaries and never inside a character (`String::truncate`
+/// panicked there).
+fn tail(text: &str, max_lines: usize, max_bytes: usize) -> (String, bool) {
+    let lines: Vec<&str> = text.split('\n').collect();
+    if lines.len() <= max_lines && text.len() <= max_bytes {
+        return (text.to_string(), false);
+    }
+    let mut out: Vec<&str> = Vec::new();
+    let mut bytes = 0;
+    for line in lines.iter().rev() {
+        if out.len() >= max_lines {
+            break;
+        }
+        let size = line.len() + usize::from(!out.is_empty());
+        if bytes + size > max_bytes {
+            if out.is_empty() {
+                let mut start = line.len() - max_bytes;
+                while !line.is_char_boundary(start) {
+                    start += 1;
+                }
+                out.push(&line[start..]);
+            }
+            break;
+        }
+        out.push(line);
+        bytes += size;
+    }
+    out.reverse();
+    (out.join("\n"), true)
+}
+
+#[cfg(unix)]
+fn signal_name(status: ExitStatus) -> Option<String> {
+    use std::os::unix::process::ExitStatusExt;
+    // Numbers shared by Linux and macOS.
+    let name = match status.signal()? {
+        1 => "SIGHUP",
+        2 => "SIGINT",
+        3 => "SIGQUIT",
+        4 => "SIGILL",
+        5 => "SIGTRAP",
+        6 => "SIGABRT",
+        8 => "SIGFPE",
+        9 => "SIGKILL",
+        11 => "SIGSEGV",
+        13 => "SIGPIPE",
+        14 => "SIGALRM",
+        15 => "SIGTERM",
+        other => return Some(other.to_string()),
+    };
+    Some(name.to_string())
+}
+
+#[cfg(not(unix))]
+fn signal_name(_status: ExitStatus) -> Option<String> {
+    None
 }

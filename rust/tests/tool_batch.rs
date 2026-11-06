@@ -173,3 +173,25 @@ fn test_batch_tool_parameters_schema() {
     let schema = tool.parameters_schema();
     assert!(schema["properties"]["tool_calls"].is_object());
 }
+
+/// Every call past the limit of 10 is reported, not only the 11th.
+#[tokio::test]
+async fn test_batch_reports_every_discarded_call() {
+    let temp = TempDir::new().unwrap();
+    let file = temp.path().join("f.txt");
+    fs::write(&file, "x").unwrap();
+    let call = json!({"tool": "read", "parameters": {"filePath": file.to_string_lossy()}});
+    let calls: Vec<_> = (0..13).map(|_| call.clone()).collect();
+
+    let result = BatchTool
+        .execute(json!({ "tool_calls": calls }), &create_context(temp.path()))
+        .await
+        .unwrap();
+    assert_eq!(result.metadata["totalCalls"], 13);
+    assert_eq!(result.metadata["successful"], 10);
+    assert_eq!(result.metadata["failed"], 3);
+    assert_eq!(result.metadata["tools"].as_array().unwrap().len(), 13);
+    assert!(result
+        .output
+        .contains("Executed 10/13 tools successfully. 3 failed."));
+}

@@ -35,23 +35,25 @@ const result = JSON.parse(
 );
 
 describe('served free models (#327)', () => {
-  test('default and compaction start with Kilo Nemotron 3 Super', () => {
-    expect(DEFAULT_MODEL).toBe('kilo/nemotron-3-super-free');
+  test('default and compaction start with Kilo Nemotron 3 Ultra (#335)', () => {
+    expect(DEFAULT_MODEL).toBe('kilo/nemotron-3-ultra-free');
     expect(DEFAULT_COMPACTION_MODELS).toStartWith(
-      '(kilo/nemotron-3-super-free '
+      '(kilo/nemotron-3-ultra-free '
     );
     expect(result.compaction.providerID).toBe('kilo');
-    expect(result.compaction.modelID).toBe('nemotron-3-super-free');
+    expect(result.compaction.modelID).toBe('nemotron-3-ultra-free');
+    expect(result.kilo['nemotron-3-ultra-free'].limit).toEqual({
+      context: 1000000,
+      output: 65536,
+    });
   });
-  test('Kilo alias maps to the exact gateway ID and resolves without a prefix', () => {
-    expect(result.apiModel).toBe('nvidia/nemotron-3-super-120b-a12b:free');
+  test('withdrawn Super alias is no longer listed but still resolves to Ultra (#335)', () => {
+    // The probe still asks for the old `nemotron-3-super-free` alias.
+    expect(Object.keys(result.kilo)).not.toContain('nemotron-3-super-free');
+    expect(result.apiModel).toBe('nvidia/nemotron-3-ultra-550b-a55b:free');
     expect(result.short).toEqual({
       providerID: 'kilo',
-      modelID: 'nemotron-3-super-free',
-    });
-    expect(result.kilo['nemotron-3-super-free'].limit).toEqual({
-      context: 262144,
-      output: 32768,
+      modelID: 'nemotron-3-ultra-free',
     });
   });
   test('all built-in Kilo IDs exist in the gateway snapshot', () => {
@@ -66,7 +68,7 @@ describe('served free models (#327)', () => {
     expect(Object.keys(result.zen).filter((id) => !ids.has(id))).toEqual([]);
   });
   test('auxiliary model selection uses a served Kilo model', () => {
-    expect(result.small).toBe('nemotron-3-super-free');
+    expect(result.small).toBe('nemotron-3-ultra-free');
   });
 });
 

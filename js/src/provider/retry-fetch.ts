@@ -461,6 +461,9 @@ export namespace RetryFetch {
           }));
 
           await sleep(delay, init?.signal ?? undefined);
+          // The failed response is dropped: release its body and connection
+          // now instead of waiting for GC (issue #335). Not awaited.
+          response.body?.cancel().catch(() => {});
           continue;
         }
 
@@ -554,6 +557,8 @@ export namespace RetryFetch {
 
         try {
           await sleep(delay, isolatedSignal);
+          // Retrying: release the dropped 429 body (issue #335).
+          response.body?.cancel().catch(() => {});
         } catch (sleepError) {
           // Check if the original request was aborted (user cancellation)
           // In that case, we should stop retrying

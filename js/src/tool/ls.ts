@@ -48,7 +48,7 @@ export const ListTool = Tool.define('list', {
       .describe('List of glob patterns to ignore')
       .optional(),
   }),
-  async execute(params) {
+  async execute(params, ctx) {
     const searchPath = path.resolve(Instance.directory, params.path || '.');
 
     const ignoreGlobs = IGNORE_PATTERNS.map((p) => `!${p}*`).concat(
@@ -58,6 +58,7 @@ export const ListTool = Tool.define('list', {
     for await (const file of Ripgrep.files({
       cwd: searchPath,
       glob: ignoreGlobs,
+      signal: ctx.abort,
     })) {
       files.push(file);
       if (files.length >= LIMIT) break;

@@ -211,7 +211,7 @@ test('Agent-cli write tool produces 100% compatible JSON output with OpenCode', 
       originalTool.part.state.input.content
     );
 
-    // Output should match (both should be empty string for write tool)
+    // Output should match ("Wrote file successfully." since upstream 66f9bdab32)
     expect(agentTool.part.state.output).toBe(originalTool.part.state.output);
 
     expect(Object.keys(agentTool.part.state.time).sort()).toEqual(

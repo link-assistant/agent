@@ -1,9 +1,10 @@
 import { Decimal } from 'decimal.js';
+import { FileTime } from '../file/time';
 import z from 'zod';
 import { type LanguageModelUsage, type ProviderMetadata } from 'ai';
 import { Bus } from '../bus';
 import { Config } from '../config/file-config';
-import { isVerbose } from '../config/config';
+import { config, isVerbose } from '../config/config';
 import { Identifier } from '../id/id';
 import type { ModelsDev } from '../provider/models';
 import { Storage } from '../storage/storage';
@@ -328,6 +329,7 @@ export namespace Session {
         await Storage.remove(msg);
       }
       await Storage.remove(['session', project.id, sessionID]);
+      FileTime.clear(sessionID);
       Bus.publish(Event.Deleted, {
         info: session,
       });
@@ -757,11 +759,36 @@ export namespace Session {
               )
             )
           : 0;
-      const reasoningTokens = topLevelReasoningTokens || nestedReasoning;
+      // AI SDK 7 reports reasoning under outputTokenDetails.
+      const detailReasoning = safeNum(
+        toNumber(
+          (
+            effectiveUsage as {
+              outputTokenDetails?: { reasoningTokens?: unknown };
+            }
+          ).outputTokenDetails?.reasoningTokens,
+          'outputTokenDetails.reasoningTokens'
+        )
+      );
+      const reasoningTokens =
+        topLevelReasoningTokens || nestedReasoning || detailReasoning;
+
+      // outputTokens already includes reasoning, which is billed separately
+      // below, so take it out to avoid charging it twice (upstream #21047).
+      // Providers that report more reasoning than output count it apart.
+      const rawOutputTokens = safeNum(
+        toNumber(effectiveUsage.outputTokens, 'outputTokens')
+      );
+      // --legacy-token-usage / LINK_ASSISTANT_AGENT_LEGACY_TOKEN_USAGE keeps
+      // the raw figure (reasoning counted in output, as before).
+      const outputTokens =
+        !config.legacyTokenUsage && reasoningTokens <= rawOutputTokens
+          ? rawOutputTokens - reasoningTokens
+          : rawOutputTokens;
 
       const tokens = {
         input: Math.max(0, adjustedInputTokens), // Ensure non-negative
-        output: safeNum(toNumber(effectiveUsage.outputTokens, 'outputTokens')),
+        output: outputTokens,
         reasoning: reasoningTokens,
         cache: {
           write: cacheWriteTokens,

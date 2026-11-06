@@ -5,6 +5,7 @@
 
 import { Bus } from '../bus/index.ts';
 import { errorText } from '../util/error-text.ts';
+import { legacyErrorObject } from '../util/legacy-error-names.ts';
 
 /**
  * Create a subscription for session bus events that outputs events in the selected JSON format.
@@ -142,7 +143,8 @@ export function outputBusEvent({
       timestamp: Date.now(),
       sessionID,
       message: errorText(props.error),
-      error: props.error,
+      // --legacy-error-names maps new error names to the previous ones.
+      error: legacyErrorObject(props.error),
     });
   }
 }
