@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - 'js/src/config/defaults.ts'
       - 'rust/src/defaults.rs'
       - 'scripts/check-default-models.mjs'
@@ -13,6 +15,8 @@ on:
       - '.github/workflows/model-catalogue.yml'
   pull_request:
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - 'js/src/config/defaults.ts'
       - 'rust/src/defaults.rs'
       - 'scripts/check-default-models.mjs'
@@ -35,11 +39,11 @@ env:
 jobs:
   defaults:
     name: Default model availability
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-defaults
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v6
         with:
@@ -58,11 +62,11 @@ jobs:
   # job and on any cancellation a newer run does not explain (#301, #337).
   pipeline-status:
     name: Pipeline Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: always()
     needs:
       - defaults

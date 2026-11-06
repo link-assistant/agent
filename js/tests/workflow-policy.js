@@ -534,3 +534,37 @@ describe('concurrency control', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe('queued writer policy (#340)', () => {
+  test('only non-cancellable writers may use queue: max', () => {
+    for (const { file, body } of workflows) {
+      for (const jobId of listJobs(body)) {
+        const block = getJobBlock(body, jobId);
+        const queue = block.match(/^ {6}queue: (.+)$/m)?.[1];
+        const concurrency = getJobConcurrency(body, jobId);
+        if (concurrency?.group.startsWith('main-writer-')) {
+          expect([file, jobId, queue]).toEqual([file, jobId, 'max']);
+          expect(concurrency.cancelInProgress).toBe('false');
+        } else {
+          expect([file, jobId, queue]).toEqual([file, jobId, undefined]);
+        }
+      }
+    }
+  });
+  test('each publisher explicitly requires credential preflight success', () => {
+    for (const [file, jobs] of Object.entries({
+      'js.yml': ['release', 'instant-release'],
+      'rust.yml': ['auto-release', 'manual-release'],
+    })) {
+      for (const job of jobs) {
+        const block = getJobBlock(
+          workflows.find((workflow) => workflow.file === file).body,
+          job
+        );
+        expect(listNeededJobs(block)).toContain('release-preflight');
+        expect(block).toContain("needs.release-preflight.result == 'success'");
+        expect(block).toContain("github.ref == 'refs/heads/main'");
+      }
+    }
+  });
+});

@@ -4,11 +4,25 @@ on:
   schedule:
     - cron: '19 7 * * *'
   workflow_dispatch:
-  pull_request:
+  push:
+    branches: [main]
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - 'js/src/provider/**'
       - 'js/src/config/defaults.ts'
       - 'scripts/*model*.mjs'
+      - 'js/tests/model-drift.ts'
+      - '.github/workflows/model-drift.yml'
+
+  pull_request:
+    paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
+      - 'js/src/provider/**'
+      - 'js/src/config/defaults.ts'
+      - 'scripts/*model*.mjs'
+      - 'js/tests/model-drift.ts'
       - '.github/workflows/model-drift.yml'
 
 permissions:
@@ -22,7 +36,7 @@ env:
 jobs:
   model-drift:
     name: Check live free model catalogs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-model-drift
@@ -32,6 +46,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      - name: Initialize diagnostics
+        run: mkdir -p ci-logs && echo "Model drift run $GITHUB_SHA" > ci-logs/model-drift.log
       - name: Install dependencies
         run: bun install --frozen-lockfile
         working-directory: js
@@ -46,17 +62,18 @@ jobs:
         with:
           name: model-drift
           path: ci-logs/model-drift.log
+          if-no-files-found: error
 
   # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
   # the run grey instead of red. This gate fails the run on any unsuccessful
   # job and on any cancellation a newer run does not explain (#301, #337).
   pipeline-status:
     name: Pipeline Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: always()
     needs:
       - model-drift

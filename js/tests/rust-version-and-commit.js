@@ -59,7 +59,10 @@ function releaseCheckoutRacingAnotherPush() {
     join(seed, 'rust', 'Cargo.toml'),
     '[package]\nname = "demo"\nversion = "0.1.0"\nedition = "2021"\n'
   );
-  writeFileSync(join(seed, 'rust', 'Cargo.lock'), '# lock\n');
+  writeFileSync(
+    join(seed, 'rust', 'Cargo.lock'),
+    '[[package]]\nname = "demo"\nversion = "0.1.0"\n'
+  );
   writeFileSync(
     join(seed, 'rust', 'changelog.d', '20260101_000000_fix.md'),
     '### Fixed\n\n- A fix\n'
@@ -82,8 +85,8 @@ function releaseCheckoutRacingAnotherPush() {
       `touch '${marker}'`,
       'unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE',
       `cd '${other}' || exit 1`,
-      'echo concurrent > concurrent.txt',
-      'git add concurrent.txt',
+      'mkdir -p js/.changeset && echo concurrent > js/.changeset/concurrent.md',
+      'git add js/.changeset/concurrent.md',
       'git -c user.name=other -c user.email=other@example.com commit -q -m concurrent',
       'git push -q origin main',
       '',

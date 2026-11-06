@@ -23,7 +23,18 @@ export async function pushWithRebaseRetry({
       await push();
       return attempt;
     } catch (error) {
-      if (attempt >= attempts) {
+      const output = [error.message, error.stdout, error.stderr, error.output]
+        .filter(Boolean)
+        .join('\n');
+      if (
+        /GH00[36]|GH013|repository rule|protected branch|permission denied|authentication failed/i.test(
+          output
+        ) ||
+        !/non-fast-forward|fetch first|cannot lock ref.*is at [a-f0-9]+ but expected [a-f0-9]+/i.test(
+          output
+        ) ||
+        attempt >= attempts
+      ) {
         throw error;
       }
       log(

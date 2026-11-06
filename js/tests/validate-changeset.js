@@ -112,6 +112,26 @@ describe('validate-changeset', () => {
     expect(result.output).toContain('This pull request adds no changeset');
   });
 
+  test('documentation-only pull requests do not require a release', () => {
+    const root = repoWithUnreleasedChangeset();
+    writeFileSync(join(root, 'README.md'), '# Documentation update\n');
+    git(root, 'add', '.');
+    git(
+      root,
+      '-c',
+      'user.name=test',
+      '-c',
+      'user.email=test@example.com',
+      'commit',
+      '-q',
+      '-m',
+      'docs'
+    );
+    const result = validate(root);
+    expect(result.status).toBe(0);
+    expect(result.output).toContain('Documentation-only');
+  });
+
   test('passes a pull request that adds one changeset next to a pending one', () => {
     const root = repoWithUnreleasedChangeset();
     commitChangeset(root, 'this-pr.md');

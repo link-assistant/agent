@@ -559,7 +559,8 @@ describe('JS release workflow wiring', () => {
       const releaseJob = workflow
         .split('\n  release:\n')[1]
         .split('\n  instant-release:\n')[0];
-      expect(releaseJob).toContain('git checkout -B main origin/main');
+      expect(releaseJob).not.toContain('git checkout -B main origin/main');
+      expect(releaseJob).toContain('scripts/version-and-commit.mjs');
       expect(workflow).toContain('run: node scripts/recover-js-release.mjs');
       expect(workflow).toContain(
         "steps.recover.outputs.needs_publish == 'true'"
@@ -862,7 +863,7 @@ describe('pushWithRebaseRetry (#337)', () => {
     await expect(
       pushWithRebaseRetry({
         push: async () => {
-          throw new Error('rejected');
+          throw new Error('rejected: non-fast-forward');
         },
         pullRebase: async () => rebases++,
         attempts: 3,

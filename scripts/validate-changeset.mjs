@@ -51,6 +51,28 @@ function getAddedChangesetFiles(changesetDir) {
 
 try {
   const changesetDir = 'js/.changeset';
+  const baseRef = process.env.CHANGESET_BASE_REF || process.env.GITHUB_BASE_REF;
+  if (baseRef) {
+    const changed = execFileSync(
+      'git',
+      ['diff', '--name-only', `origin/${baseRef}...HEAD`],
+      { encoding: 'utf8' }
+    )
+      .trim()
+      .split('\n')
+      .filter(Boolean);
+    if (
+      changed.length > 0 &&
+      changed.every(
+        (file) => file.endsWith('.md') && !file.startsWith('js/.changeset/')
+      )
+    ) {
+      console.log(
+        'Documentation-only pull request; no package release required.'
+      );
+      process.exit(0);
+    }
+  }
   const changesetFiles = getAddedChangesetFiles(changesetDir);
 
   const changesetCount = changesetFiles.length;

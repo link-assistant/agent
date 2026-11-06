@@ -5,12 +5,24 @@ on:
     branches:
       - main
     paths:
+      - '.prettierrc'
+      - '.prettierignore'
+      - '.secretlintrc.json'
+      - '.husky/**'
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - 'rust/**'
       - 'scripts/**'
       - '.github/workflows/rust.yml'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
+      - '.prettierrc'
+      - '.prettierignore'
+      - '.secretlintrc.json'
+      - '.husky/**'
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - 'rust/**'
       - 'scripts/**'
       - '.github/workflows/rust.yml'
@@ -20,6 +32,7 @@ on:
         description: 'Version bump type'
         required: true
         type: choice
+        default: patch
         options:
           - patch
           - minor
@@ -52,26 +65,81 @@ env:
 # templates use):
 #
 #   * read-only checks share `check-<workflow>-<ref>-<job>` and cancel in
-#     progress off the default branch, so a force-push stops only the stale
+#     progress on every branch, so a force-push stops only the stale
 #     copy of that one job instead of queueing the entire workflow;
 #   * jobs that push to main or publish share the repository-wide
 #     `main-writer-...` group and never cancel in progress, so a release is
 #     never interrupted between the version bump and the publish, and the JS
 #     and Rust releases cannot race each other.
 jobs:
+  detect-changes:
+    name: Detect Relevant Changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-detect-changes
+      cancel-in-progress: true
+    outputs:
+      code-changed: ${{ steps.changes.outputs.code-changed }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26.x'
+      - id: changes
+        env:
+          GITHUB_BEFORE_SHA: ${{ github.event.before }}
+        run: node scripts/detect-ci-changes.mjs rust
+
+  release-preflight:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.code-changed == 'true'
+    name: Release Credential Preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-release-preflight
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26.x'
+      - name: Authenticate with crates.io for preflight
+        id: auth
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
+        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+
+      - name: Verify the publishing credential before builds
+        env:
+          PREFLIGHT_MODE: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && 'release' || 'report' }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}
+        run: node scripts/release-preflight.mjs crates
+
   # Changelog fragment check - only runs on PRs
   changelog-check:
     name: Changelog Fragment Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-changelog-check
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Guard CI-managed package versions
+        run: node scripts/check-version.mjs
 
       - name: Check for changelog fragments
         # BASE_REF is a branch name. Interpolating it directly into the script
@@ -98,13 +166,13 @@ jobs:
   # Lint and format check
   lint:
     name: Lint and Format Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-lint
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    needs: [changelog-check]
-    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changelog-check.result == 'success' || needs.changelog-check.result == 'skipped') }}
+      cancel-in-progress: true
+    needs: [changelog-check, release-preflight, detect-changes]
+    if: ${{ !cancelled() && needs.detect-changes.outputs.code-changed == 'true' && needs.release-preflight.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changelog-check.result == 'success' || needs.changelog-check.result == 'skipped') }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -151,7 +219,7 @@ jobs:
         working-directory: rust
 
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features
+        run: cargo clippy --locked --all-targets --all-features
         working-directory: rust
 
       - name: Build documentation
@@ -159,7 +227,7 @@ jobs:
         # reported by clippy or the tests, so they are denied here.
         env:
           RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --all-features
+        run: cargo doc --locked --no-deps --all-features
         working-directory: rust
 
       - name: Check file size limit
@@ -172,16 +240,23 @@ jobs:
     timeout-minutes: 30
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-test-${{ matrix.os }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    needs: [changelog-check]
-    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changelog-check.result == 'success' || needs.changelog-check.result == 'skipped') }}
+      cancel-in-progress: true
+    needs: [changelog-check, lint]
+    if: ${{ !cancelled() && needs.lint.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changelog-check.result == 'success' || needs.changelog-check.result == 'skipped') }}
     strategy:
       fail-fast: false
       matrix:
         # Note: Windows skipped while bash tool tests use Unix-specific commands
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Simulate fresh merge with base branch (PR only)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: bash scripts/simulate-fresh-merge.sh
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
@@ -204,22 +279,29 @@ jobs:
       # timeout-minutes as cancelled, not failed, so a suite that quietly
       # doubles in runtime would never be reported (issue #301).
       - name: Run tests
-        run: bash ../scripts/run-with-budget-warning.sh 1200 "Cargo test suite" cargo test --all-features --verbose
+        run: bash ../scripts/run-with-budget-warning.sh 1200 "Cargo test suite" cargo test --locked --all-features --verbose
         working-directory: rust
         # Note: Doc tests skipped - this is a binary crate without lib target
 
   # Build package - only runs if lint and test pass
   build:
     name: Build Package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-build
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    needs: [lint, test]
+      cancel-in-progress: true
+    needs: [release-preflight, lint, test]
     if: ${{ !cancelled() && needs.lint.result == 'success' && needs.test.result == 'success' }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Simulate fresh merge with base branch (PR only)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: bash scripts/simulate-fresh-merge.sh
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
@@ -242,21 +324,22 @@ jobs:
         working-directory: rust
 
       - name: Build release
-        run: bash ../scripts/run-with-budget-warning.sh 900 "Cargo release build" cargo build --release --verbose
+        run: bash ../scripts/run-with-budget-warning.sh 900 "Cargo release build" cargo build --locked --release --verbose
         working-directory: rust
 
   # Automatic release on push to main using changelog fragments
   auto-release:
     name: Auto Release
-    needs: [lint, test, build]
+    needs: [release-preflight, lint, test, build]
     # Use always() to ensure this job runs even when changelog-check was skipped (on push events)
     # Without always(), GitHub Actions skips jobs when any transitive dependency was skipped
-    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success' }}
-    runs-on: ubuntu-latest
+    if: ${{ !cancelled() && needs.release-preflight.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success' }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     concurrency:
       group: main-writer-${{ github.repository }}-main
       cancel-in-progress: false
+      queue: max
     permissions:
       id-token: write
       contents: write
@@ -314,7 +397,7 @@ jobs:
 
       - name: Build release
         if: steps.check.outputs.should_release == 'true'
-        run: cargo build --release
+        run: cargo build --locked --release
         working-directory: rust
 
       # crates-io-auth-action reports a missing crates.io trusted publisher as
@@ -325,7 +408,6 @@ jobs:
       - name: Authenticate with crates.io (trusted publishing)
         id: prm_auth
         # Trusted publishing first; the publish step falls back to the token secret.
-        continue-on-error: true
         if: steps.check.outputs.should_release == 'true' && vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
 
@@ -364,14 +446,15 @@ jobs:
   # Manual release via workflow_dispatch
   manual-release:
     name: Manual Release
-    needs: [lint, test, build]
+    needs: [release-preflight, lint, test, build]
     # Use always() to ensure this job runs even when changelog-check was skipped
-    if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success' }}
-    runs-on: ubuntu-latest
+    if: ${{ !cancelled() && needs.release-preflight.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success' }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     concurrency:
       group: main-writer-${{ github.repository }}-main
       cancel-in-progress: false
+      queue: max
     permissions:
       id-token: write
       contents: write
@@ -419,7 +502,7 @@ jobs:
 
       - name: Build release
         if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
-        run: cargo build --release
+        run: cargo build --locked --release
         working-directory: rust
 
       # crates-io-auth-action reports a missing crates.io trusted publisher as
@@ -430,7 +513,6 @@ jobs:
       - name: Authenticate with crates.io (trusted publishing)
         id: prm_auth
         # Trusted publishing first; the publish step falls back to the token secret.
-        continue-on-error: true
         if: (steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true') && vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
 
@@ -472,13 +554,15 @@ jobs:
   # Observing every job here makes that visible.
   pipeline-status:
     name: Pipeline Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: always()
     needs:
+      - detect-changes
+      - release-preflight
       - changelog-check
       - lint
       - test

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { syncReleaseCheckout } from './release-safety.mjs';
 
 /**
  * Publish to npm using OIDC trusted publishing
@@ -228,7 +229,7 @@ async function main() {
   try {
     if (shouldPull) {
       // Pull the latest changes we just pushed
-      await $`git pull origin main`;
+      syncReleaseCheckout({ jsRoot });
     }
 
     // Get current package name and version

@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+import {
+  assertSafeAdvance,
+  assertStagedReleaseMetadata,
+  syncReleaseCheckout,
+} from './release-safety.mjs';
 
 /**
  * Version packages and commit to main
@@ -183,6 +188,7 @@ async function main() {
     const remoteHead = remoteHeadResult.stdout.trim();
 
     if (localHead !== remoteHead) {
+      assertSafeAdvance(localHead, remoteHead, { jsRoot });
       console.log(
         `Remote main has advanced (local: ${localHead}, remote: ${remoteHead})`
       );
@@ -258,6 +264,7 @@ async function main() {
 
       // Stage all changes (package.json, package-lock.json, CHANGELOG.md, deleted changesets)
       await $`git add -A`;
+      assertStagedReleaseMetadata({ jsRoot });
 
       // Commit with version number as message
       const commitMessage = newVersion;
@@ -267,7 +274,7 @@ async function main() {
       // Push directly to main, rebasing when another merge landed first
       await pushWithRebaseRetry({
         push: () => $`git push origin main`,
-        pullRebase: () => $`git pull --rebase origin main`,
+        pullRebase: () => syncReleaseCheckout({ jsRoot }),
       });
 
       console.log('\u2705 Version bump committed and pushed to main');
