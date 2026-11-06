@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "description": "Locked CI credential scanner",
+  "devDependencies": {
+    "@secretlint/secretlint-rule-preset-recommend": "13.0.7",
+    "secretlint": "13.0.7"
+  }
+}

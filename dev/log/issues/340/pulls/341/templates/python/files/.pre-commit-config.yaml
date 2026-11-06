@@ -1,0 +1,33 @@
+repos:
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^\.github/actions/artifact/dist/.*\.mjs$
+      - id: end-of-file-fixer
+        exclude: ^\.github/actions/artifact/dist/.*\.mjs$
+      - id: check-yaml
+      - id: check-added-large-files
+        exclude: ^\.github/actions/artifact/dist/.*\.mjs$
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: debug-statements
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [pytest, pytest-asyncio]
+        args: [--strict, --ignore-missing-imports]

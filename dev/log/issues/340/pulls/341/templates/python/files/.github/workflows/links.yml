@@ -1,0 +1,167 @@
+name: Broken Link Checker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.md'
+      - '**.html'
+      - '.github/workflows/links.yml'
+      - 'lychee.toml'
+      - '.lycheeignore'
+      - 'scripts/check_web_archive.py'
+      - 'scripts/recheck_broken_links.py'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.md'
+      - '**.html'
+      - '.github/workflows/links.yml'
+      - 'lychee.toml'
+      - '.lycheeignore'
+      - 'scripts/check_web_archive.py'
+      - 'scripts/recheck_broken_links.py'
+  workflow_dispatch:
+  # Links rot without commits: recheck weekly even when no Markdown or HTML
+  # changed, so a dead external URL is caught by the schedule instead of the
+  # next unrelated pull request (issue #131).
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  link-checker:
+    name: Check Links
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-link-checker
+      cancel-in-progress: true
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # lychee keeps cached results for --max-cache-age 1d and discards an older
+      # cache with "[WARN] Cache is too old". Scoping the key to the UTC day
+      # restores only a cache saved the same day, which lychee always accepts
+      # (issue #131).
+      - name: Name today's link cache
+        id: link-cache
+        run: echo "day=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore lychee cache
+        uses: actions/cache@v5
+        with:
+          path: .lycheecache
+          key: cache-lychee-${{ steps.link-cache.outputs.day }}-${{ github.sha }}
+          restore-keys: cache-lychee-${{ steps.link-cache.outputs.day }}-
+
+      - name: Check links with lychee
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --config lychee.toml
+            --verbose
+            --no-progress
+            --cache
+            --max-cache-age 1d
+            --max-retries 3
+            --timeout 30
+            --hidden
+            --extensions md,html
+            --exclude-path docs/case-studies
+            --exclude-path scripts/fixtures
+            .
+          fail: false
+          output: lychee/out.md
+          jobSummary: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Re-check transient and unanswered links
+        # Retry transport failures and 429/5xx responses with backoff.
+        # Throttled GitHub blob/tree pages also use the Contents API.
+        # Other status-coded failures remain final.
+        if: steps.lychee.outputs.exit_code != 0
+        id: recheck
+        run: python scripts/recheck_broken_links.py
+        env:
+          LYCHEE_OUTPUT: lychee/out.md
+          RECOVERED_OUTPUT: lychee/recovered.txt
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check broken links against Web Archive
+        # `!= 'true'`, never `== 'false'`: a skipped re-check leaves the
+        # output empty, and only the != form fails safe.
+        if: >-
+          steps.lychee.outputs.exit_code != 0 &&
+          steps.recheck.outputs.all_recovered != 'true'
+        id: webarchive
+        run: python scripts/check_web_archive.py
+        env:
+          LYCHEE_OUTPUT: lychee/out.md
+          RECOVERED_URLS: lychee/recovered.txt
+          LYCHEE_EXIT_CODE: ${{ steps.lychee.outputs.exit_code }}
+
+      - name: Fail if broken links were found
+        if: >-
+          always() &&
+          steps.lychee.outputs.exit_code != 0 &&
+          steps.recheck.outputs.all_recovered != 'true'
+        run: |
+          echo "::error::Broken live links were detected."
+          echo ""
+          echo "What happened:"
+          echo "  lychee found one or more broken links in the *.md and *.html files of this repository."
+          echo "  An available Web Archive snapshot is a suggested replacement; it does not make the live link valid."
+          echo ""
+          echo "How to fix:"
+          echo "  1. Review the 'Check links with lychee' step above for the broken links."
+          echo "  2. Replace links with suggested archive.org URLs when available."
+          echo "  3. Otherwise find an updated URL, remove the link, or add a known false positive to .lycheeignore."
+          echo ""
+          echo "Report location: lychee/out.md."
+          exit 1
+
+      - name: Upload lychee report
+        if: failure()
+        uses: $/.github/actions/artifact
+        with:
+          name: lychee-report
+          path: lychee/out.md
+          if-no-files-found: error
+
+  # Terminal status gate (issue #69): GitHub reports jobs killed by
+  # timeout-minutes as cancelled. Observe every other job so a timeout on main
+  # becomes a visible failure instead of a grey run, while a run that was
+  # superseded by a newer commit is recognised as expected churn.
+  pipeline-status:
+    name: Pipeline Status
+    needs:
+      - link-checker
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check aggregate pipeline status
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

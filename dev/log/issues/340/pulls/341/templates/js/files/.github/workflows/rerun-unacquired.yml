@@ -1,0 +1,57 @@
+name: Rerun unacquired jobs
+
+# When GitHub cannot provide a hosted runner (usually macOS arm64 under
+# capacity constraints) it gives up on the job with "The job was not acquired
+# by Runner of type hosted even after multiple attempts". No code ran, yet the
+# run is red and a push to main releases nothing. This reruns such runs, at
+# most twice, and only when no job that ran steps failed.
+on:
+  # Runs the default branch's code, reads only numeric run IDs from the event,
+  # and never checks out the commit of the run it inspects.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows:
+      - Checks and release
+      - Example app
+      - Security
+      - Broken Link Checker
+      - Workflows
+      - JavaScript-first mixed-language example
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  rerun:
+    name: Rerun jobs that never got a runner
+    # Attempts 1 and 2 may be rerun; the script repeats these checks.
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.run_attempt < 3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: rerun-unacquired-${{ github.event.workflow_run.id }}
+      cancel-in-progress: false
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+
+      - name: Rerun the run when only runner acquisition failed
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/rerun-unacquired.mjs rerun

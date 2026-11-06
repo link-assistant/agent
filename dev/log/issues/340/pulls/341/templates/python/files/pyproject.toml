@@ -1,0 +1,165 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "my-package"
+version = "0.1.0"
+description = "A Python package template for AI-driven development"
+readme = "README.md"
+license = {text = "Unlicense"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"},
+]
+keywords = ["template", "python", "ai-driven"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: The Unlicense (Unlicense)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0,<0.9",
+    "mypy>=1.13.0,<2.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pre-commit>=4.0.0",
+    "scriv[toml]>=1.7.0",
+]
+docs = [
+    "sphinx>=7.4",
+    "furo>=2024.8.6",
+    "myst-parser>=3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/link-foundation/python-ai-driven-development-pipeline-template"
+Repository = "https://github.com/link-foundation/python-ai-driven-development-pipeline-template"
+Issues = "https://github.com/link-foundation/python-ai-driven-development-pipeline-template/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/my_package"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "DTZ",    # flake8-datetimez
+    "T10",    # flake8-debugger
+    "EM",     # flake8-errmsg
+    "ISC",    # flake8-implicit-str-concat
+    "ICN",    # flake8-import-conventions
+    "PIE",    # flake8-pie
+    "PT",     # flake8-pytest-style
+    "Q",      # flake8-quotes
+    "RSE",    # flake8-raise
+    "RET",    # flake8-return
+    "SIM",    # flake8-simplify
+    "TID",    # flake8-tidy-imports
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate
+    "PL",     # pylint
+    "PERF",   # perflint
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "PLR0913", # too many arguments
+    "PLR2004", # magic value comparison
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",    # allow assert in tests
+    "ARG",     # allow unused arguments in tests
+    "PLR2004", # allow magic values in tests
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+skip-magic-trailing-comma = false
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_equality = true
+extra_checks = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+# Scriv configuration for changelog management
+# Similar to @changesets/cli but for Python projects
+[tool.scriv]
+# Fragment format (markdown for better GitHub compatibility)
+format = "md"
+# Fragment directory
+fragment_directory = "changelog.d"
+# Changelog file
+output_file = "CHANGELOG.md"
+# Categories for changelog entries
+categories = [
+    "Removed",
+    "Added",
+    "Changed",
+    "Deprecated",
+    "Fixed",
+    "Security",
+]
+# Scriv supplies the Markdown heading marks; keep the title text separate.
+md_header_level = 2
+entry_title_template = "[{{ version }}] - {{ date.strftime('%Y-%m-%d') }}"
+# Insert marker (where new entries go)
+insert_marker = "<!-- scriv-insert-here -->"
+# Main branch name
+main_branches = ["main"]
+# New fragment template
+new_fragment_template = """file:changelog.d/fragment_template.md.j2
+"""

@@ -1,0 +1,68 @@
+[package]
+name = "example-sum-package-name"
+version = "0.22.0"
+edition = "2021"
+description = "A Rust package template for AI-driven development"
+readme = "README.md"
+license = "Unlicense"
+keywords = ["template", "rust", "ai-driven"]
+categories = ["development-tools"]
+repository = "https://github.com/link-foundation/rust-ai-driven-development-pipeline-template"
+documentation = "https://github.com/link-foundation/rust-ai-driven-development-pipeline-template"
+rust-version = "1.70"
+
+# Narrow allowlist of files shipped in the published `.crate` archive.
+# Keeping this list tight prevents docs, case studies, generated CI artifacts,
+# changelog fragments, and experiments from silently inflating the release
+# archive past the crates.io 10 MiB upload limit. See issue #58.
+include = [
+    "src/**/*.rs",
+    "examples/**/*.rs",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+]
+
+[lib]
+name = "example_sum_package_name"
+path = "src/lib.rs"
+
+[[bin]]
+name = "example-sum-package-name"
+path = "src/main.rs"
+
+[dependencies]
+lino-arguments = "0.3"
+clap = { version = "4.4", features = ["derive", "env"] }
+
+[dev-dependencies]
+regex = "1"
+serde_json = "1"
+walkdir = "2"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+# Allow some common patterns
+module_name_repetitions = "allow"
+too_many_lines = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[[test]]
+name = "unit"
+path = "tests/unit/mod.rs"
+
+[[test]]
+name = "integration"
+path = "tests/integration/mod.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

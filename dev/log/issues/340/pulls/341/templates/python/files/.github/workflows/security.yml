@@ -1,0 +1,164 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  dependency-audit:
+    name: Audit Resolved Python Dependencies
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-dependency-audit
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Audit pyproject.toml and docs/requirements.txt
+        run: python scripts/audit_dependencies.py
+
+  # The Python audit above cannot see npm. The artifact action bundles its
+  # package-lock.json into the dist/ code that every artifact transfer runs,
+  # so each committed npm lockfile is audited on every run, scheduled ones
+  # included (issue #132).
+  npm-audit:
+    name: Audit npm Lockfiles
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-npm-audit
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Audit every committed package-lock.json
+        env:
+          NPM_AUDIT_LEVEL: moderate
+        run: bash scripts/audit-npm-locks.sh
+
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # The compare API truncates at 300 files. This small template always scans
+    # the full source, retaining every default query and both languages.
+    env:
+      CODEQL_ACTION_DIFF_INFORMED_QUERIES: 'false'
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-codeql-${{ matrix.language }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, actions]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v4
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v4
+        with:
+          output: codeql-results
+
+      - name: Reject CodeQL findings
+        run: python scripts/check_codeql_results.py codeql-results
+
+      - name: Preserve CodeQL reports
+        if: always()
+        uses: $/.github/actions/artifact
+        with:
+          name: codeql-${{ matrix.language }}
+          path: codeql-results
+          if-no-files-found: error
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check dependency graph availability
+        id: graph
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bash scripts/check-dependency-graph.sh
+
+      - name: Review dependency changes
+        if: github.event_name == 'pull_request' && steps.graph.outputs.enabled == 'true'
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  # Terminal status gate (issue #69): GitHub reports jobs killed by
+  # timeout-minutes as cancelled. Observe every other job so a timeout on main
+  # becomes a visible failure instead of a grey run, while a run that was
+  # superseded by a newer commit is recognised as expected churn.
+  pipeline-status:
+    name: Pipeline Status
+    needs:
+      - dependency-audit
+      - npm-audit
+      - codeql
+      - dependency-review
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check aggregate pipeline status
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

@@ -1,0 +1,616 @@
+zizmor	Set up job	﻿2026-11-06T22:38:29.8151647Z Current runner version: '2.338.2'
+zizmor	Set up job	2026-11-06T22:38:29.8170950Z ##[group]Runner Image Provisioner
+zizmor	Set up job	2026-11-06T22:38:29.8171530Z Hosted Compute Agent
+zizmor	Set up job	2026-11-06T22:38:29.8171877Z Version: 20261028.624
+zizmor	Set up job	2026-11-06T22:38:29.8172304Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+zizmor	Set up job	2026-11-06T22:38:29.8172740Z Build Date: 2026-10-28T21:51:42Z
+zizmor	Set up job	2026-11-06T22:38:29.8173247Z Worker ID: {6e6c4b89-6efc-42e2-83dc-5af1f1eddb04}
+zizmor	Set up job	2026-11-06T22:38:29.8173674Z Region: northcentralus
+zizmor	Set up job	2026-11-06T22:38:29.8174011Z Cloud: Azure
+zizmor	Set up job	2026-11-06T22:38:29.8174388Z ##[endgroup]
+zizmor	Set up job	2026-11-06T22:38:29.8175184Z ##[group]Operating System
+zizmor	Set up job	2026-11-06T22:38:29.8175585Z Ubuntu
+zizmor	Set up job	2026-11-06T22:38:29.8175950Z 26.04.1
+zizmor	Set up job	2026-11-06T22:38:29.8176266Z LTS
+zizmor	Set up job	2026-11-06T22:38:29.8176619Z ##[endgroup]
+zizmor	Set up job	2026-11-06T22:38:29.8177125Z ##[group]Runner Image
+zizmor	Set up job	2026-11-06T22:38:29.8177572Z Image: ubuntu-26.04
+zizmor	Set up job	2026-11-06T22:38:29.8177933Z Version: 20261101.186.1
+zizmor	Set up job	2026-11-06T22:38:29.8178556Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261101.186/images/ubuntu/Ubuntu2604-Readme.md
+zizmor	Set up job	2026-11-06T22:38:29.8179620Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261101.186
+zizmor	Set up job	2026-11-06T22:38:29.8180251Z ##[endgroup]
+zizmor	Set up job	2026-11-06T22:38:29.8180921Z ##[group]GITHUB_TOKEN Permissions
+zizmor	Set up job	2026-11-06T22:38:29.8182211Z Contents: read
+zizmor	Set up job	2026-11-06T22:38:29.8182581Z Metadata: read
+zizmor	Set up job	2026-11-06T22:38:29.8182929Z ##[endgroup]
+zizmor	Set up job	2026-11-06T22:38:29.8184398Z Secret source: Actions
+zizmor	Set up job	2026-11-06T22:38:29.8185120Z Cache mode: write
+zizmor	Set up job	2026-11-06T22:38:29.8185604Z Prepare workflow directory
+zizmor	Set up job	2026-11-06T22:38:29.8441419Z Prepare all required actions
+zizmor	Set up job	2026-11-06T22:38:29.8472892Z Getting action download info
+zizmor	Set up job	2026-11-06T22:38:30.0615241Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+zizmor	Set up job	2026-11-06T22:38:30.1320280Z Download action repository 'zizmorcore/zizmor-action@v0.6.2' (SHA:3dc1ecc9bcb9e94e9b2c709687979e1298497054)
+zizmor	Set up job	2026-11-06T22:38:30.3727821Z Getting action download info
+zizmor	Set up job	2026-11-06T22:38:30.4764174Z Download action repository 'github/codeql-action@7188fc363630916deb702c7fdcf4e481b751f97a' (SHA:7188fc363630916deb702c7fdcf4e481b751f97a)
+zizmor	Set up job	2026-11-06T22:38:30.9220644Z Complete job name: zizmor
+zizmor	Run actions/checkout@v6	﻿2026-11-06T22:38:30.9844456Z ##[group]Run actions/checkout@v6
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9845261Z with:
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9845778Z   persist-credentials: false
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9846416Z   repository: link-assistant/agent
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9851967Z   token: ***
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9852465Z   ssh-strict: true
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9852981Z   ssh-user: git
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9853474Z   clean: true
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9854005Z   sparse-checkout-cone-mode: true
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9854631Z   fetch-depth: 1
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9855150Z   fetch-tags: false
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9855681Z   show-progress: true
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9856220Z   lfs: false
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9856707Z   submodules: false
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9857331Z   set-safe-directory: true
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9857938Z   allow-unsafe-pr-checkout: false
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9858657Z env:
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9859128Z   GIT_CONFIG_COUNT: 1
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9859700Z   GIT_CONFIG_KEY_0: init.defaultBranch
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9860347Z   GIT_CONFIG_VALUE_0: main
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:30.9860939Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.1994173Z Syncing repository: link-assistant/agent
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.1996762Z ##[group]Getting Git version info
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.1997783Z Working directory is '/home/runner/work/agent/agent'
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.1999055Z [command]/usr/bin/git version
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2002793Z git version 2.56.0
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2024676Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2031289Z Temporarily overriding HOME='/home/runner/work/_temp/dfbb7b2d-3595-4a0f-ae06-d84f20e14d49' before making global git config changes
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2034088Z Adding repository directory to the temporary git global config as a safe directory
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2036246Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2092791Z Deleting the contents of '/home/runner/work/agent/agent'
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2098326Z ##[group]Determining repository object format
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2099931Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2101175Z ##[group]Initializing the repository
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.2102355Z [command]/usr/bin/git init /home/runner/work/agent/agent
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3056693Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3067928Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3152473Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3153436Z ##[group]Disabling automatic garbage collection
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3155010Z [command]/usr/bin/git config --local gc.auto 0
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3183583Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3184551Z ##[group]Setting up auth
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3185179Z Removing SSH command configuration
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3190000Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3219991Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3557961Z Removing HTTP extra header
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3563929Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3595315Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3812579Z Removing includeIf entries pointing to credentials config files
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3817565Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.3846568Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.4073101Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.4107499Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.4139547Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.4181843Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.4213768Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.4239463Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.4240960Z ##[group]Fetching the repository
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:31.4246330Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b85b1f09f46db82e0d933e920eb091aba79c64bb:refs/remotes/origin/main
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7263500Z From https://github.com/link-assistant/agent
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7264429Z  * [new ref]         b85b1f09f46db82e0d933e920eb091aba79c64bb -> origin/main
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7275946Z [command]/usr/bin/git branch --list --remote origin/main
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7327352Z   origin/main
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7334842Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7356490Z b85b1f09f46db82e0d933e920eb091aba79c64bb
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7365022Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7366525Z ##[group]Determining the checkout info
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7367570Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7373179Z [command]/usr/bin/git sparse-checkout disable
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7452099Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7477962Z ##[group]Checking out the ref
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:32.7560027Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0151500Z Reset branch 'main'
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0154401Z branch 'main' set up to track 'origin/main'.
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0186505Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0229129Z [command]/usr/bin/git log -1 --format=%H
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0253333Z b85b1f09f46db82e0d933e920eb091aba79c64bb
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0262435Z ##[group]Removing auth
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0262808Z Removing SSH command configuration
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0265876Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0294279Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0525394Z Removing HTTP extra header
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0529699Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0556395Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0775490Z Removing includeIf entries pointing to credentials config files
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0775920Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0805307Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0805815Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0806189Z includeif.gitdir:/github/workspace/.git.path
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0806472Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0814204Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0833330Z /home/runner/work/_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0841690Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0870493Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0890598Z /home/runner/work/_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0899137Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0931452Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0951339Z /github/runner_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0958172Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.0984376Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.1003088Z /github/runner_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.1009486Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.1043124Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.1255936Z Removing credentials config '/home/runner/work/_temp/git-credentials-7c98d362-7cb9-42a0-9360-12129daed957.config'
+zizmor	Run actions/checkout@v6	2026-11-06T22:38:33.1264576Z ##[endgroup]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	﻿2026-11-06T22:38:33.1489163Z ##[group]Run zizmorcore/zizmor-action@v0.6.2
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1489369Z with:
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1489503Z   advanced-security: false
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1489649Z   annotations: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1489781Z   config: .github/zizmor.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1489928Z   min-confidence: medium
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1490064Z   inputs: .
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1490181Z   collect: default
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1490312Z   online-audits: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1490502Z   persona: regular
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1490655Z   version: latest
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1492132Z   token: ***
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1492249Z   color: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1492373Z   fail-on-no-inputs: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1492506Z env:
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1492622Z   GIT_CONFIG_COUNT: 1
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1492763Z   GIT_CONFIG_KEY_0: init.defaultBranch
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1492928Z   GIT_CONFIG_VALUE_0: main
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1493065Z ##[endgroup]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1534423Z ##[start-action display=Run zizmor;id=__zizmorcore_zizmor-action.run-zizmor]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1565398Z ##[group]Run "${GITHUB_ACTION_PATH}/action.sh"
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1565668Z ^[[36;1m"${GITHUB_ACTION_PATH}/action.sh"^[[0m
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1612651Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1612875Z env:
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1613007Z   GIT_CONFIG_COUNT: 1
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1613151Z   GIT_CONFIG_KEY_0: init.defaultBranch
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1613315Z   GIT_CONFIG_VALUE_0: main
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1613453Z   GHA_ZIZMOR_INPUTS: .
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1613590Z   GHA_ZIZMOR_COLLECT: default
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1613740Z   GHA_ZIZMOR_ONLINE_AUDITS: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1613892Z   GHA_ZIZMOR_PERSONA: regular
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1614038Z   GHA_ZIZMOR_MIN_SEVERITY: 
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1614194Z   GHA_ZIZMOR_MIN_CONFIDENCE: medium
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1614350Z   GHA_ZIZMOR_VERSION: latest
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1615882Z   GHA_ZIZMOR_TOKEN: ***
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1616025Z   GHA_ZIZMOR_ADVANCED_SECURITY: false
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1616192Z   GHA_ZIZMOR_COLOR: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1616340Z   GHA_ZIZMOR_ANNOTATIONS: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1616498Z   GHA_ZIZMOR_CONFIG: .github/zizmor.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1616665Z   GHA_ZIZMOR_FAIL_ON_NO_INPUTS: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1616827Z ##[endgroup]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.1734224Z ##[group]Pulling zizmor image
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.6120437Z ghcr.io/zizmorcore/zizmor@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284: Pulling from zizmorcore/zizmor
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7737425Z 4f4fb700ef54: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7737815Z a66283bef834: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7738077Z f1dc41da0ac6: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7738327Z 2e3139e176fe: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7740477Z c920184a3208: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7741074Z 9201e51fe8c1: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7741744Z 69cbafd2417b: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7742120Z 7fc117d2446a: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7742535Z 8d99fd8fea9c: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7742930Z 5f460b97a17e: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7743307Z cdea145aa115: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7743675Z b92857818105: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.7744040Z c621f68b4dc2: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.8491861Z 4f4fb700ef54: Already exists
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.8497559Z a66283bef834: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9490643Z c920184a3208: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9492383Z 9201e51fe8c1: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9494293Z 69cbafd2417b: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9496398Z b92857818105: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9498388Z f1dc41da0ac6: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9501015Z 2e3139e176fe: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9504078Z 7fc117d2446a: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9505598Z 8d99fd8fea9c: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9508339Z 5f460b97a17e: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:33.9510097Z cdea145aa115: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.0491279Z c621f68b4dc2: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.0529190Z a66283bef834: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1479003Z bd458b1492e6: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1491432Z c920184a3208: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1505799Z 9201e51fe8c1: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1521815Z 69cbafd2417b: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1529324Z b92857818105: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1536194Z f1dc41da0ac6: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1547374Z 2e3139e176fe: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1555646Z 7fc117d2446a: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1557425Z 8d99fd8fea9c: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1565604Z 5f460b97a17e: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.1577748Z cdea145aa115: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.2652872Z 4f4fb700ef54: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.2661842Z c621f68b4dc2: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.2662296Z Digest: sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.2662967Z Status: Downloaded newer image for ghcr.io/zizmorcore/zizmor@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.2737989Z ghcr.io/zizmorcore/zizmor:latest@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:34.2758849Z ##[endgroup]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:36.5725975Z ^[[32m INFO^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 zizmor v1.29.0
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:37.1872154Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/dependency-freshness.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:37.3324884Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/integration-tests.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:37.4978995Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/js.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:37.6440219Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/links.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:37.6448600Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/model-catalogue.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:37.8244868Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/model-drift.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:37.8260859Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/model-tests.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:38.0963440Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/rust.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:38.3448779Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/security.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:38.4987476Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/workflows.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:38.5984673Z ##[end-action id=__zizmorcore_zizmor-action.run-zizmor;outcome=success;conclusion=success;duration_ms=5444]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:38.5989119Z ##[start-action display=Upload SARIF file to GitHub Advanced Security;id=__zizmorcore_zizmor-action.__github_codeql-action]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-06T22:38:38.6001259Z ##[end-action id=__zizmorcore_zizmor-action.__github_codeql-action;outcome=skipped;conclusion=skipped;duration_ms=0]
+zizmor	Post Run zizmorcore/zizmor-action@v0.6.2	﻿2026-11-06T22:38:38.6088587Z Post job cleanup.
+zizmor	Post Run actions/checkout@v6	﻿2026-11-06T22:38:38.6129485Z Post job cleanup.
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.6724726Z [command]/usr/bin/git version
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.6759186Z git version 2.56.0
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.6784816Z Temporarily overriding HOME='/home/runner/work/_temp/f3d0d8bb-f178-4dc2-8e9e-30ca8752e028' before making global git config changes
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.6785589Z Adding repository directory to the temporary git global config as a safe directory
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.6787661Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.6816179Z Removing SSH command configuration
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.6820718Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.6848004Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.7095618Z Removing HTTP extra header
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.7096137Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.7128606Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.7350252Z Removing includeIf entries pointing to credentials config files
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.7356291Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+zizmor	Post Run actions/checkout@v6	2026-11-06T22:38:38.7384379Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+zizmor	Complete job	﻿2026-11-06T22:38:38.7732501Z Cleaning up orphan processes
+actionlint	Set up job	﻿2026-11-06T22:38:30.6268907Z Current runner version: '2.338.2'
+actionlint	Set up job	2026-11-06T22:38:30.6291365Z ##[group]Runner Image Provisioner
+actionlint	Set up job	2026-11-06T22:38:30.6292144Z Hosted Compute Agent
+actionlint	Set up job	2026-11-06T22:38:30.6292638Z Version: 20261028.624
+actionlint	Set up job	2026-11-06T22:38:30.6293202Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+actionlint	Set up job	2026-11-06T22:38:30.6293842Z Build Date: 2026-10-28T21:51:42Z
+actionlint	Set up job	2026-11-06T22:38:30.6294405Z Worker ID: {0b64a843-d883-4646-9eee-44ddb81217f0}
+actionlint	Set up job	2026-11-06T22:38:30.6294964Z Region: westus2
+actionlint	Set up job	2026-11-06T22:38:30.6295499Z Cloud: Azure
+actionlint	Set up job	2026-11-06T22:38:30.6295961Z ##[endgroup]
+actionlint	Set up job	2026-11-06T22:38:30.6297470Z ##[group]Operating System
+actionlint	Set up job	2026-11-06T22:38:30.6298035Z Ubuntu
+actionlint	Set up job	2026-11-06T22:38:30.6298457Z 26.04.1
+actionlint	Set up job	2026-11-06T22:38:30.6298936Z LTS
+actionlint	Set up job	2026-11-06T22:38:30.6299391Z ##[endgroup]
+actionlint	Set up job	2026-11-06T22:38:30.6299868Z ##[group]Runner Image
+actionlint	Set up job	2026-11-06T22:38:30.6300367Z Image: ubuntu-26.04
+actionlint	Set up job	2026-11-06T22:38:30.6300840Z Version: 20261101.186.1
+actionlint	Set up job	2026-11-06T22:38:30.6301769Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261101.186/images/ubuntu/Ubuntu2604-Readme.md
+actionlint	Set up job	2026-11-06T22:38:30.6303179Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261101.186
+actionlint	Set up job	2026-11-06T22:38:30.6303985Z ##[endgroup]
+actionlint	Set up job	2026-11-06T22:38:30.6304901Z ##[group]GITHUB_TOKEN Permissions
+actionlint	Set up job	2026-11-06T22:38:30.6306675Z Contents: read
+actionlint	Set up job	2026-11-06T22:38:30.6307162Z Metadata: read
+actionlint	Set up job	2026-11-06T22:38:30.6307706Z ##[endgroup]
+actionlint	Set up job	2026-11-06T22:38:30.6309470Z Secret source: Actions
+actionlint	Set up job	2026-11-06T22:38:30.6310283Z Cache mode: write
+actionlint	Set up job	2026-11-06T22:38:30.6310917Z Prepare workflow directory
+actionlint	Set up job	2026-11-06T22:38:30.6650035Z Prepare all required actions
+actionlint	Set up job	2026-11-06T22:38:30.6706309Z Getting action download info
+actionlint	Set up job	2026-11-06T22:38:31.0164943Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+actionlint	Set up job	2026-11-06T22:38:31.2888938Z Complete job name: actionlint
+actionlint	Pull rhysd/actionlint:1.7.7	﻿2026-11-06T22:38:31.3367041Z ##[group]Pull down action image 'rhysd/actionlint:1.7.7'
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:31.3464929Z ##[command]/usr/bin/docker pull rhysd/actionlint:1.7.7
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:32.4331543Z 1.7.7: Pulling from rhysd/actionlint
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:32.7002317Z f23002ece875: Pulling fs layer
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:32.7003754Z 4e6599d62119: Pulling fs layer
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:32.7005289Z 46b6d0e9fe9d: Pulling fs layer
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:32.7005776Z 1f3e46996e29: Pulling fs layer
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:32.8586802Z 4e6599d62119: Download complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.3602909Z f23002ece875: Download complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.3603722Z 46b6d0e9fe9d: Download complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.4593199Z 1f3e46996e29: Download complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.4593958Z 1e9d239422cf: Download complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.4606795Z 4e6599d62119: Pull complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.4636832Z 1f3e46996e29: Pull complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.5632752Z 46b6d0e9fe9d: Pull complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.7494862Z f23002ece875: Pull complete
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.7496581Z Digest: sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.7497968Z Status: Downloaded newer image for rhysd/actionlint:1.7.7
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.7499603Z docker.io/rhysd/actionlint:1.7.7
+actionlint	Pull rhysd/actionlint:1.7.7	2026-11-06T22:38:33.7534311Z ##[endgroup]
+actionlint	Run actions/checkout@v6	﻿2026-11-06T22:38:33.7820717Z ##[group]Run actions/checkout@v6
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7821221Z with:
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7821459Z   persist-credentials: false
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7821733Z   repository: link-assistant/agent
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7824137Z   token: ***
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7824362Z   ssh-strict: true
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7824584Z   ssh-user: git
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7824796Z   clean: true
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7825025Z   sparse-checkout-cone-mode: true
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7825280Z   fetch-depth: 1
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7825500Z   fetch-tags: false
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7825726Z   show-progress: true
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7825979Z   lfs: false
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7826373Z   submodules: false
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7826605Z   set-safe-directory: true
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7826858Z   allow-unsafe-pr-checkout: false
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7827309Z env:
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7827521Z   GIT_CONFIG_COUNT: 1
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7828009Z   GIT_CONFIG_KEY_0: init.defaultBranch
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7828279Z   GIT_CONFIG_VALUE_0: main
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:33.7828570Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8831083Z Syncing repository: link-assistant/agent
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8832453Z ##[group]Getting Git version info
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8832789Z Working directory is '/home/runner/work/agent/agent'
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8833245Z [command]/usr/bin/git version
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8861407Z git version 2.56.0
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8878872Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8890702Z Temporarily overriding HOME='/home/runner/work/_temp/3b41e835-7155-4990-87fc-662299c11567' before making global git config changes
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8891806Z Adding repository directory to the temporary git global config as a safe directory
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8894631Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8966771Z Deleting the contents of '/home/runner/work/agent/agent'
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8987374Z ##[group]Determining repository object format
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.8996895Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9007246Z ##[group]Initializing the repository
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9007761Z [command]/usr/bin/git init /home/runner/work/agent/agent
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9089952Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9100594Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9148010Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9148538Z ##[group]Disabling automatic garbage collection
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9152469Z [command]/usr/bin/git config --local gc.auto 0
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9183390Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9183901Z ##[group]Setting up auth
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9184268Z Removing SSH command configuration
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9189477Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:35.9222702Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.1882438Z Removing HTTP extra header
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.1888500Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.1918693Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.2146507Z Removing includeIf entries pointing to credentials config files
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.2152386Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.2181747Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.2432579Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.2473111Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.2502114Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.5248682Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.5307553Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.5333095Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.5333495Z ##[group]Fetching the repository
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:36.5340350Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b85b1f09f46db82e0d933e920eb091aba79c64bb:refs/remotes/origin/main
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1777665Z From https://github.com/link-assistant/agent
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1778344Z  * [new ref]         b85b1f09f46db82e0d933e920eb091aba79c64bb -> origin/main
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1805609Z [command]/usr/bin/git branch --list --remote origin/main
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1818964Z   origin/main
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1829601Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1849588Z b85b1f09f46db82e0d933e920eb091aba79c64bb
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1853971Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1854400Z ##[group]Determining the checkout info
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1854833Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1858591Z [command]/usr/bin/git sparse-checkout disable
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1900051Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1924565Z ##[group]Checking out the ref
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.1927653Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4438213Z Reset branch 'main'
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4448753Z branch 'main' set up to track 'origin/main'.
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4478717Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4522178Z [command]/usr/bin/git log -1 --format=%H
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4546541Z b85b1f09f46db82e0d933e920eb091aba79c64bb
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4554727Z ##[group]Removing auth
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4555107Z Removing SSH command configuration
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4559220Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.4590857Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5271714Z Removing HTTP extra header
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5276261Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5309071Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5547168Z Removing includeIf entries pointing to credentials config files
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5552510Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5578244Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5578869Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5579379Z includeif.gitdir:/github/workspace/.git.path
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5579829Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5585994Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5606215Z /home/runner/work/_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5614523Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5644086Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5665261Z /home/runner/work/_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5681172Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5711333Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5730713Z /github/runner_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5737067Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5765660Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5784453Z /github/runner_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5791272Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.5818975Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.6051092Z Removing credentials config '/home/runner/work/_temp/git-credentials-3e7c8466-9ee7-4ce9-88f3-4bc6bd3d8c29.config'
+actionlint	Run actions/checkout@v6	2026-11-06T22:38:38.6060514Z ##[endgroup]
+actionlint	Run rhysd/actionlint:1.7.7	﻿2026-11-06T22:38:38.6229312Z ##[group]Run docker://rhysd/actionlint:1.7.7
+actionlint	Run rhysd/actionlint:1.7.7	2026-11-06T22:38:38.6229640Z with:
+actionlint	Run rhysd/actionlint:1.7.7	2026-11-06T22:38:38.6229847Z   args: -color
+actionlint	Run rhysd/actionlint:1.7.7	2026-11-06T22:38:38.6230013Z env:
+actionlint	Run rhysd/actionlint:1.7.7	2026-11-06T22:38:38.6230172Z   GIT_CONFIG_COUNT: 1
+actionlint	Run rhysd/actionlint:1.7.7	2026-11-06T22:38:38.6230366Z   GIT_CONFIG_KEY_0: init.defaultBranch
+actionlint	Run rhysd/actionlint:1.7.7	2026-11-06T22:38:38.6230584Z   GIT_CONFIG_VALUE_0: main
+actionlint	Run rhysd/actionlint:1.7.7	2026-11-06T22:38:38.6230769Z ##[endgroup]
+actionlint	Run rhysd/actionlint:1.7.7	2026-11-06T22:38:38.6308159Z ##[command]/usr/bin/docker run --name rhysdactionlint177_34941a --label 491bd8 --workdir /github/workspace --rm -e "GIT_CONFIG_COUNT" -e "GIT_CONFIG_KEY_0" -e "GIT_CONFIG_VALUE_0" -e "INPUT_ARGS" -e "HOME" -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY" -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_REPOSITORY_OWNER_ID" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_NUMBER" -e "GITHUB_RETENTION_DAYS" -e "GITHUB_RUN_ATTEMPT" -e "GITHUB_ACTOR_ID" -e "GITHUB_ACTOR" -e "GITHUB_WORKFLOW" -e "GITHUB_HEAD_REF" -e "GITHUB_BASE_REF" -e "GITHUB_EVENT_NAME" -e "GITHUB_SERVER_URL" -e "GITHUB_API_URL" -e "GITHUB_GRAPHQL_URL" -e "GITHUB_REF_NAME" -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKFLOW_REF" -e "GITHUB_WORKFLOW_SHA" -e "GITHUB_REPOSITORY_ID" -e "GITHUB_TRIGGERING_ACTOR" -e "GITHUB_WORKSPACE" -e "GITHUB_ACTION" -e "GITHUB_EVENT_PATH" -e "GITHUB_ACTION_REPOSITORY" -e "GITHUB_ACTION_REF" -e "GITHUB_PATH" -e "GITHUB_ENV" -e "GITHUB_STEP_SUMMARY" -e "GITHUB_STATE" -e "GITHUB_OUTPUT" -e "GITHUB_ARTIFACTS" -e "GITHUB_ARTIFACTS_LIST" -e "RUNNER_OS" -e "RUNNER_ARCH" -e "RUNNER_NAME" -e "RUNNER_ENVIRONMENT" -e "RUNNER_TOOL_CACHE" -e "RUNNER_TEMP" -e "RUNNER_WORKSPACE" -e "ACTIONS_RUNTIME_URL" -e "ACTIONS_RUNTIME_TOKEN" -e "ACTIONS_CACHE_URL" -e "ACTIONS_RESULTS_URL" -e "ACTIONS_CACHE_MODE" -e "ACTIONS_ORCHESTRATION_ID" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp":"/github/runner_temp" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/agent/agent":"/github/workspace" rhysd/actionlint:1.7.7 -color
+actionlint	Post Run actions/checkout@v6	﻿2026-11-06T22:38:42.1340028Z Post job cleanup.
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2024640Z [command]/usr/bin/git version
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2063744Z git version 2.56.0
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2093873Z Temporarily overriding HOME='/home/runner/work/_temp/2a423b1d-4cdf-478a-93f7-80901e3d7239' before making global git config changes
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2094943Z Adding repository directory to the temporary git global config as a safe directory
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2098102Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2128528Z Removing SSH command configuration
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2133864Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2166787Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2427779Z Removing HTTP extra header
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2433591Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2465361Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2729751Z Removing includeIf entries pointing to credentials config files
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2737129Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+actionlint	Post Run actions/checkout@v6	2026-11-06T22:38:42.2770706Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+actionlint	Complete job	﻿2026-11-06T22:38:42.3133117Z Cleaning up orphan processes
+Pipeline Status	Set up job	﻿2026-11-06T22:38:47.6774507Z Current runner version: '2.338.2'
+Pipeline Status	Set up job	2026-11-06T22:38:47.6795062Z ##[group]Runner Image Provisioner
+Pipeline Status	Set up job	2026-11-06T22:38:47.6796054Z Hosted Compute Agent
+Pipeline Status	Set up job	2026-11-06T22:38:47.6796653Z Version: 20261028.624
+Pipeline Status	Set up job	2026-11-06T22:38:47.6797214Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Pipeline Status	Set up job	2026-11-06T22:38:47.6797842Z Build Date: 2026-10-28T21:51:42Z
+Pipeline Status	Set up job	2026-11-06T22:38:47.6798420Z Worker ID: {b7bc348f-00f5-44e6-bfca-da2c948edc3d}
+Pipeline Status	Set up job	2026-11-06T22:38:47.6799006Z Region: westus2
+Pipeline Status	Set up job	2026-11-06T22:38:47.6799502Z Cloud: Azure
+Pipeline Status	Set up job	2026-11-06T22:38:47.6799984Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-06T22:38:47.6801086Z ##[group]Operating System
+Pipeline Status	Set up job	2026-11-06T22:38:47.6801672Z Ubuntu
+Pipeline Status	Set up job	2026-11-06T22:38:47.6802111Z 26.04.1
+Pipeline Status	Set up job	2026-11-06T22:38:47.6802604Z LTS
+Pipeline Status	Set up job	2026-11-06T22:38:47.6803067Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-06T22:38:47.6803506Z ##[group]Runner Image
+Pipeline Status	Set up job	2026-11-06T22:38:47.6804050Z Image: ubuntu-26.04
+Pipeline Status	Set up job	2026-11-06T22:38:47.6804520Z Version: 20261101.186.1
+Pipeline Status	Set up job	2026-11-06T22:38:47.6805389Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261101.186/images/ubuntu/Ubuntu2604-Readme.md
+Pipeline Status	Set up job	2026-11-06T22:38:47.6806954Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261101.186
+Pipeline Status	Set up job	2026-11-06T22:38:47.6807811Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-06T22:38:47.6808711Z ##[group]GITHUB_TOKEN Permissions
+Pipeline Status	Set up job	2026-11-06T22:38:47.6810314Z Contents: read
+Pipeline Status	Set up job	2026-11-06T22:38:47.6810837Z Metadata: read
+Pipeline Status	Set up job	2026-11-06T22:38:47.6811359Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-06T22:38:47.6813019Z Secret source: Actions
+Pipeline Status	Set up job	2026-11-06T22:38:47.6813861Z Cache mode: write
+Pipeline Status	Set up job	2026-11-06T22:38:47.6814650Z Prepare workflow directory
+Pipeline Status	Set up job	2026-11-06T22:38:47.7115187Z Prepare all required actions
+Pipeline Status	Set up job	2026-11-06T22:38:47.7156166Z Getting action download info
+Pipeline Status	Set up job	2026-11-06T22:38:48.0215052Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Pipeline Status	Set up job	2026-11-06T22:38:48.4328728Z Complete job name: Pipeline Status
+Pipeline Status	Run actions/checkout@v6	﻿2026-11-06T22:38:48.4979782Z ##[group]Run actions/checkout@v6
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4980465Z with:
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4980831Z   persist-credentials: false
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4981299Z   repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4984214Z   token: ***
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4984575Z   ssh-strict: true
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4984938Z   ssh-user: git
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4985287Z   clean: true
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4985833Z   sparse-checkout-cone-mode: true
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4986256Z   fetch-depth: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4986610Z   fetch-tags: false
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4986970Z   show-progress: true
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4987342Z   lfs: false
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4987695Z   submodules: false
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4988064Z   set-safe-directory: true
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4988472Z   allow-unsafe-pr-checkout: false
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4989033Z env:
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4989368Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4989768Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4990209Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.4990782Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.8985651Z Syncing repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.8988338Z ##[group]Getting Git version info
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.8989327Z Working directory is '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.8990805Z [command]/usr/bin/git version
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9012591Z git version 2.56.0
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9030138Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9042777Z Temporarily overriding HOME='/home/runner/work/_temp/6790f95d-384d-4264-8deb-69aec455dc86' before making global git config changes
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9046867Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9048471Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9104966Z Deleting the contents of '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9108988Z ##[group]Determining repository object format
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9110749Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9111760Z ##[group]Initializing the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9114476Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9206803Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9217405Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9259956Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9261063Z ##[group]Disabling automatic garbage collection
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9262745Z [command]/usr/bin/git config --local gc.auto 0
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9292969Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9294034Z ##[group]Setting up auth
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9294832Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9298011Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:48.9328075Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0028569Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0033948Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0067047Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0300170Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0306385Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0338951Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0574789Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0611288Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0638822Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0687168Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0716456Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0741283Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0743356Z ##[group]Fetching the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:49.0750931Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b85b1f09f46db82e0d933e920eb091aba79c64bb:refs/remotes/origin/main
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4396895Z From https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4398988Z  * [new ref]         b85b1f09f46db82e0d933e920eb091aba79c64bb -> origin/main
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4403983Z [command]/usr/bin/git branch --list --remote origin/main
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4429977Z   origin/main
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4436302Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4455276Z b85b1f09f46db82e0d933e920eb091aba79c64bb
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4460051Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4461075Z ##[group]Determining the checkout info
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4462219Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4463826Z [command]/usr/bin/git sparse-checkout disable
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4503472Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4528839Z ##[group]Checking out the ref
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.4530510Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7373533Z Reset branch 'main'
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7386281Z branch 'main' set up to track 'origin/main'.
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7406520Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7447646Z [command]/usr/bin/git log -1 --format=%H
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7469339Z b85b1f09f46db82e0d933e920eb091aba79c64bb
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7478648Z ##[group]Removing auth
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7479120Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7482720Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7510082Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7744496Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7748378Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.7775878Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8001667Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8009191Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8028703Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8029412Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8030015Z includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8030546Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8043357Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8056604Z /home/runner/work/_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8065918Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8096588Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8117698Z /home/runner/work/_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8128252Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8192001Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8211564Z /github/runner_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8218116Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8244840Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8263210Z /github/runner_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8269729Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8296902Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8520598Z Removing credentials config '/home/runner/work/_temp/git-credentials-ce5f3851-446a-4d4e-9e57-7503971a266b.config'
+Pipeline Status	Run actions/checkout@v6	2026-11-06T22:38:50.8529846Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	﻿2026-11-06T22:38:50.9428346Z ##[group]Run bash scripts/check-pipeline-status.sh
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9428764Z ^[[36;1mbash scripts/check-pipeline-status.sh^[[0m
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9477307Z shell: /usr/bin/bash -e {0}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9477535Z env:
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9477709Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9477909Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9478338Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9478729Z   NEEDS_JSON: {
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "actionlint": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  },
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "zizmor": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  }
+Pipeline Status	Fail the run when a required job was cancelled or failed	}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9479170Z   RUN_SHA: b85b1f09f46db82e0d933e920eb091aba79c64bb
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9479416Z   HEAD_REF: refs/heads/main
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:50.9479608Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:51.2113617Z Failed jobs:    <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:51.2114054Z Cancelled jobs: <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-06T22:38:51.2114446Z All required jobs succeeded or were legitimately skipped.
+Pipeline Status	Post Run actions/checkout@v6	﻿2026-11-06T22:38:51.2296188Z Post job cleanup.
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3010820Z [command]/usr/bin/git version
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3048973Z git version 2.56.0
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3083968Z Temporarily overriding HOME='/home/runner/work/_temp/37444693-8824-47b5-a7cf-a9416b93d25f' before making global git config changes
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3084807Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3088488Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3119603Z Removing SSH command configuration
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3125310Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3158537Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3404710Z Removing HTTP extra header
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3410367Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3447331Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3695866Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3702291Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Post Run actions/checkout@v6	2026-11-06T22:38:51.3731598Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Complete job	﻿2026-11-06T22:38:51.4085721Z Cleaning up orphan processes

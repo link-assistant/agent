@@ -1,0 +1,7 @@
+name: Shipped code and workflows
+paths-ignore:
+  - experiments
+  - python/experiments
+  # Bundled dependencies and the copied extractor are generated from reviewed
+  # source in .github/actions/artifact; scan the originals, avoiding duplicates.
+  - .github/actions/artifact/dist

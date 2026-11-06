@@ -1,0 +1,95 @@
+name: Rerun infrastructure failures
+
+# Issue #226: when GitHub has no hosted runner to give (macOS arm64 capacity is
+# the usual case) it gives up on a queued job with "The job was not acquired by
+# Runner of type hosted even after multiple attempts". The job ends cancelled
+# with no steps and no runner, so no code ran, yet the release and status gates
+# go red and nothing reruns them. This workflow reruns such a run's failed jobs
+# (and, through `gh run rerun --failed`, the gates that depend on them) at most
+# twice. A job that ran steps and failed never triggers a rerun; see
+# scripts/unacquired-jobs.py for the exact rule.
+#
+# workflow_run is safe here: the checkout is the default branch (github.sha of a
+# workflow_run event), nothing from the triggering run is executed, and the job
+# only reads that run through the API and asks GitHub to rerun it.
+on: # zizmor: ignore[dangerous-triggers]
+  workflow_run:
+    # Every workflow with a terminal Pipeline Status gate.
+    workflows:
+      - CI/CD Pipeline
+      - Desktop Release
+      - Workflows
+      - Security
+      - Broken Link Checker
+      - JavaScript-first example
+    types: [completed]
+
+permissions:
+  contents: read
+
+# Configure checkout's git init before the first step runs.
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  rerun:
+    name: Rerun jobs that never got a runner
+    # The status gate turns the run into a failure when a job was not acquired.
+    # The script reruns attempts 1 and 2 and reports an error on attempt 3.
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: rerun-infrastructure-failures-${{ github.event.workflow_run.id }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      # Read the run's jobs and rerun them.
+      actions: write
+      # Read each job's check-run annotations.
+      checks: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Rerun jobs that GitHub never handed to a runner
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          UNACQUIRED_JOBS_VERBOSE: ${{ vars.UNACQUIRED_JOBS_VERBOSE || '0' }}
+        run: >-
+          python3 scripts/unacquired-jobs.py rerun
+          --repository "$REPOSITORY" --run-id "$RUN_ID" --attempt "$ATTEMPT"
+
+  # Terminal status gate (issue #156), so a rerun job killed by timeout-minutes
+  # is a visible failure. This workflow is not in its own trigger list, so a red
+  # gate here never triggers another rerun.
+  pipeline-status:
+    name: Pipeline Status
+    needs:
+      - rerun
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check aggregate pipeline status
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

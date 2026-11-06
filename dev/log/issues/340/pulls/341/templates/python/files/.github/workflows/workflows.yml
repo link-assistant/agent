@@ -1,0 +1,258 @@
+name: Workflows
+
+# actionlint validates workflow schema and shellchecks inline run blocks.
+# Documented queue: max and self-repository syntax have narrow exceptions in
+# .github/actionlint.yaml until upstream support ships; other errors still fail.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/**'
+      - '**.sh'
+      - '.pre-commit-config.yaml'
+      - 'tests/*.test.mjs'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/**'
+      - '**.sh'
+      - '.pre-commit-config.yaml'
+      - 'tests/*.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+  ZIZMOR_VERSION: '1.30.1'
+
+jobs:
+  actionlint:
+    name: Lint Workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-actionlint
+      cancel-in-progress: true
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # The Docker image bundles shellcheck and pyflakes, so this lints every
+      # `run:` block too. A native actionlint binary without shellcheck on
+      # PATH silently skips the shell checks and still exits 0 -- worth knowing
+      # before trying to reproduce a finding locally.
+      #
+      # 1.7.12 (issue #71) adds the `glob` check for `paths:` filters that can
+      # never match (a workflow filtered with `./src/**` stops running and
+      # reports nothing) and knows the modern hosted runner labels, so real
+      # labels like macos-15-intel are no longer reported as unknown.
+      #
+      # Pinned by digest because a mutable tag of a repository we do not
+      # control is arbitrary code execution in any job that holds credentials
+      # (the same reasoning as the `'*': hash-pin` policy in
+      # .github/zizmor.yml; the `unpinned-images` audit that would flag this
+      # is Pedantic-persona and runs in the step below). Re-resolve when
+      # bumping:
+      #   docker pull rhysd/actionlint:<tag> &&
+      #   docker inspect --format='{{index .RepoDigests 0}}' rhysd/actionlint:<tag>
+      - name: Lint workflow files
+        uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # v1.7.12
+        with:
+          args: -color
+
+  # actionlint validates workflow schema and shell; it does not detect
+  # credential persistence, template injection or unpinned actions. zizmor
+  # covers exactly those, so both linters run on every change under .github/.
+  # Scan the repository to match the action's default inputs, including
+  # .github/dependabot.yml when present.
+  # Reproduce locally with ZIZMOR_VERSION set to the env pin above:
+  #   pipx run "zizmor==$ZIZMOR_VERSION" --min-confidence low --persona regular \
+  #     --config .github/zizmor.yml .
+  zizmor:
+    name: Audit Workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-zizmor
+      cancel-in-progress: true
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # Annotations instead of SARIF: forks of this template do not necessarily
+      # have code scanning enabled, and the job should fail loudly either way.
+      #
+      # The action and CLI share one pin supported by this action's digest table.
+      - name: Audit workflow files
+        uses: zizmorcore/zizmor-action@v0.6.4
+        with:
+          advanced-security: false
+          annotations: true
+          config: .github/zizmor.yml
+          min-confidence: low
+          version: ${{ env.ZIZMOR_VERSION }}
+
+      # The step above runs `--persona regular`, which is the right default:
+      # pedantic surfaces dozens of stylistic findings. But the audits that
+      # cover container image references (`unpinned-images` among them) are
+      # Pedantic-only, so the `'*': hash-pin` policy declared in
+      # .github/zizmor.yml is not enforced against `uses: docker://` or
+      # `container:` references by the regular pass. Narrowing this second
+      # pass to high severity *and* high confidence keeps that enforcement
+      # without importing the noise. Measured: after the digest pin of the
+      # actionlint image above it reports nothing, and stays silent until
+      # someone reintroduces a mutable image reference (issue #75).
+      - name: Audit for pedantic-only high-severity findings
+        timeout-minutes: 5
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pipx run "zizmor==$ZIZMOR_VERSION" --config .github/zizmor.yml \
+            --persona pedantic --min-severity high --min-confidence high \
+            .github/workflows
+
+  # actionlint checks inline workflow shells; standalone scripts need this pass.
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-shellcheck
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Shellcheck every tracked shell script
+        run: git ls-files -z '*.sh' | xargs -0 pipx run --spec shellcheck-py==0.11.0.1 shellcheck
+
+  artifact-roundtrip:
+    name: Artifact Transport Regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-artifacts
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Install pinned artifact dependencies
+        working-directory: .github/actions/artifact
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Test transport recovery and refusal
+        run: node --throw-deprecation --test tests/artifact.test.mjs
+
+      # Issue #130: mocked Pages API; no dependencies to install.
+      - name: Test Pages deployment retries and refusals
+        run: node --throw-deprecation --test tests/deploy-pages.test.mjs
+
+      # Dependabot npm PRs (.github/dependabot.yml) update the lockfile but
+      # never run the build, so they stop here until dist/ is rebuilt.
+      - name: Verify committed action bundle
+        working-directory: .github/actions/artifact
+        run: |
+          npm run build
+          if ! git diff --exit-code -- dist; then
+            echo "::error file=.github/actions/artifact/dist/index.mjs::The committed bundle does not match package-lock.json and the action source."
+            echo "Rebuild it and push the result to this branch (Dependabot PRs included):"
+            echo "  npm ci --prefix .github/actions/artifact --ignore-scripts"
+            echo "  npm run build --prefix .github/actions/artifact"
+            echo "  git add -f .github/actions/artifact/dist && git commit -m 'chore(artifact): rebuild dist'"
+            exit 1
+          fi
+
+      - name: Prepare round-trip evidence
+        run: |
+          mkdir -p /tmp/artifact-evidence/nested /tmp/pages-evidence
+          printf '\000\377\102' > /tmp/artifact-evidence/nested/bytes.bin
+          touch /tmp/artifact-evidence/empty
+          printf '<html>artifact transport regression</html>' > /tmp/pages-evidence/index.html
+
+      - name: Upload round-trip evidence
+        uses: $/.github/actions/artifact
+        with:
+          name: transport-roundtrip
+          path: /tmp/artifact-evidence
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Download with deprecations treated as errors
+        uses: $/.github/actions/artifact
+        env:
+          NODE_OPTIONS: --throw-deprecation
+        with:
+          operation: download
+          name: transport-roundtrip
+          path: /tmp/artifact-downloaded
+
+      - name: Verify every downloaded byte
+        run: diff -r /tmp/artifact-evidence /tmp/artifact-downloaded
+
+      - name: Upload Pages round-trip evidence
+        uses: $/.github/actions/artifact
+        with:
+          name: pages-roundtrip
+          pages: true
+          path: /tmp/pages-evidence
+          if-no-files-found: error
+
+      - name: Download Pages archive
+        uses: $/.github/actions/artifact
+        env:
+          NODE_OPTIONS: --throw-deprecation
+        with:
+          operation: download
+          pattern: pages-round*
+          merge-multiple: true
+          path: /tmp/pages-downloaded
+
+      - name: Verify Pages tar content
+        run: |
+          mkdir -p /tmp/pages-unpacked
+          tar -xf /tmp/pages-downloaded/artifact.tar -C /tmp/pages-unpacked
+          diff -r /tmp/pages-evidence /tmp/pages-unpacked
+
+  # Terminal status gate (issue #69): GitHub reports jobs killed by
+  # timeout-minutes as cancelled. Observe every other job so a timeout on main
+  # becomes a visible failure instead of a grey run, while a run that was
+  # superseded by a newer commit is recognised as expected churn.
+  pipeline-status:
+    name: Pipeline Status
+    needs:
+      - actionlint
+      - zizmor
+      - shellcheck
+      - artifact-roundtrip
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check aggregate pipeline status
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

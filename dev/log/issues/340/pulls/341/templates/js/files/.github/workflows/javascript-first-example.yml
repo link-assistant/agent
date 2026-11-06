@@ -1,0 +1,143 @@
+name: JavaScript-first mixed-language example
+
+on:
+  pull_request:
+    paths:
+      - 'examples/javascript-first/**'
+      - '.github/workflows/javascript-first*.yml'
+      - 'tests/javascript-first-gate.test.js'
+      - '.github/actions/artifact-transport/**'
+      - 'scripts/artifact-*.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'examples/javascript-first/**'
+      - '.github/workflows/javascript-first*.yml'
+      - '.github/actions/artifact-transport/**'
+      - 'scripts/artifact-*.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  javascript-first:
+    uses: ./.github/workflows/javascript-first-gate.yml
+    with:
+      source-sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      javascript-command: node --test examples/javascript-first/native-check.mjs
+      parity-command: node examples/javascript-first/check-parity.mjs --strict
+      translation-command: node examples/javascript-first/generate.mjs --check
+
+  rust-check:
+    name: Rust check
+    needs: [javascript-first]
+    if: needs.javascript-first.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-rust-check
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha }}
+          persist-credentials: false
+      - name: Run check
+        run: |
+          rustc --crate-type lib --emit metadata examples/javascript-first/generated/lib.rs -o /tmp/example.rmeta
+
+  rust-build:
+    name: Rust build
+    needs: [javascript-first]
+    if: needs.javascript-first.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-rust-build
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha }}
+          persist-credentials: false
+      - name: Run build
+        run: |
+          rustc --crate-type lib examples/javascript-first/generated/lib.rs -o /tmp/libexample.rlib
+
+  rust-test:
+    name: Rust test
+    needs: [javascript-first]
+    if: needs.javascript-first.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-rust-test
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha }}
+          persist-credentials: false
+      - name: Run test
+        run: |
+          rustc --test examples/javascript-first/generated/lib.rs -o /tmp/example-tests
+          /tmp/example-tests
+
+  rust-package:
+    name: Rust package
+    needs: [javascript-first]
+    if: needs.javascript-first.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-rust-package
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha }}
+          persist-credentials: false
+      - name: Run package
+        run: |
+          tar -czf /tmp/example-source.tgz -C examples/javascript-first generated
+
+  rust-container:
+    name: Rust container
+    needs: [javascript-first]
+    if: needs.javascript-first.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-rust-container
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha }}
+          persist-credentials: false
+      - name: Run container
+        run: |
+          docker build -t javascript-first-source examples/javascript-first
+
+  rust-publish:
+    name: Rust publish
+    needs: [javascript-first]
+    if: needs.javascript-first.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-rust-publish
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha }}
+          persist-credentials: false
+      - name: Run publish
+        run: |
+          node examples/javascript-first/generate.mjs --check
+      - uses: ./.github/actions/artifact-transport
+        with:
+          name: tested-rust-source-${{ needs.javascript-first.outputs.tested-sha }}
+          path: examples/javascript-first/generated/
+          if-no-files-found: error

@@ -1,0 +1,184 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+
+# Keep the workflow read-only unless a job explicitly needs an additional scope.
+permissions:
+  contents: read
+
+# Configure checkout's git init before the first step runs.
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  javascript-first:
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-javascript-first-caller
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    uses: ./.github/workflows/javascript-first-gate.yml # zizmor: ignore[self-repository]
+    with:
+      source-sha: ${{ github.sha }}
+
+  cargo-audit:
+    if: needs.javascript-first.result == 'success' && needs.javascript-first.outputs.tested-sha == github.sha
+    needs: [javascript-first]
+    name: Cargo audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-cargo-audit
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha == github.sha && github.sha }}
+          persist-credentials: false
+
+      - uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: cargo-audit@0.22.2
+
+      - name: Audit committed Cargo.lock
+        # `unmaintained`, `unsound` and `yanked` are *warnings*, and a warning
+        # does not move `cargo audit`'s exit status -- it prints
+        # "warning: N allowed warnings found" and exits 0. Without this flag the
+        # step reports a passing audit while displaying the findings; a yanked
+        # release ("we shipped a vulnerability") is exactly such a warning.
+        run: cargo audit --file Cargo.lock --deny warnings
+
+  codeql:
+    if: needs.javascript-first.result == 'success' && needs.javascript-first.outputs.tested-sha == github.sha
+    needs: [javascript-first]
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-codeql-${{ matrix.language }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [rust, actions]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha == github.sha && github.sha }}
+          persist-credentials: false
+
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Test SARIF gate
+        run: node --test scripts/check-codeql-results.test.mjs
+
+      - uses: github/codeql-action/analyze@v4
+        with:
+          output: codeql-results
+
+      - name: Reject unresolved CodeQL findings
+        if: ${{ !cancelled() }}
+        run: node scripts/check-codeql-results.mjs codeql-results
+
+      - name: Preserve CodeQL reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: codeql-results-${{ matrix.language }}
+          path: codeql-results/
+          if-no-files-found: error
+
+  dependency-graph:
+    name: Dependency Graph Availability
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-dependency-graph
+      cancel-in-progress: true
+    outputs:
+      enabled: ${{ steps.graph.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Probe dependency graph
+        id: graph
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          REQUIRE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && '--require' || '' }}
+        run: |
+          args=("${BASE:-$HEAD}" "$HEAD")
+          if [ -n "$REQUIRE" ]; then args+=("$REQUIRE"); fi
+          bash scripts/check-dependency-graph.sh "${args[@]}"
+
+  dependency-review:
+    name: Dependency Review
+    needs: dependency-graph
+    if: github.event_name == 'pull_request' && needs.dependency-graph.outputs.enabled == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-dependency-review
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  # Terminal status gate (issue #156): GitHub reports jobs killed by
+  # timeout-minutes as cancelled. Observe every other job so a timeout on main
+  # becomes a visible failure instead of a grey run, while a run that was
+  # superseded by a newer commit is recognised as expected churn.
+  pipeline-status:
+    name: Pipeline Status
+    needs:
+      - javascript-first
+      - cargo-audit
+      - codeql
+      - dependency-review
+      - dependency-graph
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # Read this run's jobs and annotations to name runner-acquisition failures (issue #226).
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check aggregate pipeline status
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          GH_TOKEN: ${{ github.token }}
+          IS_MAIN: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

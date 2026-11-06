@@ -1,0 +1,18 @@
+# zizmor configuration for the workflow security audit run by
+# `.github/workflows/workflows.yml`.
+#
+# Blanket policy: third-party actions must be pinned to a commit hash, because
+# a mutable tag or branch of a repository we do not control is arbitrary code
+# execution in any job that holds credentials. Namespaces we do trust to keep
+# their release tags immutable are allowed to stay on a readable ref.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        actions/*: ref-pin
+        github/*: ref-pin
+        docker/*: ref-pin
+        astral-sh/*: ref-pin
+        lycheeverse/*: ref-pin
+        zizmorcore/*: ref-pin
+        '*': hash-pin

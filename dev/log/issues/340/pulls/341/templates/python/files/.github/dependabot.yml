@@ -1,0 +1,30 @@
+# Dependabot turns advisories and new releases into pull requests that run the
+# whole pipeline before they can merge (issue #132). The cooldown waits a week
+# after a release before proposing it, so a compromised release is usually
+# found and yanked before it reaches the pipeline.
+#
+# npm updates of .github/actions/artifact change package-lock.json but not the
+# committed dist/ bundle: Dependabot does not run `npm run build`. Their
+# "Verify committed action bundle" check fails until someone pushes the
+# rebuilt bundle to the Dependabot branch (see docs/ci-evidence.md).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /.github/actions/artifact
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      artifact-action:
+        patterns: ['*']

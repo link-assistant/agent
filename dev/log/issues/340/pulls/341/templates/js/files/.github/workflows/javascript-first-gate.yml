@@ -1,0 +1,80 @@
+name: JavaScript-first gate
+
+on:
+  workflow_call:
+    inputs:
+      source-sha:
+        description: Immutable forty-character commit SHA to validate, including release candidates
+        required: true
+        type: string
+      javascript-command:
+        description: Install dependencies and run the complete native JavaScript checks
+        required: true
+        type: string
+      parity-command:
+        description: Run the strict complete-feature parity inventory check
+        required: true
+        type: string
+      translation-command:
+        description: Regenerate from pinned source and reject target drift or carried code
+        required: true
+        type: string
+    outputs:
+      tested-sha:
+        description: Exact revision that passed all three prerequisite stages
+        value: ${{ jobs.javascript-first.outputs.tested-sha }}
+
+permissions:
+  contents: read
+
+jobs:
+  javascript-first:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      tested-sha: ${{ steps.revision.outputs.sha }}
+    steps:
+      - name: Validate requested revision
+        env:
+          EXPECTED_SHA: ${{ inputs.source-sha }}
+        run: |
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.source-sha }}
+          persist-credentials: false
+      - name: Check exact checkout revision
+        env:
+          EXPECTED_SHA: ${{ inputs.source-sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          # Caller-selected revisions must not populate the caller's cache scope.
+          package-manager-cache: false
+      - name: Native JavaScript checks
+        env:
+          CHECK_COMMAND: ${{ inputs.javascript-command }}
+        run: |
+          bash -e -o pipefail -c "$CHECK_COMMAND"
+      - name: Strict feature parity inventory
+        env:
+          CHECK_COMMAND: ${{ inputs.parity-command }}
+        run: |
+          bash -e -o pipefail -c "$CHECK_COMMAND"
+      - name: Deterministic regeneration check
+        env:
+          CHECK_COMMAND: ${{ inputs.translation-command }}
+        run: |
+          bash -e -o pipefail -c "$CHECK_COMMAND"
+      - name: Record successful revision
+        id: revision
+        env:
+          EXPECTED_SHA: ${{ inputs.source-sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git diff --exit-code
+          git diff --cached --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
+          printf 'sha=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"

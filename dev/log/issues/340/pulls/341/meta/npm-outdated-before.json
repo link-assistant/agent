@@ -1,0 +1,352 @@
+{
+  "@agentclientprotocol/sdk": {
+    "wanted": "2.4.0",
+    "latest": "2.4.0",
+    "dependent": "js"
+  },
+  "@ai-sdk/alibaba": {
+    "wanted": "2.0.84",
+    "latest": "2.0.84",
+    "dependent": "js"
+  },
+  "@ai-sdk/amazon-bedrock": {
+    "wanted": "5.0.134",
+    "latest": "5.0.134",
+    "dependent": "js"
+  },
+  "@ai-sdk/anthropic": {
+    "wanted": "4.0.98",
+    "latest": "4.0.98",
+    "dependent": "js"
+  },
+  "@ai-sdk/azure": {
+    "wanted": "4.0.118",
+    "latest": "4.0.118",
+    "dependent": "js"
+  },
+  "@ai-sdk/cerebras": {
+    "wanted": "3.0.86",
+    "latest": "3.0.86",
+    "dependent": "js"
+  },
+  "@ai-sdk/cohere": {
+    "wanted": "4.0.77",
+    "latest": "4.0.77",
+    "dependent": "js"
+  },
+  "@ai-sdk/deepinfra": {
+    "wanted": "3.0.86",
+    "latest": "3.0.86",
+    "dependent": "js"
+  },
+  "@ai-sdk/deepseek": {
+    "wanted": "3.0.80",
+    "latest": "3.0.80",
+    "dependent": "js"
+  },
+  "@ai-sdk/fireworks": {
+    "wanted": "3.0.89",
+    "latest": "3.0.89",
+    "dependent": "js"
+  },
+  "@ai-sdk/gateway": {
+    "wanted": "4.0.137",
+    "latest": "4.0.137",
+    "dependent": "js"
+  },
+  "@ai-sdk/google": {
+    "wanted": "4.0.113",
+    "latest": "4.0.113",
+    "dependent": "js"
+  },
+  "@ai-sdk/google-vertex": {
+    "wanted": "5.0.133",
+    "latest": "5.0.133",
+    "dependent": "js"
+  },
+  "@ai-sdk/groq": {
+    "wanted": "4.0.77",
+    "latest": "4.0.77",
+    "dependent": "js"
+  },
+  "@ai-sdk/mcp": {
+    "wanted": "2.0.92",
+    "latest": "2.0.92",
+    "dependent": "js"
+  },
+  "@ai-sdk/mistral": {
+    "wanted": "4.0.80",
+    "latest": "4.0.80",
+    "dependent": "js"
+  },
+  "@ai-sdk/openai": {
+    "wanted": "4.0.110",
+    "latest": "4.0.110",
+    "dependent": "js"
+  },
+  "@ai-sdk/openai-compatible": {
+    "wanted": "3.0.86",
+    "latest": "3.0.86",
+    "dependent": "js"
+  },
+  "@ai-sdk/perplexity": {
+    "wanted": "5.0.27",
+    "latest": "5.0.27",
+    "dependent": "js"
+  },
+  "@ai-sdk/provider": {
+    "wanted": "4.0.36",
+    "latest": "4.0.36",
+    "dependent": "js"
+  },
+  "@ai-sdk/togetherai": {
+    "wanted": "3.0.87",
+    "latest": "3.0.87",
+    "dependent": "js"
+  },
+  "@ai-sdk/xai": {
+    "wanted": "5.0.39",
+    "latest": "5.0.39",
+    "dependent": "js"
+  },
+  "@clack/prompts": {
+    "wanted": "1.8.1",
+    "latest": "1.8.1",
+    "dependent": "js"
+  },
+  "@hono/standard-validator": {
+    "wanted": "0.4.1",
+    "latest": "0.4.1",
+    "dependent": "js"
+  },
+  "@hono/zod-validator": {
+    "wanted": "0.9.1",
+    "latest": "0.9.1",
+    "dependent": "js"
+  },
+  "@modelcontextprotocol/sdk": {
+    "wanted": "1.32.2",
+    "latest": "1.32.2",
+    "dependent": "js"
+  },
+  "@octokit/graphql": {
+    "wanted": "9.0.5",
+    "latest": "9.0.5",
+    "dependent": "js"
+  },
+  "@octokit/rest": {
+    "wanted": "22.0.1",
+    "latest": "22.0.1",
+    "dependent": "js"
+  },
+  "@openauthjs/openauth": {
+    "wanted": "0.4.3",
+    "latest": "0.4.3",
+    "dependent": "js"
+  },
+  "@opencode-ai/sdk": {
+    "wanted": "1.19.5",
+    "latest": "1.19.5",
+    "dependent": "js"
+  },
+  "@openrouter/ai-sdk-provider": {
+    "wanted": "3.1.0",
+    "latest": "3.1.0",
+    "dependent": "js"
+  },
+  "@opentui/core": {
+    "wanted": "0.8.2",
+    "latest": "0.8.2",
+    "dependent": "js"
+  },
+  "@opentui/solid": {
+    "wanted": "0.8.2",
+    "latest": "0.8.2",
+    "dependent": "js"
+  },
+  "@parcel/watcher": {
+    "wanted": "2.6.0",
+    "latest": "2.6.0",
+    "dependent": "js"
+  },
+  "@solid-primitives/event-bus": {
+    "wanted": "1.1.4",
+    "latest": "1.1.4",
+    "dependent": "js"
+  },
+  "@standard-community/standard-json": {
+    "wanted": "0.4.0",
+    "latest": "0.4.0",
+    "dependent": "js"
+  },
+  "@standard-community/standard-openapi": {
+    "wanted": "0.2.11",
+    "latest": "0.2.11",
+    "dependent": "js"
+  },
+  "@zip.js/zip.js": {
+    "wanted": "2.24.0",
+    "latest": "2.24.0",
+    "dependent": "js"
+  },
+  "ai": {
+    "wanted": "7.0.164",
+    "latest": "7.0.164",
+    "dependent": "js"
+  },
+  "chokidar": {
+    "wanted": "6.0.0",
+    "latest": "6.0.0",
+    "dependent": "js"
+  },
+  "clipboardy": {
+    "wanted": "5.3.2",
+    "latest": "5.3.2",
+    "dependent": "js"
+  },
+  "command-stream": {
+    "wanted": "2.6.0",
+    "latest": "2.6.0",
+    "dependent": "js"
+  },
+  "decimal.js": {
+    "wanted": "10.6.0",
+    "latest": "10.6.0",
+    "dependent": "js"
+  },
+  "diff": {
+    "wanted": "9.0.0",
+    "latest": "9.0.0",
+    "dependent": "js"
+  },
+  "fuzzysort": {
+    "wanted": "4.0.2",
+    "latest": "4.0.2",
+    "dependent": "js"
+  },
+  "glob": {
+    "wanted": "14.0.4",
+    "latest": "14.0.4",
+    "dependent": "js"
+  },
+  "google-auth-library": {
+    "wanted": "11.3.3",
+    "latest": "11.3.3",
+    "dependent": "js"
+  },
+  "gpt-tokenizer": {
+    "wanted": "4.1.0",
+    "latest": "4.1.0",
+    "dependent": "js"
+  },
+  "gray-matter": {
+    "wanted": "4.0.3",
+    "latest": "4.0.3",
+    "dependent": "js"
+  },
+  "hono": {
+    "wanted": "4.13.16",
+    "latest": "4.13.16",
+    "dependent": "js"
+  },
+  "hono-openapi": {
+    "wanted": "1.5.0",
+    "latest": "1.5.0",
+    "dependent": "js"
+  },
+  "ignore": {
+    "wanted": "7.0.14",
+    "latest": "7.0.14",
+    "dependent": "js"
+  },
+  "jsonc-parser": {
+    "wanted": "3.3.1",
+    "latest": "3.3.1",
+    "dependent": "js"
+  },
+  "lino-arguments": {
+    "wanted": "0.3.0",
+    "latest": "0.4.1",
+    "dependent": "js"
+  },
+  "lino-objects-codec": {
+    "wanted": "0.9.5",
+    "latest": "0.9.5",
+    "dependent": "js"
+  },
+  "log-lazy": {
+    "wanted": "1.0.4",
+    "latest": "1.0.4",
+    "dependent": "js"
+  },
+  "minimatch": {
+    "wanted": "11.0.5",
+    "latest": "11.0.5",
+    "dependent": "js"
+  },
+  "remeda": {
+    "wanted": "2.58.0",
+    "latest": "2.58.0",
+    "dependent": "js"
+  },
+  "solid-js": {
+    "wanted": "1.9.18",
+    "latest": "1.9.18",
+    "dependent": "js"
+  },
+  "strip-ansi": {
+    "wanted": "7.2.0",
+    "latest": "7.2.0",
+    "dependent": "js"
+  },
+  "test-anywhere": {
+    "wanted": "0.9.1",
+    "latest": "0.9.1",
+    "dependent": "js"
+  },
+  "tree-sitter-bash": {
+    "wanted": "0.25.1",
+    "latest": "0.25.1",
+    "dependent": "js"
+  },
+  "turndown": {
+    "wanted": "7.2.5",
+    "latest": "7.2.5",
+    "dependent": "js"
+  },
+  "ulid": {
+    "wanted": "3.0.2",
+    "latest": "3.0.2",
+    "dependent": "js"
+  },
+  "vscode-jsonrpc": {
+    "wanted": "10.0.0",
+    "latest": "10.0.0",
+    "dependent": "js"
+  },
+  "vscode-languageserver-types": {
+    "wanted": "3.18.5",
+    "latest": "3.18.5",
+    "dependent": "js"
+  },
+  "web-tree-sitter": {
+    "wanted": "0.25.10",
+    "latest": "0.27.1",
+    "dependent": "js"
+  },
+  "xdg-basedir": {
+    "wanted": "5.1.0",
+    "latest": "5.1.0",
+    "dependent": "js"
+  },
+  "yargs": {
+    "wanted": "18.2.0",
+    "latest": "18.2.0",
+    "dependent": "js"
+  },
+  "zod": {
+    "wanted": "4.6.7",
+    "latest": "4.6.7",
+    "dependent": "js"
+  }
+}
