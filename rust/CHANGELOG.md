@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.11.1] - 2026-11-07
+
+### Fixed
+
+- Validate release credentials before builds, guard CI-managed versions, pin runner
+  images and dependencies, and keep required pipeline checks honest.
+
 ## [0.11.0] - 2026-11-06
 
 ### Fixed
