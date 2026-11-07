@@ -6,11 +6,11 @@ export const verboseFetch = createVerboseFetch(fetch, {
   caller: 'auth-plugins',
 });
 
-function generateRandomString(length: number): string {
+export function generateRandomString(length: number): string {
   return crypto.randomBytes(length).toString('base64url');
 }
 
-function generateCodeChallenge(verifier: string): string {
+export function generateCodeChallenge(verifier: string): string {
   return crypto.createHash('sha256').update(verifier).digest('base64url');
 }
 

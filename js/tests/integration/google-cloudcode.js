@@ -1,3 +1,4 @@
+import { transformToCloudCodeUrl } from '../../src/auth/google-security';
 /* global URL */
 import { test, expect, describe } from 'bun:test';
 
@@ -68,22 +69,6 @@ describe('Google Cloud Code API request transformations', () => {
       request: injected,
     };
     return JSON.stringify(cloudCodeRequest);
-  }
-
-  /**
-   * Helper: Simulate Cloud Code URL transformation
-   */
-  function transformToCloudCodeUrl(url) {
-    const parsed = new URL(url);
-    if (!parsed.hostname.includes('generativelanguage.googleapis.com')) {
-      return null;
-    }
-    const pathMatch = parsed.pathname.match(/:(\w+)$/);
-    if (!pathMatch) {
-      return null;
-    }
-    const method = pathMatch[1];
-    return `https://cloudcode-pa.googleapis.com/v1internal:${method}`;
   }
 
   /**

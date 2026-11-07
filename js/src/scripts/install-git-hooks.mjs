@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { pathToFileURL, URL } from 'node:url';
 import path from 'node:path';
 
-const require = createRequire(new URL('../js/package.json', import.meta.url));
+const require = createRequire(new URL('../../package.json', import.meta.url));
 export async function installGitHooks({
   env = process.env,
   install = async () =>

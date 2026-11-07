@@ -1,6 +1,15 @@
 import { describe, expect, test } from 'bun:test';
 import { URL, pathToFileURL } from 'node:url';
-import { readFileSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  mkdtempSync,
+  copyFileSync,
+  rmSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import { makeConfig } from 'lino-arguments';
@@ -12,7 +21,7 @@ import {
 import { checkVersions } from '../../scripts/check-version.mjs';
 import { sourceLimit, violations } from '../../scripts/check-file-size.mjs';
 import { missingSections } from '../../scripts/validate-docs.mjs';
-import { installGitHooks } from '../../scripts/install-git-hooks.mjs';
+import { installGitHooks } from '../src/scripts/install-git-hooks.mjs';
 
 const response = (status, data = {}) => ({
   status,
@@ -276,4 +285,27 @@ describe('repository guards', () => {
       expect(yaml).not.toContain('npm install --legacy-peer-deps');
     }
   });
+});
+
+test('prepare is available in a standalone package source copy', () => {
+  const pkg = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+  );
+  const script = pkg.scripts.prepare.split(' ')[1];
+  const root = mkdtempSync(join(tmpdir(), 'prepare-package-340-'));
+  try {
+    mkdirSync(join(root, 'src/scripts'), { recursive: true });
+    copyFileSync(new URL(`../${script}`, import.meta.url), join(root, script));
+    writeFileSync(join(root, 'package.json'), JSON.stringify(pkg));
+    // npm pack can run prepare while packing a copy without repo helpers.
+    const result = spawnSync('node', [script], {
+      cwd: root,
+      env: { ...process.env, CI: 'true' },
+      encoding: 'utf8',
+    });
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe('');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

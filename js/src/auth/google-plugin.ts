@@ -1,8 +1,14 @@
+import { transformToCloudCodeUrl as transformGoogleUrl } from './google-security';
 import * as http from 'node:http';
 import * as net from 'node:net';
 import { Auth } from './index';
 import type { AuthPlugin, AuthResult } from './plugin-types';
-import { log, verboseFetch, generatePKCE } from './plugin-utils';
+import {
+  log,
+  verboseFetch,
+  generatePKCE,
+  generateRandomString,
+} from './plugin-utils';
 
 const GOOGLE_OAUTH_CLIENT_ID =
   '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com';
@@ -156,7 +162,7 @@ export const GooglePlugin: AuthPlugin = {
                 <html>
                   <body>
                     <h1>Authentication Failed</h1>
-                    <p>Error: ${error}</p>
+                    <p>Error: ${error.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</p>
                     <p>You can close this window.</p>
                   </body>
                 </html>
@@ -212,13 +218,14 @@ export const GooglePlugin: AuthPlugin = {
             });
 
             // Timeout after 5 minutes
-            setTimeout(
+            const authTimeout = setTimeout(
               () => {
                 server.close();
                 reject(new Error('OAuth timeout'));
               },
               5 * 60 * 1000
             );
+            server.once('close', () => clearTimeout(authTimeout));
           }
         );
 
@@ -727,53 +734,8 @@ export const GooglePlugin: AuthPlugin = {
       return delay;
     };
 
-    /**
-     * Transform a Generative Language API URL to Cloud Code API URL
-     *
-     * Input:  https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
-     * Output: https://cloudcode-pa.googleapis.com/v1internal:generateContent
-     */
-    const transformToCloudCodeUrl = (url: string): string | null => {
-      try {
-        const parsed = new URL(url);
-        if (!parsed.hostname.includes('generativelanguage.googleapis.com')) {
-          log.debug(() => ({
-            message:
-              'url is not generativelanguage api, skipping cloud code transform',
-            hostname: parsed.hostname,
-          }));
-          return null;
-        }
-
-        const pathMatch = parsed.pathname.match(/:(\w+)$/);
-        if (!pathMatch) {
-          log.debug(() => ({
-            message: 'could not extract method from url path',
-            pathname: parsed.pathname,
-          }));
-          return null;
-        }
-
-        const method = pathMatch[1];
-        const cloudCodeUrl = `${CLOUD_CODE_ENDPOINT}/${CLOUD_CODE_API_VERSION}:${method}`;
-
-        log.debug(() => ({
-          message: 'transformed url to cloud code api',
-          originalUrl: url.substring(0, 100),
-          method,
-          cloudCodeUrl,
-        }));
-
-        return cloudCodeUrl;
-      } catch (error) {
-        log.debug(() => ({
-          message: 'failed to parse url for cloud code transform',
-          url: url.substring(0, 100),
-          error: String(error),
-        }));
-        return null;
-      }
-    };
+    const transformToCloudCodeUrl = (url: string) =>
+      transformGoogleUrl(url, CLOUD_CODE_ENDPOINT, CLOUD_CODE_API_VERSION);
 
     /**
      * Check if a URL is for a streaming request.

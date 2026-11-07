@@ -568,3 +568,13 @@ describe('queued writer policy (#340)', () => {
     }
   });
 });
+
+test('CodeQL scans application code without treating archived upstream snapshots as agent source', () => {
+  const security = readWorkflow('security.yml');
+  const config = readFileSync(
+    join(repoRoot, '.github/codeql-config.yml'),
+    'utf8'
+  );
+  expect(security).toContain('config-file: ./.github/codeql-config.yml');
+  expect(config.match(/^ {2}- .+$/gm)).toEqual(['  - dev/log/**']);
+});

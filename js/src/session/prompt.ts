@@ -1,3 +1,4 @@
+import { $ } from 'bun';
 import path from 'path';
 import { Permission } from '../permission';
 import os from 'os';

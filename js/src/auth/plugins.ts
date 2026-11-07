@@ -10,7 +10,13 @@ export type {
   AuthMethod,
   AuthPlugin,
 } from './plugin-types';
-import { log, verboseFetch, generatePKCE } from './plugin-utils';
+import {
+  log,
+  verboseFetch,
+  generatePKCE,
+  generateRandomString,
+  generateCodeChallenge,
+} from './plugin-utils';
 import { GooglePlugin } from './google-plugin';
 
 /**
