@@ -1,0 +1,32 @@
+.github/workflows/release.yml:316:        run: rust-script scripts/check-release-needed.rs
+.github/workflows/release.yml:336:        id: publish-crate
+.github/workflows/release.yml:340:        run: rust-script scripts/publish-crate.rs
+.github/workflows/release.yml:400:        id: publish-crate
+.github/workflows/release.yml:404:        run: rust-script scripts/publish-crate.rs
+tests/integration/sum.rs:5:    let output = Command::new(env!("CARGO_BIN_EXE_example-sum-package-name"))
+tests/integration/sum.rs:16:    let output = Command::new(env!("CARGO_BIN_EXE_example-sum-package-name"))
+tests/integration/sum.rs:28:    let output = Command::new(env!("CARGO_BIN_EXE_example-sum-package-name"))
+README.md:6:[![Crates.io](https://img.shields.io/crates/v/example-sum-package-name?label=crates.io&style=flat)](https://crates.io/crates/example-sum-package-name)
+README.md:7:[![Docs.rs](https://docs.rs/example-sum-package-name/badge.svg)](https://docs.rs/example-sum-package-name)
+README.md:23:- **Template-safe defaults**: CI/CD skips publishing when package name is `example-sum-package-name`
+README.md:32:   - Change `name` from `example-sum-package-name` to your package name
+README.md:115:│   ├── check-release-needed.rs     # Release necessity check
+README.md:124:│   ├── publish-crate.rs            # Crates.io publishing
+README.md:209:The default package name `example-sum-package-name` triggers skip logic in CI/CD scripts:
+README.md:210:- `publish-crate.rs` skips crates.io publishing
+README.md:222:   - Change `name` field from `example-sum-package-name`
+tests/unit/ci-cd/workspace_manifest_resolution.rs:8:    read_package_info,
+tests/unit/ci-cd/workspace_manifest_resolution.rs:34:    let info = read_package_info(&manifest).unwrap();
+tests/unit/ci-cd/workspace_manifest_resolution.rs:76:    let info = read_package_info(&manifest).unwrap();
+scripts/create-github-release.rs:140:        if crate_name == "example-sum-package-name" {
+scripts/create-github-release.rs:141:            println!("Skipping GitHub release: package name is the template default 'example-sum-package-name'");
+scripts/publish-crate.rs:11://! Usage: rust-script scripts/publish-crate.rs [--token <token>] [--rust-root <path>]
+scripts/publish-crate.rs:79:    let package_info = match rust_paths::read_package_info(&package_manifest) {
+scripts/publish-crate.rs:91:    if name == "example-sum-package-name" {
+scripts/publish-crate.rs:92:        println!("Skipping publish: package name is the template default 'example-sum-package-name'");
+scripts/get-version.rs:61:    match rust_paths::read_package_info(&package_manifest) {
+scripts/check-release-needed.rs:18://! Usage: rust-script scripts/check-release-needed.rs [--rust-root <path>]
+scripts/check-release-needed.rs:200:    let package_info = match rust_paths::read_package_info(&package_manifest) {
+scripts/rust-paths.rs:26:pub struct PackageInfo {
+scripts/rust-paths.rs:164:pub fn read_package_info(manifest_path: &Path) -> Result<PackageInfo, String> {
+scripts/rust-paths.rs:173:    Ok(PackageInfo { name, version })

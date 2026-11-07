@@ -1,0 +1,321 @@
+--- template/scripts/version-and-commit.mjs
++++ scripts/version-and-commit.mjs
+@@ -1,46 +1,41 @@
+-#!/usr/bin/env bun
++#!/usr/bin/env node
++import {
++  assertSafeAdvance,
++  assertStagedReleaseMetadata,
++  syncReleaseCheckout,
++} from './release-safety.mjs';
+ 
+ /**
+  * Version packages and commit to main
+- * Usage: node scripts/version-and-commit.mjs --mode <changeset|instant> [--bump-type <type>] [--description <desc>] [--js-root <path>]
++ * Usage: node scripts/version-and-commit.mjs --mode <changeset|instant> [--bump-type <type>] [--description <desc>]
+  *   changeset: Run changeset version
+  *   instant: Run instant version bump with bump_type (patch|minor|major) and optional description
+  *
+- * Configuration:
+- * - CLI: --js-root <path> to explicitly set JavaScript root
+- * - Environment: JS_ROOT=<path>
+- *
+  * Uses link-foundation libraries:
+- * - Lockfile-installed command-stream and lino-arguments helpers
++ * - use-m: Dynamic package loading without package.json dependencies
+  * - command-stream: Modern shell command execution with streaming support
+  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
+  */
+ 
+-import { readFileSync, appendFileSync } from 'fs';
++import { readFileSync, appendFileSync, readdirSync } from 'fs';
+ 
+ import {
+   getJsRoot,
+   getPackageJsonPath,
++  getChangesetDir,
+   needsCd,
+   parseJsRootConfig,
+ } from './js-paths.mjs';
+-import { bootstrapDependencies } from './bootstrap-dependencies.mjs';
+-import { loadCommandStream, loadLinoArguments } from './use-module.mjs';
+-import { printUntrusted } from './github-actions-log.mjs';
+-import { checkStagedFormatting } from './check-staged-formatting.mjs';
+-import { runStrict } from './run-command.mjs';
+-import { captureVersionTree, syncVersionLock } from './version-lock.mjs';
+-import { stageReleaseMetadata } from './release-metadata.mjs';
+-import { assertValidatedRelease } from './release-publication.mjs';
++import { pushWithRebaseRetry } from './push-with-rebase-retry.mjs';
++import { isEarlierAttemptRelease } from './release-rerun.mjs';
++
++// Load dependencies through the shared use-m loader, which normalizes the
++// CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
++import { useModule } from './use-module.mjs';
+ 
+ // Import link-foundation libraries
+-// Loaded through bootstrapDependencies: when installed helpers are unavailable,
+-// this script reports the failure and writes its outputs, and the process
+-// does not die inside module initialisation.
+-const [{ $ }, { makeConfig }] = await bootstrapDependencies(
+-  [loadCommandStream, loadLinoArguments],
+-  { outputs: { version_committed: 'false' } }
+-);
++const { $ } = await useModule('command-stream');
++const { makeConfig } = await useModule('lino-arguments');
+ 
+ // Parse CLI arguments using lino-arguments
+ const config = makeConfig({
+@@ -80,10 +75,9 @@
+ console.log('Parsed configuration:', {
+   mode,
+   bumpType,
++  description: description || '(none)',
+   jsRoot,
+ });
+-console.log('Description:');
+-printUntrusted(description || '(none)');
+ 
+ // Detect if positional arguments were used (common mistake)
+ const args = process.argv.slice(2);
+@@ -92,16 +86,14 @@
+   console.error('Command line arguments:', args);
+   console.error('');
+   console.error(
+-    'This script requires named arguments (--mode, --bump-type, --description, --js-root).'
++    'This script requires named arguments (--mode, --bump-type, --description).'
+   );
+   console.error('Usage:');
+   console.error('  Changeset mode:');
+-  console.error(
+-    '    node scripts/version-and-commit.mjs --mode changeset [--js-root <path>]'
+-  );
++  console.error('    node scripts/version-and-commit.mjs --mode changeset');
+   console.error('  Instant mode:');
+   console.error(
+-    '    node scripts/version-and-commit.mjs --mode instant --bump-type <major|minor|patch> [--description <desc>] [--js-root <path>]'
++    '    node scripts/version-and-commit.mjs --mode instant --bump-type <major|minor|patch> [--description <desc>]'
+   );
+   console.error('');
+   console.error('Examples:');
+@@ -109,9 +101,6 @@
+     '  node scripts/version-and-commit.mjs --mode instant --bump-type patch --description "Fix bug"'
+   );
+   console.error('  node scripts/version-and-commit.mjs --mode changeset');
+-  console.error(
+-    '  node scripts/version-and-commit.mjs --mode changeset --js-root js'
+-  );
+   process.exit(1);
+ }
+ 
+@@ -126,14 +115,10 @@
+ if (mode === 'instant' && !bumpType) {
+   console.error('Error: --bump-type is required for instant mode');
+   console.error(
+-    'Usage: node scripts/version-and-commit.mjs --mode instant --bump-type <major|minor|patch> [--description <desc>] [--js-root <path>]'
++    'Usage: node scripts/version-and-commit.mjs --mode instant --bump-type <major|minor|patch> [--description <desc>]'
+   );
+   process.exit(1);
+ }
+-
+-// Store the original working directory to restore after cd commands
+-// IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
+-const originalCwd = process.cwd();
+ 
+ /**
+  * Append to GitHub Actions output file
+@@ -148,13 +133,28 @@
+ }
+ 
+ /**
++ * Count changeset files (excluding README.md)
++ */
++function countChangesets() {
++  try {
++    const changesetDir = getChangesetDir({ jsRoot });
++    const files = readdirSync(changesetDir);
++    return files.filter((f) => f.endsWith('.md') && f !== 'README.md').length;
++  } catch {
++    return 0;
++  }
++}
++
++/**
+  * Get package version
+  * @param {string} source - 'local' or 'remote'
+  */
+ async function getVersion(source = 'local') {
+   const packageJsonPath = getPackageJsonPath({ jsRoot });
+   if (source === 'remote') {
+-    const result = await $`git show origin/main:${packageJsonPath}`.run({
++    // For remote, we need the path relative to repo root (without ./ prefix)
++    const remotePath = packageJsonPath.replace(/^\.\//, '');
++    const result = await $`git show origin/main:${remotePath}`.run({
+       capture: true,
+     });
+     return JSON.parse(result.stdout).version;
+@@ -163,15 +163,16 @@
+ }
+ 
+ async function main() {
++  // Store the original working directory to restore after cd commands
++  // IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
++  // This means `cd js` actually changes the Node.js process's working directory
++  const originalCwd = process.cwd();
++
+   try {
+-    await assertValidatedRelease({ jsRoot });
+-
+     // Configure git
+-    // The 41898282+ prefix is what links the commit to the github-actions[bot]
+-    // account. Without it the commit is "unattributed", and a ruleset with
+-    // require_extra_approval_for_unattributed_changes will demand a human
+-    // approval before an automated release pull request can be merged.
+     await $`git config user.name "github-actions[bot]"`;
++    // The 41898282+ prefix links the commit to the github-actions[bot]
++    // account; without it the release commit is "unattributed".
+     await $`git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`;
+ 
+     // Check if remote main has advanced (handles re-runs after partial success)
+@@ -187,45 +188,47 @@
+     const remoteHead = remoteHeadResult.stdout.trim();
+ 
+     if (localHead !== remoteHead) {
++      assertSafeAdvance(localHead, remoteHead, { jsRoot });
+       console.log(
+         `Remote main has advanced (local: ${localHead}, remote: ${remoteHead})`
+       );
+       console.log('This may indicate a previous attempt partially succeeded.');
+ 
+-      // A rerun may recover an already-pushed version-only child. Source or
+-      // dependency changes require a new validation run on the current main.
+-      try {
+-        await assertValidatedRelease({
+-          parentSha: process.env.GITHUB_SHA,
+-          headRef: 'origin/main',
+-          jsRoot,
+-        });
+-      } catch (error) {
+-        throw new Error(
+-          'Remote main changed after validation; rerun CI on current main.',
+-          {
+-            cause: error,
+-          }
+-        );
+-      }
++      // Check if the remote version is already the expected bump
+       const remoteVersion = await getVersion('remote');
+       console.log(`Remote version: ${remoteVersion}`);
+-      await $`git merge --ff-only origin/main`;
+-      setOutput('version_committed', 'false');
+-      setOutput('already_released', 'true');
+-      setOutput('new_version', remoteVersion);
+-      return;
++
++      // Check if there are changesets to process
++      const changesetCount = countChangesets();
++
++      if (
++        isEarlierAttemptRelease({
++          mode,
++          changesetCount,
++          runAttempt: process.env.GITHUB_RUN_ATTEMPT,
++        })
++      ) {
++        console.log('No changesets to process and remote has advanced.');
++        console.log(
++          'Assuming version bump was already completed in a previous attempt.'
++        );
++        setOutput('version_committed', 'false');
++        setOutput('already_released', 'true');
++        setOutput('new_version', remoteVersion);
++        return;
++      } else {
++        console.log('Rebasing on remote main to incorporate changes...');
++        await $`git rebase origin/main`;
++      }
+     }
+ 
+     // Get current version before bump
+     const oldVersion = await getVersion();
+     console.log(`Current version: ${oldVersion}`);
+-    const validatedVersionTree = captureVersionTree(jsRoot);
+ 
+     if (mode === 'instant') {
+       console.log('Running instant version bump...');
+-      // Run instant version bump script
+-      // Pass --js-root to ensure consistent path handling
++      // Run instant version bump script, passing js-root for consistent path handling
+       // Rely on command-stream's auto-quoting for proper argument handling
+       if (description) {
+         await $`node scripts/instant-version-bump.mjs --bump-type ${bumpType} --description ${description} --js-root ${jsRoot}`;
+@@ -235,17 +238,19 @@
+     } else {
+       console.log('Running changeset version...');
+       // Run changeset version to bump versions and update CHANGELOG
+-      // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
++      // IMPORTANT: cd is a virtual command in command-stream that calls process.chdir()
++      // We need to restore the original directory after this command
+       if (needsCd({ jsRoot })) {
+         await $`cd ${jsRoot} && npm run changeset:version`;
++        // Restore the original working directory
+         process.chdir(originalCwd);
+       } else {
++        // Single-language repo - run in current directory
+         await $`npm run changeset:version`;
+       }
+     }
+ 
+     // Get new version after bump
+-    syncVersionLock(jsRoot, validatedVersionTree);
+     const newVersion = await getVersion();
+     console.log(`New version: ${newVersion}`);
+     setOutput('new_version', newVersion);
+@@ -257,27 +262,20 @@
+     if (status) {
+       console.log('Changes detected, committing...');
+ 
+-      // Only release metadata may enter this commit.
+-      await stageReleaseMetadata();
+-
+-      // A failure here aborts the release before anything is written.
+-      await checkStagedFormatting();
++      // Stage all changes (package.json, package-lock.json, CHANGELOG.md, deleted changesets)
++      await $`git add -A`;
++      assertStagedReleaseMetadata({ jsRoot });
+ 
+       // Commit with version number as message
+-      await runStrict('git', ['commit', '-m', newVersion]);
+-
+-      // Push directly with bounded recovery for the attested metadata commit.
+-      // Source races and permanent rules fail before publication.
+-      try {
+-        await $`node scripts/push-main-with-rebase-retry.mjs origin main --label ${newVersion} --release-parent ${process.env.GITHUB_SHA}`.run(
+-          { capture: true, mirror: true }
+-        );
+-      } catch (error) {
+-        throw new Error(
+-          `Failed to push version ${newVersion} to main: ${error.message}`,
+-          { cause: error }
+-        );
+-      }
++      const commitMessage = newVersion;
++      const escapedMessage = commitMessage.replace(/"/g, '\\"');
++      await $`git commit -m "${escapedMessage}"`;
++
++      // Push directly to main, rebasing when another merge landed first
++      await pushWithRebaseRetry({
++        push: () => $`git push origin main`,
++        pullRebase: () => syncReleaseCheckout({ jsRoot }),
++      });
+ 
+       console.log('\u2705 Version bump committed and pushed to main');
+       setOutput('version_committed', 'true');
+@@ -286,8 +284,6 @@
+       setOutput('version_committed', 'false');
+     }
+   } catch (error) {
+-    // Restore cwd on error
+-    process.chdir(originalCwd);
+     console.error('Error:', error.message);
+     process.exit(1);
+   }

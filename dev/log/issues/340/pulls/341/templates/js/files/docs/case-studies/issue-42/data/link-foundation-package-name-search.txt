@@ -1,0 +1,58 @@
+link-foundation/link-cli:scripts/merge-changesets.mjs: const PACKAGE_NAME = 'MyPackage';
+link-foundation/link-cli:scripts/merge-changesets.mjs: `^['"]?${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]?:\\s+(major|minor|patch)`,
+link-foundation/command-stream:scripts/publish-to-npm.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/command-stream:scripts/publish-to-npm.mjs: const PACKAGE_NAME = 'command-stream';
+link-foundation/start:scripts/validate-changeset.mjs: const PACKAGE_NAME = 'start-command';
+link-foundation/start:scripts/validate-changeset.mjs: `^['"]${PACKAGE_NAME}['"]:\\s+(major|minor|patch)`,
+link-foundation/meta-ontology:docs/case-studies/issue-11/analysis-crates-io.md: PACKAGE_NAME=$(grep '^name = ' Cargo.toml | head -1 | sed 's/name = "\(.*\)"/\1/')
+link-foundation/meta-ontology:docs/case-studies/issue-11/analysis-crates-io.md: echo "Package: $PACKAGE_NAME@$PACKAGE_VERSION"
+link-foundation/pdf-to-markdown:scripts/create-manual-changeset.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/pdf-to-markdown:scripts/create-manual-changeset.mjs: const PACKAGE_NAME = 'pd2md';
+link-foundation/js-ai-driven-development-pipeline-template:docs/case-studies/issue-13/hive-mind-pr-961-diff.txt: +const PACKAGE_NAME = '@link-assistant/hive-mind';
+link-foundation/js-ai-driven-development-pipeline-template:docs/case-studies/issue-13/hive-mind-pr-961-diff.txt: +    const versionTypeRegex = new RegExp(`^['"]${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]:\\s+(major|minor|patch)`, 'm');
+link-foundation/gh-load-pull-request:scripts/publish-to-npm.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/gh-load-pull-request:scripts/publish-to-npm.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/gh-load-issue:scripts/validate-changeset.mjs: const PACKAGE_NAME = 'gh-load-issue';
+link-foundation/gh-load-issue:scripts/validate-changeset.mjs: `^['"]${PACKAGE_NAME}['"]:\\s+(major|minor|patch)`,
+link-foundation/link-cli:scripts/version-and-commit-csharp.mjs: const PACKAGE_NAME = 'Foundation.Data.Doublets.Cli';
+link-foundation/link-cli:scripts/version-and-commit-csharp.mjs: `^['"]?${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]?:\\s+(major|minor|patch)`,
+link-foundation/start:rust/src/lib/failure_handler.rs: let mut package_name = None;
+link-foundation/start:rust/src/lib/failure_handler.rs: package_name = after.split('/').next().map(String::from);
+link-foundation/python-ai-driven-development-pipeline-template:scripts/format_release_notes.py: package_name: str,
+link-foundation/python-ai-driven-development-pipeline-template:scripts/format_release_notes.py: f"[![PyPI version](https://img.shields.io/pypi/v/{package_name}.svg)]"
+link-foundation/python-ai-driven-development-pipeline-template:scripts/format_release_notes.py: f"(https://pypi.org/project/{package_name}/)"
+link-foundation/pdf-to-markdown:scripts/publish-to-npm.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/pdf-to-markdown:scripts/publish-to-npm.mjs: const PACKAGE_NAME = 'pd2md';
+link-foundation/js-ai-driven-development-pipeline-template:scripts/create-manual-changeset.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/js-ai-driven-development-pipeline-template:scripts/create-manual-changeset.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/glab-setup-git-identity:scripts/format-release-notes.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/glab-setup-git-identity:scripts/format-release-notes.mjs: const PACKAGE_NAME = 'glab-setup-git-identity';
+link-foundation/gh-load-pull-request:CHANGELOG.md: - Update PACKAGE_NAME constants in validation and release scripts
+link-foundation/gh-load-issue:scripts/format-release-notes.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/gh-load-issue:scripts/format-release-notes.mjs: const PACKAGE_NAME = 'gh-load-issue';
+link-foundation/js-ai-driven-development-pipeline-template:README.md: 4. Update the `PACKAGE_NAME` constant in these scripts:
+link-foundation/glab-setup-git-identity:scripts/create-manual-changeset.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/glab-setup-git-identity:scripts/create-manual-changeset.mjs: const PACKAGE_NAME = 'glab-setup-git-identity';
+link-foundation/js-ai-driven-development-pipeline-template:scripts/validate-changeset.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/js-ai-driven-development-pipeline-template:scripts/validate-changeset.mjs: `^['"]${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]:\\s+(major|minor|patch)`,
+link-foundation/links-notation:experiments/test_workflow_js.sh: PACKAGE_NAME=$(node -p "require('./package.json').name")
+link-foundation/links-notation:experiments/test_workflow_js.sh: echo "Package: $PACKAGE_NAME"
+link-foundation/js-ai-driven-development-pipeline-template:scripts/publish-to-npm.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/js-ai-driven-development-pipeline-template:scripts/publish-to-npm.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/glab-setup-git-identity:scripts/merge-changesets.mjs: const PACKAGE_NAME = 'glab-setup-git-identity';
+link-foundation/glab-setup-git-identity:scripts/merge-changesets.mjs: `^['"]?${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]?:\\s+(major|minor|patch)`,
+link-foundation/command-stream:scripts/validate-changeset.mjs: const PACKAGE_NAME = 'command-stream';
+link-foundation/command-stream:scripts/validate-changeset.mjs: `^['"]${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]:\\s+(major|minor|patch)`,
+link-foundation/start:rust/tests/integration_test.rs: fn test_package_name() {
+link-foundation/start:scripts/publish-to-npm.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/start:scripts/publish-to-npm.mjs: const PACKAGE_NAME = 'start-command';
+link-foundation/links-notation:experiments/test_workflow_rust.sh: PACKAGE_NAME=$(grep '^name = ' Cargo.toml | head -1 | sed 's/name = "\(.*\)"/\1/')
+link-foundation/links-notation:experiments/test_workflow_rust.sh: echo "Package: $PACKAGE_NAME"
+link-foundation/command-stream:scripts/merge-changesets.mjs: const PACKAGE_NAME = 'command-stream';
+link-foundation/command-stream:scripts/merge-changesets.mjs: `^['"]?${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]?:\\s+(major|minor|patch)`,
+link-foundation/pdf-to-markdown:scripts/merge-changesets.mjs: const PACKAGE_NAME = 'pd2md';
+link-foundation/pdf-to-markdown:scripts/merge-changesets.mjs: `^['"]?${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]?:\\s+(major|minor|patch)`,
+link-foundation/glab-setup-git-identity:scripts/publish-to-npm.mjs: * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+link-foundation/glab-setup-git-identity:scripts/publish-to-npm.mjs: const PACKAGE_NAME = 'glab-setup-git-identity';
+link-foundation/gh-pull-all:.github/workflows/publish.yml: PACKAGE_NAME=$(bun -p "require('./package.json').name")
+link-foundation/gh-pull-all:.github/workflows/publish.yml: if bun pm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null; then

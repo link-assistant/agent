@@ -1,0 +1,30 @@
+--- template/.github/actions/artifact/package.json
++++ js/vendor/native-domexception/package.json
+@@ -1,23 +1,7 @@
+ {
+-  "name": "template-artifact-transport",
++  "name": "node-domexception",
++  "version": "1.0.0",
+   "private": true,
+-  "type": "module",
+-  "scripts": {
+-    "build": "ncc build index.mjs -o dist --minify --license licenses.txt",
+-    "test": "node --test ../../../tests/artifact.test.mjs"
+-  },
+-  "dependencies": {
+-    "@actions/artifact": "6.3.1",
+-    "@actions/core": "3.0.1",
+-    "minimatch": "11.0.4"
+-  },
+-  "devDependencies": {
+-    "@vercel/ncc": "0.45.0"
+-  },
+-  "overrides": {
+-    "archiver-utils": {
+-      "glob": "14.0.3"
+-    },
+-    "minimatch": "$minimatch"
+-  }
++  "main": "index.cjs",
++  "description": "Use the native DOMException in the supported Bun/Node runtimes."
+ }

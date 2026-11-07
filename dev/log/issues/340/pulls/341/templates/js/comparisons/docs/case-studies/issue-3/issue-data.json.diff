@@ -1,0 +1,44 @@
+--- template/docs/case-studies/issue-3/issue-data.json
++++ docs/case-studies/issue-93/issue-data.json
+@@ -1,29 +1,27 @@
+ {
+   "author": {
+-    "id": "MDQ6VXNlcjE0MzE5MDQ=",
++    "id": "MDQ6VXNlcjYzOTIzMTE=",
+     "is_bot": false,
+-    "login": "konard",
+-    "name": "Konstantin Diachenko"
++    "login": "andchir",
++    "name": "Andrei"
+   },
+-  "body": "## Bug Description\n\nThe `scripts/format-release-notes.mjs` script only handles `### Patch Changes` sections, causing it to fail on Minor and Major releases.\n\n## Current Behavior\n\nWhen a Minor or Major release is created:\n- ❌ Section headers (\"### Minor Changes\", \"### Major Changes\") remain in release notes\n- ❌ PR detection is skipped\n- ❌ Release formatting fails silently\n\n**Example:** Release v0.1.0 shows:\n```\n### Minor Changes\n\n- 65d76dc: Initial template setup with complete AI-driven development pipeline\n  ...\n```\n\n## Expected Behavior\n\nRelease notes should be formatted cleanly:\n```\nInitial template setup with complete AI-driven development pipeline\n...\n\n**Related Pull Request:** #X\n\n---\n\n[![npm version](https://img.shields.io/badge/npm-0.1.0-blue.svg)](...)\n```\n\n## Root Cause\n\nFile: `scripts/format-release-notes.mjs` (lines 92-115)\n\n```javascript\n// Current code - only matches Patch changes\nconst patchChangesMatchWithHash = currentBody.match(\n  /### Patch Changes\\s*\\n\\s*-\\s+([a-f0-9]+):\\s+(.+?)$/s\n);\nconst patchChangesMatchNoHash = currentBody.match(\n  /### Patch Changes\\s*\\n\\s*-\\s+(.+?)$/s\n);\n```\n\nWhen the regex doesn't match:\n1. Script exits early with \"⚠️ Could not parse patch changes\"\n2. Section header remains in release notes\n3. PR detection is never executed\n\n## Proposed Solution\n\nUpdate regex to match all changeset types:\n\n```javascript\n// Match any changeset type (Major, Minor, or Patch)\nconst changesPattern =\n  /### (Major|Minor|Patch) Changes\\s*\\n\\s*-\\s+(?:([a-f0-9]+):\\s+)?(.+?)$/s;\nconst changesMatch = currentBody.match(changesPattern);\n\nlet commitHash = null;\nlet rawDescription = null;\nlet changeType = null;\n\nif (changesMatch) {\n  [, changeType, commitHash, rawDescription] = changesMatch;\n  console.log(`ℹ️ Found ${changeType} Changes section`);\n  \n  // Extract commit hash if embedded in description\n  if (!commitHash && rawDescription) {\n    const descWithHashMatch = rawDescription.match(/^([a-f0-9]+):\\s+(.+)$/s);\n    if (descWithHashMatch) {\n      [, commitHash, rawDescription] = descWithHashMatch;\n    }\n  }\n} else {\n  console.log('⚠️ Could not parse changes from release notes');\n  console.log('   Looking for pattern: ### [Major|Minor|Patch] Changes');\n  process.exit(0);\n}\n```\n\n## Fix Implementation\n\nWe've implemented this fix in our repository:\n- **Repository:** link-assistant/agent\n- **PR:** https://github.com/link-assistant/agent/pull/59\n- **Case Study:** docs/case-studies/issue-58/README.md\n\nThe fix:\n1. ✅ Matches all changeset types (Major, Minor, Patch)\n2. ✅ Removes section headers from release notes\n3. ✅ Enables PR detection for all release types\n4. ✅ Handles both commit hash formats\n\n## Impact\n\n**Affected Releases:**\n- All Minor and Major releases (v0.1.0, etc.)\n\n**Unaffected:**\n- Patch releases (these work correctly)\n\n## References\n\n- **Discovered in:** link-assistant/agent#58\n- **Fixed in:** link-assistant/agent#59\n- **Changeset docs:** https://github.com/changesets/changesets\n\n---\n\nThis issue was discovered through comprehensive case study analysis documented in our repository. Happy to contribute the fix back to the template if needed!",
++  "body": "agent auth login - авторизация через Google не работает. Первые два варианта авторизации дают ссылку, которая не работает в браузере.\n\n- Google AI Pro/Ultra (OAuth - Browser)\n- Google AI Pro/Ultra (OAuth - Manual Code Entry)\n\nПолучаю сообщение в браузере:\n\n~~~\nДоступ заблокирован: ошибка авторизации\nUnregistered scope(s) in the request: https://www.googleapis.com/auth/generative-language.tuning, https://www.googleapis.com/auth/generative-language.retriever\nЕсли вы разработчик этого приложения, прочитайте\n.\nОшибка 403: restricted_client\n~~~\n\n![Image](https://github.com/user-attachments/assets/5b115eb4-a1f3-4f62-8e85-774605d2c757)",
+   "comments": [
+     {
+-      "id": "IC_kwDOQmfsR87aXMnl",
++      "id": "IC_kwDOQYTy3M7biKbP",
+       "author": { "login": "konard" },
+       "authorAssociation": "MEMBER",
+-      "body": "Also find all our repositories on GitHub, that have copied the same issue so far, and create issues in these repositories to do fixes.\n\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
+-      "createdAt": "2025-12-17T03:47:00Z",
+-      "includesCreatedEdit": true,
++      "body": "We should look at how \n\n[reference-gemini-cli @ 26f050f](https://github.com/google-gemini/gemini-cli/tree/26f050ff10dd90a8c4e6e125effe79d0272aa474)\n[reference-gemini-cookbook @ aa218e8](https://github.com/google-gemini/cookbook/tree/aa218e8c403f86f2d942f645f1e99ca8ed7f7080)\n\nAre implemented and try to use code as close to it as possible.\n\nAlso may be https://github.com/sst/opencode/tree/0068cb305f617a99556289c72b8a5ddc2bbda746 has an answer on how to do it for Google?\n\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
++      "createdAt": "2025-12-22T17:51:44Z",
++      "includesCreatedEdit": false,
+       "isMinimized": false,
+       "minimizedReason": "",
+       "reactionGroups": [],
+-      "url": "https://github.com/link-foundation/js-ai-driven-development-pipeline-template/issues/3#issuecomment-3663514085",
++      "url": "https://github.com/link-assistant/agent/issues/93#issuecomment-3683165903",
+       "viewerDidAuthor": true
+     }
+   ],
+-  "createdAt": "2025-12-16T21:27:52Z",
+-  "labels": [],
+-  "state": "OPEN",
+-  "title": "Release formatting script only handles Patch changes, not Minor/Major",
+-  "updatedAt": "2025-12-17T03:47:10Z"
++  "createdAt": "2025-12-22T14:51:32Z",
++  "title": "agent auth login через Google не работает",
++  "updatedAt": "2025-12-22T17:51:44Z"
+ }

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#
+# Offline `gh` stub for the scripts/check-pages.sh tests.
+# Logs each call to $PAGES_FIXTURE_DIR/requests and answers from files in the
+# same directory:
+#
+#   pages_status -- 200, or the HTTP status the Pages call fails with
+#   build_type   -- build_type printed for a 200 answer
+
+set -u
+
+FIX="${PAGES_FIXTURE_DIR:?PAGES_FIXTURE_DIR must point at the fixture files}"
+printf '%s\n' "$*" >>"$FIX/requests"
+
+case "$2" in
+  */pages)
+    status="$(cat "$FIX/pages_status")"
+    if [ "$status" = 200 ]; then
+      cat "$FIX/build_type"
+      exit 0
+    fi
+    printf 'gh: Stub answer (HTTP %s)\n' "$status" >&2
+    exit 1
+    ;;
+  *)
+    printf 'unexpected gh call: %s\n' "$*" >&2
+    exit 1
+    ;;
+esac

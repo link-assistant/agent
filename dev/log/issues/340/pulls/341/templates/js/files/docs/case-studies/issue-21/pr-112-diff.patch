@@ -1,0 +1,1336 @@
+diff --git a/docs/case-studies/issue-111/README.md b/docs/case-studies/issue-111/README.md
+new file mode 100644
+index 0000000..ce55504
+--- /dev/null
++++ b/docs/case-studies/issue-111/README.md
+@@ -0,0 +1,110 @@
++# Case Study: Issue #111 - JS Release Does Not Work
++
++## Timeline of Events
++
++### January 8, 2026 - CI Failure Discovery
++- **Time:** 02:22 - 02:24 UTC
++- **Trigger:** Push to main branch (`1730fae4a399750f320591a6dfd62cf40363f2ac`)
++- **Workflow:** JS CI/CD Pipeline (js.yml)
++- **Run ID:** 20803315337
++
++### Sequence of Events
++
++1. **02:22:24** - Lint and Format Check job starts
++2. **02:22:23** - Unit Tests (Bun on ubuntu-latest) starts
++3. **02:22:25** - Unit Tests (Bun on windows-latest) starts
++4. **02:22:24** - Unit Tests (Bun on macos-latest) starts
++5. **02:22:46** - Lint and Format Check completes successfully
++6. **02:22:29** - Ubuntu unit tests pass (0 failures)
++7. **02:22:32** - macOS unit tests pass (0 failures)
++8. **02:23:24** - Windows unit tests pass (0 failures)
++9. **02:23:32** - Release job starts
++10. **02:23:55** - Changeset version runs successfully
++11. **02:23:56** - npm install --package-lock-only fails with ERESOLVE
++12. **02:23:58** - Release job fails with exit code 1
++
++## Root Cause Analysis
++
++### Primary Root Cause
++The `changeset-version.mjs` script runs `npm install --package-lock-only` without the `--legacy-peer-deps` flag, causing peer dependency resolution failures.
++
++### Error Chain
++
++```
++npm error code ERESOLVE
++npm error ERESOLVE could not resolve
++
++npm error While resolving: @opentui/solid@0.1.60
++npm error Found: solid-js@1.9.10
++npm error   solid-js@"^1.9.10" from the root project
++npm error   peer solid-js@"^1.6.12" from @solid-primitives/event-bus@1.1.2
++
++npm error Could not resolve dependency:
++npm error peer solid-js@"1.9.9" from @opentui/solid@0.1.60
++```
++
++### Contributing Factors
++
++1. **Inconsistent npm flags:** The workflow file correctly uses `--legacy-peer-deps` for initial `npm install`, but the release scripts don't use this flag when syncing `package-lock.json`.
++
++2. **Dependency version mismatch:** The project uses `solid-js@1.9.10` but `@opentui/solid@0.1.60` requires exactly `solid-js@1.9.9` as a peer dependency.
++
++3. **Script design:** The release scripts are designed to run `npm install --package-lock-only` to synchronize the lock file after version bumps, but they don't account for the peer dependency conflicts.
++
++## Affected Files
++
++### Scripts That Need Updates
++
++| File | Line | Current Command | Required Fix |
++|------|------|-----------------|--------------|
++| `scripts/changeset-version.mjs` | 29 | `npm install --package-lock-only` | Add `--legacy-peer-deps` |
++| `scripts/instant-version-bump.mjs` | 111 | `cd js && npm install --package-lock-only` | Add `--legacy-peer-deps` |
++
++### Files That Correctly Use the Flag
++- `.github/workflows/js.yml` (all `npm install --legacy-peer-deps` commands)
++
++## Solution
++
++### Fix Implementation
++
++Add `--legacy-peer-deps` flag to all `npm install` commands that synchronize `package-lock.json`:
++
++**changeset-version.mjs (line 29):**
++```javascript
++// Before
++await $`npm install --package-lock-only`;
++
++// After
++await $`npm install --package-lock-only --legacy-peer-deps`;
++```
++
++**instant-version-bump.mjs (line 111):**
++```javascript
++// Before
++await $`cd js && npm install --package-lock-only`;
++
++// After
++await $`cd js && npm install --package-lock-only --legacy-peer-deps`;
++```
++
++## Verification
++
++After the fix is applied:
++1. The Release job should complete successfully
++2. The `package-lock.json` should be synchronized without peer dependency errors
++3. npm publish should proceed normally
++
++## Lessons Learned
++
++1. **Consistency is key:** When using npm flags like `--legacy-peer-deps`, ensure they are used consistently across all npm install commands in both workflow files and scripts.
++
++2. **Test release workflows:** Release workflows often run in different conditions than regular CI. Test them separately to catch issues like this.
++
++3. **Document npm quirks:** Peer dependency conflicts are common in JavaScript projects. Document the need for `--legacy-peer-deps` in contributing guidelines.
++
++## References
++
++- [GitHub Actions Run #20803315337](https://github.com/link-assistant/agent/actions/runs/20803315337/job/59752415630)
++- [CI Run Log (local copy)](./ci-run-20803315337.txt)
++- [npm ERESOLVE Documentation](https://docs.npmjs.com/cli/v8/commands/npm-install#strict-peer-deps)
++- [Issue #111](https://github.com/link-assistant/agent/issues/111)
+diff --git a/docs/case-studies/issue-111/ci-run-20803315337.txt b/docs/case-studies/issue-111/ci-run-20803315337.txt
+new file mode 100644
+index 0000000..a62468e
+--- /dev/null
++++ b/docs/case-studies/issue-111/ci-run-20803315337.txt
+@@ -0,0 +1,1188 @@
++Lint and Format Check	UNKNOWN STEP	﻿2026-01-08T02:22:24.0046562Z Current runner version: '2.330.0'
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0079559Z ##[group]Runner Image Provisioner
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0080795Z Hosted Compute Agent
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0081845Z Version: 20251211.462
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0083137Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0084394Z Build Date: 2025-12-11T16:28:49Z
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0085493Z Worker ID: {d58d867f-d54d-47af-83bc-f6ad3acb253f}
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0086861Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0087670Z ##[group]Operating System
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0088554Z Ubuntu
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0089455Z 24.04.3
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0090162Z LTS
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0090948Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0092021Z ##[group]Runner Image
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0093219Z Image: ubuntu-24.04
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0094092Z Version: 20251215.174.1
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0096011Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251215.174/images/ubuntu/Ubuntu2404-Readme.md
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0098805Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251215.174
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0100784Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0105578Z ##[group]GITHUB_TOKEN Permissions
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0108848Z Actions: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0109725Z ArtifactMetadata: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0110715Z Attestations: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0111651Z Checks: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0112542Z Contents: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0113588Z Deployments: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0115208Z Discussions: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0116138Z Issues: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0116941Z Metadata: read
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0117909Z Models: read
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0118773Z Packages: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0119675Z Pages: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0120680Z PullRequests: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0121760Z RepositoryProjects: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0122721Z SecurityEvents: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0124050Z Statuses: write
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0124951Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0127935Z Secret source: Actions
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0129587Z Prepare workflow directory
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0577650Z Prepare all required actions
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.0631571Z Getting action download info
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.3825906Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.4805162Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.6979439Z Complete job name: Lint and Format Check
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7674693Z ##[group]Run actions/checkout@v4
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7675511Z with:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7675913Z   repository: link-assistant/agent
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7676545Z   token: ***
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7676926Z   ssh-strict: true
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7677308Z   ssh-user: git
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7677709Z   persist-credentials: true
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7678148Z   clean: true
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7678542Z   sparse-checkout-cone-mode: true
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7679020Z   fetch-depth: 1
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7679396Z   fetch-tags: false
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7679809Z   show-progress: true
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7680199Z   lfs: false
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7680563Z   submodules: false
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7680956Z   set-safe-directory: true
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.7681600Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.8778753Z Syncing repository: link-assistant/agent
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.8780510Z ##[group]Getting Git version info
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.8781190Z Working directory is '/home/runner/work/agent/agent'
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:24.8782180Z [command]/usr/bin/git version
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0072291Z git version 2.52.0
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0099351Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0114563Z Temporarily overriding HOME='/home/runner/work/_temp/5f902db2-0346-4854-868e-2841b3c79855' before making global git config changes
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0116948Z Adding repository directory to the temporary git global config as a safe directory
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0121115Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0165407Z Deleting the contents of '/home/runner/work/agent/agent'
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0169727Z ##[group]Initializing the repository
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0175777Z [command]/usr/bin/git init /home/runner/work/agent/agent
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0448475Z hint: Using 'master' as the name for the initial branch. This default branch name
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0449617Z hint: will change to "main" in Git 3.0. To configure the initial branch name
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0450709Z hint: to use in all of your new repositories, which will suppress this warning,
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0451527Z hint: call:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0451944Z hint:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0452464Z hint: 	git config --global init.defaultBranch <name>
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0453400Z hint:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0454526Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0456288Z hint: 'development'. The just-created branch can be renamed via this command:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0457894Z hint:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0458798Z hint: 	git branch -m <name>
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0459775Z hint:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0461166Z hint: Disable this message with "git config set advice.defaultBranchName false"
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0463406Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0469630Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0504787Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0506180Z ##[group]Disabling automatic garbage collection
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0509623Z [command]/usr/bin/git config --local gc.auto 0
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0541086Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0544472Z ##[group]Setting up auth
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0548064Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0579657Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0934836Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.0967877Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.1187676Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.1227547Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.1447387Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.1482312Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.1483574Z ##[group]Fetching the repository
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.1494088Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +1730fae4a399750f320591a6dfd62cf40363f2ac:refs/remotes/origin/main
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6619596Z From https://github.com/link-assistant/agent
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6621203Z  * [new ref]         1730fae4a399750f320591a6dfd62cf40363f2ac -> origin/main
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6654096Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6655434Z ##[group]Determining the checkout info
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6658337Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6663734Z [command]/usr/bin/git sparse-checkout disable
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6705720Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6733527Z ##[group]Checking out the ref
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.6737540Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7097793Z Switched to a new branch 'main'
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7100654Z branch 'main' set up to track 'origin/main'.
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7108489Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7141976Z [command]/usr/bin/git log -1 --format=%H
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7164205Z 1730fae4a399750f320591a6dfd62cf40363f2ac
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7471486Z ##[group]Run actions/setup-node@v4
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7472580Z with:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7473529Z   node-version: 20.x
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7474425Z   always-auth: false
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7475315Z   check-latest: false
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7476509Z   token: ***
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.7477330Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.9244395Z Found in cache @ /opt/hostedtoolcache/node/20.19.6/x64
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:25.9249875Z ##[group]Environment details
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:28.7906176Z node: v20.19.6
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:28.7906646Z npm: 10.8.2
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:28.7906955Z yarn: 1.22.22
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:28.7908458Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:28.8018808Z ##[group]Run npm install --legacy-peer-deps
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:28.8019214Z [36;1mnpm install --legacy-peer-deps[0m
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:28.8066524Z shell: /usr/bin/bash -e {0}
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:28.8066805Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9461174Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9467918Z > @link-assistant/agent@0.7.0 prepare
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9468359Z > cd .. && husky || true
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9468579Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9983274Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9984017Z added 658 packages, and audited 659 packages in 11s
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9984691Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9985037Z 143 packages are looking for funding
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:39.9985578Z   run `npm fund` for details
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0006185Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0006671Z 2 high severity vulnerabilities
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0007039Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0007277Z To address all issues, run:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0007739Z   npm audit fix
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0007944Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0008167Z Run `npm audit` for details.
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0313068Z ##[group]Run npm run lint
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0313370Z [36;1mnpm run lint[0m
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0347033Z shell: /usr/bin/bash -e {0}
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.0347281Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.1407611Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.1408183Z > @link-assistant/agent@0.7.0 lint
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.1408664Z > eslint .
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:40.1408819Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.4337885Z ##[group]Run npm run format:check
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.4338355Z [36;1mnpm run format:check[0m
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.4380538Z shell: /usr/bin/bash -e {0}
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.4380910Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.5517737Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.5518313Z > @link-assistant/agent@0.7.0 format:check
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.5518876Z > prettier --check .
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.5519116Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:42.6346780Z Checking formatting...
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:45.9837191Z All matched files use Prettier code style!
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.0243323Z ##[group]Run npm run check:file-size
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.0243652Z [36;1mnpm run check:file-size[0m
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.0276889Z shell: /usr/bin/bash -e {0}
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.0277139Z ##[endgroup]
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1348735Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1349513Z > @link-assistant/agent@0.7.0 check:file-size
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1350158Z > node ../scripts/check-file-size.mjs
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1350399Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1636798Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1637562Z Checking JavaScript files for maximum 1000 lines...
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1637963Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1801349Z ✓ All files are within the line limit
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1801745Z 
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.1948469Z Post job cleanup.
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.3602083Z Post job cleanup.
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4528149Z [command]/usr/bin/git version
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4564021Z git version 2.52.0
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4615607Z Temporarily overriding HOME='/home/runner/work/_temp/b83b4053-9eab-437a-a5e5-099578643cb5' before making global git config changes
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4617169Z Adding repository directory to the temporary git global config as a safe directory
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4621754Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4654897Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4687141Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4911940Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4932018Z http.https://github.com/.extraheader
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4944323Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.4973872Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.5189598Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.5219355Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
++Lint and Format Check	UNKNOWN STEP	2026-01-08T02:22:46.5536985Z Cleaning up orphan processes
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	﻿2026-01-08T02:22:23.6491059Z Current runner version: '2.330.0'
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6514654Z ##[group]Runner Image Provisioner
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6515508Z Hosted Compute Agent
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6516147Z Version: 20251211.462
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6516750Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6517401Z Build Date: 2025-12-11T16:28:49Z
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6518145Z Worker ID: {9e934110-7f5c-422e-b2c4-d34b80b387d6}
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6518820Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6519343Z ##[group]Operating System
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6519997Z Ubuntu
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6520446Z 24.04.3
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6520888Z LTS
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6521417Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6522193Z ##[group]Runner Image
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6522772Z Image: ubuntu-24.04
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6523363Z Version: 20251215.174.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6524381Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251215.174/images/ubuntu/Ubuntu2404-Readme.md
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6525984Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251215.174
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6526999Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6528388Z ##[group]GITHUB_TOKEN Permissions
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6530487Z Contents: write
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6531037Z Metadata: read
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6531608Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6534204Z Secret source: Actions
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6535104Z Prepare workflow directory
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6861711Z Prepare all required actions
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.6900626Z Getting action download info
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:23.9989915Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.1173400Z Download action repository 'oven-sh/setup-bun@v2' (SHA:b7a1c7ccf290d58743029c4f6903da283811b979)
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4169230Z Complete job name: Unit Tests (Bun on ubuntu-latest)
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4874125Z ##[group]Run actions/checkout@v4
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4874940Z with:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4875314Z   ref: refs/heads/main
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4875964Z   token: ***
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4876368Z   repository: link-assistant/agent
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4876853Z   ssh-strict: true
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4877237Z   ssh-user: git
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4877651Z   persist-credentials: true
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4878078Z   clean: true
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4878467Z   sparse-checkout-cone-mode: true
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4878928Z   fetch-depth: 1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4879300Z   fetch-tags: false
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4879682Z   show-progress: true
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4880083Z   lfs: false
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4880435Z   submodules: false
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4880836Z   set-safe-directory: true
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.4881472Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.5929893Z Syncing repository: link-assistant/agent
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.5931583Z ##[group]Getting Git version info
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.5932695Z Working directory is '/home/runner/work/agent/agent'
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.5933610Z [command]/usr/bin/git version
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6033666Z git version 2.52.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6059008Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6073077Z Temporarily overriding HOME='/home/runner/work/_temp/23ccd52b-e899-47d5-9d5e-97cdb38f3130' before making global git config changes
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6074399Z Adding repository directory to the temporary git global config as a safe directory
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6078124Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6120441Z Deleting the contents of '/home/runner/work/agent/agent'
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6124535Z ##[group]Initializing the repository
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6128998Z [command]/usr/bin/git init /home/runner/work/agent/agent
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6256755Z hint: Using 'master' as the name for the initial branch. This default branch name
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6258484Z hint: will change to "main" in Git 3.0. To configure the initial branch name
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6260119Z hint: to use in all of your new repositories, which will suppress this warning,
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6261486Z hint: call:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6262755Z hint:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6263553Z hint: 	git config --global init.defaultBranch <name>
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6264586Z hint:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6265598Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6267232Z hint: 'development'. The just-created branch can be renamed via this command:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6268491Z hint:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6269208Z hint: 	git branch -m <name>
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6270018Z hint:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6271102Z hint: Disable this message with "git config set advice.defaultBranchName false"
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6273007Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6276489Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6311256Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6312541Z ##[group]Disabling automatic garbage collection
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6314859Z [command]/usr/bin/git config --local gc.auto 0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6347256Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6348631Z ##[group]Setting up auth
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6354268Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6387049Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6819247Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6853330Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.7089457Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.7121892Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.7357296Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.7390862Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.7391611Z ##[group]Fetching the repository
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:24.7399497Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/main:refs/remotes/origin/main
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0397732Z From https://github.com/link-assistant/agent
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0399344Z  * [new branch]      main       -> origin/main
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0436078Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0437363Z ##[group]Determining the checkout info
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0438915Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0444289Z [command]/usr/bin/git sparse-checkout disable
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0489043Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0520175Z ##[group]Checking out the ref
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0521601Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0879889Z Switched to a new branch 'main'
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0881675Z branch 'main' set up to track 'origin/main'.
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0890533Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0925736Z [command]/usr/bin/git log -1 --format=%H
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.0947970Z 1730fae4a399750f320591a6dfd62cf40363f2ac
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1187021Z ##[group]Run oven-sh/setup-bun@v2
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1187757Z with:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1188167Z   bun-version: latest
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1188684Z   no-cache: false
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1189136Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.3298392Z Downloading a new version of Bun: https://bun.sh/download/latest/linux/x64?avx2=true&profile=false
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:25.7960285Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/a73f794c-4543-4d43-b82c-e430e9ba633e.zip
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:26.5792552Z [command]/home/runner/.bun/bin/bun --revision
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:26.5833204Z 1.3.5+1e86cebd7
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:26.5974689Z ##[group]Run bun install
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:26.5975311Z [36;1mbun install[0m
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:26.6013732Z shell: /usr/bin/bash -e {0}
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:26.6014041Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:26.6108806Z bun install v1.3.5 (1e86cebd)
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8377954Z 
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8384111Z $ cd .. && husky || true
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7296496Z 
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7297070Z + @changesets/cli@2.29.8
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7297550Z + @eslint/js@9.39.2
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7297860Z + eslint@9.39.2
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7298204Z + eslint-config-prettier@10.1.8
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7298742Z + eslint-plugin-prettier@5.5.4
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7299124Z + husky@9.1.7
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7299457Z + lint-staged@16.2.7
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7299798Z + prettier@3.7.4
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7300115Z + @actions/core@1.11.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7300458Z + @actions/github@6.0.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7300826Z + @agentclientprotocol/sdk@0.5.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7301216Z + @ai-sdk/mcp@0.0.8
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7301593Z + @ai-sdk/xai@2.0.33
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7302535Z + @clack/prompts@0.11.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7302994Z + @hono/standard-validator@0.2.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7303390Z + @hono/zod-validator@0.7.5
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7303816Z + @modelcontextprotocol/sdk@1.22.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7304215Z + @octokit/graphql@9.0.3
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7304558Z + @octokit/rest@22.0.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7305162Z + @openauthjs/openauth@0.4.3
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7305532Z + @opencode-ai/sdk@1.0.78
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7311131Z + @opentui/core@0.1.46
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7315173Z + @opentui/solid@0.1.46
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7315583Z + @parcel/watcher@2.5.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7316312Z + @solid-primitives/event-bus@1.1.2
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7318374Z + @standard-community/standard-json@0.3.5
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7319163Z + @standard-community/standard-openapi@0.2.9
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7322213Z + @zip.js/zip.js@2.8.10
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7322625Z + ai@6.0.0-beta.99
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7322958Z + chokidar@4.0.3
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7323297Z + clipboardy@5.0.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7323643Z + command-stream@0.7.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7323992Z + decimal.js@10.6.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7324472Z + diff@8.0.2
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7324771Z + fuzzysort@3.1.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7325084Z + glob@10.5.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7325382Z + gray-matter@4.0.3
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7325692Z + hono@4.10.6
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7325974Z + hono-openapi@1.1.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7326306Z + ignore@7.0.5
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7326609Z + jsonc-parser@3.3.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7326969Z + lino-objects-codec@0.1.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7327333Z + log-lazy@1.0.4
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7327636Z + minimatch@10.1.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7327947Z + remeda@2.32.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7328242Z + solid-js@1.9.10
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7328562Z + strip-ansi@7.1.2
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7328874Z + test-anywhere@0.7.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7329228Z + tree-sitter-bash@0.25.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7329577Z + turndown@7.2.2
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7329882Z + ulid@3.0.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7331244Z + vscode-jsonrpc@8.2.1
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7331603Z + vscode-languageserver-types@3.17.5
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7331880Z + web-tree-sitter@0.25.10
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7332446Z + xdg-basedir@5.1.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7332629Z + yargs@18.0.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7332796Z + zod@4.1.12
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7332894Z 
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7333018Z 607 packages installed [3.12s]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7516788Z ##[group]Run bun test tests/json-standard-unit.test.js
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7517233Z [36;1mbun test tests/json-standard-unit.test.js[0m
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7551348Z shell: /usr/bin/bash -e {0}
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7551591Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7618277Z bun test v1.3.5 (1e86cebd)
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7669237Z 
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7670096Z ##[group]tests/json-standard-unit.test.js:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7734528Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "opencode"
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7736744Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "claude"
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7737683Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > rejects invalid values
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7739096Z (pass) JSON Standard Module - Unit Tests > serializeOutput > opencode format produces pretty-printed JSON
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7740494Z (pass) JSON Standard Module - Unit Tests > serializeOutput > claude format produces compact JSON (NDJSON)
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7741568Z (pass) JSON Standard Module - Unit Tests > serializeOutput > both formats produce valid JSON
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7742889Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_start to init
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7743935Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts text to message
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7744974Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts tool_use to tool_use
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7746132Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_finish to result [1.00ms]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7747963Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts error to result with error status
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7749204Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > returns null for text without content
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7750526Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > uses snake_case session_id instead of camelCase sessionID
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7751808Z (pass) JSON Standard Module - Unit Tests > createEventHandler > creates handler with correct startTime
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7753108Z (pass) JSON Standard Module - Unit Tests > createEventHandler > handler.output exists and is a function
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7754289Z (pass) JSON Standard Comparison Tests > opencode and claude formats produce different output for same event
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7755364Z (pass) JSON Standard Comparison Tests > opencode preserves original event structure
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7755916Z 
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7756362Z ##[endgroup]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7756531Z 
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7756647Z  17 pass
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7756902Z  0 fail
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7757163Z  50 expect() calls
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7757481Z Ran 17 tests across 1 file. [13.00ms]
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.7916270Z Post job cleanup.
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:29.9960743Z Post job cleanup.
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.0959801Z [command]/usr/bin/git version
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1003459Z git version 2.52.0
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1062102Z Temporarily overriding HOME='/home/runner/work/_temp/d0297e9f-ba0c-4364-b1af-8c49eb501cda' before making global git config changes
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1063454Z Adding repository directory to the temporary git global config as a safe directory
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1068133Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1104726Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1137886Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1402604Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1443260Z http.https://github.com/.extraheader
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1445990Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1484831Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1774390Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.1815741Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
++Unit Tests (Bun on ubuntu-latest)	UNKNOWN STEP	2026-01-08T02:22:30.2225235Z Cleaning up orphan processes
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	﻿2026-01-08T02:22:25.1830408Z Current runner version: '2.330.0'
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1856986Z ##[group]Runner Image Provisioner
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1857680Z Hosted Compute Agent
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1858174Z Version: 20251211.462
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1858653Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1859271Z Build Date: 2025-12-11T16:28:49Z
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1859817Z Worker ID: {cf56a3dc-6204-4419-a057-5ea3dae57985}
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1860413Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1860854Z ##[group]Operating System
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1861342Z Microsoft Windows Server 2025
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1861809Z 10.0.26100
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1862169Z Datacenter
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1862571Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1862947Z ##[group]Runner Image
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1863384Z Image: windows-2025
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1863764Z Version: 20260105.172.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1865049Z Included Software: https://github.com/actions/runner-images/blob/win25/20260105.172/images/windows/Windows2025-Readme.md
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1866304Z Image Release: https://github.com/actions/runner-images/releases/tag/win25%2F20260105.172
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1867063Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1867925Z ##[group]GITHUB_TOKEN Permissions
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1869606Z Contents: write
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1870061Z Metadata: read
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1871118Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1873336Z Secret source: Actions
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1873938Z Prepare workflow directory
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.2209668Z Prepare all required actions
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.2249612Z Getting action download info
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.5931634Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:25.7006001Z Download action repository 'oven-sh/setup-bun@v2' (SHA:b7a1c7ccf290d58743029c4f6903da283811b979)
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.6146188Z Complete job name: Unit Tests (Bun on windows-latest)
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7504216Z ##[group]Run actions/checkout@v4
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7505513Z with:
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7506037Z   ref: refs/heads/main
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7506740Z   token: ***
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7507196Z   repository: link-assistant/agent
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7507747Z   ssh-strict: true
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7508205Z   ssh-user: git
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7508684Z   persist-credentials: true
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7509170Z   clean: true
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7509600Z   sparse-checkout-cone-mode: true
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7510130Z   fetch-depth: 1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7510566Z   fetch-tags: false
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7510982Z   show-progress: true
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7511431Z   lfs: false
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7512233Z   submodules: false
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7512823Z   set-safe-directory: true
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7513696Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.9197978Z Syncing repository: link-assistant/agent
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.9199955Z ##[group]Getting Git version info
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.9200738Z Working directory is 'D:\a\agent\agent'
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:26.9881493Z [command]"C:\Program Files\Git\bin\git.exe" version
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.4643035Z git version 2.52.0.windows.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.4695532Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.4714640Z Temporarily overriding HOME='D:\a\_temp\996d9b1d-e062-4241-a3a0-1f563a959ef0' before making global git config changes
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.4716281Z Adding repository directory to the temporary git global config as a safe directory
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.4725532Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\agent\agent
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.5491935Z Deleting the contents of 'D:\a\agent\agent'
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.5497556Z ##[group]Initializing the repository
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.5507000Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\agent\agent
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.6604444Z Initialized empty Git repository in D:/a/agent/agent/.git/
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.6653581Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/link-assistant/agent
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.7333495Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.7338087Z ##[group]Disabling automatic garbage collection
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.7346546Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.7641996Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.7643445Z ##[group]Setting up auth
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.7657006Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:27.7994038Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:29.3380987Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:29.3680429Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:29.9109535Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:29.9411248Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:30.5983471Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:30.6488772Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:30.6492006Z ##[group]Fetching the repository
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:30.6510386Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/main:refs/remotes/origin/main
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6329106Z From https://github.com/link-assistant/agent
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6333277Z  * [new branch]      main       -> origin/main
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6597113Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6598512Z ##[group]Determining the checkout info
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6599379Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6610299Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.7008304Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.7355541Z ##[group]Checking out the ref
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.7371328Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B main refs/remotes/origin/main
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8930576Z branch 'main' set up to track 'origin/main'.
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8937497Z Switched to a new branch 'main'
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8983920Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.9413449Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:32.9697593Z 1730fae4a399750f320591a6dfd62cf40363f2ac
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0198467Z ##[group]Run oven-sh/setup-bun@v2
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0198880Z with:
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0199062Z   bun-version: latest
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0199270Z   no-cache: false
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0199431Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:33.2994475Z Downloading a new version of Bun: https://bun.sh/download/latest/win32/x64?avx2=true&profile=false
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:34.5863240Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command "$ErrorActionPreference = 'Stop' ; try { Add-Type -AssemblyName System.IO.Compression.ZipFile } catch { } ; try { [System.IO.Compression.ZipFile]::ExtractToDirectory('D:\a\_temp\594d0d2f-b6a7-4acc-a5c1-3dcab4165295.zip', 'D:\a\_temp\c4bdefdf-3801-49c3-9e29-74b994848836', $true) } catch { if (($_.Exception.GetType().FullName -eq 'System.Management.Automation.MethodException') -or ($_.Exception.GetType().FullName -eq 'System.Management.Automation.RuntimeException') ){ Expand-Archive -LiteralPath 'D:\a\_temp\594d0d2f-b6a7-4acc-a5c1-3dcab4165295.zip' -DestinationPath 'D:\a\_temp\c4bdefdf-3801-49c3-9e29-74b994848836' -Force } else { throw $_ } } ;"
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:39.3065186Z [command]C:\Users\runneradmin\.bun\bin\bun.exe --revision
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:39.9206301Z 1.3.5+1e86cebd7
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:39.9515885Z ##[group]Run bun install
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:39.9516293Z [36;1mbun install[0m
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:39.9581432Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:39.9581746Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:22:40.3166986Z bun install v1.3.5 (1e86cebd)
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:19.0880243Z 
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:19.0922010Z $ cd .. && husky || true
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9590740Z 
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9591155Z + @changesets/cli@2.29.8
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9591525Z + @eslint/js@9.39.2
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9591755Z + eslint@9.39.2
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9592034Z + eslint-config-prettier@10.1.8
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9592374Z + eslint-plugin-prettier@5.5.4
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9593641Z + husky@9.1.7
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9594442Z + lint-staged@16.2.7
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9594735Z + prettier@3.7.4
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9594988Z + @actions/core@1.11.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9595298Z + @actions/github@6.0.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9595594Z + @agentclientprotocol/sdk@0.5.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9595987Z + @ai-sdk/mcp@0.0.8
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9596231Z + @ai-sdk/xai@2.0.33
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9596512Z + @clack/prompts@0.11.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9596795Z + @hono/standard-validator@0.2.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9597254Z + @hono/zod-validator@0.7.5
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9597581Z + @modelcontextprotocol/sdk@1.22.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9597929Z + @octokit/graphql@9.0.3
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9598223Z + @octokit/rest@22.0.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9598504Z + @openauthjs/openauth@0.4.3
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9598828Z + @opencode-ai/sdk@1.0.78
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9599115Z + @opentui/core@0.1.46
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9599429Z + @opentui/solid@0.1.46
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9599735Z + @parcel/watcher@2.5.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9600074Z + @solid-primitives/event-bus@1.1.2
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9600486Z + @standard-community/standard-json@0.3.5
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9600924Z + @standard-community/standard-openapi@0.2.9
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9601357Z + @zip.js/zip.js@2.8.10
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9601643Z + ai@6.0.0-beta.99
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9601900Z + chokidar@4.0.3
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9602164Z + clipboardy@5.0.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9602771Z + command-stream@0.7.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9603043Z + decimal.js@10.6.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9603318Z + diff@8.0.2
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9603665Z + fuzzysort@3.1.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9603919Z + glob@10.5.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9604179Z + gray-matter@4.0.3
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9604425Z + hono@4.10.6
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9604690Z + hono-openapi@1.1.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9604952Z + ignore@7.0.5
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9605192Z + jsonc-parser@3.3.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9605459Z + lino-objects-codec@0.1.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9605767Z + log-lazy@1.0.4
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9606005Z + minimatch@10.1.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9606254Z + remeda@2.32.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9606483Z + solid-js@1.9.10
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9606748Z + strip-ansi@7.1.2
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9607042Z + test-anywhere@0.7.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9607726Z + tree-sitter-bash@0.25.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9607964Z + turndown@7.2.2
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9608124Z + ulid@3.0.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9608301Z + vscode-jsonrpc@8.2.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9608510Z + vscode-languageserver-types@3.17.5
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9608767Z + web-tree-sitter@0.25.10
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9609046Z + xdg-basedir@5.1.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9609215Z + yargs@18.0.0
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9609365Z + zod@4.1.12
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9609473Z 
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:23.9609566Z 606 packages installed [43.65s]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.2846979Z ##[group]Run bun test tests/json-standard-unit.test.js
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.2847397Z [36;1mbun test tests/json-standard-unit.test.js[0m
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.2906056Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.2906355Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.5518469Z bun test v1.3.5 (1e86cebd)
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.5816685Z 
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.5820348Z ##[group]tests\json-standard-unit.test.js:
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.5992918Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "opencode"
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.5993703Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "claude"
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.5994181Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > rejects invalid values
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.5996759Z (pass) JSON Standard Module - Unit Tests > serializeOutput > opencode format produces pretty-printed JSON
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.5998262Z (pass) JSON Standard Module - Unit Tests > serializeOutput > claude format produces compact JSON (NDJSON)
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6000067Z (pass) JSON Standard Module - Unit Tests > serializeOutput > both formats produce valid JSON
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6004374Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_start to init
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6005968Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts text to message
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6008895Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts tool_use to tool_use
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6010936Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_finish to result
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6012779Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts error to result with error status
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6013644Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > returns null for text without content
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6014434Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > uses snake_case session_id instead of camelCase sessionID
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6015293Z (pass) JSON Standard Module - Unit Tests > createEventHandler > creates handler with correct startTime
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6016075Z (pass) JSON Standard Module - Unit Tests > createEventHandler > handler.output exists and is a function
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6016879Z (pass) JSON Standard Comparison Tests > opencode and claude formats produce different output for same event
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6017651Z (pass) JSON Standard Comparison Tests > opencode preserves original event structure
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6018061Z 
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6019343Z ##[endgroup]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6019494Z 
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6019555Z  17 pass
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6019690Z  0 fail
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6019824Z  50 expect() calls
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.6020084Z Ran 17 tests across 1 file. [51.00ms]
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:24.7491098Z Post job cleanup.
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.0354928Z Post job cleanup.
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.2464993Z [command]"C:\Program Files\Git\bin\git.exe" version
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.2744952Z git version 2.52.0.windows.1
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.2825266Z Temporarily overriding HOME='D:\a\_temp\bd3bada1-002b-482b-9b5f-4ddf3cd63a58' before making global git config changes
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.2826539Z Adding repository directory to the temporary git global config as a safe directory
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.2836432Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\agent\agent
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.3156397Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.3483559Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.9320875Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.9599677Z http.https://github.com/.extraheader
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.9661753Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:25.9978886Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:26.5167099Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:26.5466300Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
++Unit Tests (Bun on windows-latest)	UNKNOWN STEP	2026-01-08T02:23:27.0824052Z Cleaning up orphan processes
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	﻿2026-01-08T02:22:24.6268570Z Current runner version: '2.330.0'
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6284600Z ##[group]Runner Image Provisioner
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6285070Z Hosted Compute Agent
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6285410Z Version: 20251211.462
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6285780Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6286210Z Build Date: 2025-12-11T16:28:49Z
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6287150Z Worker ID: {260fd26d-9bf0-47f3-bb8a-84c2e85822e4}
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6287910Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6288230Z ##[group]Operating System
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6288570Z macOS
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6288860Z 15.7.3
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6289140Z 24G419
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6289410Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6289700Z ##[group]Runner Image
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6290020Z Image: macos-15-arm64
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6290420Z Version: 20260105.0094.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6291100Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20260105.0094/images/macos/macos-15-arm64-Readme.md
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6292090Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260105.0094
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6292690Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6293300Z ##[group]GITHUB_TOKEN Permissions
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6294240Z Contents: write
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6294540Z Metadata: read
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6294830Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6296100Z Secret source: Actions
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6296460Z Prepare workflow directory
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6570860Z Prepare all required actions
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:24.6614020Z Getting action download info
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:25.1033790Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:25.4217710Z Download action repository 'oven-sh/setup-bun@v2' (SHA:b7a1c7ccf290d58743029c4f6903da283811b979)
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2381690Z Complete job name: Unit Tests (Bun on macos-latest)
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2872320Z ##[group]Run actions/checkout@v4
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2872840Z with:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2873110Z   ref: refs/heads/main
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2873600Z   token: ***
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2873890Z   repository: link-assistant/agent
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2874240Z   ssh-strict: true
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2874520Z   ssh-user: git
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2874810Z   persist-credentials: true
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2875120Z   clean: true
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2875400Z   sparse-checkout-cone-mode: true
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2875740Z   fetch-depth: 1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2876010Z   fetch-tags: false
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2876290Z   show-progress: true
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2876570Z   lfs: false
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2876830Z   submodules: false
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2877130Z   set-safe-directory: true
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.2877540Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7332550Z Syncing repository: link-assistant/agent
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7334280Z ##[group]Getting Git version info
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7335290Z Working directory is '/Users/runner/work/agent/agent'
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7336640Z [command]/opt/homebrew/bin/git version
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7463810Z git version 2.52.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7573510Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7578480Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/d3e2dd92-a60e-424d-9d0a-340ed3216c93/.gitconfig'
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7579980Z Temporarily overriding HOME='/Users/runner/work/_temp/d3e2dd92-a60e-424d-9d0a-340ed3216c93' before making global git config changes
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7581130Z Adding repository directory to the temporary git global config as a safe directory
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7582270Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/agent/agent
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7667650Z Deleting the contents of '/Users/runner/work/agent/agent'
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7669070Z ##[group]Initializing the repository
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7671530Z [command]/opt/homebrew/bin/git init /Users/runner/work/agent/agent
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7816950Z hint: Using 'master' as the name for the initial branch. This default branch name
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7829440Z hint: will change to "main" in Git 3.0. To configure the initial branch name
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7862810Z hint: to use in all of your new repositories, which will suppress this warning,
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7863580Z hint: call:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7863990Z hint:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7864470Z hint: 	git config --global init.defaultBranch <name>
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7865020Z hint:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7865550Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7866320Z hint: 'development'. The just-created branch can be renamed via this command:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7866950Z hint:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7867330Z hint: 	git branch -m <name>
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7867760Z hint:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7868300Z hint: Disable this message with "git config set advice.defaultBranchName false"
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7869310Z Initialized empty Git repository in /Users/runner/work/agent/agent/.git/
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7870920Z [command]/opt/homebrew/bin/git remote add origin https://github.com/link-assistant/agent
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7897360Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7898080Z ##[group]Disabling automatic garbage collection
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7899830Z [command]/opt/homebrew/bin/git config --local gc.auto 0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7957330Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7957990Z ##[group]Setting up auth
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.7961770Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.8021490Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.9381510Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:26.9429370Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.0213490Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.0278630Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.1636800Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.1639650Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.1640370Z ##[group]Fetching the repository
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.1641730Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/main:refs/remotes/origin/main
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8630670Z From https://github.com/link-assistant/agent
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8631910Z  * [new branch]      main       -> origin/main
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8708680Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8709590Z ##[group]Determining the checkout info
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8710440Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8711300Z [command]/opt/homebrew/bin/git sparse-checkout disable
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8782210Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8843760Z ##[group]Checking out the ref
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.8845050Z [command]/opt/homebrew/bin/git checkout --progress --force -B main refs/remotes/origin/main
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.9718330Z Switched to a new branch 'main'
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:27.9931650Z branch 'main' set up to track 'origin/main'.
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.0238020Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.0539770Z [command]/opt/homebrew/bin/git log -1 --format=%H
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.0640350Z 1730fae4a399750f320591a6dfd62cf40363f2ac
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.1295760Z ##[group]Run oven-sh/setup-bun@v2
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.1296570Z with:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.1297140Z   bun-version: latest
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.1297800Z   no-cache: false
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.1298390Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:28.2962220Z Downloading a new version of Bun: https://bun.sh/download/latest/darwin/arm64?avx2=true&profile=false
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:29.0262010Z [command]/usr/bin/unzip -o -q /Users/runner/work/_temp/e1930739-ed27-46c9-993c-c2831837b1a2.zip
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:29.5048120Z [command]/Users/runner/.bun/bin/bun --revision
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:29.5150210Z 1.3.5+1e86cebd7
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:29.5268900Z ##[group]Run bun install
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:29.5269250Z [36;1mbun install[0m
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:29.5324710Z shell: /bin/bash -e {0}
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:29.5324960Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:29.5874080Z bun install v1.3.5 (1e86cebd)
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.2245810Z 
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.2350070Z $ cd .. && husky || true
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6128070Z 
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6128460Z + @changesets/cli@2.29.8
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6128920Z + @eslint/js@9.39.2
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6129310Z + eslint@9.39.2
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6129520Z + eslint-config-prettier@10.1.8
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6129730Z + eslint-plugin-prettier@5.5.4
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6129910Z + husky@9.1.7
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6130060Z + lint-staged@16.2.7
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6130280Z + prettier@3.7.4
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6130420Z + @actions/core@1.11.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6130580Z + @actions/github@6.0.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6130770Z + @agentclientprotocol/sdk@0.5.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6130950Z + @ai-sdk/mcp@0.0.8
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6131130Z + @ai-sdk/xai@2.0.33
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6131300Z + @clack/prompts@0.11.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6131480Z + @hono/standard-validator@0.2.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6131670Z + @hono/zod-validator@0.7.5
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6131860Z + @modelcontextprotocol/sdk@1.22.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6132060Z + @octokit/graphql@9.0.3
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6132250Z + @octokit/rest@22.0.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6132460Z + @openauthjs/openauth@0.4.3
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6132650Z + @opencode-ai/sdk@1.0.78
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6132830Z + @opentui/core@0.1.46
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6132980Z + @opentui/solid@0.1.46
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6133140Z + @parcel/watcher@2.5.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6133320Z + @solid-primitives/event-bus@1.1.2
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6133550Z + @standard-community/standard-json@0.3.5
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6133810Z + @standard-community/standard-openapi@0.2.9
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6134070Z + @zip.js/zip.js@2.8.10
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6134270Z + ai@6.0.0-beta.99
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6134400Z + chokidar@4.0.3
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6134590Z + clipboardy@5.0.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6134770Z + command-stream@0.7.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6134930Z + decimal.js@10.6.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6135060Z + diff@8.0.2
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6135280Z + fuzzysort@3.1.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6135470Z + glob@10.5.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6135660Z + gray-matter@4.0.3
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6135870Z + hono@4.10.6
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6136150Z + hono-openapi@1.1.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6136330Z + ignore@7.0.5
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6136560Z + jsonc-parser@3.3.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6136730Z + lino-objects-codec@0.1.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6136920Z + log-lazy@1.0.4
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6137050Z + minimatch@10.1.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6137200Z + remeda@2.32.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6137400Z + solid-js@1.9.10
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6137650Z + strip-ansi@7.1.2
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6137870Z + test-anywhere@0.7.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6138100Z + tree-sitter-bash@0.25.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6138360Z + turndown@7.2.2
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6138570Z + ulid@3.0.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6138770Z + vscode-jsonrpc@8.2.1
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6139020Z + vscode-languageserver-types@3.17.5
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6139340Z + web-tree-sitter@0.25.10
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6139590Z + xdg-basedir@5.1.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6139790Z + yargs@18.0.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6140030Z + zod@4.1.12
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6140180Z 
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6140330Z 606 packages installed [3.03s]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6552230Z ##[group]Run bun test tests/json-standard-unit.test.js
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6552610Z [36;1mbun test tests/json-standard-unit.test.js[0m
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6608470Z shell: /bin/bash -e {0}
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.6608670Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.7000510Z bun test v1.3.5 (1e86cebd)
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.7656390Z 
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.7667780Z ##[group]tests/json-standard-unit.test.js:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8093720Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "opencode" [1.71ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8094440Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "claude" [0.09ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8095090Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > rejects invalid values
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8101490Z (pass) JSON Standard Module - Unit Tests > serializeOutput > opencode format produces pretty-printed JSON [0.78ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8103890Z (pass) JSON Standard Module - Unit Tests > serializeOutput > claude format produces compact JSON (NDJSON) [0.29ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8124140Z (pass) JSON Standard Module - Unit Tests > serializeOutput > both formats produce valid JSON [1.94ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8129050Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_start to init [0.52ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8134120Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts text to message [0.54ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8134880Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts tool_use to tool_use [0.06ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8135450Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_finish to result [0.03ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8136050Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts error to result with error status [0.03ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8136670Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > returns null for text without content [0.02ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8138160Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > uses snake_case session_id instead of camelCase sessionID [0.28ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8138840Z (pass) JSON Standard Module - Unit Tests > createEventHandler > creates handler with correct startTime [0.01ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8139470Z (pass) JSON Standard Module - Unit Tests > createEventHandler > handler.output exists and is a function [0.06ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8140070Z (pass) JSON Standard Comparison Tests > opencode and claude formats produce different output for same event [0.03ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8141020Z (pass) JSON Standard Comparison Tests > opencode preserves original event structure [0.03ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8141370Z 
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8141730Z ##[endgroup]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8141860Z 
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8141950Z  17 pass
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8142070Z  0 fail
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8142190Z  50 expect() calls
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8142350Z Ran 17 tests across 1 file. [116.00ms]
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.8212210Z Post job cleanup.
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:32.9629990Z Post job cleanup.
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0472840Z [command]/opt/homebrew/bin/git version
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0526950Z git version 2.52.0
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0547730Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/a19791a5-4a4b-4998-80a6-63a2d683af22/.gitconfig'
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0557080Z Temporarily overriding HOME='/Users/runner/work/_temp/a19791a5-4a4b-4998-80a6-63a2d683af22' before making global git config changes
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0557780Z Adding repository directory to the temporary git global config as a safe directory
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0560750Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/agent/agent
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0617930Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.0674000Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.1303030Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.1349070Z http.https://github.com/.extraheader
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.1356950Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.1406990Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.2030740Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.2171780Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
++Unit Tests (Bun on macos-latest)	UNKNOWN STEP	2026-01-08T02:22:33.2870600Z Cleaning up orphan processes
++Release	UNKNOWN STEP	﻿2026-01-08T02:23:32.3782371Z Current runner version: '2.330.0'
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3806786Z ##[group]Runner Image Provisioner
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3807679Z Hosted Compute Agent
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3808207Z Version: 20251211.462
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3808794Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3809509Z Build Date: 2025-12-11T16:28:49Z
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3810132Z Worker ID: {55993dd6-644f-4699-8b42-b8f6ecc04aa1}
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3810836Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3811315Z ##[group]Operating System
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3811959Z Ubuntu
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3812412Z 24.04.3
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3812832Z LTS
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3813679Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3814170Z ##[group]Runner Image
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3814689Z Image: ubuntu-24.04
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3815227Z Version: 20251215.174.1
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3816222Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251215.174/images/ubuntu/Ubuntu2404-Readme.md
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3817968Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251215.174
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3818934Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3820057Z ##[group]GITHUB_TOKEN Permissions
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3822125Z Contents: write
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3822668Z Metadata: read
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3823198Z PullRequests: write
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3823716Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3825702Z Secret source: Actions
++Release	UNKNOWN STEP	2026-01-08T02:23:32.3826819Z Prepare workflow directory
++Release	UNKNOWN STEP	2026-01-08T02:23:32.4159344Z Prepare all required actions
++Release	UNKNOWN STEP	2026-01-08T02:23:32.4198269Z Getting action download info
++Release	UNKNOWN STEP	2026-01-08T02:23:32.8611222Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
++Release	UNKNOWN STEP	2026-01-08T02:23:32.9645271Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
++Release	UNKNOWN STEP	2026-01-08T02:23:33.1612572Z Complete job name: Release
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2328493Z ##[group]Run actions/checkout@v4
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2329301Z with:
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2329672Z   fetch-depth: 0
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2330101Z   repository: link-assistant/agent
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2330725Z   token: ***
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2331087Z   ssh-strict: true
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2331466Z   ssh-user: git
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2331845Z   persist-credentials: true
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2332280Z   clean: true
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2332664Z   sparse-checkout-cone-mode: true
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2333116Z   fetch-tags: false
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2333499Z   show-progress: true
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2333879Z   lfs: false
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2334234Z   submodules: false
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2334616Z   set-safe-directory: true
++Release	UNKNOWN STEP	2026-01-08T02:23:33.2335252Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3399264Z Syncing repository: link-assistant/agent
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3400943Z ##[group]Getting Git version info
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3401582Z Working directory is '/home/runner/work/agent/agent'
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3402518Z [command]/usr/bin/git version
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3472761Z git version 2.52.0
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3499692Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3515752Z Temporarily overriding HOME='/home/runner/work/_temp/5bbeece1-a9cc-4dc0-ac3a-2b59c2993084' before making global git config changes
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3518421Z Adding repository directory to the temporary git global config as a safe directory
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3522638Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3563086Z Deleting the contents of '/home/runner/work/agent/agent'
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3566535Z ##[group]Initializing the repository
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3571239Z [command]/usr/bin/git init /home/runner/work/agent/agent
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3679660Z hint: Using 'master' as the name for the initial branch. This default branch name
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3680687Z hint: will change to "main" in Git 3.0. To configure the initial branch name
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3681577Z hint: to use in all of your new repositories, which will suppress this warning,
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3682243Z hint: call:
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3682586Z hint:
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3683647Z hint: 	git config --global init.defaultBranch <name>
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3684551Z hint:
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3685082Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3685937Z hint: 'development'. The just-created branch can be renamed via this command:
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3686900Z hint:
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3687281Z hint: 	git branch -m <name>
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3687706Z hint:
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3688265Z hint: Disable this message with "git config set advice.defaultBranchName false"
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3689313Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3695313Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3729519Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3730731Z ##[group]Disabling automatic garbage collection
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3734513Z [command]/usr/bin/git config --local gc.auto 0
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3763007Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3764213Z ##[group]Setting up auth
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3770773Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
++Release	UNKNOWN STEP	2026-01-08T02:23:33.3801035Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
++Release	UNKNOWN STEP	2026-01-08T02:23:33.4125320Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Release	UNKNOWN STEP	2026-01-08T02:23:33.4158898Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
++Release	UNKNOWN STEP	2026-01-08T02:23:33.4402253Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
++Release	UNKNOWN STEP	2026-01-08T02:23:33.4433022Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
++Release	UNKNOWN STEP	2026-01-08T02:23:33.4688312Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
++Release	UNKNOWN STEP	2026-01-08T02:23:33.4721718Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:33.4722933Z ##[group]Fetching the repository
++Release	UNKNOWN STEP	2026-01-08T02:23:33.4731572Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2597554Z From https://github.com/link-assistant/agent
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2599520Z  * [new branch]      issue-100-a059c6e915ea -> origin/issue-100-a059c6e915ea
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2601297Z  * [new branch]      issue-102-6e0a44052594 -> origin/issue-102-6e0a44052594
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2602949Z  * [new branch]      issue-104-09ef4d9a60d7 -> origin/issue-104-09ef4d9a60d7
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2604788Z  * [new branch]      issue-106-00050382cea1 -> origin/issue-106-00050382cea1
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2606549Z  * [new branch]      issue-14-8a0de63c9ac0  -> origin/issue-14-8a0de63c9ac0
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2608133Z  * [new branch]      issue-16-02a98d18139d  -> origin/issue-16-02a98d18139d
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2609613Z  * [new branch]      issue-18-ee9e687096a6  -> origin/issue-18-ee9e687096a6
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2611050Z  * [new branch]      issue-2-f427e195b913   -> origin/issue-2-f427e195b913
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2612452Z  * [new branch]      issue-20-8704d00e8b4e  -> origin/issue-20-8704d00e8b4e
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2613895Z  * [new branch]      issue-22-3ae2871ca86c  -> origin/issue-22-3ae2871ca86c
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2615385Z  * [new branch]      issue-24-9e1c4ee0ed15  -> origin/issue-24-9e1c4ee0ed15
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2617095Z  * [new branch]      issue-26-1a4b69adfb64  -> origin/issue-26-1a4b69adfb64
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2618516Z  * [new branch]      issue-28-227b62c91030  -> origin/issue-28-227b62c91030
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2620051Z  * [new branch]      issue-30-8c53504315c4  -> origin/issue-30-8c53504315c4
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2621778Z  * [new branch]      issue-32-693cfcfdd6d5  -> origin/issue-32-693cfcfdd6d5
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2623525Z  * [new branch]      issue-34-a5a973ebd576  -> origin/issue-34-a5a973ebd576
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2624959Z  * [new branch]      issue-36-33c80c585287  -> origin/issue-36-33c80c585287
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2626588Z  * [new branch]      issue-38-d6620330d024  -> origin/issue-38-d6620330d024
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2628057Z  * [new branch]      issue-39-481b45eeff2b  -> origin/issue-39-481b45eeff2b
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2629514Z  * [new branch]      issue-41-9e36c91cba9a  -> origin/issue-41-9e36c91cba9a
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2630944Z  * [new branch]      issue-43-1d50271986ab  -> origin/issue-43-1d50271986ab
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2632379Z  * [new branch]      issue-45-a036d9c72e61  -> origin/issue-45-a036d9c72e61
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2633841Z  * [new branch]      issue-47-b7704cc6b9a4  -> origin/issue-47-b7704cc6b9a4
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2635624Z  * [new branch]      issue-49-bef878bb5d38  -> origin/issue-49-bef878bb5d38
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2637443Z  * [new branch]      issue-51-bf685c43c881  -> origin/issue-51-bf685c43c881
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2638931Z  * [new branch]      issue-53-f9aa867296d4  -> origin/issue-53-f9aa867296d4
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2640407Z  * [new branch]      issue-54-54fd1e88bb01  -> origin/issue-54-54fd1e88bb01
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2641826Z  * [new branch]      issue-58-bc11cbdc23dd  -> origin/issue-58-bc11cbdc23dd
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2643420Z  * [new branch]      issue-6-097eb11195ee   -> origin/issue-6-097eb11195ee
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2645051Z  * [new branch]      issue-60-e248fa950850  -> origin/issue-60-e248fa950850
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2646765Z  * [new branch]      issue-61-e7041ade0469  -> origin/issue-61-e7041ade0469
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2648296Z  * [new branch]      issue-62-c8dd711e089c  -> origin/issue-62-c8dd711e089c
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2649796Z  * [new branch]      issue-66-4b5b645ed022  -> origin/issue-66-4b5b645ed022
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2651496Z  * [new branch]      issue-68-c0a8954ce69f  -> origin/issue-68-c0a8954ce69f
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2653008Z  * [new branch]      issue-7-8850c3e4bc8b   -> origin/issue-7-8850c3e4bc8b
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2654626Z  * [new branch]      issue-70-1e5f73ed6b3c  -> origin/issue-70-1e5f73ed6b3c
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2656593Z  * [new branch]      issue-72-6975e4e75bc7  -> origin/issue-72-6975e4e75bc7
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2658419Z  * [new branch]      issue-76-fe9d73dc3365  -> origin/issue-76-fe9d73dc3365
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2660277Z  * [new branch]      issue-77-677ebcec7a83  -> origin/issue-77-677ebcec7a83
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2662067Z  * [new branch]      issue-78-06a95192a461  -> origin/issue-78-06a95192a461
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2663840Z  * [new branch]      issue-8-62be6460b721   -> origin/issue-8-62be6460b721
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2665617Z  * [new branch]      issue-81-d58ba5a0ef88  -> origin/issue-81-d58ba5a0ef88
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2667661Z  * [new branch]      issue-82-506d1d545d4e  -> origin/issue-82-506d1d545d4e
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2669520Z  * [new branch]      issue-84-bb28b273e804  -> origin/issue-84-bb28b273e804
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2671354Z  * [new branch]      issue-86-cadafe19d775  -> origin/issue-86-cadafe19d775
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2673140Z  * [new branch]      issue-88-49422a8421a1  -> origin/issue-88-49422a8421a1
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2674889Z  * [new branch]      issue-89-9a1b6226b579  -> origin/issue-89-9a1b6226b579
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2676848Z  * [new branch]      issue-9-17ad0ffde65c   -> origin/issue-9-17ad0ffde65c
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2678646Z  * [new branch]      issue-93-40e3ae1a14d3  -> origin/issue-93-40e3ae1a14d3
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2680427Z  * [new branch]      issue-96-109dff6454e6  -> origin/issue-96-109dff6454e6
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2682018Z  * [new branch]      main                   -> origin/main
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2683446Z  * [new tag]         v0.0.10                -> v0.0.10
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2684707Z  * [new tag]         v0.0.11                -> v0.0.11
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2685971Z  * [new tag]         v0.0.12                -> v0.0.12
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2687416Z  * [new tag]         v0.0.13                -> v0.0.13
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2688894Z  * [new tag]         v0.0.14                -> v0.0.14
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2690145Z  * [new tag]         v0.0.15                -> v0.0.15
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2691393Z  * [new tag]         v0.0.16                -> v0.0.16
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2692618Z  * [new tag]         v0.0.17                -> v0.0.17
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2693864Z  * [new tag]         v0.1.0                 -> v0.1.0
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2695099Z  * [new tag]         v0.1.1                 -> v0.1.1
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2696535Z  * [new tag]         v0.1.2                 -> v0.1.2
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2697785Z  * [new tag]         v0.1.3                 -> v0.1.3
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2699082Z  * [new tag]         v0.1.4                 -> v0.1.4
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2700344Z  * [new tag]         v0.2.0                 -> v0.2.0
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2701610Z  * [new tag]         v0.2.1                 -> v0.2.1
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2702819Z  * [new tag]         v0.3.0                 -> v0.3.0
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2703987Z  * [new tag]         v0.3.1                 -> v0.3.1
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2705124Z  * [new tag]         v0.4.0                 -> v0.4.0
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2706253Z  * [new tag]         v0.5.0                 -> v0.5.0
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2707587Z  * [new tag]         v0.5.1                 -> v0.5.1
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2708735Z  * [new tag]         v0.5.2                 -> v0.5.2
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2709862Z  * [new tag]         v0.5.3                 -> v0.5.3
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2710967Z  * [new tag]         v0.6.0                 -> v0.6.0
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2712091Z  * [new tag]         v0.6.1                 -> v0.6.1
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2713172Z  * [new tag]         v0.6.2                 -> v0.6.2
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2714231Z  * [new tag]         v0.6.3                 -> v0.6.3
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2715175Z  * [new tag]         v0.7.0                 -> v0.7.0
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2763795Z [command]/usr/bin/git branch --list --remote origin/main
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2795512Z   origin/main
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2807101Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2828496Z 1730fae4a399750f320591a6dfd62cf40363f2ac
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2835019Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2836840Z ##[group]Determining the checkout info
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2838461Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2841231Z [command]/usr/bin/git sparse-checkout disable
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2881408Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2908325Z ##[group]Checking out the ref
++Release	UNKNOWN STEP	2026-01-08T02:23:34.2913016Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3307034Z Switched to a new branch 'main'
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3309134Z branch 'main' set up to track 'origin/main'.
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3318665Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3354592Z [command]/usr/bin/git log -1 --format=%H
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3377322Z 1730fae4a399750f320591a6dfd62cf40363f2ac
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3658950Z ##[group]Run actions/setup-node@v4
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3659725Z with:
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3660163Z   node-version: 20.x
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3660829Z   registry-url: https://registry.npmjs.org
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3661650Z   always-auth: false
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3662199Z   check-latest: false
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3663000Z   token: ***
++Release	UNKNOWN STEP	2026-01-08T02:23:34.3663464Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:34.5507941Z Found in cache @ /opt/hostedtoolcache/node/20.19.6/x64
++Release	UNKNOWN STEP	2026-01-08T02:23:34.5514852Z ##[group]Environment details
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6398830Z node: v20.19.6
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6399367Z npm: 10.8.2
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6399696Z yarn: 1.22.22
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6403302Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6537008Z ##[group]Run npm install --legacy-peer-deps
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6537425Z [36;1mnpm install --legacy-peer-deps[0m
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6582515Z shell: /usr/bin/bash -e {0}
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6582781Z env:
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6583017Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6583353Z   NODE_AUTH_TOKEN: XXXXX-XXXXX-XXXXX-XXXXX
++Release	UNKNOWN STEP	2026-01-08T02:23:36.6583889Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:47.4451180Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:47.4460291Z > @link-assistant/agent@0.7.0 prepare
++Release	UNKNOWN STEP	2026-01-08T02:23:47.4460965Z > cd .. && husky || true
++Release	UNKNOWN STEP	2026-01-08T02:23:47.4461207Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5017793Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5023376Z added 658 packages, and audited 659 packages in 11s
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5023988Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5024309Z 143 packages are looking for funding
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5024902Z   run `npm fund` for details
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5044130Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5045696Z 2 high severity vulnerabilities
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5046060Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5046608Z To address all issues, run:
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5047071Z   npm audit fix
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5047305Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5047526Z Run `npm audit` for details.
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5365451Z ##[group]Run node scripts/setup-npm.mjs
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5365791Z [36;1mnode scripts/setup-npm.mjs[0m
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5404868Z shell: /usr/bin/bash -e {0}
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5405115Z env:
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5405343Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5405672Z   NODE_AUTH_TOKEN: XXXXX-XXXXX-XXXXX-XXXXX
++Release	UNKNOWN STEP	2026-01-08T02:23:47.5405923Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:49.2759727Z 10.8.2
++Release	UNKNOWN STEP	2026-01-08T02:23:49.2812978Z Current npm version: 10.8.2
++Release	UNKNOWN STEP	2026-01-08T02:23:51.9928359Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:51.9929292Z removed 45 packages, and changed 107 packages in 3s
++Release	UNKNOWN STEP	2026-01-08T02:23:51.9929656Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:51.9942308Z 16 packages are looking for funding
++Release	UNKNOWN STEP	2026-01-08T02:23:51.9943090Z   run `npm fund` for details
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1043106Z npm warn Unknown user config "always-auth". This will stop working in the next major version of npm.
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1052392Z 11.7.0
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1100414Z Updated npm version: 11.7.0
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1187317Z ##[group]Run # Count changeset files (excluding README.md and config.json)
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1187888Z [36;1m# Count changeset files (excluding README.md and config.json)[0m
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1188407Z [36;1mCHANGESET_COUNT=$(find js/.changeset -name "*.md" ! -name "README.md" | wc -l)[0m
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1188863Z [36;1mecho "Found $CHANGESET_COUNT changeset file(s)"[0m
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1189359Z [36;1mecho "has_changesets=$([[ $CHANGESET_COUNT -gt 0 ]] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT[0m
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1222610Z shell: /usr/bin/bash -e {0}
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1222836Z env:
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1223058Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1223399Z   NODE_AUTH_TOKEN: XXXXX-XXXXX-XXXXX-XXXXX
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1223648Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1420903Z Found 1 changeset file(s)
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1471981Z ##[group]Run node scripts/version-and-commit.mjs --mode changeset
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1472427Z [36;1mnode scripts/version-and-commit.mjs --mode changeset[0m
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1503924Z shell: /usr/bin/bash -e {0}
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1504149Z env:
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1504372Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1504711Z   NODE_AUTH_TOKEN: XXXXX-XXXXX-XXXXX-XXXXX
++Release	UNKNOWN STEP	2026-01-08T02:23:52.1504968Z ##[endgroup]
++Release	UNKNOWN STEP	2026-01-08T02:23:54.6902099Z Parsed configuration: { mode: 'changeset', bumpType: '', description: '(none)' }
++Release	UNKNOWN STEP	2026-01-08T02:23:54.7098105Z Checking for remote changes...
++Release	UNKNOWN STEP	2026-01-08T02:23:55.0210866Z From https://github.com/link-assistant/agent
++Release	UNKNOWN STEP	2026-01-08T02:23:55.0211592Z  * branch            main       -> FETCH_HEAD
++Release	UNKNOWN STEP	2026-01-08T02:23:55.0360995Z 1730fae4a399750f320591a6dfd62cf40363f2ac
++Release	UNKNOWN STEP	2026-01-08T02:23:55.0431323Z 1730fae4a399750f320591a6dfd62cf40363f2ac
++Release	UNKNOWN STEP	2026-01-08T02:23:55.0443505Z Current version: 0.7.0
++Release	UNKNOWN STEP	2026-01-08T02:23:55.0444138Z Running changeset version...
++Release	UNKNOWN STEP	2026-01-08T02:23:55.1380593Z npm warn Unknown user config "always-auth". This will stop working in the next major version of npm.
++Release	UNKNOWN STEP	2026-01-08T02:23:55.1614074Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:55.1614629Z > @link-assistant/agent@0.7.0 changeset:version
++Release	UNKNOWN STEP	2026-01-08T02:23:55.1615285Z > node ../scripts/changeset-version.mjs
++Release	UNKNOWN STEP	2026-01-08T02:23:55.1615938Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:55.9264691Z Running changeset version...
++Release	UNKNOWN STEP	2026-01-08T02:23:56.0173838Z npm warn Unknown user config "always-auth". This will stop working in the next major version of npm.
++Release	UNKNOWN STEP	2026-01-08T02:23:56.6182476Z 🦋  All files have been updated. Review them and commit at your leisure
++Release	UNKNOWN STEP	2026-01-08T02:23:56.6335069Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:56.6335657Z Synchronizing package-lock.json...
++Release	UNKNOWN STEP	2026-01-08T02:23:56.7235365Z npm warn Unknown user config "always-auth". This will stop working in the next major version of npm.
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4563052Z npm error code ERESOLVE
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4564667Z npm error ERESOLVE could not resolve
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4565100Z npm error
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4577710Z npm error While resolving: @opentui/solid@0.1.60
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4578778Z npm error Found: solid-js@1.9.10
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4579346Z npm error node_modules/solid-js
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4579925Z npm error   solid-js@"^1.9.10" from the root project
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4580767Z npm error   peer solid-js@"^1.6.12" from @solid-primitives/event-bus@1.1.2
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4581610Z npm error   node_modules/@solid-primitives/event-bus
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4582424Z npm error     @solid-primitives/event-bus@"^1.1.2" from the root project
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4583320Z npm error   2 more (@solid-primitives/utils, babel-preset-solid)
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4583886Z npm error
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4584349Z npm error Could not resolve dependency:
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4585047Z npm error peer solid-js@"1.9.9" from @opentui/solid@0.1.60
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4585721Z npm error node_modules/@opentui/solid
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4586627Z npm error   @opentui/solid@"^0.1.46" from the root project
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4587178Z npm error
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4587698Z npm error Conflicting peer dependency: solid-js@1.9.9
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4588266Z npm error node_modules/solid-js
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4588641Z npm error   peer solid-js@"1.9.9" from @opentui/solid@0.1.60
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4589017Z npm error   node_modules/@opentui/solid
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4589656Z npm error     @opentui/solid@"^0.1.46" from the root project
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4590226Z npm error
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4590755Z npm error Fix the upstream dependency conflict, or retry
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4591550Z npm error this command with --force or --legacy-peer-deps
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4592477Z npm error to accept an incorrect (and potentially broken) dependency resolution.
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4593160Z npm error
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4593438Z npm error
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4593832Z npm error For a full report see:
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4594661Z npm error /home/runner/.npm/_logs/2026-01-08T02_23_56_694Z-eresolve-report.txt
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4601393Z npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-01-08T02_23_56_694Z-debug-0.log
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4750741Z 
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4751536Z ✅ Version bump complete with synchronized package-lock.json
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4870808Z Error: ENOENT: no such file or directory, open './js/package.json'
++Release	UNKNOWN STEP	2026-01-08T02:23:58.4939481Z ##[error]Process completed with exit code 1.
++Release	UNKNOWN STEP	2026-01-08T02:23:58.5063446Z Post job cleanup.
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6010360Z [command]/usr/bin/git version
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6050441Z git version 2.52.0
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6100406Z Temporarily overriding HOME='/home/runner/work/_temp/cf0d2711-5e3c-4ae8-af39-9dc006e0c0a0' before making global git config changes
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6101292Z Adding repository directory to the temporary git global config as a safe directory
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6105264Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6138897Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6171495Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6399733Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6424040Z http.https://github.com/.extraheader
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6436997Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6467148Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6692751Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
++Release	UNKNOWN STEP	2026-01-08T02:23:58.6723472Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
++Release	UNKNOWN STEP	2026-01-08T02:23:58.7062620Z Cleaning up orphan processes
+diff --git a/scripts/changeset-version.mjs b/scripts/changeset-version.mjs
+index 856b31f..16068d9 100644
+--- a/scripts/changeset-version.mjs
++++ b/scripts/changeset-version.mjs
+@@ -26,7 +26,7 @@ try {
+   await $`npx changeset version`;
+ 
+   console.log('\nSynchronizing package-lock.json...');
+-  await $`npm install --package-lock-only`;
++  await $`npm install --package-lock-only --legacy-peer-deps`;
+ 
+   console.log('\n✅ Version bump complete with synchronized package-lock.json');
+ } catch (error) {
+diff --git a/scripts/instant-version-bump.mjs b/scripts/instant-version-bump.mjs
+index 79d31ab..c1a34dd 100644
+--- a/scripts/instant-version-bump.mjs
++++ b/scripts/instant-version-bump.mjs
+@@ -108,7 +108,7 @@ try {
+ 
+   // Synchronize package-lock.json
+   console.log('\nSynchronizing package-lock.json...');
+-  await $`cd js && npm install --package-lock-only`;
++  await $`cd js && npm install --package-lock-only --legacy-peer-deps`;
+ 
+   console.log('\n✅ Instant version bump complete');
+   console.log(`Version: ${oldVersion} → ${newVersion}`);

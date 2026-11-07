@@ -1,0 +1,102 @@
+--- template/scripts/create-manual-changeset.mjs
++++ scripts/create-manual-changeset.mjs
+@@ -1,33 +1,30 @@
+-#!/usr/bin/env bun
++#!/usr/bin/env node
+ 
+ /**
+  * Create a changeset file for manual releases
+- * Usage: node scripts/create-manual-changeset.mjs --bump-type <major|minor|patch> [--description <description>] [--js-root <path>]
++ * Usage: node scripts/create-manual-changeset.mjs --bump-type <major|minor|patch> [--description <description>]
++ *
++ * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
+  *
+  * Uses link-foundation libraries:
+- * - Lockfile-installed command-stream and lino-arguments helpers
++ * - use-m: Dynamic package loading without package.json dependencies
+  * - command-stream: Modern shell command execution with streaming support
+  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
+  */
+ 
+-import { mkdirSync, writeFileSync } from 'fs';
++import { writeFileSync } from 'fs';
+ import { randomBytes } from 'crypto';
+-import { join } from 'path';
+ 
+-import { getChangesetDir, getJsRoot, parseJsRootConfig } from './js-paths.mjs';
+-import { formatChangesetHeader, readPackageInfo } from './package-info.mjs';
+-import { bootstrapDependencies } from './bootstrap-dependencies.mjs';
+-import { loadCommandStream, loadLinoArguments } from './use-module.mjs';
+-import { printUntrusted } from './github-actions-log.mjs';
++// Package name from package.json
++const PACKAGE_NAME = '@link-assistant/agent';
++
++// Load dependencies through the shared use-m loader, which normalizes the
++// CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
++import { useModule } from './use-module.mjs';
+ 
+ // Import link-foundation libraries
+-// Loaded through bootstrapDependencies: when installed helpers are unavailable,
+-// this script reports the failure and writes its outputs, and the process
+-// does not die inside module initialisation.
+-const [{ $ }, { makeConfig }] = await bootstrapDependencies([
+-  loadCommandStream,
+-  loadLinoArguments,
+-]);
++const { $ } = await useModule('command-stream');
++const { makeConfig } = await useModule('lino-arguments');
+ 
+ // Parse CLI arguments using lino-arguments
+ const config = makeConfig({
+@@ -43,17 +40,11 @@
+         type: 'string',
+         default: getenv('DESCRIPTION', ''),
+         describe: 'Description for the changeset',
+-      })
+-      .option('js-root', {
+-        type: 'string',
+-        default: getenv('JS_ROOT', ''),
+-        describe:
+-          'JavaScript package root directory (auto-detected if not specified)',
+       }),
+ });
+ 
+ try {
+-  const { bumpType, description: descriptionArg, jsRoot: jsRootArg } = config;
++  const { bumpType, description: descriptionArg } = config;
+ 
+   // Use provided description or default based on bump type
+   const description = descriptionArg || `Manual ${bumpType} release`;
+@@ -65,29 +56,23 @@
+     process.exit(1);
+   }
+ 
+-  const jsRootConfig = jsRootArg || parseJsRootConfig();
+-  const jsRoot = getJsRoot({ jsRoot: jsRootConfig, verbose: true });
+-  const changesetDir = getChangesetDir({ jsRoot });
+-  const { name: packageName } = readPackageInfo({ jsRoot });
+-
+   // Generate a random changeset ID
+   const changesetId = randomBytes(4).toString('hex');
+-  const changesetFile = join(changesetDir, `manual-release-${changesetId}.md`);
++  const changesetFile = `js/.changeset/manual-release-${changesetId}.md`;
+ 
+   // Create the changeset file with single quotes to match Prettier config
+   const content = `---
+-${formatChangesetHeader(packageName, bumpType)}
++'${PACKAGE_NAME}': ${bumpType}
+ ---
+ 
+ ${description}
+ `;
+ 
+-  mkdirSync(changesetDir, { recursive: true });
+   writeFileSync(changesetFile, content, 'utf-8');
+ 
+   console.log(`Created changeset: ${changesetFile}`);
+   console.log('Content:');
+-  printUntrusted(content);
++  console.log(content);
+ 
+   // Format with Prettier
+   console.log('\nFormatting with Prettier...');

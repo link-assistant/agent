@@ -1,0 +1,13 @@
+--- template/.lycheeignore
++++ .lycheeignore
+@@ -24,3 +24,10 @@
+ 
+ # Web Archive returns 502 to link checkers (bot protection)
+ https://web\.archive\.org
++
++# claude.ai returns 403 to link checkers (bot protection)
++https://claude\.ai
++
++# API base URLs quoted in the changelog answer 404 to a bare GET; they are
++# endpoints, not pages.
++https://api\.kilo\.ai

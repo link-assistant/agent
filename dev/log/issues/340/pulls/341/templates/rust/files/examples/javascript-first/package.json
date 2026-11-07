@@ -1,0 +1,11 @@
+{
+  "name": "javascript-first-example",
+  "private": true,
+  "type": "module",
+  "exports": "./native.mjs",
+  "scripts": {
+    "javascript-first:native": "node --test native.test.mjs",
+    "javascript-first:parity": "node check-parity.mjs",
+    "javascript-first:translation": "node generate.mjs --check"
+  }
+}

@@ -1,0 +1,314 @@
+--- template/.github/workflows/workflows.yml
++++ .github/workflows/workflows.yml
+@@ -1,242 +1,134 @@
+ name: Workflows
+ 
++# Lints the workflow files themselves. Without this, shell bugs inside `run:`
++# blocks and unpinned/injectable action usage only surface as production CI
++# failures (issue #301).
+ on:
+   push:
+-    branches: [main]
+-    paths: ['.github/**', 'scripts/check-workflow-tools.rs', 'scripts/extract-artifacts.py', 'experiments/issue-223-artifact-tests.py', '**.sh', '.pre-commit-config.yaml']
++    branches:
++      - main
++    paths:
++      - 'scripts/check-pipeline-status.sh'
++      - 'scripts/job-cancel-policy.mjs'
++      - '.github/workflows/**'
++      - '.github/zizmor.yml'
++      - '.github/actionlint.yaml'
++      - 'scripts/check-version.mjs'
++      - 'scripts/pr-comparison.mjs'
++      - 'scripts/validate-docs.mjs'
++      - '**.md'
+   pull_request:
+-    paths: ['.github/**', 'scripts/check-workflow-tools.rs', 'scripts/extract-artifacts.py', 'experiments/issue-223-artifact-tests.py', '**.sh', '.pre-commit-config.yaml']
++    types: [opened, synchronize, reopened]
++    paths:
++      - 'scripts/check-pipeline-status.sh'
++      - 'scripts/job-cancel-policy.mjs'
++      - '.github/workflows/**'
++      - '.github/zizmor.yml'
++      - '.github/actionlint.yaml'
++      - 'scripts/check-version.mjs'
++      - 'scripts/pr-comparison.mjs'
++      - 'scripts/validate-docs.mjs'
++      - '**.md'
++  workflow_dispatch:
+ 
+-# Keep the workflow read-only unless a job explicitly needs an additional scope.
++# Least-privilege default; these jobs only need to read the checked-out tree.
+ permissions:
+   contents: read
+ 
+-# Configure checkout's git init before the first step runs.
++# Provide Git config to actions/checkout itself; checkout runs git init before
++# any workflow step can configure Git.
+ env:
+   GIT_CONFIG_COUNT: '1'
+   GIT_CONFIG_KEY_0: init.defaultBranch
+   GIT_CONFIG_VALUE_0: main
+ 
+ jobs:
+-  javascript-first:
+-    concurrency:
+-      group: check-${{ github.workflow }}-${{ github.ref }}-javascript-first-caller
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    uses: ./.github/workflows/javascript-first-gate.yml # zizmor: ignore[self-repository]
+-    with:
+-      source-sha: ${{ github.sha }}
+-
+-  artifact-roundtrip:
+-    name: Artifact round trip
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 10
+-    concurrency:
+-      group: check-${{ github.workflow }}-${{ github.ref }}-artifact-roundtrip
+-      cancel-in-progress: true
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-      - name: Test extraction adapter
+-        run: python3 experiments/issue-223-artifact-tests.py -v
+-      - name: Create bounded binary fixtures
+-        run: |
+-          mkdir -p artifact-fixture/one artifact-fixture/two
+-          python3 -c 'from pathlib import Path; Path("artifact-fixture/one/check.bin").write_bytes(bytes(range(256)) * 8); Path("artifact-fixture/two/second.txt").write_bytes(b"check\n")'
+-      - uses: actions/upload-artifact@v7
+-        with:
+-          name: extraction-one
+-          path: artifact-fixture/one/
+-          if-no-files-found: error
+-      - uses: actions/upload-artifact@v7
+-        with:
+-          name: extraction-two
+-          path: artifact-fixture/two/
+-          if-no-files-found: error
+-      # actionlint 1.7.12 rejects $/; exercise the checked-out adapter and scripts.
+-      - uses: ./.github/actions/download-artifact # zizmor: ignore[self-repository]
+-        with:
+-          name: extraction-one
+-          path: artifact-named
+-      - uses: ./.github/actions/download-artifact # zizmor: ignore[self-repository]
+-        with:
+-          pattern: extraction-*
+-          path: artifact-separate
+-      - uses: ./.github/actions/download-artifact # zizmor: ignore[self-repository]
+-        with:
+-          pattern: extraction-*
+-          path: artifact-merged
+-          merge-multiple: true
+-      - name: Verify downloaded bytes and layouts
+-        run: |
+-          cmp artifact-fixture/one/check.bin artifact-named/check.bin
+-          cmp artifact-fixture/one/check.bin artifact-separate/extraction-one/check.bin
+-          cmp artifact-fixture/two/second.txt artifact-separate/extraction-two/second.txt
+-          cmp artifact-fixture/one/check.bin artifact-merged/check.bin
+-          cmp artifact-fixture/two/second.txt artifact-merged/second.txt
+-
+   actionlint:
+-    name: Actionlint
++    name: actionlint
+     runs-on: ubuntu-24.04
+     timeout-minutes: 10
+     concurrency:
+       group: check-${{ github.workflow }}-${{ github.ref }}-actionlint
+       cancel-in-progress: true
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+           persist-credentials: false
+ 
+       # The Docker image bundles shellcheck and pyflakes, so this also lints
+-      # every `run:` block. A *native* actionlint binary without shellcheck on
+-      # PATH silently skips the shell checks and exits 0, which is how the
+-      # SC2016 defect in release.yml (issue #141) went unnoticed.
+-      #
+-      # 1.7.12 knows the modern hosted runner labels (macos-15-intel,
+-      # windows-11-arm), so the old .github/actionlint.yaml false-positive
+-      # allowlist was removed with this bump (issue #160).
+-      #
+-      # Pinned by digest because a mutable tag of a repository we do not
+-      # control is arbitrary code execution in any job that holds credentials
+-      # (the same reasoning as the `'*': hash-pin` policy in
+-      # .github/zizmor.yml). Re-resolve when bumping:
+-      #   docker pull rhysd/actionlint:<tag> &&
+-      #   docker inspect --format='{{index .RepoDigests 0}}' rhysd/actionlint:<tag>
+-      - uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # v1.7.12
++      # every `run:` block. A native actionlint binary without shellcheck on
++      # PATH silently skips the shell checks and exits 0 - worth knowing when
++      # reproducing a failure locally:
++      #   docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
++      - uses: docker://rhysd/actionlint:1.7.12
+         with:
+-          # Remove this narrow schema exception once rhysd/actionlint#654 ships.
+-          args: -color -ignore "unexpected key .queue. for .concurrency. section"
++          args: -color
+ 
+   zizmor:
+-    name: Zizmor
++    name: zizmor
+     runs-on: ubuntu-24.04
+     timeout-minutes: 10
+-    permissions:
+-      contents: read
+     concurrency:
+       group: check-${{ github.workflow }}-${{ github.ref }}-zizmor
+       cancel-in-progress: true
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+           persist-credentials: false
+ 
+-      # actionlint cannot see workflow *security* defects: unpinned third-party
+-      # actions, checkouts that persist `GITHUB_TOKEN` in `.git/config`, or
+-      # template injection into `run:` blocks. zizmor covers those.
+-      #
+-      # Annotations instead of SARIF: forks of this template do not necessarily
+-      # have code scanning enabled, and the job should fail loudly either way.
+-      #
+-      # `version` is named rather than left at the default, because the
+-      # action's `latest` entry is its own frozen table (v0.6.4 -> zizmor
+-      # 1.30.1), not the latest zizmor. Naming it keeps the next bump a
+-      # visible line in the diff rather than a side effect of bumping the
+-      # action, and documents exactly which analyser reproduces a finding
+-      # (issue #166):
+-      #   pipx run zizmor==1.30.1 --config .github/zizmor.yml \
+-      #     --min-confidence low --persona regular .
+-      # Scan the repository, including Dependabot and actions outside .github.
+-      # Future Dependabot configs need cooldown: {default-days: 7} per ecosystem.
+-      - uses: zizmorcore/zizmor-action@v0.6.4
++      # Annotations instead of SARIF: code scanning is not guaranteed to be
++      # enabled on every fork, and the job should fail loudly either way.
++      - uses: zizmorcore/zizmor-action@v0.6.2
+         with:
+-          inputs: .
+           advanced-security: false
+           annotations: true
+           config: .github/zizmor.yml
+-          min-confidence: low
+-          version: 1.30.1
++          min-confidence: medium
+ 
+-      # The run above uses `--persona regular`, which is the right default:
+-      # pedantic surfaces dozens of stylistic findings. But the audits that
+-      # cover container image references (`unpinned-images` among them) are
+-      # Pedantic-only, so the `'*': hash-pin` policy declared in
+-      # .github/zizmor.yml is not enforced against `uses: docker://` or
+-      # `container:` references by the run above. Narrowing this second pass
+-      # to high severity *and* high confidence keeps that enforcement without
+-      # importing the noise. Measured: after the digest pin of the actionlint
+-      # image above it reports nothing, and stays silent until someone
+-      # reintroduces a mutable image reference.
+-      - name: Audit for pedantic-only high-severity findings
+-        timeout-minutes: 10
+-        env:
+-          GH_TOKEN: ${{ github.token }}
+-        run: |
+-          pipx run zizmor==1.30.1 --config .github/zizmor.yml \
+-            --persona pedantic --min-severity high --min-confidence high \
+-            .
+-
+-  # actionlint checks inline run blocks; this covers standalone scripts too.
+-  shellcheck:
+-    name: ShellCheck
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 10
+-    concurrency:
+-      group: check-${{ github.workflow }}-${{ github.ref }}-shellcheck
+-      cancel-in-progress: true
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-      - name: Shellcheck every tracked shell script
+-        run: git ls-files -z '*.sh' | xargs -0 pipx run --spec shellcheck-py==0.11.0.1 shellcheck
+-
+-  workflow-tools:
+-    if: needs.javascript-first.result == 'success' && needs.javascript-first.outputs.tested-sha == github.sha
+-    needs: [javascript-first]
+-    name: Workflow Tool Installation
++  repository-policy:
++    name: Repository Policy
+     runs-on: ubuntu-24.04
+     timeout-minutes: 5
+     concurrency:
+-      group: check-${{ github.workflow }}-${{ github.ref }}-workflow-tools
++      group: check-${{ github.workflow }}-${{ github.ref }}-repository-policy
+       cancel-in-progress: true
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+-          ref: ${{ needs.javascript-first.outputs.tested-sha == github.sha && github.sha }}
++          fetch-depth: 0
+           persist-credentials: false
++      - uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
++      - name: Guard CI-managed package versions
++        if: github.event_name == 'pull_request'
++        run: node scripts/check-version.mjs
++      - name: Validate documentation
++        run: node scripts/validate-docs.mjs
+ 
+-      - name: Setup Rust
+-        uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # safely handle action inputs (#187)
+-        with:
+-          toolchain: stable
+-
+-      - name: Check per-job tool installation
+-        run: |
+-          rustc scripts/check-workflow-tools.rs -o "$RUNNER_TEMP/check-workflow-tools"
+-          "$RUNNER_TEMP/check-workflow-tools" --verbose
+-
+-  # Terminal status gate (issue #156): GitHub reports jobs killed by
+-  # timeout-minutes as cancelled. Observe every other job so a timeout on main
+-  # becomes a visible failure instead of a grey run, while a run that was
+-  # superseded by a newer commit is recognised as expected churn.
++  # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
++  # the run grey instead of red. This gate fails the run on any unsuccessful
++  # job and on any cancellation a newer run does not explain (#301, #337).
+   pipeline-status:
+     name: Pipeline Status
++    runs-on: ubuntu-24.04
++    timeout-minutes: 5
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
++      cancel-in-progress: true
++    if: always()
+     needs:
+-      - javascript-first
+-      - artifact-roundtrip
++      - repository-policy
+       - actionlint
+       - zizmor
+-      - workflow-tools
+-      - shellcheck
+-    if: ${{ !cancelled() }}
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 5
+-    # Read this run's jobs and annotations to name runner-acquisition failures (issue #226).
+-    permissions:
+-      contents: read
+-      actions: read
+-      checks: read
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+           persist-credentials: false
+ 
+-      - name: Check aggregate pipeline status
++      - name: Fail the run when a required job was cancelled or failed
+         env:
+           NEEDS_JSON: ${{ toJSON(needs) }}
+-          GH_TOKEN: ${{ github.token }}
+-          IS_MAIN: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+           RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+           HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+         run: bash scripts/check-pipeline-status.sh

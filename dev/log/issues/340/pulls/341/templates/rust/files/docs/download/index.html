@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Desktop downloads</title><style>
+body{font:16px system-ui,sans-serif;max-width:70rem;margin:3rem auto;padding:0 1.25rem;color:#18202a}a{color:#075bc7}.asset{border:1px solid #d7dde5;border-radius:.6rem;padding:1rem;margin:.75rem 0}.meta{color:#596575;font-size:.9rem}code{background:#eef1f5;padding:.15rem .3rem;border-radius:.25rem}
+</style></head><body><main><h1>Desktop downloads</h1>
+<p id="status">Loading the latest release…</p><div id="assets"></div>
+<p class="meta">Verify a download with <code>SHA256SUMS.txt</code>, or run <code>gh attestation verify &lt;file&gt; --repo __REPOSITORY__</code>.</p>
+</main><script>
+const repository='__REPOSITORY__';
+const status=document.querySelector('#status');
+const list=document.querySelector('#assets');
+fetch(`https://api.github.com/repos/${repository}/releases/latest`,{headers:{Accept:'application/vnd.github+json'}})
+ .then(r=>{if(!r.ok)throw new Error(`GitHub returned ${r.status}`);return r.json()})
+ .then(release=>{status.textContent=`Latest release: ${release.tag_name}`;const assets=release.assets||[];if(!assets.length){list.textContent='No desktop assets are available in the latest release.';return}for(const asset of assets){const row=document.createElement('div');row.className='asset';const link=document.createElement('a');link.href=asset.browser_download_url;link.textContent=asset.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=`${(asset.size/1048576).toFixed(1)} MiB`;row.append(link,meta);list.append(row)}})
+ .catch(error=>{status.textContent=`Could not load the latest release: ${error.message}`});
+</script></body></html>

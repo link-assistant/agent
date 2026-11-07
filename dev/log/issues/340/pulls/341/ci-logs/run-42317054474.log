@@ -1,0 +1,1221 @@
+zizmor	Set up job	﻿2026-11-07T00:15:03.9956639Z Current runner version: '2.338.2'
+zizmor	Set up job	2026-11-07T00:15:03.9987710Z ##[group]Runner Image Provisioner
+zizmor	Set up job	2026-11-07T00:15:03.9988856Z Hosted Compute Agent
+zizmor	Set up job	2026-11-07T00:15:03.9989519Z Version: 20261028.624
+zizmor	Set up job	2026-11-07T00:15:03.9990344Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+zizmor	Set up job	2026-11-07T00:15:03.9991155Z Build Date: 2026-10-28T21:51:42Z
+zizmor	Set up job	2026-11-07T00:15:03.9991930Z Worker ID: {c55cf3cc-42df-4008-9bf0-e370674d4b52}
+zizmor	Set up job	2026-11-07T00:15:03.9992991Z Region: westcentralus
+zizmor	Set up job	2026-11-07T00:15:03.9993654Z Cloud: Azure
+zizmor	Set up job	2026-11-07T00:15:03.9994283Z ##[endgroup]
+zizmor	Set up job	2026-11-07T00:15:03.9995784Z ##[group]Operating System
+zizmor	Set up job	2026-11-07T00:15:03.9996459Z Ubuntu
+zizmor	Set up job	2026-11-07T00:15:03.9997146Z 24.04.5
+zizmor	Set up job	2026-11-07T00:15:03.9997724Z LTS
+zizmor	Set up job	2026-11-07T00:15:03.9998381Z ##[endgroup]
+zizmor	Set up job	2026-11-07T00:15:03.9999007Z ##[group]Runner Image
+zizmor	Set up job	2026-11-07T00:15:03.9999728Z Image: ubuntu-24.04
+zizmor	Set up job	2026-11-07T00:15:04.0000479Z Version: 20261101.360.1
+zizmor	Set up job	2026-11-07T00:15:04.0002091Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+zizmor	Set up job	2026-11-07T00:15:04.0005118Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+zizmor	Set up job	2026-11-07T00:15:04.0006769Z ##[endgroup]
+zizmor	Set up job	2026-11-07T00:15:04.0008628Z ##[group]GITHUB_TOKEN Permissions
+zizmor	Set up job	2026-11-07T00:15:04.0011588Z Contents: read
+zizmor	Set up job	2026-11-07T00:15:04.0012883Z Metadata: read
+zizmor	Set up job	2026-11-07T00:15:04.0013816Z ##[endgroup]
+zizmor	Set up job	2026-11-07T00:15:04.0017076Z Secret source: Actions
+zizmor	Set up job	2026-11-07T00:15:04.0018768Z Cache mode: write
+zizmor	Set up job	2026-11-07T00:15:04.0020348Z Prepare workflow directory
+zizmor	Set up job	2026-11-07T00:15:04.0472685Z Prepare all required actions
+zizmor	Set up job	2026-11-07T00:15:04.0528345Z Getting action download info
+zizmor	Set up job	2026-11-07T00:15:04.3607394Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+zizmor	Set up job	2026-11-07T00:15:04.4738647Z Download action repository 'zizmorcore/zizmor-action@v0.6.2' (SHA:3dc1ecc9bcb9e94e9b2c709687979e1298497054)
+zizmor	Set up job	2026-11-07T00:15:04.8214690Z Getting action download info
+zizmor	Set up job	2026-11-07T00:15:04.9363252Z Download action repository 'github/codeql-action@7188fc363630916deb702c7fdcf4e481b751f97a' (SHA:7188fc363630916deb702c7fdcf4e481b751f97a)
+zizmor	Set up job	2026-11-07T00:15:05.5436449Z Complete job name: zizmor
+zizmor	Run actions/checkout@v6	﻿2026-11-07T00:15:05.6299818Z ##[group]Run actions/checkout@v6
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6300719Z with:
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6301182Z   persist-credentials: false
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6301732Z   repository: link-assistant/agent
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6305801Z   token: ***
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6306269Z   ssh-strict: true
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6306732Z   ssh-user: git
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6307172Z   clean: true
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6307630Z   sparse-checkout-cone-mode: true
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6308166Z   fetch-depth: 1
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6308631Z   fetch-tags: false
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6309097Z   show-progress: true
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6309555Z   lfs: false
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6309978Z   submodules: false
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6310466Z   set-safe-directory: true
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6310987Z   allow-unsafe-pr-checkout: false
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6311778Z env:
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6312203Z   GIT_CONFIG_COUNT: 1
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6312826Z   GIT_CONFIG_KEY_0: init.defaultBranch
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6313393Z   GIT_CONFIG_VALUE_0: main
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.6313935Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8661463Z Syncing repository: link-assistant/agent
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8664383Z ##[group]Getting Git version info
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8665447Z Working directory is '/home/runner/work/agent/agent'
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8667001Z [command]/usr/bin/git version
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8720939Z git version 2.56.0
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8743700Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8758708Z Temporarily overriding HOME='/home/runner/work/_temp/25b83f71-5e0e-4221-8e41-0f2728f56548' before making global git config changes
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8761197Z Adding repository directory to the temporary git global config as a safe directory
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8765792Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8819507Z Deleting the contents of '/home/runner/work/agent/agent'
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8823516Z ##[group]Determining repository object format
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8825938Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8827057Z ##[group]Initializing the repository
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8830515Z [command]/usr/bin/git init /home/runner/work/agent/agent
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8944790Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.8965738Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9009192Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9010450Z ##[group]Disabling automatic garbage collection
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9013221Z [command]/usr/bin/git config --local gc.auto 0
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9054594Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9056150Z ##[group]Setting up auth
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9057679Z Removing SSH command configuration
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9064403Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9108523Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9482713Z Removing HTTP extra header
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9490292Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9538634Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9826729Z Removing includeIf entries pointing to credentials config files
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9835129Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:05.9886023Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:06.0158313Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:06.0214305Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:06.0264123Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:06.0328367Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:06.0379842Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:06.0426077Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:06.0426994Z ##[group]Fetching the repository
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:06.0440993Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f16ef931816208cea15011a77b5cf1aa6a3eea40:refs/remotes/pull/341/merge
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2089266Z From https://github.com/link-assistant/agent
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2091582Z  * [new ref]         f16ef931816208cea15011a77b5cf1aa6a3eea40 -> pull/341/merge
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2095457Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2096644Z ##[group]Determining the checkout info
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2097896Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2100669Z [command]/usr/bin/git sparse-checkout disable
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2163309Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2206509Z ##[group]Checking out the ref
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.2210408Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5879533Z Note: switching to 'refs/remotes/pull/341/merge'.
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5880514Z 
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5880778Z You are in 'detached HEAD' state. You can look around, make experimental
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5881344Z changes and commit them, and you can discard any commits you make in this
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5881915Z state without impacting any branches by switching back to a branch.
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5882277Z 
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5882825Z If you want to create a new branch to retain commits you create, you may
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5883542Z do so (now or later) by using -c with the switch command. Example:
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5883844Z 
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5884011Z   git switch -c <new-branch-name>
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5884233Z 
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5884388Z Or undo this operation with:
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5884580Z 
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5884704Z   git switch -
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5884890Z 
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5885143Z Turn off this advice by setting config variable advice.detachedHead to false
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5885515Z 
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5885893Z HEAD is now at f16ef93 Merge fdcf2ce11ee448fc485a5ac582a3205ff064990c into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5926753Z ##[endgroup]
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.5988267Z [command]/usr/bin/git log -1 --format=%H
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6028986Z f16ef931816208cea15011a77b5cf1aa6a3eea40
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6039630Z ##[group]Removing auth
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6040011Z Removing SSH command configuration
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6044561Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6091370Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6360515Z Removing HTTP extra header
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6365939Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6413143Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6679218Z Removing includeIf entries pointing to credentials config files
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6683808Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6724354Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6725222Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6725730Z includeif.gitdir:/github/workspace/.git.path
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6726165Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6734632Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6770046Z /home/runner/work/_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6782022Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6835574Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6872900Z /home/runner/work/_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6881251Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6926939Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6966416Z /github/runner_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.6976768Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.7024789Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.7060054Z /github/runner_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.7068746Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.7114778Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.7370563Z Removing credentials config '/home/runner/work/_temp/git-credentials-824d5ed9-f91c-4b7e-bd8b-ca0eda39d5db.config'
+zizmor	Run actions/checkout@v6	2026-11-07T00:15:07.7380051Z ##[endgroup]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	﻿2026-11-07T00:15:07.7714664Z ##[group]Run zizmorcore/zizmor-action@v0.6.2
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7715071Z with:
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7715351Z   advanced-security: false
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7715649Z   annotations: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7715952Z   config: .github/zizmor.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7716251Z   min-confidence: medium
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7716533Z   inputs: .
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7716795Z   collect: default
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7717078Z   online-audits: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7717363Z   persona: regular
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7717640Z   version: latest
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7720084Z   token: ***
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7720352Z   color: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7720632Z   fail-on-no-inputs: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7720923Z env:
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7721172Z   GIT_CONFIG_COUNT: 1
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7721473Z   GIT_CONFIG_KEY_0: init.defaultBranch
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7721814Z   GIT_CONFIG_VALUE_0: main
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7722108Z ##[endgroup]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7786048Z ##[start-action display=Run zizmor;id=__zizmorcore_zizmor-action.run-zizmor]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7835640Z ##[group]Run "${GITHUB_ACTION_PATH}/action.sh"
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7836168Z ^[[36;1m"${GITHUB_ACTION_PATH}/action.sh"^[[0m
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7864116Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7864557Z env:
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7864820Z   GIT_CONFIG_COUNT: 1
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7865126Z   GIT_CONFIG_KEY_0: init.defaultBranch
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7865465Z   GIT_CONFIG_VALUE_0: main
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7865761Z   GHA_ZIZMOR_INPUTS: .
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7866043Z   GHA_ZIZMOR_COLLECT: default
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7866348Z   GHA_ZIZMOR_ONLINE_AUDITS: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7866658Z   GHA_ZIZMOR_PERSONA: regular
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7866954Z   GHA_ZIZMOR_MIN_SEVERITY: 
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7867268Z   GHA_ZIZMOR_MIN_CONFIDENCE: medium
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7867588Z   GHA_ZIZMOR_VERSION: latest
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7870088Z   GHA_ZIZMOR_TOKEN: ***
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7870417Z   GHA_ZIZMOR_ADVANCED_SECURITY: false
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7870756Z   GHA_ZIZMOR_COLOR: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7871088Z   GHA_ZIZMOR_ANNOTATIONS: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7871413Z   GHA_ZIZMOR_CONFIG: .github/zizmor.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7871752Z   GHA_ZIZMOR_FAIL_ON_NO_INPUTS: true
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7872081Z ##[endgroup]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:07.7978149Z ##[group]Pulling zizmor image
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.4010780Z ghcr.io/zizmorcore/zizmor@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284: Pulling from zizmorcore/zizmor
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5769488Z a66283bef834: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5770102Z f1dc41da0ac6: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5770427Z 2e3139e176fe: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5770713Z c920184a3208: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5770976Z 9201e51fe8c1: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5771228Z 69cbafd2417b: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5771573Z 7fc117d2446a: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5771826Z 8d99fd8fea9c: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5772115Z 5f460b97a17e: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5772441Z 8d99fd8fea9c: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5773025Z 69cbafd2417b: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5773349Z 7fc117d2446a: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5773651Z c920184a3208: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5774289Z 5f460b97a17e: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5774489Z 9201e51fe8c1: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5776017Z cdea145aa115: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5776421Z b92857818105: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5776785Z c621f68b4dc2: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5777082Z 4f4fb700ef54: Pulling fs layer
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5777308Z cdea145aa115: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5777667Z b92857818105: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5777971Z c621f68b4dc2: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.5778274Z 4f4fb700ef54: Waiting
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.9045611Z 2e3139e176fe: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.9046038Z 2e3139e176fe: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:08.9467799Z a66283bef834: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.0101085Z a66283bef834: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.0130658Z f1dc41da0ac6: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.1780345Z f1dc41da0ac6: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.1980449Z 2e3139e176fe: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.2439055Z c920184a3208: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.2439887Z c920184a3208: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.2577197Z c920184a3208: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.2626919Z 9201e51fe8c1: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.2746676Z 9201e51fe8c1: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.3453111Z 69cbafd2417b: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.3563362Z 69cbafd2417b: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.5324851Z 7fc117d2446a: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.5430970Z 7fc117d2446a: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.5501988Z 8d99fd8fea9c: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.5504326Z 8d99fd8fea9c: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.5623531Z 8d99fd8fea9c: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.6248714Z 5f460b97a17e: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.6249480Z 5f460b97a17e: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.6426846Z 5f460b97a17e: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.8099026Z cdea145aa115: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.8099495Z cdea145aa115: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.8230045Z cdea145aa115: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.8474107Z b92857818105: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.8474730Z b92857818105: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:09.8935220Z b92857818105: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.0446334Z 4f4fb700ef54: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.0877587Z c621f68b4dc2: Verifying Checksum
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.0878141Z c621f68b4dc2: Download complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.2293774Z c621f68b4dc2: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.2371071Z 4f4fb700ef54: Pull complete
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.2407931Z Digest: sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.2414489Z Status: Downloaded newer image for ghcr.io/zizmorcore/zizmor@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.2423650Z ghcr.io/zizmorcore/zizmor:latest@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.2443565Z ##[endgroup]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:10.4289349Z ^[[32m INFO^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 zizmor v1.29.0
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:11.3630294Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/dependency-freshness.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:11.6783949Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/integration-tests.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:11.8779644Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/js.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:12.2154277Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/links.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:12.2167833Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/model-catalogue.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:12.2184509Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/model-drift.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:12.2210489Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/model-tests.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:12.5757348Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/rust.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:12.9434378Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/security.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:13.1555668Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./.github/workflows/workflows.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:13.1558938Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/actions/artifact-transport/action.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:13.1560893Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/actions/artifact-transport/run/action.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:13.6016281Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/actions/publish-dockerhub/action.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:13.8107694Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/actions/setup-buildx-resilient/action.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.4303318Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.4329862Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/javascript-first-example.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.4343199Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/javascript-first-gate.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.4367193Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/links.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.6654784Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.6664195Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/rerun-unacquired.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.6721261Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/security.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.7935385Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/workflows.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.7937328Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.github/actions/artifact/action.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.7938821Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.github/actions/deploy-pages/action.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.7940006Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.github/dependabot.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.9867267Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/docs.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:14.9888148Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/links.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.3391940Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.3443948Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/security.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.3473043Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/workflows.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.3474830Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/python/files/.pre-commit-config.yaml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.5436544Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/actions/download-artifact/action.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.5450010Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/actions/setup-buildx-resilient/action.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.7949816Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/desktop-release.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.8393512Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/javascript-first-example.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.8410146Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/javascript-first-gate.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:15.9673120Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/links.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:16.5784728Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:16.5799274Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/rerun-infrastructure-failures.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:16.5855755Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/security.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:16.6305896Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/workflows.yml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:16.6307561Z ^[[32m INFO^[[0m ^[[1maudit^[[0m^[[2m:^[[0m ^[[2mzizmor^[[0m^[[2m:^[[0m 🌈 completed ./dev/log/issues/340/pulls/341/templates/rust/files/.pre-commit-config.yaml
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:16.7416240Z ##[end-action id=__zizmorcore_zizmor-action.run-zizmor;outcome=success;conclusion=success;duration_ms=8962]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:16.7422174Z ##[start-action display=Upload SARIF file to GitHub Advanced Security;id=__zizmorcore_zizmor-action.__github_codeql-action]
+zizmor	Run zizmorcore/zizmor-action@v0.6.2	2026-11-07T00:15:16.7441883Z ##[end-action id=__zizmorcore_zizmor-action.__github_codeql-action;outcome=skipped;conclusion=skipped;duration_ms=0]
+zizmor	Post Run zizmorcore/zizmor-action@v0.6.2	﻿2026-11-07T00:15:16.7585129Z Post job cleanup.
+zizmor	Post Run actions/checkout@v6	﻿2026-11-07T00:15:16.7683337Z Post job cleanup.
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.8596283Z [command]/usr/bin/git version
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.8644679Z git version 2.56.0
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.8689627Z Temporarily overriding HOME='/home/runner/work/_temp/2c2ebda6-f593-44af-a6f4-b72d4b44ee59' before making global git config changes
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.8690895Z Adding repository directory to the temporary git global config as a safe directory
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.8696535Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.8742181Z Removing SSH command configuration
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.8751233Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.8818293Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.9099621Z Removing HTTP extra header
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.9106722Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.9166024Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.9445991Z Removing includeIf entries pointing to credentials config files
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.9456872Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+zizmor	Post Run actions/checkout@v6	2026-11-07T00:15:16.9517106Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+zizmor	Complete job	﻿2026-11-07T00:15:16.9954810Z Cleaning up orphan processes
+Repository Policy	Set up job	﻿2026-11-07T00:15:03.5011085Z Current runner version: '2.338.2'
+Repository Policy	Set up job	2026-11-07T00:15:03.5049305Z ##[group]Runner Image Provisioner
+Repository Policy	Set up job	2026-11-07T00:15:03.5050754Z Hosted Compute Agent
+Repository Policy	Set up job	2026-11-07T00:15:03.5051742Z Version: 20261028.624
+Repository Policy	Set up job	2026-11-07T00:15:03.5052891Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Repository Policy	Set up job	2026-11-07T00:15:03.5054138Z Build Date: 2026-10-28T21:51:42Z
+Repository Policy	Set up job	2026-11-07T00:15:03.5055310Z Worker ID: {809cd3d1-8040-48ac-9f44-a91c6cae62e5}
+Repository Policy	Set up job	2026-11-07T00:15:03.5056480Z Region: eastus
+Repository Policy	Set up job	2026-11-07T00:15:03.5057410Z Cloud: Azure
+Repository Policy	Set up job	2026-11-07T00:15:03.5058486Z ##[endgroup]
+Repository Policy	Set up job	2026-11-07T00:15:03.5061226Z ##[group]Operating System
+Repository Policy	Set up job	2026-11-07T00:15:03.5062490Z Ubuntu
+Repository Policy	Set up job	2026-11-07T00:15:03.5063333Z 24.04.5
+Repository Policy	Set up job	2026-11-07T00:15:03.5064203Z LTS
+Repository Policy	Set up job	2026-11-07T00:15:03.5065292Z ##[endgroup]
+Repository Policy	Set up job	2026-11-07T00:15:03.5066175Z ##[group]Runner Image
+Repository Policy	Set up job	2026-11-07T00:15:03.5067247Z Image: ubuntu-24.04
+Repository Policy	Set up job	2026-11-07T00:15:03.5068312Z Version: 20261101.360.1
+Repository Policy	Set up job	2026-11-07T00:15:03.5070483Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Repository Policy	Set up job	2026-11-07T00:15:03.5073679Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Repository Policy	Set up job	2026-11-07T00:15:03.5075430Z ##[endgroup]
+Repository Policy	Set up job	2026-11-07T00:15:03.5077306Z ##[group]GITHUB_TOKEN Permissions
+Repository Policy	Set up job	2026-11-07T00:15:03.5080430Z Contents: read
+Repository Policy	Set up job	2026-11-07T00:15:03.5081486Z Metadata: read
+Repository Policy	Set up job	2026-11-07T00:15:03.5082456Z ##[endgroup]
+Repository Policy	Set up job	2026-11-07T00:15:03.5085551Z Secret source: Actions
+Repository Policy	Set up job	2026-11-07T00:15:03.5087071Z Cache mode: write
+Repository Policy	Set up job	2026-11-07T00:15:03.5088333Z Prepare workflow directory
+Repository Policy	Set up job	2026-11-07T00:15:03.5674788Z Prepare all required actions
+Repository Policy	Set up job	2026-11-07T00:15:03.5748114Z Getting action download info
+Repository Policy	Set up job	2026-11-07T00:15:03.7786432Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Repository Policy	Set up job	2026-11-07T00:15:03.8753720Z Download action repository 'actions/setup-node@v6' (SHA:249970729cb0ef3589644e2896645e5dc5ba9c38)
+Repository Policy	Set up job	2026-11-07T00:15:04.1102277Z Complete job name: Repository Policy
+Repository Policy	Run actions/checkout@v6	﻿2026-11-07T00:15:04.2038600Z ##[group]Run actions/checkout@v6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2039809Z with:
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2040269Z   fetch-depth: 0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2040754Z   persist-credentials: false
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2041308Z   repository: link-assistant/agent
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2045189Z   token: ***
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2045637Z   ssh-strict: true
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2046076Z   ssh-user: git
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2046503Z   clean: true
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2046957Z   sparse-checkout-cone-mode: true
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2047497Z   fetch-tags: false
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2047939Z   show-progress: true
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2048391Z   lfs: false
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2048971Z   submodules: false
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2049451Z   set-safe-directory: true
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2049974Z   allow-unsafe-pr-checkout: false
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2050743Z env:
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2051169Z   GIT_CONFIG_COUNT: 1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2051660Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2052216Z   GIT_CONFIG_VALUE_0: main
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.2052736Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4602613Z Syncing repository: link-assistant/agent
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4605913Z ##[group]Getting Git version info
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4607369Z Working directory is '/home/runner/work/agent/agent'
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4610440Z [command]/usr/bin/git version
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4699944Z git version 2.56.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4730692Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4755954Z Temporarily overriding HOME='/home/runner/work/_temp/61671983-dc29-4a2f-a2df-a3b2f459dc27' before making global git config changes
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4759606Z Adding repository directory to the temporary git global config as a safe directory
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4766351Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4836928Z Deleting the contents of '/home/runner/work/agent/agent'
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4843003Z ##[group]Determining repository object format
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4845410Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4847054Z ##[group]Initializing the repository
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4852313Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.4990407Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5013130Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5082007Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5084154Z ##[group]Disabling automatic garbage collection
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5092208Z [command]/usr/bin/git config --local gc.auto 0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5147375Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5149794Z ##[group]Setting up auth
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5151559Z Removing SSH command configuration
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5159204Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5235987Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5692100Z Removing HTTP extra header
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5700817Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.5757995Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6025579Z Removing includeIf entries pointing to credentials config files
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6031449Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6084775Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6346776Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6400870Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6447423Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6491316Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6534974Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6575688Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6577300Z ##[group]Fetching the repository
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:04.6587273Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +f16ef931816208cea15011a77b5cf1aa6a3eea40:refs/remotes/pull/341/merge
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1169610Z From https://github.com/link-assistant/agent
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1174296Z  * [new branch]      issue-100-a059c6e915ea                   -> origin/issue-100-a059c6e915ea
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1176873Z  * [new branch]      issue-102-6e0a44052594                   -> origin/issue-102-6e0a44052594
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1178578Z  * [new branch]      issue-104-09ef4d9a60d7                   -> origin/issue-104-09ef4d9a60d7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1181686Z  * [new branch]      issue-106-00050382cea1                   -> origin/issue-106-00050382cea1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1184741Z  * [new branch]      issue-109-1e6d7f1b4e4d                   -> origin/issue-109-1e6d7f1b4e4d
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1188201Z  * [new branch]      issue-111-7a5c4ec5b152                   -> origin/issue-111-7a5c4ec5b152
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1191859Z  * [new branch]      issue-113-e95eec3e2b2f                   -> origin/issue-113-e95eec3e2b2f
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1195859Z  * [new branch]      issue-115-6e59e3366a6e                   -> origin/issue-115-6e59e3366a6e
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1199489Z  * [new branch]      issue-117-106178c8d9fa                   -> origin/issue-117-106178c8d9fa
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1202685Z  * [new branch]      issue-119-e6aa6636334b                   -> origin/issue-119-e6aa6636334b
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1206188Z  * [new branch]      issue-121-9494c525351a                   -> origin/issue-121-9494c525351a
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1209922Z  * [new branch]      issue-123-9d1b5673e203                   -> origin/issue-123-9d1b5673e203
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1213235Z  * [new branch]      issue-125-8aa10b01c75e                   -> origin/issue-125-8aa10b01c75e
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1215720Z  * [new branch]      issue-127-8d957d9dd1ee                   -> origin/issue-127-8d957d9dd1ee
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1218514Z  * [new branch]      issue-129-ecdf8eb6dcc5                   -> origin/issue-129-ecdf8eb6dcc5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1221565Z  * [new branch]      issue-131-e0fcd2d405df                   -> origin/issue-131-e0fcd2d405df
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1224766Z  * [new branch]      issue-133-814817b2de1f                   -> origin/issue-133-814817b2de1f
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1228147Z  * [new branch]      issue-135-473f8cde60bb                   -> origin/issue-135-473f8cde60bb
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1231174Z  * [new branch]      issue-136-6f7074e8b3c7                   -> origin/issue-136-6f7074e8b3c7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1233837Z  * [new branch]      issue-138-096c6bf88049                   -> origin/issue-138-096c6bf88049
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1236480Z  * [new branch]      issue-14-8a0de63c9ac0                    -> origin/issue-14-8a0de63c9ac0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1239839Z  * [new branch]      issue-140-a55a9a414169                   -> origin/issue-140-a55a9a414169
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1242874Z  * [new branch]      issue-142-7cf30d32b875                   -> origin/issue-142-7cf30d32b875
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1245856Z  * [new branch]      issue-144-d48eec4cec33                   -> origin/issue-144-d48eec4cec33
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1249738Z  * [new branch]      issue-144-e4442be326dd                   -> origin/issue-144-e4442be326dd
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1252816Z  * [new branch]      issue-146-635c24f49ba7                   -> origin/issue-146-635c24f49ba7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1255859Z  * [new branch]      issue-149-6a0e47e1a5de                   -> origin/issue-149-6a0e47e1a5de
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1260194Z  * [new branch]      issue-152-e45cb5fdb066                   -> origin/issue-152-e45cb5fdb066
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1264723Z  * [new branch]      issue-155-0e29b9a2633a                   -> origin/issue-155-0e29b9a2633a
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1269700Z  * [new branch]      issue-157-4959da89520c                   -> origin/issue-157-4959da89520c
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1274055Z  * [new branch]      issue-157-7ec6d0dc0010                   -> origin/issue-157-7ec6d0dc0010
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1278444Z  * [new branch]      issue-159-a7a243b457ff                   -> origin/issue-159-a7a243b457ff
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1283268Z  * [new branch]      issue-16-02a98d18139d                    -> origin/issue-16-02a98d18139d
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1286576Z  * [new branch]      issue-162-9483818809c6                   -> origin/issue-162-9483818809c6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1289947Z  * [new branch]      issue-165-4c64eabb9ce2                   -> origin/issue-165-4c64eabb9ce2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1292824Z  * [new branch]      issue-167-581f7880949b                   -> origin/issue-167-581f7880949b
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1296139Z  * [new branch]      issue-169-ed3644c88604                   -> origin/issue-169-ed3644c88604
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1300225Z  * [new branch]      issue-171-2a4cd573cb33                   -> origin/issue-171-2a4cd573cb33
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1303184Z  * [new branch]      issue-173-6bb51d117e4a                   -> origin/issue-173-6bb51d117e4a
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1306020Z  * [new branch]      issue-173-b4f53b84ef84                   -> origin/issue-173-b4f53b84ef84
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1309815Z  * [new branch]      issue-175-6f5f5eeae855                   -> origin/issue-175-6f5f5eeae855
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1313880Z  * [new branch]      issue-177-c144aea88339                   -> origin/issue-177-c144aea88339
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1318301Z  * [new branch]      issue-179-8f4f575e3d2d                   -> origin/issue-179-8f4f575e3d2d
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1323099Z  * [new branch]      issue-18-ee9e687096a6                    -> origin/issue-18-ee9e687096a6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1327493Z  * [new branch]      issue-181-50f61654180d                   -> origin/issue-181-50f61654180d
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1332057Z  * [new branch]      issue-183-28ac41c8690c                   -> origin/issue-183-28ac41c8690c
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1336720Z  * [new branch]      issue-186-d49a9a9bd545                   -> origin/issue-186-d49a9a9bd545
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1339964Z  * [new branch]      issue-187-8d71545972a6                   -> origin/issue-187-8d71545972a6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1342808Z  * [new branch]      issue-190-93f1987d1d09                   -> origin/issue-190-93f1987d1d09
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1345610Z  * [new branch]      issue-192-e383545650af                   -> origin/issue-192-e383545650af
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1349319Z  * [new branch]      issue-194-4a5f5b201e8e                   -> origin/issue-194-4a5f5b201e8e
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1352742Z  * [new branch]      issue-196-3e34fa3e426b                   -> origin/issue-196-3e34fa3e426b
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1355567Z  * [new branch]      issue-198-b73d427525e1                   -> origin/issue-198-b73d427525e1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1358317Z  * [new branch]      issue-2-f427e195b913                     -> origin/issue-2-f427e195b913
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1361309Z  * [new branch]      issue-20-8704d00e8b4e                    -> origin/issue-20-8704d00e8b4e
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1364085Z  * [new branch]      issue-200-5ffb716ab612                   -> origin/issue-200-5ffb716ab612
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1367020Z  * [new branch]      issue-200-b2d1c16c91ce                   -> origin/issue-200-b2d1c16c91ce
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1370658Z  * [new branch]      issue-200-cd1bc8036381                   -> origin/issue-200-cd1bc8036381
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1373397Z  * [new branch]      issue-204-cddda97bf1e7                   -> origin/issue-204-cddda97bf1e7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1376090Z  * [new branch]      issue-206-015289ba709a                   -> origin/issue-206-015289ba709a
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1378984Z  * [new branch]      issue-208-1518358cc8fc                   -> origin/issue-208-1518358cc8fc
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1381771Z  * [new branch]      issue-208-db6310ccb7a1                   -> origin/issue-208-db6310ccb7a1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1384491Z  * [new branch]      issue-211-ba03f381fd30                   -> origin/issue-211-ba03f381fd30
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1387189Z  * [new branch]      issue-213-e4c047fc16a3                   -> origin/issue-213-e4c047fc16a3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1390210Z  * [new branch]      issue-215-103f40049fcf                   -> origin/issue-215-103f40049fcf
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1393120Z  * [new branch]      issue-217-e1c4f8867b67                   -> origin/issue-217-e1c4f8867b67
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1395817Z  * [new branch]      issue-219-04ededf61c77                   -> origin/issue-219-04ededf61c77
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1398476Z  * [new branch]      issue-22-3ae2871ca86c                    -> origin/issue-22-3ae2871ca86c
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1401407Z  * [new branch]      issue-221-1598390b6b62                   -> origin/issue-221-1598390b6b62
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1404223Z  * [new branch]      issue-223-ee2ccec2ad75                   -> origin/issue-223-ee2ccec2ad75
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1406953Z  * [new branch]      issue-225-744eabdb1971                   -> origin/issue-225-744eabdb1971
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1409868Z  * [new branch]      issue-227-aec5b6edc4b3                   -> origin/issue-227-aec5b6edc4b3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1412582Z  * [new branch]      issue-230-fb58121277cf                   -> origin/issue-230-fb58121277cf
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1415523Z  * [new branch]      issue-231-8fb726b5bf3c                   -> origin/issue-231-8fb726b5bf3c
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1418186Z  * [new branch]      issue-232-36180d84d898                   -> origin/issue-232-36180d84d898
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1421191Z  * [new branch]      issue-235-349d7af59ce1                   -> origin/issue-235-349d7af59ce1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1423865Z  * [new branch]      issue-236-1c5bb792eb51                   -> origin/issue-236-1c5bb792eb51
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1426533Z  * [new branch]      issue-239-3952cfb405de                   -> origin/issue-239-3952cfb405de
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1429493Z  * [new branch]      issue-24-9e1c4ee0ed15                    -> origin/issue-24-9e1c4ee0ed15
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1432165Z  * [new branch]      issue-241-d06e060818b2                   -> origin/issue-241-d06e060818b2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1434799Z  * [new branch]      issue-242-182bfaaa3790                   -> origin/issue-242-182bfaaa3790
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1437482Z  * [new branch]      issue-245-a2b2836a8af3                   -> origin/issue-245-a2b2836a8af3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1440412Z  * [new branch]      issue-247-f9c2488a0da2                   -> origin/issue-247-f9c2488a0da2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1443071Z  * [new branch]      issue-249-a017ff30d69a                   -> origin/issue-249-a017ff30d69a
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1445711Z  * [new branch]      issue-251-7e9e7b39eeba                   -> origin/issue-251-7e9e7b39eeba
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1448307Z  * [new branch]      issue-253-2cc259d4dbc8                   -> origin/issue-253-2cc259d4dbc8
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1451105Z  * [new branch]      issue-255-a04aa1055933                   -> origin/issue-255-a04aa1055933
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1453667Z  * [new branch]      issue-257-664495cf8b36                   -> origin/issue-257-664495cf8b36
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1456223Z  * [new branch]      issue-259-c0df50994403                   -> origin/issue-259-c0df50994403
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1458976Z  * [new branch]      issue-26-1a4b69adfb64                    -> origin/issue-26-1a4b69adfb64
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1461881Z  * [new branch]      issue-261-71e2fe0bd25b                   -> origin/issue-261-71e2fe0bd25b
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1464435Z  * [new branch]      issue-261-72c724284fb2                   -> origin/issue-261-72c724284fb2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1466984Z  * [new branch]      issue-264-e18289bec3c3                   -> origin/issue-264-e18289bec3c3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1469802Z  * [new branch]      issue-266-47e831e15534                   -> origin/issue-266-47e831e15534
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1472363Z  * [new branch]      issue-268-60db55a2b7be                   -> origin/issue-268-60db55a2b7be
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1474907Z  * [new branch]      issue-270-377e5a73eb84                   -> origin/issue-270-377e5a73eb84
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1477443Z  * [new branch]      issue-271-3f282f6e5862                   -> origin/issue-271-3f282f6e5862
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1480207Z  * [new branch]      issue-273-d5676a1f4939                   -> origin/issue-273-d5676a1f4939
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1482782Z  * [new branch]      issue-275-0cfd401f04e4                   -> origin/issue-275-0cfd401f04e4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1485324Z  * [new branch]      issue-279-ae8e3ffcdb93                   -> origin/issue-279-ae8e3ffcdb93
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1487833Z  * [new branch]      issue-28-227b62c91030                    -> origin/issue-28-227b62c91030
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1490583Z  * [new branch]      issue-280-1deba9817acd                   -> origin/issue-280-1deba9817acd
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1493119Z  * [new branch]      issue-281-8d4563b818c2                   -> origin/issue-281-8d4563b818c2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1495700Z  * [new branch]      issue-285-531ca23a5284                   -> origin/issue-285-531ca23a5284
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1498222Z  * [new branch]      issue-287-aa65665cb2fd                   -> origin/issue-287-aa65665cb2fd
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1501041Z  * [new branch]      issue-289-73f6875dc4ca                   -> origin/issue-289-73f6875dc4ca
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1503820Z  * [new branch]      issue-290-e19ae603adc8                   -> origin/issue-290-e19ae603adc8
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1506362Z  * [new branch]      issue-293-90fd693afed4                   -> origin/issue-293-90fd693afed4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1509140Z  * [new branch]      issue-295-bd196360809e                   -> origin/issue-295-bd196360809e
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1511704Z  * [new branch]      issue-297-fc49272615ad                   -> origin/issue-297-fc49272615ad
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1514210Z  * [new branch]      issue-298-563f08b7679d                   -> origin/issue-298-563f08b7679d
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1516699Z  * [new branch]      issue-30-8c53504315c4                    -> origin/issue-30-8c53504315c4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1519631Z  * [new branch]      issue-301-ef35bbf03fb8                   -> origin/issue-301-ef35bbf03fb8
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1602769Z  * [new branch]      issue-304-efaa52b84fe0                   -> origin/issue-304-efaa52b84fe0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1607005Z  * [new branch]      issue-307-6ebdfe43b137                   -> origin/issue-307-6ebdfe43b137
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1611467Z  * [new branch]      issue-309-6646c09f85a1                   -> origin/issue-309-6646c09f85a1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1615682Z  * [new branch]      issue-310-cdd310c7bc53                   -> origin/issue-310-cdd310c7bc53
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1620090Z  * [new branch]      issue-315-d9938a201d88                   -> origin/issue-315-d9938a201d88
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1622801Z  * [new branch]      issue-317-8f1ad88e11e3                   -> origin/issue-317-8f1ad88e11e3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1625279Z  * [new branch]      issue-318-9c651573c1a0                   -> origin/issue-318-9c651573c1a0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1627790Z  * [new branch]      issue-319-d1272dfc8642                   -> origin/issue-319-d1272dfc8642
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1630646Z  * [new branch]      issue-32-693cfcfdd6d5                    -> origin/issue-32-693cfcfdd6d5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1633113Z  * [new branch]      issue-320-b2913f5b1c99                   -> origin/issue-320-b2913f5b1c99
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1635889Z  * [new branch]      issue-322-a819429ebc4d                   -> origin/issue-322-a819429ebc4d
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1638360Z  * [new branch]      issue-327-a2faae6ce685                   -> origin/issue-327-a2faae6ce685
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1641189Z  * [new branch]      issue-328-eed776095e1f                   -> origin/issue-328-eed776095e1f
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1643658Z  * [new branch]      issue-332-743c73b4ad64                   -> origin/issue-332-743c73b4ad64
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1646098Z  * [new branch]      issue-334-f481eb1e6880                   -> origin/issue-334-f481eb1e6880
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1648498Z  * [new branch]      issue-335-cc63abda9307                   -> origin/issue-335-cc63abda9307
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1651205Z  * [new branch]      issue-337-49d8f27200a3                   -> origin/issue-337-49d8f27200a3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1653610Z  * [new branch]      issue-34-a5a973ebd576                    -> origin/issue-34-a5a973ebd576
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1656053Z  * [new branch]      issue-340-8f7dd340a8ef                   -> origin/issue-340-8f7dd340a8ef
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1658457Z  * [new branch]      issue-36-33c80c585287                    -> origin/issue-36-33c80c585287
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1661091Z  * [new branch]      issue-38-d6620330d024                    -> origin/issue-38-d6620330d024
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1663449Z  * [new branch]      issue-39-481b45eeff2b                    -> origin/issue-39-481b45eeff2b
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1665825Z  * [new branch]      issue-41-9e36c91cba9a                    -> origin/issue-41-9e36c91cba9a
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1668195Z  * [new branch]      issue-43-1d50271986ab                    -> origin/issue-43-1d50271986ab
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1670922Z  * [new branch]      issue-45-a036d9c72e61                    -> origin/issue-45-a036d9c72e61
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1673318Z  * [new branch]      issue-47-b7704cc6b9a4                    -> origin/issue-47-b7704cc6b9a4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1675907Z  * [new branch]      issue-49-bef878bb5d38                    -> origin/issue-49-bef878bb5d38
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1678278Z  * [new branch]      issue-51-bf685c43c881                    -> origin/issue-51-bf685c43c881
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1681024Z  * [new branch]      issue-53-f9aa867296d4                    -> origin/issue-53-f9aa867296d4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1683390Z  * [new branch]      issue-54-54fd1e88bb01                    -> origin/issue-54-54fd1e88bb01
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1685754Z  * [new branch]      issue-58-bc11cbdc23dd                    -> origin/issue-58-bc11cbdc23dd
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1688088Z  * [new branch]      issue-6-097eb11195ee                     -> origin/issue-6-097eb11195ee
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1690772Z  * [new branch]      issue-60-e248fa950850                    -> origin/issue-60-e248fa950850
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1693114Z  * [new branch]      issue-61-e7041ade0469                    -> origin/issue-61-e7041ade0469
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1695470Z  * [new branch]      issue-62-c8dd711e089c                    -> origin/issue-62-c8dd711e089c
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1697835Z  * [new branch]      issue-66-4b5b645ed022                    -> origin/issue-66-4b5b645ed022
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1700453Z  * [new branch]      issue-68-c0a8954ce69f                    -> origin/issue-68-c0a8954ce69f
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1702785Z  * [new branch]      issue-7-8850c3e4bc8b                     -> origin/issue-7-8850c3e4bc8b
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1705112Z  * [new branch]      issue-70-1e5f73ed6b3c                    -> origin/issue-70-1e5f73ed6b3c
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1707477Z  * [new branch]      issue-72-6975e4e75bc7                    -> origin/issue-72-6975e4e75bc7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1710187Z  * [new branch]      issue-76-fe9d73dc3365                    -> origin/issue-76-fe9d73dc3365
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1712533Z  * [new branch]      issue-77-677ebcec7a83                    -> origin/issue-77-677ebcec7a83
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1714833Z  * [new branch]      issue-78-06a95192a461                    -> origin/issue-78-06a95192a461
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1717378Z  * [new branch]      issue-8-62be6460b721                     -> origin/issue-8-62be6460b721
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1719954Z  * [new branch]      issue-81-d58ba5a0ef88                    -> origin/issue-81-d58ba5a0ef88
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1722285Z  * [new branch]      issue-82-506d1d545d4e                    -> origin/issue-82-506d1d545d4e
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1724624Z  * [new branch]      issue-84-bb28b273e804                    -> origin/issue-84-bb28b273e804
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1727175Z  * [new branch]      issue-86-cadafe19d775                    -> origin/issue-86-cadafe19d775
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1729892Z  * [new branch]      issue-88-49422a8421a1                    -> origin/issue-88-49422a8421a1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1732235Z  * [new branch]      issue-89-9a1b6226b579                    -> origin/issue-89-9a1b6226b579
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1734581Z  * [new branch]      issue-9-17ad0ffde65c                     -> origin/issue-9-17ad0ffde65c
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1736933Z  * [new branch]      issue-93-40e3ae1a14d3                    -> origin/issue-93-40e3ae1a14d3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1739521Z  * [new branch]      issue-96-109dff6454e6                    -> origin/issue-96-109dff6454e6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1741632Z  * [new branch]      main                                     -> origin/main
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1743926Z  * [new branch]      prm/publish-jobs-1791903067584           -> origin/prm/publish-jobs-1791903067584
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1746164Z  * [new tag]         js-v0.10.0                               -> js-v0.10.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1747965Z  * [new tag]         js-v0.10.1                               -> js-v0.10.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1750079Z  * [new tag]         js-v0.11.0                               -> js-v0.11.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1751832Z  * [new tag]         js-v0.12.0                               -> js-v0.12.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1753568Z  * [new tag]         js-v0.12.1                               -> js-v0.12.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1755315Z  * [new tag]         js-v0.12.3                               -> js-v0.12.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1757351Z  * [new tag]         js-v0.13.0                               -> js-v0.13.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1759248Z  * [new tag]         js-v0.13.1                               -> js-v0.13.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1760992Z  * [new tag]         js-v0.13.2                               -> js-v0.13.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1762720Z  * [new tag]         js-v0.13.4                               -> js-v0.13.4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1764440Z  * [new tag]         js-v0.13.5                               -> js-v0.13.5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1766141Z  * [new tag]         js-v0.14.0                               -> js-v0.14.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1767855Z  * [new tag]         js-v0.16.0                               -> js-v0.16.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1769724Z  * [new tag]         js-v0.16.1                               -> js-v0.16.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1771463Z  * [new tag]         js-v0.16.10                              -> js-v0.16.10
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1773225Z  * [new tag]         js-v0.16.11                              -> js-v0.16.11
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1774963Z  * [new tag]         js-v0.16.12                              -> js-v0.16.12
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1776695Z  * [new tag]         js-v0.16.13                              -> js-v0.16.13
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1778437Z  * [new tag]         js-v0.16.14                              -> js-v0.16.14
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1780460Z  * [new tag]         js-v0.16.16                              -> js-v0.16.16
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1782211Z  * [new tag]         js-v0.16.17                              -> js-v0.16.17
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1783954Z  * [new tag]         js-v0.16.18                              -> js-v0.16.18
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1785691Z  * [new tag]         js-v0.16.2                               -> js-v0.16.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1787406Z  * [new tag]         js-v0.16.3                               -> js-v0.16.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1789454Z  * [new tag]         js-v0.16.4                               -> js-v0.16.4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1791429Z  * [new tag]         js-v0.16.5                               -> js-v0.16.5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1793154Z  * [new tag]         js-v0.16.7                               -> js-v0.16.7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1794859Z  * [new tag]         js-v0.16.8                               -> js-v0.16.8
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1796577Z  * [new tag]         js-v0.16.9                               -> js-v0.16.9
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1798277Z  * [new tag]         js-v0.17.0                               -> js-v0.17.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1800153Z  * [new tag]         js-v0.18.0                               -> js-v0.18.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1801869Z  * [new tag]         js-v0.18.1                               -> js-v0.18.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1803563Z  * [new tag]         js-v0.18.2                               -> js-v0.18.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1805277Z  * [new tag]         js-v0.18.3                               -> js-v0.18.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1806975Z  * [new tag]         js-v0.19.0                               -> js-v0.19.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1808704Z  * [new tag]         js-v0.19.2                               -> js-v0.19.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1810583Z  * [new tag]         js-v0.20.0                               -> js-v0.20.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1812281Z  * [new tag]         js-v0.20.2                               -> js-v0.20.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1814006Z  * [new tag]         js-v0.21.0                               -> js-v0.21.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1815707Z  * [new tag]         js-v0.22.0                               -> js-v0.22.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1817413Z  * [new tag]         js-v0.22.1                               -> js-v0.22.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1819456Z  * [new tag]         js-v0.22.10                              -> js-v0.22.10
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1821218Z  * [new tag]         js-v0.22.2                               -> js-v0.22.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1822929Z  * [new tag]         js-v0.22.3                               -> js-v0.22.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1824659Z  * [new tag]         js-v0.22.4                               -> js-v0.22.4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1826567Z  * [new tag]         js-v0.22.5                               -> js-v0.22.5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1828328Z  * [new tag]         js-v0.22.6                               -> js-v0.22.6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1830364Z  * [new tag]         js-v0.22.7                               -> js-v0.22.7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1832085Z  * [new tag]         js-v0.22.8                               -> js-v0.22.8
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1833784Z  * [new tag]         js-v0.22.9                               -> js-v0.22.9
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1835489Z  * [new tag]         js-v0.23.0                               -> js-v0.23.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1837179Z  * [new tag]         js-v0.24.0                               -> js-v0.24.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1839031Z  * [new tag]         js-v0.24.1                               -> js-v0.24.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1840739Z  * [new tag]         js-v0.24.2                               -> js-v0.24.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1842465Z  * [new tag]         js-v0.24.3                               -> js-v0.24.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1844171Z  * [new tag]         js-v0.25.0                               -> js-v0.25.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1845884Z  * [new tag]         js-v0.25.5                               -> js-v0.25.5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1847587Z  * [new tag]         js-v0.25.6                               -> js-v0.25.6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1849436Z  * [new tag]         js-v0.25.7                               -> js-v0.25.7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1851156Z  * [new tag]         js-v0.25.8                               -> js-v0.25.8
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1852871Z  * [new tag]         js-v0.26.0                               -> js-v0.26.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1854560Z  * [new tag]         js-v0.26.1                               -> js-v0.26.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1856265Z  * [new tag]         js-v0.26.10                              -> js-v0.26.10
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1858013Z  * [new tag]         js-v0.26.11                              -> js-v0.26.11
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1860093Z  * [new tag]         js-v0.26.12                              -> js-v0.26.12
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1861811Z  * [new tag]         js-v0.26.13                              -> js-v0.26.13
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1863526Z  * [new tag]         js-v0.26.14                              -> js-v0.26.14
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1865234Z  * [new tag]         js-v0.26.15                              -> js-v0.26.15
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1866942Z  * [new tag]         js-v0.26.2                               -> js-v0.26.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1868651Z  * [new tag]         js-v0.26.3                               -> js-v0.26.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1870656Z  * [new tag]         js-v0.26.4                               -> js-v0.26.4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1872363Z  * [new tag]         js-v0.26.5                               -> js-v0.26.5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1874057Z  * [new tag]         js-v0.26.6                               -> js-v0.26.6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1875746Z  * [new tag]         js-v0.26.7                               -> js-v0.26.7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1877456Z  * [new tag]         js-v0.26.8                               -> js-v0.26.8
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1879314Z  * [new tag]         js-v0.26.9                               -> js-v0.26.9
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1881038Z  * [new tag]         js-v0.27.0                               -> js-v0.27.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1882725Z  * [new tag]         js-v0.27.1                               -> js-v0.27.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1884417Z  * [new tag]         js-v0.8.0                                -> js-v0.8.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1886099Z  * [new tag]         js-v0.8.1                                -> js-v0.8.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1887795Z  * [new tag]         js-v0.8.10                               -> js-v0.8.10
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1889616Z  * [new tag]         js-v0.8.11                               -> js-v0.8.11
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1891309Z  * [new tag]         js-v0.8.13                               -> js-v0.8.13
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1893011Z  * [new tag]         js-v0.8.14                               -> js-v0.8.14
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1894927Z  * [new tag]         js-v0.8.15                               -> js-v0.8.15
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1896622Z  * [new tag]         js-v0.8.16                               -> js-v0.8.16
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1898300Z  * [new tag]         js-v0.8.17                               -> js-v0.8.17
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1900175Z  * [new tag]         js-v0.8.18                               -> js-v0.8.18
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1901889Z  * [new tag]         js-v0.8.19                               -> js-v0.8.19
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1903564Z  * [new tag]         js-v0.8.2                                -> js-v0.8.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1905246Z  * [new tag]         js-v0.8.20                               -> js-v0.8.20
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1906957Z  * [new tag]         js-v0.8.21                               -> js-v0.8.21
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1908661Z  * [new tag]         js-v0.8.22                               -> js-v0.8.22
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1910670Z  * [new tag]         js-v0.8.3                                -> js-v0.8.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1912354Z  * [new tag]         js-v0.8.4                                -> js-v0.8.4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1914032Z  * [new tag]         js-v0.8.5                                -> js-v0.8.5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1915715Z  * [new tag]         js-v0.8.6                                -> js-v0.8.6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1917376Z  * [new tag]         js-v0.8.7                                -> js-v0.8.7
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1919191Z  * [new tag]         js-v0.8.9                                -> js-v0.8.9
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1920886Z  * [new tag]         js-v0.9.0                                -> js-v0.9.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1922611Z  * [new tag]         rust-v0.10.0                             -> rust-v0.10.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1924363Z  * [new tag]         rust-v0.10.1                             -> rust-v0.10.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1926121Z  * [new tag]         rust-v0.10.2                             -> rust-v0.10.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1928136Z  * [new tag]         rust-v0.10.3                             -> rust-v0.10.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1930049Z  * [new tag]         rust-v0.10.4                             -> rust-v0.10.4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1931800Z  * [new tag]         rust-v0.10.5                             -> rust-v0.10.5
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1933579Z  * [new tag]         rust-v0.10.6                             -> rust-v0.10.6
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1935328Z  * [new tag]         rust-v0.11.0                             -> rust-v0.11.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1937078Z  * [new tag]         rust-v0.8.0                              -> rust-v0.8.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1938923Z  * [new tag]         rust-v0.9.0                              -> rust-v0.9.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1940652Z  * [new tag]         rust-v0.9.1                              -> rust-v0.9.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1942376Z  * [new tag]         rust-v0.9.2                              -> rust-v0.9.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1944043Z  * [new tag]         v0.0.10                                  -> v0.0.10
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1945667Z  * [new tag]         v0.0.11                                  -> v0.0.11
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1947279Z  * [new tag]         v0.0.12                                  -> v0.0.12
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1949142Z  * [new tag]         v0.0.13                                  -> v0.0.13
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1950788Z  * [new tag]         v0.0.14                                  -> v0.0.14
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1952393Z  * [new tag]         v0.0.15                                  -> v0.0.15
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1953982Z  * [new tag]         v0.0.16                                  -> v0.0.16
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1955582Z  * [new tag]         v0.0.17                                  -> v0.0.17
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1957191Z  * [new tag]         v0.1.0                                   -> v0.1.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1958942Z  * [new tag]         v0.1.1                                   -> v0.1.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1960544Z  * [new tag]         v0.1.2                                   -> v0.1.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1962366Z  * [new tag]         v0.1.3                                   -> v0.1.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1963960Z  * [new tag]         v0.1.4                                   -> v0.1.4
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1965548Z  * [new tag]         v0.2.0                                   -> v0.2.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1967130Z  * [new tag]         v0.2.1                                   -> v0.2.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1968871Z  * [new tag]         v0.3.0                                   -> v0.3.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1970472Z  * [new tag]         v0.3.1                                   -> v0.3.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1972060Z  * [new tag]         v0.4.0                                   -> v0.4.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1973657Z  * [new tag]         v0.5.0                                   -> v0.5.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1975257Z  * [new tag]         v0.5.1                                   -> v0.5.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1976834Z  * [new tag]         v0.5.2                                   -> v0.5.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1978438Z  * [new tag]         v0.5.3                                   -> v0.5.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1980164Z  * [new tag]         v0.6.0                                   -> v0.6.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1981756Z  * [new tag]         v0.6.1                                   -> v0.6.1
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1983347Z  * [new tag]         v0.6.2                                   -> v0.6.2
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1984932Z  * [new tag]         v0.6.3                                   -> v0.6.3
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1986517Z  * [new tag]         v0.7.0                                   -> v0.7.0
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1988298Z  * [new ref]         f16ef931816208cea15011a77b5cf1aa6a3eea40 -> pull/341/merge
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1992617Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1994190Z ##[group]Determining the checkout info
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1995922Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.1996947Z [command]/usr/bin/git sparse-checkout disable
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.2000179Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.2003738Z ##[group]Checking out the ref
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.2005291Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4850120Z Note: switching to 'refs/remotes/pull/341/merge'.
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4850676Z 
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4851119Z You are in 'detached HEAD' state. You can look around, make experimental
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4852070Z changes and commit them, and you can discard any commits you make in this
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4853005Z state without impacting any branches by switching back to a branch.
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4853553Z 
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4853909Z If you want to create a new branch to retain commits you create, you may
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4854551Z do so (now or later) by using -c with the switch command. Example:
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4854825Z 
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4854992Z   git switch -c <new-branch-name>
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4855179Z 
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4855311Z Or undo this operation with:
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4855493Z 
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4855579Z   git switch -
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4855720Z 
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4855957Z Turn off this advice by setting config variable advice.detachedHead to false
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4856287Z 
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4856650Z HEAD is now at f16ef93 Merge fdcf2ce11ee448fc485a5ac582a3205ff064990c into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4893224Z ##[endgroup]
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4951330Z [command]/usr/bin/git log -1 --format=%H
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4990701Z f16ef931816208cea15011a77b5cf1aa6a3eea40
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4999216Z ##[group]Removing auth
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.4999694Z Removing SSH command configuration
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5004155Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5050309Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5301994Z Removing HTTP extra header
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5307131Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5351846Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5596326Z Removing includeIf entries pointing to credentials config files
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5601043Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5639248Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5640172Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5641014Z includeif.gitdir:/github/workspace/.git.path
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5641417Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5651904Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5684537Z /home/runner/work/_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5697003Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5752743Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5786437Z /home/runner/work/_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5798343Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5848991Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5886401Z /github/runner_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5896193Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5940458Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5973983Z /github/runner_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.5983162Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.6027450Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.6269960Z Removing credentials config '/home/runner/work/_temp/git-credentials-62086e5e-4f70-4d6f-a51a-c30eb4d19c3d.config'
+Repository Policy	Run actions/checkout@v6	2026-11-07T00:15:06.6279572Z ##[endgroup]
+Repository Policy	Run actions/setup-node@v6	﻿2026-11-07T00:15:06.6550373Z ##[group]Run actions/setup-node@v6
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6550704Z with:
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6550922Z   node-version: 26.x
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6551154Z   check-latest: false
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6553826Z   token: ***
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6554056Z   package-manager-cache: true
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6554309Z env:
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6554493Z   GIT_CONFIG_COUNT: 1
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6554727Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6555017Z   GIT_CONFIG_VALUE_0: main
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.6555245Z ##[endgroup]
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:06.8153883Z Attempting to download 26.x...
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:07.3997618Z Acquiring 26.13.0 - x64 from https://github.com/actions/node-versions/releases/download/26.13.0-41378513395/node-26.13.0-linux-x64.tar.gz
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:07.7959764Z Extracting ...
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:07.8099615Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/c4656da2-1424-46f6-a4b5-78731c3b4b70 -f /home/runner/work/_temp/1697347d-16f7-4cfe-bb0e-68bf7ae5d698
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:09.1370376Z Adding to the cache ...
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:10.9225329Z ##[group]Environment details
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:11.1525165Z node: v26.13.0
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:11.1525792Z npm: 11.20.0
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:11.1526140Z yarn: 1.22.22
+Repository Policy	Run actions/setup-node@v6	2026-11-07T00:15:11.1526896Z ##[endgroup]
+Repository Policy	Guard CI-managed package versions	﻿2026-11-07T00:15:11.1744498Z ##[group]Run node scripts/check-version.mjs
+Repository Policy	Guard CI-managed package versions	2026-11-07T00:15:11.1744941Z ^[[36;1mnode scripts/check-version.mjs^[[0m
+Repository Policy	Guard CI-managed package versions	2026-11-07T00:15:11.1770653Z shell: /usr/bin/bash -e {0}
+Repository Policy	Guard CI-managed package versions	2026-11-07T00:15:11.1770934Z env:
+Repository Policy	Guard CI-managed package versions	2026-11-07T00:15:11.1771131Z   GIT_CONFIG_COUNT: 1
+Repository Policy	Guard CI-managed package versions	2026-11-07T00:15:11.1771371Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Repository Policy	Guard CI-managed package versions	2026-11-07T00:15:11.1771650Z   GIT_CONFIG_VALUE_0: main
+Repository Policy	Guard CI-managed package versions	2026-11-07T00:15:11.1771884Z ##[endgroup]
+Repository Policy	Guard CI-managed package versions	2026-11-07T00:15:11.2359846Z Package versions unchanged; release metadata is managed by CI.
+Repository Policy	Validate documentation	﻿2026-11-07T00:15:11.2467301Z ##[group]Run node scripts/validate-docs.mjs
+Repository Policy	Validate documentation	2026-11-07T00:15:11.2467716Z ^[[36;1mnode scripts/validate-docs.mjs^[[0m
+Repository Policy	Validate documentation	2026-11-07T00:15:11.2488599Z shell: /usr/bin/bash -e {0}
+Repository Policy	Validate documentation	2026-11-07T00:15:11.2489129Z env:
+Repository Policy	Validate documentation	2026-11-07T00:15:11.2489330Z   GIT_CONFIG_COUNT: 1
+Repository Policy	Validate documentation	2026-11-07T00:15:11.2489570Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Repository Policy	Validate documentation	2026-11-07T00:15:11.2489849Z   GIT_CONFIG_VALUE_0: main
+Repository Policy	Validate documentation	2026-11-07T00:15:11.2490092Z ##[endgroup]
+Repository Policy	Validate documentation	2026-11-07T00:15:11.2903240Z Validated 47 documentation files.
+Repository Policy	Post Run actions/setup-node@v6	﻿2026-11-07T00:15:11.3075692Z Post job cleanup.
+Repository Policy	Post Run actions/checkout@v6	﻿2026-11-07T00:15:11.4570391Z Post job cleanup.
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.5572557Z [command]/usr/bin/git version
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.5636343Z git version 2.56.0
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.5690407Z Temporarily overriding HOME='/home/runner/work/_temp/573233a7-43d3-440f-81f0-9d36bdb37298' before making global git config changes
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.5692170Z Adding repository directory to the temporary git global config as a safe directory
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.5719459Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.5760789Z Removing SSH command configuration
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.5771462Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.5825492Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.6132647Z Removing HTTP extra header
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.6139165Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.6188486Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.6459989Z Removing includeIf entries pointing to credentials config files
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.6467400Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Repository Policy	Post Run actions/checkout@v6	2026-11-07T00:15:11.6514876Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Repository Policy	Complete job	﻿2026-11-07T00:15:11.6940675Z Cleaning up orphan processes
+actionlint	Set up job	﻿2026-11-07T00:15:03.7920876Z Current runner version: '2.338.2'
+actionlint	Set up job	2026-11-07T00:15:03.7946435Z ##[group]Runner Image Provisioner
+actionlint	Set up job	2026-11-07T00:15:03.7947412Z Hosted Compute Agent
+actionlint	Set up job	2026-11-07T00:15:03.7948163Z Version: 20261028.624
+actionlint	Set up job	2026-11-07T00:15:03.7948832Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+actionlint	Set up job	2026-11-07T00:15:03.7949549Z Build Date: 2026-10-28T21:51:42Z
+actionlint	Set up job	2026-11-07T00:15:03.7950330Z Worker ID: {bf8285dd-05d8-4cf0-a413-35754ed6fd0d}
+actionlint	Set up job	2026-11-07T00:15:03.7951078Z Region: centralus
+actionlint	Set up job	2026-11-07T00:15:03.7951663Z Cloud: Azure
+actionlint	Set up job	2026-11-07T00:15:03.7952203Z ##[endgroup]
+actionlint	Set up job	2026-11-07T00:15:03.7953800Z ##[group]Operating System
+actionlint	Set up job	2026-11-07T00:15:03.7954499Z Ubuntu
+actionlint	Set up job	2026-11-07T00:15:03.7955402Z 24.04.5
+actionlint	Set up job	2026-11-07T00:15:03.7955990Z LTS
+actionlint	Set up job	2026-11-07T00:15:03.7956553Z ##[endgroup]
+actionlint	Set up job	2026-11-07T00:15:03.7957000Z ##[group]Runner Image
+actionlint	Set up job	2026-11-07T00:15:03.7957519Z Image: ubuntu-24.04
+actionlint	Set up job	2026-11-07T00:15:03.7957961Z Version: 20261101.360.1
+actionlint	Set up job	2026-11-07T00:15:03.7958816Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+actionlint	Set up job	2026-11-07T00:15:03.7960220Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+actionlint	Set up job	2026-11-07T00:15:03.7961052Z ##[endgroup]
+actionlint	Set up job	2026-11-07T00:15:03.7961952Z ##[group]GITHUB_TOKEN Permissions
+actionlint	Set up job	2026-11-07T00:15:03.7964089Z Contents: read
+actionlint	Set up job	2026-11-07T00:15:03.7964554Z Metadata: read
+actionlint	Set up job	2026-11-07T00:15:03.7964976Z ##[endgroup]
+actionlint	Set up job	2026-11-07T00:15:03.7967069Z Secret source: Actions
+actionlint	Set up job	2026-11-07T00:15:03.7967847Z Cache mode: write
+actionlint	Set up job	2026-11-07T00:15:03.7968641Z Prepare workflow directory
+actionlint	Set up job	2026-11-07T00:15:03.8295544Z Prepare all required actions
+actionlint	Set up job	2026-11-07T00:15:03.8354370Z Getting action download info
+actionlint	Set up job	2026-11-07T00:15:04.0789005Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+actionlint	Set up job	2026-11-07T00:15:04.2680696Z Complete job name: actionlint
+actionlint	Pull rhysd/actionlint:1.7.12	﻿2026-11-07T00:15:04.3114741Z ##[group]Pull down action image 'rhysd/actionlint:1.7.12'
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:04.3426221Z ##[command]/usr/bin/docker pull rhysd/actionlint:1.7.12
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.1121380Z 1.7.12: Pulling from rhysd/actionlint
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.3009366Z 589002ba0eae: Pulling fs layer
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.3011570Z c09af8888d6a: Pulling fs layer
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.3012862Z 4ccd7d76ca98: Pulling fs layer
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.3013835Z b6b4b7b0e257: Pulling fs layer
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.3014863Z b6b4b7b0e257: Waiting
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.5199925Z 589002ba0eae: Verifying Checksum
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.5202432Z 589002ba0eae: Download complete
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.5311043Z 4ccd7d76ca98: Verifying Checksum
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.5318134Z 4ccd7d76ca98: Download complete
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.5421680Z c09af8888d6a: Verifying Checksum
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.5422999Z c09af8888d6a: Download complete
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.6147642Z 589002ba0eae: Pull complete
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.7801037Z b6b4b7b0e257: Verifying Checksum
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.7802049Z b6b4b7b0e257: Download complete
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:05.7922883Z c09af8888d6a: Pull complete
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:06.0261291Z 4ccd7d76ca98: Pull complete
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:06.6770660Z b6b4b7b0e257: Pull complete
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:06.6820077Z Digest: sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:06.6856838Z Status: Downloaded newer image for rhysd/actionlint:1.7.12
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:06.6867837Z docker.io/rhysd/actionlint:1.7.12
+actionlint	Pull rhysd/actionlint:1.7.12	2026-11-07T00:15:06.6890015Z ##[endgroup]
+actionlint	Run actions/checkout@v6	﻿2026-11-07T00:15:06.7161785Z ##[group]Run actions/checkout@v6
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7162328Z with:
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7162702Z   persist-credentials: false
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7163059Z   repository: link-assistant/agent
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7165281Z   token: ***
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7165593Z   ssh-strict: true
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7165879Z   ssh-user: git
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7166218Z   clean: true
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7166546Z   sparse-checkout-cone-mode: true
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7166886Z   fetch-depth: 1
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7167171Z   fetch-tags: false
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7167450Z   show-progress: true
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7167745Z   lfs: false
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7168024Z   submodules: false
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7168506Z   set-safe-directory: true
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7168851Z   allow-unsafe-pr-checkout: false
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7169412Z env:
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7169719Z   GIT_CONFIG_COUNT: 1
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7170018Z   GIT_CONFIG_KEY_0: init.defaultBranch
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7170321Z   GIT_CONFIG_VALUE_0: main
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.7170733Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9599228Z Syncing repository: link-assistant/agent
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9601113Z ##[group]Getting Git version info
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9601765Z Working directory is '/home/runner/work/agent/agent'
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9602529Z [command]/usr/bin/git version
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9660013Z git version 2.56.0
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9676325Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9687291Z Temporarily overriding HOME='/home/runner/work/_temp/eca194cd-7d95-4e6c-b102-0c5c44604830' before making global git config changes
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9688786Z Adding repository directory to the temporary git global config as a safe directory
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9694236Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9734120Z Deleting the contents of '/home/runner/work/agent/agent'
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9736403Z ##[group]Determining repository object format
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9738366Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9739019Z ##[group]Initializing the repository
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9742415Z [command]/usr/bin/git init /home/runner/work/agent/agent
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9844601Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9852415Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9894927Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9896130Z ##[group]Disabling automatic garbage collection
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9898214Z [command]/usr/bin/git config --local gc.auto 0
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9933827Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9934429Z ##[group]Setting up auth
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9935409Z Removing SSH command configuration
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9949125Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:06.9972768Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0279426Z Removing HTTP extra header
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0286862Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0324235Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0481135Z Removing includeIf entries pointing to credentials config files
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0488592Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0516741Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0683189Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0715905Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0744900Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0780037Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0806757Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0830395Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0831053Z ##[group]Fetching the repository
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:07.0837803Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f16ef931816208cea15011a77b5cf1aa6a3eea40:refs/remotes/pull/341/merge
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0702955Z From https://github.com/link-assistant/agent
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0703813Z  * [new ref]         f16ef931816208cea15011a77b5cf1aa6a3eea40 -> pull/341/merge
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0708346Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0709001Z ##[group]Determining the checkout info
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0714672Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0724432Z [command]/usr/bin/git sparse-checkout disable
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0765682Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0792162Z ##[group]Checking out the ref
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.0796537Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3667599Z Note: switching to 'refs/remotes/pull/341/merge'.
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3668314Z 
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3669410Z You are in 'detached HEAD' state. You can look around, make experimental
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3670355Z changes and commit them, and you can discard any commits you make in this
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3670978Z state without impacting any branches by switching back to a branch.
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3671292Z 
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3671591Z If you want to create a new branch to retain commits you create, you may
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3672220Z do so (now or later) by using -c with the switch command. Example:
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3672533Z 
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3672746Z   git switch -c <new-branch-name>
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3672980Z 
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3673149Z Or undo this operation with:
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3673352Z 
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3673495Z   git switch -
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3673687Z 
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3674020Z Turn off this advice by setting config variable advice.detachedHead to false
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3674316Z 
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3674813Z HEAD is now at f16ef93 Merge fdcf2ce11ee448fc485a5ac582a3205ff064990c into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3690111Z ##[endgroup]
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3731031Z [command]/usr/bin/git log -1 --format=%H
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3755409Z f16ef931816208cea15011a77b5cf1aa6a3eea40
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3763114Z ##[group]Removing auth
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3763554Z Removing SSH command configuration
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3766901Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3792691Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3963562Z Removing HTTP extra header
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3967621Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.3994504Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4160744Z Removing includeIf entries pointing to credentials config files
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4164250Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4187623Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4188221Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4188590Z includeif.gitdir:/github/workspace/.git.path
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4189100Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4195865Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4214744Z /home/runner/work/_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4224087Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4257621Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4277121Z /home/runner/work/_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4285128Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4314814Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4338687Z /github/runner_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4346897Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4377367Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4395450Z /github/runner_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4400662Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4427785Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4585769Z Removing credentials config '/home/runner/work/_temp/git-credentials-8d84d192-bffa-467c-a863-0e9d6d286032.config'
+actionlint	Run actions/checkout@v6	2026-11-07T00:15:08.4595535Z ##[endgroup]
+actionlint	Run rhysd/actionlint:1.7.12	﻿2026-11-07T00:15:08.4751815Z ##[group]Run docker://rhysd/actionlint:1.7.12
+actionlint	Run rhysd/actionlint:1.7.12	2026-11-07T00:15:08.4752147Z with:
+actionlint	Run rhysd/actionlint:1.7.12	2026-11-07T00:15:08.4752418Z   args: -color
+actionlint	Run rhysd/actionlint:1.7.12	2026-11-07T00:15:08.4752644Z env:
+actionlint	Run rhysd/actionlint:1.7.12	2026-11-07T00:15:08.4752858Z   GIT_CONFIG_COUNT: 1
+actionlint	Run rhysd/actionlint:1.7.12	2026-11-07T00:15:08.4753113Z   GIT_CONFIG_KEY_0: init.defaultBranch
+actionlint	Run rhysd/actionlint:1.7.12	2026-11-07T00:15:08.4753389Z   GIT_CONFIG_VALUE_0: main
+actionlint	Run rhysd/actionlint:1.7.12	2026-11-07T00:15:08.4753623Z ##[endgroup]
+actionlint	Run rhysd/actionlint:1.7.12	2026-11-07T00:15:08.4845213Z ##[command]/usr/bin/docker run --name rhysdactionlint1712_a21087 --label f9f719 --workdir /github/workspace --rm -e "GIT_CONFIG_COUNT" -e "GIT_CONFIG_KEY_0" -e "GIT_CONFIG_VALUE_0" -e "INPUT_ARGS" -e "HOME" -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY" -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_REPOSITORY_OWNER_ID" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_NUMBER" -e "GITHUB_RETENTION_DAYS" -e "GITHUB_RUN_ATTEMPT" -e "GITHUB_ACTOR_ID" -e "GITHUB_ACTOR" -e "GITHUB_WORKFLOW" -e "GITHUB_HEAD_REF" -e "GITHUB_BASE_REF" -e "GITHUB_EVENT_NAME" -e "GITHUB_SERVER_URL" -e "GITHUB_API_URL" -e "GITHUB_GRAPHQL_URL" -e "GITHUB_REF_NAME" -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKFLOW_REF" -e "GITHUB_WORKFLOW_SHA" -e "GITHUB_REPOSITORY_ID" -e "GITHUB_TRIGGERING_ACTOR" -e "GITHUB_WORKSPACE" -e "GITHUB_ACTION" -e "GITHUB_EVENT_PATH" -e "GITHUB_ACTION_REPOSITORY" -e "GITHUB_ACTION_REF" -e "GITHUB_PATH" -e "GITHUB_ENV" -e "GITHUB_STEP_SUMMARY" -e "GITHUB_STATE" -e "GITHUB_OUTPUT" -e "GITHUB_ARTIFACTS" -e "GITHUB_ARTIFACTS_LIST" -e "RUNNER_OS" -e "RUNNER_ARCH" -e "RUNNER_NAME" -e "RUNNER_ENVIRONMENT" -e "RUNNER_TOOL_CACHE" -e "RUNNER_TEMP" -e "RUNNER_WORKSPACE" -e "ACTIONS_RUNTIME_URL" -e "ACTIONS_RUNTIME_TOKEN" -e "ACTIONS_CACHE_URL" -e "ACTIONS_RESULTS_URL" -e "ACTIONS_CACHE_MODE" -e "ACTIONS_ORCHESTRATION_ID" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp":"/github/runner_temp" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/agent/agent":"/github/workspace" rhysd/actionlint:1.7.12 -color
+actionlint	Post Run actions/checkout@v6	﻿2026-11-07T00:15:09.6778302Z Post job cleanup.
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7475826Z [command]/usr/bin/git version
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7509967Z git version 2.56.0
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7544555Z Temporarily overriding HOME='/home/runner/work/_temp/9eaf4916-0133-481d-9acf-f4b2424871a2' before making global git config changes
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7545829Z Adding repository directory to the temporary git global config as a safe directory
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7549719Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7578338Z Removing SSH command configuration
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7585854Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7613555Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7799438Z Removing HTTP extra header
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7818066Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.7851155Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.8032121Z Removing includeIf entries pointing to credentials config files
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.8050415Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+actionlint	Post Run actions/checkout@v6	2026-11-07T00:15:09.8077855Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+actionlint	Complete job	﻿2026-11-07T00:15:09.8383332Z Cleaning up orphan processes
+Pipeline Status	Set up job	﻿2026-11-07T00:15:22.0407951Z Current runner version: '2.338.2'
+Pipeline Status	Set up job	2026-11-07T00:15:22.0436997Z ##[group]Runner Image Provisioner
+Pipeline Status	Set up job	2026-11-07T00:15:22.0438041Z Hosted Compute Agent
+Pipeline Status	Set up job	2026-11-07T00:15:22.0438809Z Version: 20261028.624
+Pipeline Status	Set up job	2026-11-07T00:15:22.0439551Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Pipeline Status	Set up job	2026-11-07T00:15:22.0440400Z Build Date: 2026-10-28T21:51:42Z
+Pipeline Status	Set up job	2026-11-07T00:15:22.0441314Z Worker ID: {ae48cd23-7710-4ed5-a960-c0eaa2f91aef}
+Pipeline Status	Set up job	2026-11-07T00:15:22.0442151Z Region: centralus
+Pipeline Status	Set up job	2026-11-07T00:15:22.0442832Z Cloud: Azure
+Pipeline Status	Set up job	2026-11-07T00:15:22.0443508Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:15:22.0445192Z ##[group]Operating System
+Pipeline Status	Set up job	2026-11-07T00:15:22.0446040Z Ubuntu
+Pipeline Status	Set up job	2026-11-07T00:15:22.0446711Z 24.04.5
+Pipeline Status	Set up job	2026-11-07T00:15:22.0447408Z LTS
+Pipeline Status	Set up job	2026-11-07T00:15:22.0448104Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:15:22.0448849Z ##[group]Runner Image
+Pipeline Status	Set up job	2026-11-07T00:15:22.0449754Z Image: ubuntu-24.04
+Pipeline Status	Set up job	2026-11-07T00:15:22.0450459Z Version: 20261101.360.1
+Pipeline Status	Set up job	2026-11-07T00:15:22.0451799Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Pipeline Status	Set up job	2026-11-07T00:15:22.0454079Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Pipeline Status	Set up job	2026-11-07T00:15:22.0455516Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:15:22.0456938Z ##[group]GITHUB_TOKEN Permissions
+Pipeline Status	Set up job	2026-11-07T00:15:22.0459301Z Contents: read
+Pipeline Status	Set up job	2026-11-07T00:15:22.0460038Z Metadata: read
+Pipeline Status	Set up job	2026-11-07T00:15:22.0460739Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:15:22.0463089Z Secret source: Actions
+Pipeline Status	Set up job	2026-11-07T00:15:22.0464293Z Cache mode: write
+Pipeline Status	Set up job	2026-11-07T00:15:22.0465419Z Prepare workflow directory
+Pipeline Status	Set up job	2026-11-07T00:15:22.0799503Z Prepare all required actions
+Pipeline Status	Set up job	2026-11-07T00:15:22.0854615Z Getting action download info
+Pipeline Status	Set up job	2026-11-07T00:15:22.2834385Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Pipeline Status	Set up job	2026-11-07T00:15:22.5081741Z Complete job name: Pipeline Status
+Pipeline Status	Run actions/checkout@v6	﻿2026-11-07T00:15:22.5754575Z ##[group]Run actions/checkout@v6
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5755462Z with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5755835Z   persist-credentials: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5756381Z   repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5759436Z   token: ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5759804Z   ssh-strict: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5760176Z   ssh-user: git
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5760537Z   clean: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5760908Z   sparse-checkout-cone-mode: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5761342Z   fetch-depth: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5761717Z   fetch-tags: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5762106Z   show-progress: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5762477Z   lfs: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5762823Z   submodules: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5763204Z   set-safe-directory: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5763625Z   allow-unsafe-pr-checkout: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5764240Z env:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5764579Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5765091Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5765546Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.5765975Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8489568Z Syncing repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8492424Z ##[group]Getting Git version info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8493735Z Working directory is '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8495751Z [command]/usr/bin/git version
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8538613Z git version 2.56.0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8559368Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8572569Z Temporarily overriding HOME='/home/runner/work/_temp/c809a34e-f2e6-4e0b-80cd-b51f774b0016' before making global git config changes
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8575870Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8578834Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8623797Z Deleting the contents of '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8629752Z ##[group]Determining repository object format
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8632020Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8633848Z ##[group]Initializing the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8636140Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8731953Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8739059Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8785725Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8787817Z ##[group]Disabling automatic garbage collection
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8789639Z [command]/usr/bin/git config --local gc.auto 0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8822912Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8824844Z ##[group]Setting up auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8826489Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8829510Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.8866126Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9206028Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9213185Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9256303Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9472429Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9478676Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9519875Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9724901Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9766012Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9802420Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9890596Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9928485Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9963290Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9965996Z ##[group]Fetching the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:22.9971160Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f16ef931816208cea15011a77b5cf1aa6a3eea40:refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0278525Z From https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0280340Z  * [new ref]         f16ef931816208cea15011a77b5cf1aa6a3eea40 -> pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0283051Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0283785Z ##[group]Determining the checkout info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0284543Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0288905Z [command]/usr/bin/git sparse-checkout disable
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0340569Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0378585Z ##[group]Checking out the ref
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.0382233Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3298204Z Note: switching to 'refs/remotes/pull/341/merge'.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3298708Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3299046Z You are in 'detached HEAD' state. You can look around, make experimental
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3299744Z changes and commit them, and you can discard any commits you make in this
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3300518Z state without impacting any branches by switching back to a branch.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3301464Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3301778Z If you want to create a new branch to retain commits you create, you may
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3302419Z do so (now or later) by using -c with the switch command. Example:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3302795Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3302995Z   git switch -c <new-branch-name>
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3303257Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3303427Z Or undo this operation with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3303667Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3303808Z   git switch -
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3304045Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3304344Z Turn off this advice by setting config variable advice.detachedHead to false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3304822Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3305474Z HEAD is now at f16ef93 Merge fdcf2ce11ee448fc485a5ac582a3205ff064990c into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3332652Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3379997Z [command]/usr/bin/git log -1 --format=%H
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3410761Z f16ef931816208cea15011a77b5cf1aa6a3eea40
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3419292Z ##[group]Removing auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3419772Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3422383Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3458624Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3668891Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3673788Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3710488Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3919297Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3922984Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3954628Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3955586Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3956013Z includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3956355Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3962586Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.3990929Z /home/runner/work/_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4000368Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4045421Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4072914Z /home/runner/work/_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4080143Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4117381Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4154718Z /github/runner_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4162678Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4199457Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4227404Z /github/runner_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4234110Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4270920Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4480323Z Removing credentials config '/home/runner/work/_temp/git-credentials-a724ccc2-0456-43aa-bc75-0f72c6c8a9d8.config'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:15:24.4488798Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	﻿2026-11-07T00:15:24.4730039Z ##[group]Run bash scripts/check-pipeline-status.sh
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4730481Z ^[[36;1mbash scripts/check-pipeline-status.sh^[[0m
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4751139Z shell: /usr/bin/bash -e {0}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4751411Z env:
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4751617Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4751855Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4752123Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4752687Z   NEEDS_JSON: {
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "repository-policy": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  },
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "actionlint": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  },
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "zizmor": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  }
+Pipeline Status	Fail the run when a required job was cancelled or failed	}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4753330Z   RUN_SHA: fdcf2ce11ee448fc485a5ac582a3205ff064990c
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4753625Z   HEAD_REF: refs/pull/341/head
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.4753859Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.8837381Z Failed jobs:    <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.8837782Z Cancelled jobs: <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:15:24.8838075Z All required jobs succeeded or were legitimately skipped.
+Pipeline Status	Post Run actions/checkout@v6	﻿2026-11-07T00:15:24.9021992Z Post job cleanup.
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:24.9808370Z [command]/usr/bin/git version
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:24.9847912Z git version 2.56.0
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:24.9883788Z Temporarily overriding HOME='/home/runner/work/_temp/57911631-6be8-4c7f-93b7-704889363b5d' before making global git config changes
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:24.9885619Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:24.9888502Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:24.9918516Z Removing SSH command configuration
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:24.9924490Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:24.9963631Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:25.0188120Z Removing HTTP extra header
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:25.0192879Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:25.0227025Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:25.0447091Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:25.0454387Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:15:25.0498275Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Complete job	﻿2026-11-07T00:15:25.0855152Z Cleaning up orphan processes

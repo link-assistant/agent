@@ -1,0 +1,23 @@
+{
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "body": "```\nRun # Skip changeset check for automated version PRs\nFound 4 changeset file(s)\nError: Multiple changesets found (4). Each PR should have exactly ONE changeset.\nError: Found changeset files:\n  fix-perlbrew-unbound-variable.md\n  increase-min-disk-space.md\n  readme-initialization.md\n  sync-package-lock-json.md\nError: Process completed with exit code 1.\n```\n\nSource: https://github.com/link-assistant/hive-mind/actions/runs/20413963959/job/58654854890?pr=728\n\nPlease make our changesets CI/CD much more robust.\n\nFirst of all in pull requests, we need to check only changesets added by the pull request, and that should be exactly one.\n\nIf there some changesets not yet processed, we need to make sure we do merge them in order they were created into single changeset.\n\nAlso for example if any of these changeset were minor the resulting merged changeset whould be minor, and so on.\n\nSo all previously unprocessed changesets will get a chance to be proccessed, but to reduce load on CI/CD we can just merge them in a sequence they they were arriving.\n\nAnd to a single version bump of previous one was unsuccesful.\n\nSo in all cases newly added changeset is checked only in the scope of the pull request, so it will never depend on what is in default branch, meaning there will be never need to pull changes from default branch and no possible conflicts abour it.\n\nEven on errors, unprocessed changesets will be just merged and published as soon we get error preventing release resolved.\n\nThe sequence of changesets is preserved. If you see any other potential issues, try to make sure they are handled properly to minimize the need for `git merge` or to minimize probability of conflicts.",
+  "closedAt": "2025-12-22T19:22:17Z",
+  "comments": [],
+  "createdAt": "2025-12-22T06:31:35Z",
+  "labels": [
+    {
+      "id": "LA_kwDOPUU0qc8AAAACGYm6iw",
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    }
+  ],
+  "number": 960,
+  "state": "CLOSED",
+  "title": "Better changeset CI/CD"
+}

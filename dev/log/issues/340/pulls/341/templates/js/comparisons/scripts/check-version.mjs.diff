@@ -1,0 +1,76 @@
+--- template/scripts/check-version.mjs
++++ scripts/check-version.mjs
+@@ -1,40 +1,39 @@
+ #!/usr/bin/env node
++// Compare committed values at the merge base, never worktree formatting.
++import { fileURLToPath } from 'node:url';
++import path from 'node:path';
++import { parseCrateInfo } from './rust-package-info.mjs';
++import { git, getPrComparison } from './pr-comparison.mjs';
+ 
+-// Compare committed JSON values, so formatting changes do not request releases.
+-// Git/ref/JSON errors fail the guard. Only same-repository release PRs from the
+-// configured release actor (github-actions[bot] by default) are exempt.
+-import {
+-  getJsRoot,
+-  getPackageJsonPath,
+-  parseJsRootConfig,
+-} from './js-paths.mjs';
+-import { parsePackageInfo } from './package-info.mjs';
+-import { getPrComparison, git, isTrustedReleasePr } from './pr-comparison.mjs';
++export function checkVersions(before, after) {
++  for (const manifest of ['js/package.json', 'rust/Cargo.toml']) {
++    const version = (text) =>
++      manifest.endsWith('.json')
++        ? JSON.parse(text).version
++        : parseCrateInfo(text).version;
++    if (version(before(manifest)) !== version(after(manifest))) {
++      throw new Error(
++        `Manual version change in ${manifest}; add a changeset/changelog fragment. CI manages versions.`
++      );
++    }
++  }
++}
+ 
+-try {
+-  const { mergeBase, head } = getPrComparison();
+-  const jsRoot = getJsRoot({ jsRoot: parseJsRootConfig() });
+-  const manifest = getPackageJsonPath({ jsRoot })
+-    .replaceAll('\\', '/')
+-    .replace(/^\.\//, '');
+-  const before = parsePackageInfo(
+-    git(['show', `${mergeBase}:${manifest}`]),
+-    manifest
+-  );
+-  const after = parsePackageInfo(
+-    git(['show', `${head}:${manifest}`]),
+-    manifest
+-  );
+-  if (before.version !== after.version && !isTrustedReleasePr()) {
+-    throw new Error(
+-      `Manual version change in ${manifest}: ${before.version} -> ${after.version}. Add a changeset; CI manages versions.`
++if (
++  process.argv[1] &&
++  fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
++) {
++  try {
++    const { mergeBase, head } = getPrComparison();
++    checkVersions(
++      (file) => git(['show', `${mergeBase}:${file}`]),
++      (file) => git(['show', `${head}:${file}`])
+     );
++    console.log(
++      'Package versions unchanged; release metadata is managed by CI.'
++    );
++  } catch (error) {
++    console.error(`::error::${error.message}`);
++    process.exitCode = 1;
+   }
+-  console.log('No manual version changes detected - check passed');
+-} catch (error) {
+-  console.error(`::error::Version check failed: ${error.message}`);
+-  if (process.env.DEBUG) {
+-    console.error(error.stack);
+-  }
+-  process.exitCode = 1;
+ }

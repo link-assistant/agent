@@ -1,0 +1,63 @@
+--- template/experiments/test-failure-detection.mjs
++++ experiments/test-failure-detection.mjs
+@@ -35,10 +35,10 @@
+   return null;
+ }
+ 
+-// Test cases based on real changeset publish failure output
++// Test cases based on real CI failure output from issue #115
+ const testCases = [
+   {
+-    name: 'Real changeset failure output (E404)',
++    name: 'Real changeset failure output from issue #115',
+     output: `🦋  info npm info @link-assistant/agent
+ 🦋  info @link-assistant/agent is being published because our local version (0.8.0) has not been published on npm
+ 🦋  info Publishing "@link-assistant/agent" at "0.8.0"
+@@ -71,16 +71,6 @@
+     shouldFail: true,
+   },
+   {
+-    name: 'Generic npm error code E',
+-    output: `npm error code E500`,
+-    shouldFail: true,
+-  },
+-  {
+-    name: 'Error occurred while publishing',
+-    output: `🦋  error an error occurred while publishing my-package: Something went wrong`,
+-    shouldFail: true,
+-  },
+-  {
+     name: 'Successful publish output',
+     output: `🦋  info npm info @link-assistant/agent
+ 🦋  info @link-assistant/agent is being published because our local version (0.8.0) has not been published on npm
+@@ -94,18 +84,9 @@
+     output: '',
+     shouldFail: false,
+   },
+-  {
+-    name: 'Normal npm info messages',
+-    output: `npm notice package.json name is @link-assistant/agent@0.8.0
+-npm notice Publishing to https://registry.npmjs.org/ with tag latest`,
+-    shouldFail: false,
+-  },
+ ];
+ 
+ console.log('Testing failure detection logic...\n');
+-console.log('Failure patterns:');
+-FAILURE_PATTERNS.forEach((p) => console.log(`  - "${p}"`));
+-console.log(`\n${'='.repeat(60)}\n`);
+ 
+ let passed = 0;
+ let failed = 0;
+@@ -132,11 +113,8 @@
+   console.log();
+ }
+ 
+-console.log('='.repeat(60));
+ console.log(`\nResults: ${passed} passed, ${failed} failed`);
+ 
+ if (failed > 0) {
+   process.exit(1);
+ }
+-
+-console.log('\n✅ All failure detection tests passed!');

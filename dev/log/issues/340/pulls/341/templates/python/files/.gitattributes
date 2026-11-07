@@ -1,0 +1,2 @@
+# Keep ncc output byte-for-byte reproducible, including upstream whitespace.
+.github/actions/artifact/dist/*.mjs -whitespace

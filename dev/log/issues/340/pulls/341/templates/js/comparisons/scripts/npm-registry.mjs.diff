@@ -1,0 +1,46 @@
+--- template/scripts/npm-registry.mjs
++++ scripts/npm-registry.mjs
+@@ -2,10 +2,7 @@
+ 
+ function getNpmRegistryFromEnv() {
+   try {
+-    // npm itself reads the lowercase `npm_config_registry` form, so honor both.
+-    return (
+-      process.env.NPM_CONFIG_REGISTRY || process.env.npm_config_registry || ''
+-    );
++    return process.env.NPM_CONFIG_REGISTRY || '';
+   } catch {
+     return '';
+   }
+@@ -56,11 +53,6 @@
+   return `${normalizeRegistryUrl(registryUrl)}/${encodePackageName(packageName)}`;
+ }
+ 
+-/** Request a fresh, small document for one immutable version. */
+-export function buildPackageVersionUrl(packageName, version, registryUrl) {
+-  return `${buildPackageMetadataUrl(packageName, registryUrl)}/${encodeURIComponent(version)}`;
+-}
+-
+ /**
+  * Check whether a package version exists in npm registry metadata.
+  * HTTP 404 means the package has not been published yet and is not an error.
+@@ -83,11 +75,10 @@
+     throw new Error('Package version is required');
+   }
+ 
+-  const metadataUrl = `${buildPackageVersionUrl(packageName, version, registryUrl)}?cache-bust=${Date.now()}`;
++  const metadataUrl = buildPackageMetadataUrl(packageName, registryUrl);
+   const response = await fetchFn(metadataUrl, {
+     headers: {
+       accept: 'application/json',
+-      'cache-control': 'no-cache',
+     },
+   });
+ 
+@@ -102,5 +93,5 @@
+   }
+ 
+   const metadata = await response.json();
+-  return metadata?.version === version;
++  return Object.hasOwn(metadata?.versions || {}, version);
+ }

@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+#
+# Offline `curl` stub for the scripts/preflight-credentials.sh tests.
+# Answers per-URL so the probe script runs without network access; the
+# statuses it returns come from files in $PREFLIGHT_FIXTURE_DIR:
+#
+#   whoami_status  -- HTTP status the npm whoami probe receives
+#   whoami.json    -- body of the whoami 200 response
+#   token.json     -- body of the Docker Hub token-endpoint response
+#   post_status    -- HTTP status the blob-upload write probe receives
+#   package_status -- HTTP status of the public npm package document
+#
+# Every response carries the "\n<status>" suffix curl's -w would emit,
+# because scripts/preflight-credentials.sh parses it back off.
+
+set -u
+
+FIX="${PREFLIGHT_FIXTURE_DIR:?PREFLIGHT_FIXTURE_DIR must point at the fixture files}"
+url="$*"
+
+case "$url" in
+  *token.actions.githubusercontent.com*)
+    printf '%s\n' "${@: -1}" >> "$FIX/requests"
+    printf '%s\n%s' "$(cat "$FIX/oidc.json")" "$(cat "$FIX/oidc_status")"
+    exit 0
+    ;;
+  *-/npm/v1/oidc/token/exchange/package/*)
+    printf '%s\n' "${@: -1}" >> "$FIX/requests"
+    if [[ "$url" != *"-X POST"* ]] || [[ "$url" != *"Bearer private-fixture-jwt"* ]]; then
+      printf '\n403'
+    else
+      printf '%s\n%s' "$(cat "$FIX/exchange.json")" "$(cat "$FIX/exchange_status")"
+    fi
+    exit 0
+    ;;
+  *"blobs/uploads/"*)
+    case "$url" in
+      *"-X DELETE"*)
+        printf ''
+        exit 0
+        ;;
+      *"-X POST"*)
+        printf 'HTTP/2 %s\r\nlocation: /v2/acme/widget/blobs/uploads/stub-session\r\n\r\n' \
+          "$(cat "$FIX/post_status")"
+        exit 0
+        ;;
+    esac
+    ;;
+  *auth.docker.io/token*)
+    printf '%s\n200' "$(cat "$FIX/token.json")"
+    exit 0
+    ;;
+  *-/whoami*)
+    code=$(cat "$FIX/whoami_status")
+    if [ "$code" = 200 ]; then
+      printf '%s\n200' "$(cat "$FIX/whoami.json")"
+    else
+      printf '\n%s' "$code"
+    fi
+    exit 0
+    ;;
+  *registry.npmjs.org/*)
+    printf '%s\n' "${@: -1}" >> "$FIX/requests"
+    printf '{}\n%s' "$(cat "$FIX/package_status")"
+    exit 0
+    ;;
+esac
+
+printf '\n000'
+exit 0

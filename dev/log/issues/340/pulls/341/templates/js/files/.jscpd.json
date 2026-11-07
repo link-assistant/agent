@@ -1,0 +1,23 @@
+{
+  "threshold": 10,
+  "minTokens": 30,
+  "minLines": 5,
+  "mode": "weak",
+  "ignore": [
+    "**/node_modules/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/*.min.js",
+    "**/coverage/**",
+    "**/.changeset/**",
+    "**/docs/case-studies/**",
+    "**/dev/log/**",
+    "**/docs/case-studies/**/data/**",
+    "**/package-lock.json",
+    "**/pnpm-lock.yaml",
+    "**/yarn.lock"
+  ],
+  "format": ["javascript"],
+  "reporters": ["console", "html"],
+  "output": "./reports/jscpd"
+}

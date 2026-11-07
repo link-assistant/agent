@@ -1,0 +1,29 @@
+{
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "body": "## Bug Description\n\nThe `scripts/format-release-notes.mjs` script only handles `### Patch Changes` sections, causing it to fail on Minor and Major releases.\n\n## Current Behavior\n\nWhen a Minor or Major release is created:\n- ❌ Section headers (\"### Minor Changes\", \"### Major Changes\") remain in release notes\n- ❌ PR detection is skipped\n- ❌ Release formatting fails silently\n\n**Example:** Release v0.1.0 shows:\n```\n### Minor Changes\n\n- 65d76dc: Initial template setup with complete AI-driven development pipeline\n  ...\n```\n\n## Expected Behavior\n\nRelease notes should be formatted cleanly:\n```\nInitial template setup with complete AI-driven development pipeline\n...\n\n**Related Pull Request:** #X\n\n---\n\n[![npm version](https://img.shields.io/badge/npm-0.1.0-blue.svg)](...)\n```\n\n## Root Cause\n\nFile: `scripts/format-release-notes.mjs` (lines 92-115)\n\n```javascript\n// Current code - only matches Patch changes\nconst patchChangesMatchWithHash = currentBody.match(\n  /### Patch Changes\\s*\\n\\s*-\\s+([a-f0-9]+):\\s+(.+?)$/s\n);\nconst patchChangesMatchNoHash = currentBody.match(\n  /### Patch Changes\\s*\\n\\s*-\\s+(.+?)$/s\n);\n```\n\nWhen the regex doesn't match:\n1. Script exits early with \"⚠️ Could not parse patch changes\"\n2. Section header remains in release notes\n3. PR detection is never executed\n\n## Proposed Solution\n\nUpdate regex to match all changeset types:\n\n```javascript\n// Match any changeset type (Major, Minor, or Patch)\nconst changesPattern =\n  /### (Major|Minor|Patch) Changes\\s*\\n\\s*-\\s+(?:([a-f0-9]+):\\s+)?(.+?)$/s;\nconst changesMatch = currentBody.match(changesPattern);\n\nlet commitHash = null;\nlet rawDescription = null;\nlet changeType = null;\n\nif (changesMatch) {\n  [, changeType, commitHash, rawDescription] = changesMatch;\n  console.log(`ℹ️ Found ${changeType} Changes section`);\n  \n  // Extract commit hash if embedded in description\n  if (!commitHash && rawDescription) {\n    const descWithHashMatch = rawDescription.match(/^([a-f0-9]+):\\s+(.+)$/s);\n    if (descWithHashMatch) {\n      [, commitHash, rawDescription] = descWithHashMatch;\n    }\n  }\n} else {\n  console.log('⚠️ Could not parse changes from release notes');\n  console.log('   Looking for pattern: ### [Major|Minor|Patch] Changes');\n  process.exit(0);\n}\n```\n\n## Fix Implementation\n\nWe've implemented this fix in our repository:\n- **Repository:** link-assistant/agent\n- **PR:** https://github.com/link-assistant/agent/pull/59\n- **Case Study:** docs/case-studies/issue-58/README.md\n\nThe fix:\n1. ✅ Matches all changeset types (Major, Minor, Patch)\n2. ✅ Removes section headers from release notes\n3. ✅ Enables PR detection for all release types\n4. ✅ Handles both commit hash formats\n\n## Impact\n\n**Affected Releases:**\n- All Minor and Major releases (v0.1.0, etc.)\n\n**Unaffected:**\n- Patch releases (these work correctly)\n\n## References\n\n- **Discovered in:** link-assistant/agent#58\n- **Fixed in:** link-assistant/agent#59\n- **Changeset docs:** https://github.com/changesets/changesets\n\n---\n\nThis issue was discovered through comprehensive case study analysis documented in our repository. Happy to contribute the fix back to the template if needed!",
+  "comments": [
+    {
+      "id": "IC_kwDOQmfsR87aXMnl",
+      "author": { "login": "konard" },
+      "authorAssociation": "MEMBER",
+      "body": "Also find all our repositories on GitHub, that have copied the same issue so far, and create issues in these repositories to do fixes.\n\nPlease download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.",
+      "createdAt": "2025-12-17T03:47:00Z",
+      "includesCreatedEdit": true,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/link-foundation/js-ai-driven-development-pipeline-template/issues/3#issuecomment-3663514085",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2025-12-16T21:27:52Z",
+  "labels": [],
+  "state": "OPEN",
+  "title": "Release formatting script only handles Patch changes, not Minor/Major",
+  "updatedAt": "2025-12-17T03:47:10Z"
+}

@@ -1,0 +1,20 @@
+--- template/.prettierignore
++++ .prettierignore
+@@ -3,9 +3,13 @@
+ dist
+ *.min.js
+ package-lock.json
++bun.lock
+ .eslintcache
+-.playwright-mcp/
+-CLAUDE.md
+-# Case study raw data files (downloaded from external sources)
+-docs/case-studies/*/data/
++
++# Verbatim lychee output kept as a parser test fixture: prettier rewrites the
++# `*` bullets lychee emits into `-`, which would make the fixture stop
++# resembling the reports scripts/check-web-archive.mjs has to parse.
++scripts/fixtures/
++
++# Archived issue evidence and pinned upstream snapshots are immutable.
+ dev/log/

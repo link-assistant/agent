@@ -1,0 +1,178 @@
+{
+  "repository": "https://github.com/ProverCoderAI/effect-template",
+  "analysis_date": "2025-12-18",
+  "description": "Minimal Vite-powered TypeScript console starter using Effect",
+  "package_manager": "pnpm@10.24.0",
+  "configuration_files": {
+    "build_and_development": [
+      "vite.config.ts",
+      "vitest.config.ts",
+      "tsconfig.json"
+    ],
+    "code_quality": [
+      "biome.json",
+      "eslint.config.mts",
+      "linter.config.json",
+      ".jscpd.json"
+    ],
+    "environment": [
+      "flake.nix",
+      "package.json",
+      "pnpm-lock.yaml",
+      ".gitignore"
+    ],
+    "documentation": ["AGENTS.md"],
+    "editor_config": [".vscode/settings.json"],
+    "changesets": [".changeset/config.json"]
+  },
+  "github_workflows": {
+    "check.yml": {
+      "triggers": ["workflow_dispatch", "pull_request", "push to main"],
+      "jobs": ["build", "types", "lint", "test"],
+      "timeout": "10 minutes",
+      "concurrency": "cancel-in-progress"
+    },
+    "release.yml": {
+      "triggers": ["push to main"],
+      "purpose": "Automated versioning and npm publishing via Changesets",
+      "permissions": [
+        "contents: write",
+        "id-token: write",
+        "pull-requests: write"
+      ]
+    },
+    "snapshot.yml": {
+      "triggers": ["pull_request", "workflow_dispatch"],
+      "purpose": "Package snapshot creation for PRs"
+    }
+  },
+  "custom_github_actions": {
+    ".github/actions/setup/action.yml": {
+      "purpose": "Standard setup and dependency installation",
+      "steps": [
+        "pnpm installation",
+        "Node.js setup with caching",
+        "dependency installation"
+      ],
+      "default_node_version": "20.16.0"
+    }
+  },
+  "eslint_rules": {
+    "complexity_limits": {
+      "max_cyclomatic_complexity": 8,
+      "max_function_lines": 50,
+      "max_file_lines": 300,
+      "max_function_parameters": 5,
+      "max_nesting_depth": 4
+    },
+    "typescript_rules": {
+      "restrict_template_expressions": true,
+      "array_type": "generic",
+      "consistent_type_imports": true,
+      "unused_variables": "error"
+    },
+    "prohibited_patterns": {
+      "unknown_keyword": true,
+      "switch_statements": true,
+      "async_await": true,
+      "promise_constructor": true,
+      "commonjs_require": true,
+      "throw_string_literals": true
+    },
+    "formatting": {
+      "line_width": 120,
+      "quotes": "double",
+      "semicolons": "asi"
+    }
+  },
+  "typescript_config": {
+    "strict_options": {
+      "strict": true,
+      "alwaysStrict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true,
+      "exactOptionalPropertyTypes": true,
+      "noUncheckedIndexedAccess": true,
+      "noImplicitOverride": true,
+      "noPropertyAccessFromIndexSignature": true,
+      "allowUnusedLabels": false,
+      "allowUnreachableCode": false
+    },
+    "module_system": {
+      "target": "ES2022",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext"
+    },
+    "plugins": ["@effect/language-service"]
+  },
+  "vitest_config": {
+    "environment": "node",
+    "coverage_provider": "v8",
+    "coverage_thresholds": {
+      "core_modules": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "global_minimum": {
+        "branches": 10,
+        "functions": 10,
+        "lines": 10,
+        "statements": 10
+      }
+    },
+    "mock_management": {
+      "clearMocks": true,
+      "mockReset": true,
+      "restoreMocks": true
+    }
+  },
+  "jscpd_config": {
+    "threshold": 0,
+    "minTokens": 30,
+    "minLines": 5,
+    "skipComments": true,
+    "ignored_paths": [
+      "**/node_modules/**",
+      "**/build/**",
+      "**/dist/**",
+      "**/*.min.js",
+      "**/reports/**"
+    ]
+  },
+  "vscode_settings": {
+    "typescript_sdk": "node_modules/typescript/lib",
+    "import_preference": "relative",
+    "format_on_save": true,
+    "eslint_formatting": true,
+    "quick_suggestions": true,
+    "suggestion_delay": "10ms"
+  },
+  "nix_flake": {
+    "purpose": "Development environment",
+    "packages": ["corepack", "nodejs_22", "python3"]
+  },
+  "key_dependencies": {
+    "effect_ecosystem": [
+      "effect",
+      "@effect/cli",
+      "@effect/cluster",
+      "@effect/platform",
+      "@effect/schema",
+      "@effect/sql",
+      "@effect/workflow"
+    ],
+    "typescript_utilities": ["ts-morph", "ts-pattern"],
+    "testing": ["vitest", "@effect/vitest"],
+    "linting": [
+      "eslint",
+      "@biomejs/biome",
+      "typescript-eslint",
+      "eslint-plugin-sonarjs",
+      "eslint-plugin-unicorn"
+    ]
+  }
+}

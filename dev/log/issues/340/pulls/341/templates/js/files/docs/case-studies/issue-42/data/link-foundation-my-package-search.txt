@@ -1,0 +1,33 @@
+link-foundation/python-ai-driven-development-pipeline-template:examples/basic_usage.py: """Basic usage example for my-package.
+link-foundation/js-ai-driven-development-pipeline-template:scripts/create-manual-changeset.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/python-ai-driven-development-pipeline-template:scripts/format_release_notes.py: --repository link-foundation/my-package --commit-sha abc123
+link-foundation/python-ai-driven-development-pipeline-template:scripts/format_release_notes.py: return "my-package"
+link-foundation/js-ai-driven-development-pipeline-template:scripts/merge-changesets.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/gh-load-pull-request:scripts/create-manual-changeset.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/js-ai-driven-development-pipeline-template:scripts/validate-changeset.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/gh-load-pull-request:scripts/publish-to-npm.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/js-ai-driven-development-pipeline-template:scripts/publish-to-npm.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/js-ai-driven-development-pipeline-template:package.json: "name": "my-package",
+link-foundation/js-ai-driven-development-pipeline-template:docs/case-studies/issue-3/README.md: [![npm version](https://img.shields.io/badge/npm-0.1.0-blue.svg)](https://www.npmjs.com/package/my-package/v/0.1.0)
+link-foundation/python-ai-driven-development-pipeline-template:pyproject.toml: name = "my-package"
+link-foundation/start:docs/case-studies/issue-15/test-results.log: #   Result command: "npm install my-package"
+link-foundation/js-ai-driven-development-pipeline-template:docs/case-studies/issue-3/original-format-release-notes.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/start:js/test/substitution.test.js: const varTest = matchAndSubstitute('install my-package npm package', rules);
+link-foundation/start:js/test/substitution.test.js: varTest.matched && varTest.command === 'npm install my-package',
+link-foundation/js-ai-driven-development-pipeline-template:docs/case-studies/issue-3/reference-pr-59-diff.txt: +const PACKAGE_NAME = 'my-package';
+link-foundation/js-ai-driven-development-pipeline-template:docs/case-studies/issue-33/README.md: 7. **2026-04-14 10:57** — CI run [24395209194](https://github.com/link-foundation/js-ai-driven-development-pipeline-template/actions/runs/24395209194) on this template repo: Release job fails (unrelated E404 on `my-package` publish, but setup-npm.mjs succeeded because Node 20.x was used).
+link-foundation/js-ai-driven-development-pipeline-template:scripts/format-release-notes.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/js-ai-driven-development-pipeline-template:experiments/test-check-release-needed.mjs: '\nTest 2: No changesets, package "my-package" not on npm (self-healing)'
+link-foundation/js-ai-driven-development-pipeline-template:experiments/test-failure-detection.mjs: output: `🦋  error an error occurred while publishing my-package: Something went wrong`,
+link-foundation/js-ai-driven-development-pipeline-template:experiments/test-changeset-scripts.mjs: 'my-package': ${type}
+link-foundation/js-ai-driven-development-pipeline-template:package-lock.json: "name": "my-package",
+link-foundation/js-ai-driven-development-pipeline-template:package-lock.json: "name": "my-package",
+link-foundation/start:scripts/merge-changesets.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/glab-setup-git-identity:docs/case-studies/issue-3/README.md: [![npm version](https://img.shields.io/badge/npm-0.1.0-blue.svg)](https://www.npmjs.com/package/my-package/v/0.1.0)
+link-foundation/pdf-to-markdown:docs/case-studies/issue-3/README.md: [![npm version](https://img.shields.io/badge/npm-0.1.0-blue.svg)](https://www.npmjs.com/package/my-package/v/0.1.0)
+link-foundation/glab-setup-git-identity:docs/case-studies/issue-3/original-format-release-notes.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/pdf-to-markdown:docs/case-studies/issue-3/original-format-release-notes.mjs: const PACKAGE_NAME = 'my-package';
+link-foundation/glab-setup-git-identity:docs/case-studies/issue-3/reference-pr-59-diff.txt: +const PACKAGE_NAME = 'my-package';
+link-foundation/pdf-to-markdown:docs/case-studies/issue-3/reference-pr-59-diff.txt: +const PACKAGE_NAME = 'my-package';
+link-foundation/glab-setup-git-identity:experiments/test-failure-detection.mjs: output: `🦋  error an error occurred while publishing my-package: Something went wrong`,
+link-foundation/pdf-to-markdown:experiments/test-failure-detection.mjs: output: `🦋  error an error occurred while publishing my-package: Something went wrong`,

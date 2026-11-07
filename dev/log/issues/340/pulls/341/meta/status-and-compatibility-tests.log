@@ -1,0 +1,36 @@
+bun test v1.4.4 (38afee6c8)
+
+tests/ci-audit-340.js:
+(pass) documentation links and prose cannot replace required section headings [0.34ms]
+(pass) dependency compatibility (#340) > unrelated proxy aliases do not prevent CLI configuration [114.90ms]
+(pass) dependency compatibility (#340) > the deprecated DOMException package is replaced by the native constructor [5.37ms]
+(pass) release credential preflight > verifies package-scoped npm exchange without publishing or leaking credentials [1.96ms]
+(pass) release credential preflight > missing, denied, malformed and unavailable npm credentials never pass [9.59ms]
+(pass) release credential preflight > crates probe omits the archive and recognizes only authenticated parsing [2.68ms]
+(pass) external freshness policy > only a push to main reports drift without failing; manual/scheduled/local/PR runs enforce it [0.31ms]
+(pass) repository guards > manual versions in either language fail independently [0.70ms]
+(pass) repository guards > TypeScript/Rust/shell are covered and archived evidence is excluded [1.42ms]
+(pass) repository guards > lint warnings fail and dependency installs are frozen [1.25ms]
+
+tests/check-pipeline-status.js:
+(pass) check-pipeline-status.sh > passes when every job succeeded or was skipped [148.55ms]
+(pass) check-pipeline-status.sh > fails and names the failing jobs [174.94ms]
+(pass) check-pipeline-status.sh > fails on any other unsuccessful result [168.59ms]
+(pass) check-pipeline-status.sh > fails on a cancelled job on main [232.87ms]
+(pass) check-pipeline-status.sh > fails on a job cancelled on a pull request nobody pushed to [171.34ms]
+(pass) check-pipeline-status.sh > only warns about a job a newer push cancelled [243.37ms]
+(pass) check-pipeline-status.sh > fails on a cancelled job that does not cancel in progress [210.44ms]
+(pass) check-pipeline-status.sh > fails closed when the head of the ref cannot be resolved [155.95ms]
+(pass) check-pipeline-status.sh > looks the head up with git ls-remote [316.75ms]
+(pass) check-pipeline-status.sh > reads the workflow named by GITHUB_WORKFLOW_REF and traces when verbose [241.03ms]
+(pass) check-pipeline-status.sh > fails closed when the workflow file cannot be read [185.74ms]
+(pass) check-pipeline-status.sh > refuses to run without NEEDS_JSON [7.66ms]
+(pass) job-cancel-policy.mjs > reads job-level and workflow-level cancel-in-progress [1.53ms]
+(pass) job-cancel-policy.mjs > evaluates the github.ref comparisons this repository uses [0.14ms]
+(pass) job-cancel-policy.mjs > every job of js.yml has an evaluable cancel-in-progress [2.48ms]
+(pass) job-cancel-policy.mjs > every job of rust.yml has an evaluable cancel-in-progress [1.42ms]
+
+ 26 pass
+ 0 fail
+ 184 expect() calls
+Ran 26 tests across 2 files. [2.48s]

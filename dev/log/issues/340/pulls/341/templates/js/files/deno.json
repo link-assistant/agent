@@ -1,0 +1,10 @@
+{
+  "nodeModulesDir": "auto",
+  "allowScripts": {
+    "deny": ["npm:node-pty@1.1.0"]
+  },
+  "test": {
+    "include": ["tests/"],
+    "exclude": ["examples/", "node_modules/"]
+  }
+}

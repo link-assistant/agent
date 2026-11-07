@@ -1,0 +1,53 @@
+bun test v1.4.4 (38afee6c8)
+
+tests/ci-audit-340.js:
+(pass) dependency compatibility (#340) > unrelated proxy aliases do not prevent CLI configuration [19.25ms]
+(pass) dependency compatibility (#340) > the deprecated DOMException package is replaced by the native constructor [6.88ms]
+(pass) release credential preflight > verifies package-scoped npm exchange without publishing or leaking credentials [2.16ms]
+(pass) release credential preflight > missing, denied, malformed and unavailable npm credentials never pass [1.16ms]
+(pass) release credential preflight > crates probe omits the archive and recognizes only authenticated parsing [1.96ms]
+(pass) external freshness policy > only a push to main reports drift without failing; manual/scheduled/local/PR runs enforce it [0.28ms]
+(pass) repository guards > manual versions in either language fail independently [1.12ms]
+(pass) repository guards > TypeScript/Rust/shell are covered and archived evidence is excluded [0.74ms]
+(pass) repository guards > lint warnings fail and dependency installs are frozen [1.52ms]
+
+tests/release-safety.js:
+(pass) release safety (#340) > generated release commits cannot include source files [0.42ms]
+(pass) release safety (#340) > a queued release can accept a version change but cannot accept new dependencies [0.45ms]
+(pass) release safety (#340) > a rule, authentication or network refusal is never retried as a lost race [0.71ms]
+(pass) relevant change detection > docs do not build packages, while sources, dependencies and CI scripts do [0.25ms]
+
+tests/workflow-policy.js:
+(pass) workflow token permissions > every workflow declares a top-level permissions block [1.20ms]
+(pass) workflow token permissions > the default is read-only repository contents [0.63ms]
+(pass) CI timeout policy > every job declares timeout-minutes [3.10ms]
+(pass) CI timeout policy > every workflow defines at least one job [0.39ms]
+(pass) cancellation propagation > job conditions use !cancelled() instead of always() [1.33ms]
+(pass) cancellation propagation > the status aggregation job only reports the result [0.90ms]
+(pass) workflow_dispatch input handling > run scripts never interpolate workflow inputs directly [1.26ms]
+(pass) per-test timeouts > the bun unit test script sets a global test timeout [0.26ms]
+(pass) merge result validation > the lint job of each pipeline simulates a fresh merge [0.26ms]
+(pass) pipeline status gate > every workflow has a pipeline-status gate that needs every other job [1.12ms]
+(pass) pipeline status gate > every job has a cancel-in-progress value the gate can evaluate [4.02ms]
+(pass) pipeline status gate > the needs parser reads every form [0.23ms]
+(pass) release gating > js.yml:release requires lint and test to succeed [0.47ms]
+(pass) release gating > js.yml:instant-release requires lint and test to succeed [0.09ms]
+(pass) release gating > rust.yml:auto-release requires lint and test to succeed [0.09ms]
+(pass) release gating > rust.yml:manual-release requires lint and test to succeed [0.07ms]
+(pass) release tooling > the release job installs bun before running changeset version [0.15ms]
+(pass) secrets detection > the js pipeline scans the repository for committed secrets [0.09ms]
+(pass) checkout hygiene > every workflow silences the git default-branch hint [0.08ms]
+(pass) action pinning > every external action is pinned to a version tag or a commit [0.55ms]
+(pass) concurrency control > every workflow declares a concurrency group [2.05ms]
+(pass) concurrency control > workflows triggered by push to main never cancel main runs [0.23ms]
+(pass) concurrency control > only check groups cancel jobs in progress [1.51ms]
+(pass) queued writer policy (#340) > only non-cancellable writers may use queue: max [4.63ms]
+(pass) queued writer policy (#340) > each publisher explicitly requires credential preflight success [5.77ms]
+
+tests/rust-version-and-commit.js:
+(pass) rust-version-and-commit > tags the commit that reached main when the first push loses a race [866.35ms]
+
+ 39 pass
+ 0 fail
+ 326 expect() calls
+Ran 39 tests across 4 files. [1035.00ms]

@@ -1,0 +1,95 @@
+[
+  { "message": "Initial commit with task details", "sha": "ca470f2" },
+  {
+    "message": "feat(js): extract base64 images to files by default, remove --enhanced flag",
+    "sha": "88ec580"
+  },
+  {
+    "message": "feat(rust): extract base64 images to files by default, remove --enhanced flag",
+    "sha": "12f540c"
+  },
+  {
+    "message": "test: add image extraction tests for JS and Rust, fix formatting",
+    "sha": "756451b"
+  },
+  {
+    "message": "chore: add changeset for minor release and bump Rust version to 0.2.0",
+    "sha": "a463061"
+  },
+  {
+    "message": "style: fix prettier formatting in JS files",
+    "sha": "99b5e4e"
+  },
+  {
+    "message": "fix: remove unused convertHtmlToMarkdown import and fix changeset formatting",
+    "sha": "d30e8ce"
+  },
+  {
+    "message": "Revert \"Initial commit with task details\"",
+    "sha": "0e9b6e8"
+  },
+  {
+    "message": "feat: change default format to markdown, use getenv for env vars in JS",
+    "sha": "1c93e90"
+  },
+  {
+    "message": "feat: auto-derive output directory from URL when -o is omitted",
+    "sha": "1badb1e"
+  },
+  {
+    "message": "feat: add --archive flag and --no-extract-images alias",
+    "sha": "c1cd4a6"
+  },
+  {
+    "message": "feat: use content-hash filenames for extracted images, add SVG test",
+    "sha": "c93f8a7"
+  },
+  {
+    "message": "docs: update all READMEs with new flags, defaults, and env vars",
+    "sha": "7af56d6"
+  },
+  {
+    "message": "fix: resolve eslint errors and clippy warnings",
+    "sha": "44fa9eb"
+  },
+  {
+    "message": "fix: resolve eslint prettier and clippy CI lint failures",
+    "sha": "f410edb"
+  },
+  {
+    "message": "chore: update Cargo.lock version and web-capture version",
+    "sha": "4458ff4"
+  },
+  {
+    "message": "fix: wrap long SVG string in extract-images test for prettier",
+    "sha": "189a0d6"
+  },
+  {
+    "message": "style: format js/README.md markdown tables with prettier",
+    "sha": "7928da9"
+  },
+  {
+    "message": "feat: add --keep-original-links, API embedImages param, restructure Rust tests",
+    "sha": "573a053"
+  },
+  {
+    "message": "fix: use case-insensitive extension check in extract_images test",
+    "sha": "5263d66"
+  },
+  {
+    "message": "style: format README markdown tables with prettier",
+    "sha": "7899a21"
+  },
+  {
+    "message": "docs: update changeset to include new --keep-original-links and API params",
+    "sha": "46c3e54"
+  },
+  {
+    "message": "style: fix prettier formatting in extract-images test",
+    "sha": "a9e3c86"
+  },
+  {
+    "message": "fix: keep original links by default in markdown mode, align API/CLI defaults",
+    "sha": "805568e"
+  }
+]

@@ -1,0 +1,189 @@
+--- template/eslint.config.js
++++ js/eslint.config.js
+@@ -1,22 +1,16 @@
+ import js from '@eslint/js';
+ import prettierConfig from 'eslint-config-prettier';
+ import prettierPlugin from 'eslint-plugin-prettier';
+-import noChangelogCommentsRule from './eslint-rules/no-changelog-comments.js';
+-
+-const localPlugin = {
+-  rules: {
+-    'no-changelog-comments': noChangelogCommentsRule,
+-  },
+-};
++import promisePlugin from 'eslint-plugin-promise';
+ 
+ export default [
+   js.configs.recommended,
+   prettierConfig,
+   {
+-    files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
++    files: ['**/*.js', '**/*.mjs'],
+     plugins: {
+-      local: localPlugin,
+       prettier: prettierPlugin,
++      promise: promisePlugin,
+     },
+     languageOptions: {
+       ecmaVersion: 'latest',
+@@ -28,17 +22,24 @@
+         Buffer: 'readonly',
+         __dirname: 'readonly',
+         __filename: 'readonly',
+-        require: 'readonly',
+-        module: 'readonly',
+         // Node.js 18+ globals
+         fetch: 'readonly',
+-        AbortController: 'readonly',
+-        AbortSignal: 'readonly',
+-        setTimeout: 'readonly',
+-        clearTimeout: 'readonly',
+         // Runtime-specific globals
+         Bun: 'readonly',
+         Deno: 'readonly',
++        // Timer globals (Bun/Node.js)
++        setTimeout: 'readonly',
++        clearTimeout: 'readonly',
++        setInterval: 'readonly',
++        clearInterval: 'readonly',
++        // Other globals
++        require: 'readonly',
++        AbortController: 'readonly',
++        // Web APIs available in Bun
++        Blob: 'readonly',
++        Response: 'readonly',
++        TextEncoder: 'readonly',
++        TextDecoder: 'readonly',
+       },
+     },
+     rules: {
+@@ -46,9 +47,20 @@
+       'prettier/prettier': 'error',
+ 
+       // Code quality rules
+-      'no-unused-vars': 'error',
++      'no-unused-vars': [
++        'error',
++        {
++          argsIgnorePattern: '^_',
++          varsIgnorePattern: '^_',
++          caughtErrorsIgnorePattern: '^_',
++        },
++      ],
+       'no-console': 'off', // Allow console in this project
+       'no-debugger': 'error',
++      'max-lines': [
++        'error',
++        { max: 1500, skipBlankLines: false, skipComments: false },
++      ],
+ 
+       // Best practices
+       eqeqeq: ['error', 'always'],
+@@ -63,79 +75,61 @@
+       'object-shorthand': ['error', 'always'],
+       'prefer-template': 'error',
+ 
+-      // Async/await
++      // Async/await and promise safety (#213)
+       'no-async-promise-executor': 'error',
+       'require-await': 'warn',
++      // Detect dangling/floating promises that are not awaited or caught.
++      // This prevents unhandled promise rejections and process leaks.
++      // See: https://github.com/link-assistant/agent/issues/213
++      'promise/catch-or-return': 'warn',
++      'promise/no-nesting': 'warn',
+ 
+       // Comments and documentation
+-      'local/no-changelog-comments': [
++      'spaced-comment': ['error', 'always', { markers: ['/'] }],
++
++      // Process leak prevention (#213)
++      // Warn when process.on() is used — prefer process.once() to avoid handler accumulation.
++      // Allowed in index.js for global error handlers.
++      'no-restricted-syntax': [
+         'warn',
+         {
+-          // GitHub's X-GitHub-Api-Version header value is a protocol
+-          // constant, not a reference to a changelog entry.
+-          allow: ['2022-11-28'],
++          selector:
++            "CallExpression[callee.object.name='process'][callee.property.name='on'][arguments.0.value='SIGINT']",
++          message:
++            'Use process.once("SIGINT") instead of process.on("SIGINT") to prevent handler accumulation (#213).',
++        },
++        {
++          selector:
++            "CallExpression[callee.object.name='process'][callee.property.name='on'][arguments.0.value='SIGTERM']",
++          message:
++            'Use process.once("SIGTERM") instead of process.on("SIGTERM") to prevent handler accumulation (#213).',
+         },
+       ],
+-      'spaced-comment': ['error', 'always', { markers: ['/'] }],
+-
+-      // Complexity rules - reasonable thresholds for maintainability
+-      complexity: ['warn', 15], // Cyclomatic complexity - allow more complex logic than strict 8
+-      'max-depth': ['warn', 5], // Maximum nesting depth - slightly more lenient than strict 4
+-      'max-lines-per-function': [
+-        'warn',
+-        {
+-          max: 150, // More reasonable than strict 50 lines per function
+-          skipBlankLines: true,
+-          skipComments: true,
+-        },
+-      ],
+-      'max-params': ['warn', 6], // Maximum function parameters - slightly more lenient than strict 5
+-      'max-statements': ['warn', 60], // Maximum statements per function - reasonable limit for orchestration functions
+-      'max-lines': ['error', 1500], // Maximum lines per file - counts all lines including blank lines and comments
+-    },
+-  },
+-  {
+-    files: ['examples/universal-app/src/**/*.js'],
+-    languageOptions: {
+-      globals: {
+-        document: 'readonly',
+-        window: 'readonly',
+-      },
+     },
+   },
+   {
+     // Test files have different requirements
+-    files: ['tests/**/*.js', '**/*.test.js'],
++    files: ['tests/**/*.js'],
+     rules: {
+       'require-await': 'off', // Async functions without await are common in tests
++      // Tests often fire-and-forget promises intentionally
++      'promise/catch-or-return': 'off',
+     },
+   },
+   {
+-    // Case studies preserve historical wording on purpose, and the rule's own
+-    // tests contain fixtures the rule is designed to flag.
+-    files: [
+-      'docs/case-studies/**/*.{js,mjs,cjs}',
+-      'tests/no-changelog-comments.test.js',
+-    ],
++    // Main entry point uses process.on() for global error handlers — that's expected
++    files: ['src/index.js'],
+     rules: {
+-      'local/no-changelog-comments': 'off',
++      'no-restricted-syntax': 'off',
+     },
+   },
+   {
+     ignores: [
+       'node_modules/**',
+-      '**/node_modules/**',
+       'coverage/**',
+       'dist/**',
+-      '**/dist/**',
+-      '**/out/**',
+       '*.min.js',
+       '.eslintcache',
+-      // The jscpd HTML reporter writes a bundled prism.js here
+-      'reports/**',
+-      // Case study raw data files (downloaded from external sources)
+-      'docs/case-studies/*/data/**',
+-      'dev/log/**',
+     ],
+   },
+ ];

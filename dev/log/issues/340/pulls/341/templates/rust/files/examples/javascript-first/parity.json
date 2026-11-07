@@ -1,0 +1,53 @@
+{
+  "scope": "javascript-first-example",
+  "api": "add",
+  "nativeAdapter": "Rust i32 types reject invalid input before invocation",
+  "features": [
+    {
+      "name": "addition",
+      "status": "complete",
+      "carried": false
+    },
+    {
+      "name": "signed-zero",
+      "status": "complete",
+      "carried": false
+    },
+    {
+      "name": "lower-bound",
+      "status": "complete",
+      "carried": false
+    },
+    {
+      "name": "upper-bound",
+      "status": "complete",
+      "carried": false
+    },
+    {
+      "name": "invalid-input",
+      "status": "complete",
+      "carried": false
+    },
+    {
+      "name": "out-of-range",
+      "status": "complete",
+      "carried": false
+    },
+    {
+      "name": "positive-overflow",
+      "status": "complete",
+      "carried": false
+    },
+    {
+      "name": "negative-overflow",
+      "status": "complete",
+      "carried": false
+    }
+  ],
+  "hashes": {
+    "native.mjs": "823937cd6b37b5e852b7a75efb7cae8201ac1c4924bc9259bcb68bf166999c65",
+    "ir.json": "7f2e4d2cc6439d4f35db55c9824ba3a78deb17d836670768015141f73ce3182d",
+    "generate.mjs": "15dfabc6d9529e494cb1357fc1818f585cdf462e27c656432d91f144fb924ce6",
+    "fixtures.json": "8985f1f55c6b0883ee41a5ccb60d14708a8aa512c788a5d788cd1d0d4a330eda"
+  }
+}

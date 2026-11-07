@@ -1,0 +1,773 @@
+diff --git a/.changeset/robust-changeset-cicd.md b/.changeset/robust-changeset-cicd.md
+new file mode 100644
+index 00000000..aa632642
+--- /dev/null
++++ b/.changeset/robust-changeset-cicd.md
+@@ -0,0 +1,11 @@
++---
++'@link-assistant/hive-mind': minor
++---
++
++Improve changeset CI/CD robustness for multiple concurrent PRs
++
++- Update validate-changeset.mjs to only check changesets ADDED by the current PR (not pre-existing ones)
++- Add merge-changesets.mjs script to combine multiple pending changesets during release
++- Merged changesets use highest version bump type (major > minor > patch) and combine descriptions chronologically
++- Update release workflow to merge multiple changesets before version bump
++- This prevents PR failures when multiple PRs merge before a release cycle completes
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 6a810320..148c34bc 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -129,6 +129,11 @@ jobs:
+         run: npm install
+ 
+       - name: Check for changesets
++        env:
++          # Pass PR context to the validation script
++          GITHUB_BASE_REF: ${{ github.base_ref }}
++          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
++          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+         run: |
+           # Skip changeset check for automated version PRs
+           if [[ "${{ github.head_ref }}" == "changeset-release/"* ]]; then
+@@ -137,6 +142,8 @@ jobs:
+           fi
+ 
+           # Run changeset validation script
++          # This validates that exactly ONE changeset was ADDED by this PR
++          # Pre-existing changesets from other merged PRs are ignored
+           node scripts/validate-changeset.mjs
+ 
+   # === FAST CHECKS (FAIL FAST) ===
+@@ -1521,6 +1528,13 @@ jobs:
+           CHANGESET_COUNT=$(find .changeset -name "*.md" ! -name "README.md" | wc -l)
+           echo "Found $CHANGESET_COUNT changeset file(s)"
+           echo "has_changesets=$([[ $CHANGESET_COUNT -gt 0 ]] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
++          echo "changeset_count=$CHANGESET_COUNT" >> $GITHUB_OUTPUT
++
++      - name: Merge multiple changesets
++        if: steps.check_changesets.outputs.has_changesets == 'true' && steps.check_changesets.outputs.changeset_count > 1
++        run: |
++          echo "Multiple changesets detected, merging..."
++          node scripts/merge-changesets.mjs
+ 
+       - name: Version packages and commit to main
+         if: steps.check_changesets.outputs.has_changesets == 'true'
+diff --git a/experiments/test-changeset-scripts.mjs b/experiments/test-changeset-scripts.mjs
+new file mode 100644
+index 00000000..b8ea38b1
+--- /dev/null
++++ b/experiments/test-changeset-scripts.mjs
+@@ -0,0 +1,257 @@
++#!/usr/bin/env node
++
++/**
++ * Test suite for changeset-related scripts
++ * Tests validate-changeset.mjs and merge-changesets.mjs functionality
++ */
++
++import { execSync } from 'child_process';
++import { fileURLToPath } from 'url';
++import { dirname, join } from 'path';
++import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync } from 'fs';
++
++const __filename = fileURLToPath(import.meta.url);
++const __dirname = dirname(__filename);
++const projectRoot = join(__dirname, '..');
++const validateChangesetPath = join(projectRoot, 'scripts', 'validate-changeset.mjs');
++const mergeChangesetsPath = join(projectRoot, 'scripts', 'merge-changesets.mjs');
++
++let testsPassed = 0;
++let testsFailed = 0;
++
++function runTest(name, testFn) {
++  process.stdout.write(`Testing ${name}... `);
++  try {
++    testFn();
++    console.log('✅ PASSED');
++    testsPassed++;
++  } catch (error) {
++    console.log(`❌ FAILED: ${error.message}`);
++    testsFailed++;
++  }
++}
++
++function execCommand(command, options = {}) {
++  try {
++    return {
++      output: execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: projectRoot, ...options }),
++      exitCode: 0,
++    };
++  } catch (error) {
++    return {
++      output: (error.stdout || '') + (error.stderr || ''),
++      exitCode: error.status || 1,
++    };
++  }
++}
++
++// ==========================================
++// Tests for validate-changeset.mjs
++// ==========================================
++
++// Test 1: Script exists and is executable
++runTest('validate-changeset.mjs exists', () => {
++  if (!existsSync(validateChangesetPath)) {
++    throw new Error('validate-changeset.mjs not found');
++  }
++});
++
++// Test 2: Syntax check
++runTest('validate-changeset.mjs syntax check', () => {
++  const { output, exitCode } = execCommand(`node --check ${validateChangesetPath}`);
++  if (exitCode !== 0) {
++    throw new Error(`Syntax error: ${output}`);
++  }
++});
++
++// Test 3: Script runs without crashing (fallback mode)
++runTest('validate-changeset.mjs runs in fallback mode', () => {
++  // Without git diff context, it falls back to checking all changesets
++  const { output, exitCode } = execCommand(`node ${validateChangesetPath}`);
++  // Should either pass (if there's exactly one changeset) or fail (if not)
++  // But should not crash with an exception
++  if (output.includes('Error during changeset validation') && output.includes('Cannot read')) {
++    throw new Error('Script crashed unexpectedly');
++  }
++});
++
++// ==========================================
++// Tests for merge-changesets.mjs
++// ==========================================
++
++// Test 4: Script exists
++runTest('merge-changesets.mjs exists', () => {
++  if (!existsSync(mergeChangesetsPath)) {
++    throw new Error('merge-changesets.mjs not found');
++  }
++});
++
++// Test 5: Syntax check
++runTest('merge-changesets.mjs syntax check', () => {
++  const { output, exitCode } = execCommand(`node --check ${mergeChangesetsPath}`);
++  if (exitCode !== 0) {
++    throw new Error(`Syntax error: ${output}`);
++  }
++});
++
++// ==========================================
++// Unit tests using mock changeset directories
++// ==========================================
++
++const testDir = join(projectRoot, 'experiments', 'test-changesets-temp');
++const testChangesetDir = join(testDir, '.changeset');
++
++function setupTestEnvironment() {
++  // Clean up if exists
++  if (existsSync(testDir)) {
++    rmSync(testDir, { recursive: true });
++  }
++  mkdirSync(testChangesetDir, { recursive: true });
++
++  // Create README.md (should be ignored)
++  writeFileSync(join(testChangesetDir, 'README.md'), '# Changesets\n');
++
++  // Create config.json (should be ignored)
++  writeFileSync(join(testChangesetDir, 'config.json'), '{}');
++}
++
++function cleanupTestEnvironment() {
++  if (existsSync(testDir)) {
++    rmSync(testDir, { recursive: true });
++  }
++}
++
++function createChangeset(filename, type, description) {
++  const content = `---
++'@link-assistant/hive-mind': ${type}
++---
++
++${description}
++`;
++  writeFileSync(join(testChangesetDir, filename), content);
++}
++
++// Test 6: Merge changesets correctly combines multiple changesets
++runTest('merge-changesets.mjs combines multiple changesets', () => {
++  setupTestEnvironment();
++  try {
++    // Create two changesets
++    createChangeset('first-change.md', 'patch', 'First change description');
++
++    // Wait a bit to ensure different mtime
++    execSync('sleep 0.1');
++
++    createChangeset('second-change.md', 'minor', 'Second change description');
++
++    // Run merge script in test directory
++    const { output, exitCode } = execCommand(`node ${mergeChangesetsPath}`, { cwd: testDir });
++
++    if (exitCode !== 0) {
++      throw new Error(`Merge failed: ${output}`);
++    }
++
++    // Check that merged changeset was created
++    const files = readdirSync(testChangesetDir).filter(f => f.endsWith('.md') && f !== 'README.md');
++    if (files.length !== 1) {
++      throw new Error(`Expected 1 merged changeset, found ${files.length}`);
++    }
++
++    // Check that it uses the higher bump type (minor)
++    if (!output.includes('Using highest: minor')) {
++      throw new Error('Expected merged changeset to use minor bump type');
++    }
++
++    // Check that both descriptions are included
++    if (!output.includes('First change description') || !output.includes('Second change description')) {
++      throw new Error('Merged changeset should contain both descriptions');
++    }
++  } finally {
++    cleanupTestEnvironment();
++  }
++});
++
++// Test 7: Merge changesets uses major if any is major
++runTest('merge-changesets.mjs uses highest bump type (major)', () => {
++  setupTestEnvironment();
++  try {
++    createChangeset('patch-change.md', 'patch', 'Patch change');
++    createChangeset('major-change.md', 'major', 'Major change');
++    createChangeset('minor-change.md', 'minor', 'Minor change');
++
++    const { output, exitCode } = execCommand(`node ${mergeChangesetsPath}`, { cwd: testDir });
++
++    if (exitCode !== 0) {
++      throw new Error(`Merge failed: ${output}`);
++    }
++
++    if (!output.includes('Using highest: major')) {
++      throw new Error('Expected merged changeset to use major bump type');
++    }
++  } finally {
++    cleanupTestEnvironment();
++  }
++});
++
++// Test 8: Merge does nothing with single changeset
++runTest('merge-changesets.mjs skips with single changeset', () => {
++  setupTestEnvironment();
++  try {
++    createChangeset('only-change.md', 'patch', 'Only change');
++
++    const { output, exitCode } = execCommand(`node ${mergeChangesetsPath}`, { cwd: testDir });
++
++    if (exitCode !== 0) {
++      throw new Error(`Script failed: ${output}`);
++    }
++
++    if (!output.includes('No merging needed')) {
++      throw new Error('Expected script to skip merging with single changeset');
++    }
++
++    // Verify original changeset still exists
++    const files = readdirSync(testChangesetDir).filter(f => f.endsWith('.md') && f !== 'README.md');
++    if (files.length !== 1 || files[0] !== 'only-change.md') {
++      throw new Error('Original changeset should not be modified');
++    }
++  } finally {
++    cleanupTestEnvironment();
++  }
++});
++
++// Test 9: Merge does nothing with no changesets
++runTest('merge-changesets.mjs skips with no changesets', () => {
++  setupTestEnvironment();
++  try {
++    const { output, exitCode } = execCommand(`node ${mergeChangesetsPath}`, { cwd: testDir });
++
++    if (exitCode !== 0) {
++      throw new Error(`Script failed: ${output}`);
++    }
++
++    if (!output.includes('No merging needed')) {
++      throw new Error('Expected script to skip merging with no changesets');
++    }
++  } finally {
++    cleanupTestEnvironment();
++  }
++});
++
++// Test 10: Validate changeset format checking
++runTest('validate-changeset.mjs format validation', () => {
++  // This test verifies the script can be imported and has expected functions
++  // Actual validation is tested through integration
++  const { output, exitCode } = execCommand(`node --check ${validateChangesetPath}`);
++  if (exitCode !== 0) {
++    throw new Error('Script has syntax errors');
++  }
++});
++
++// Summary
++console.log('\n' + '='.repeat(50));
++console.log(`Test Results for changeset scripts:`);
++console.log(`  ✅ Passed: ${testsPassed}`);
++console.log(`  ❌ Failed: ${testsFailed}`);
++console.log('='.repeat(50));
++
++// Exit with appropriate code
++process.exit(testsFailed > 0 ? 1 : 0);
+diff --git a/scripts/merge-changesets.mjs b/scripts/merge-changesets.mjs
+new file mode 100644
+index 00000000..a71bd5b2
+--- /dev/null
++++ b/scripts/merge-changesets.mjs
+@@ -0,0 +1,184 @@
++#!/usr/bin/env node
++
++/**
++ * Merge multiple changeset files into a single changeset
++ *
++ * Key behavior:
++ * - Combines all pending changesets into a single changeset file
++ * - Uses the highest version bump type (major > minor > patch)
++ * - Preserves all descriptions in chronological order (by file modification time)
++ * - Removes the individual changeset files after merging
++ * - Does nothing if there's only one or no changesets
++ *
++ * This script is run before `changeset version` to ensure a clean release
++ * even when multiple PRs have merged before a release cycle.
++ */
++
++import { readdirSync, readFileSync, writeFileSync, unlinkSync, statSync } from 'fs';
++import { join } from 'path';
++
++const PACKAGE_NAME = '@link-assistant/hive-mind';
++const CHANGESET_DIR = '.changeset';
++
++// Version bump type priority (higher number = higher priority)
++const BUMP_PRIORITY = {
++  patch: 1,
++  minor: 2,
++  major: 3,
++};
++
++/**
++ * Generate a random changeset file name (similar to what @changesets/cli does)
++ * @returns {string}
++ */
++function generateChangesetName() {
++  const adjectives = ['bright', 'calm', 'cool', 'cyan', 'dark', 'fast', 'gold', 'good', 'green', 'happy', 'kind', 'loud', 'neat', 'nice', 'pink', 'proud', 'quick', 'red', 'rich', 'safe', 'shy', 'soft', 'sweet', 'tall', 'warm', 'wise', 'young'];
++  const nouns = ['apple', 'bird', 'book', 'car', 'cat', 'cloud', 'desk', 'dog', 'door', 'fish', 'flower', 'frog', 'grass', 'house', 'key', 'lake', 'leaf', 'moon', 'mouse', 'owl', 'park', 'rain', 'river', 'rock', 'sea', 'star', 'sun', 'tree', 'wave', 'wind'];
++
++  const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
++  const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
++
++  return `${randomAdjective}-${randomNoun}`;
++}
++
++/**
++ * Parse a changeset file and extract its metadata
++ * @param {string} filePath
++ * @returns {{type: string, description: string, mtime: Date} | null}
++ */
++function parseChangeset(filePath) {
++  try {
++    const content = readFileSync(filePath, 'utf-8');
++    const stats = statSync(filePath);
++
++    // Extract version type
++    const versionTypeRegex = new RegExp(`^['"]${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]:\\s+(major|minor|patch)`, 'm');
++    const versionTypeMatch = content.match(versionTypeRegex);
++
++    if (!versionTypeMatch) {
++      console.warn(`Warning: Could not parse version type from ${filePath}, skipping`);
++      return null;
++    }
++
++    // Extract description
++    const parts = content.split('---');
++    const description = parts.length >= 3 ? parts.slice(2).join('---').trim() : '';
++
++    return {
++      type: versionTypeMatch[1],
++      description,
++      mtime: stats.mtime,
++    };
++  } catch (error) {
++    console.warn(`Warning: Failed to parse ${filePath}: ${error.message}`);
++    return null;
++  }
++}
++
++/**
++ * Get the highest priority bump type
++ * @param {string[]} types
++ * @returns {string}
++ */
++function getHighestBumpType(types) {
++  let highest = 'patch';
++  for (const type of types) {
++    if (BUMP_PRIORITY[type] > BUMP_PRIORITY[highest]) {
++      highest = type;
++    }
++  }
++  return highest;
++}
++
++/**
++ * Create a merged changeset file
++ * @param {string} type
++ * @param {string[]} descriptions
++ * @returns {string}
++ */
++function createMergedChangeset(type, descriptions) {
++  const combinedDescription = descriptions.join('\n\n');
++
++  return `---
++'${PACKAGE_NAME}': ${type}
++---
++
++${combinedDescription}
++`;
++}
++
++function main() {
++  console.log('Checking for multiple changesets to merge...');
++
++  // Get all changeset files
++  const changesetFiles = readdirSync(CHANGESET_DIR).filter(file => file.endsWith('.md') && file !== 'README.md');
++
++  console.log(`Found ${changesetFiles.length} changeset file(s)`);
++
++  // If 0 or 1 changesets, nothing to merge
++  if (changesetFiles.length <= 1) {
++    console.log('No merging needed (0 or 1 changeset found)');
++    return;
++  }
++
++  console.log('Multiple changesets found, merging...');
++  changesetFiles.forEach(file => console.log(`  - ${file}`));
++
++  // Parse all changesets
++  const parsedChangesets = [];
++  for (const file of changesetFiles) {
++    const filePath = join(CHANGESET_DIR, file);
++    const parsed = parseChangeset(filePath);
++    if (parsed) {
++      parsedChangesets.push({
++        file,
++        filePath,
++        ...parsed,
++      });
++    }
++  }
++
++  if (parsedChangesets.length === 0) {
++    console.error('Error: No valid changesets could be parsed');
++    process.exit(1);
++  }
++
++  // Sort by modification time (oldest first) to preserve chronological order
++  parsedChangesets.sort((a, b) => a.mtime.getTime() - b.mtime.getTime());
++
++  // Determine the highest bump type
++  const bumpTypes = parsedChangesets.map(c => c.type);
++  const highestBumpType = getHighestBumpType(bumpTypes);
++
++  console.log(`\nMerge summary:`);
++  console.log(`  Bump types found: ${[...new Set(bumpTypes)].join(', ')}`);
++  console.log(`  Using highest: ${highestBumpType}`);
++
++  // Collect descriptions in chronological order
++  const descriptions = parsedChangesets.filter(c => c.description).map(c => c.description);
++
++  console.log(`  Descriptions to merge: ${descriptions.length}`);
++
++  // Create merged changeset content
++  const mergedContent = createMergedChangeset(highestBumpType, descriptions);
++
++  // Generate a unique name for the merged changeset
++  const mergedFileName = `merged-${generateChangesetName()}.md`;
++  const mergedFilePath = join(CHANGESET_DIR, mergedFileName);
++
++  // Write the merged changeset
++  writeFileSync(mergedFilePath, mergedContent);
++  console.log(`\nCreated merged changeset: ${mergedFileName}`);
++
++  // Remove the original changeset files
++  console.log('\nRemoving original changeset files:');
++  for (const changeset of parsedChangesets) {
++    unlinkSync(changeset.filePath);
++    console.log(`  Removed: ${changeset.file}`);
++  }
++
++  console.log('\nChangeset merge completed successfully');
++  console.log(`\nMerged changeset content:\n${mergedContent}`);
++}
++
++main();
+diff --git a/scripts/validate-changeset.mjs b/scripts/validate-changeset.mjs
+index bb5e8d59..0240a3e3 100644
+--- a/scripts/validate-changeset.mjs
++++ b/scripts/validate-changeset.mjs
+@@ -1,81 +1,206 @@
+ #!/usr/bin/env node
+ 
+ /**
+- * Validate changeset for CI - ensures exactly one valid changeset exists
++ * Validate changeset for CI - ensures exactly one valid changeset is added by the PR
++ *
++ * Key behavior:
++ * - Only checks changeset files ADDED by the current PR (not pre-existing ones)
++ * - Uses git diff to compare PR head against base branch
++ * - Validates that the PR adds exactly one changeset with proper format
+  */
+ 
+-import { readdirSync, readFileSync } from 'fs';
++import { execSync } from 'child_process';
++import { readFileSync, readdirSync, existsSync } from 'fs';
+ import { join } from 'path';
+ 
+ const PACKAGE_NAME = '@link-assistant/hive-mind';
+ 
+-try {
+-  // Count changeset files (excluding README.md and config.json)
++/**
++ * Get changeset files added in the current PR using git diff
++ * @returns {string[]} Array of added changeset file names
++ */
++function getAddedChangesetFiles() {
+   const changesetDir = '.changeset';
+-  const changesetFiles = readdirSync(changesetDir).filter(file => file.endsWith('.md') && file !== 'README.md');
+ 
+-  const changesetCount = changesetFiles.length;
+-  console.log(`Found ${changesetCount} changeset file(s)`);
++  // Try to get PR context from environment variables (GitHub Actions)
++  const baseSha = process.env.GITHUB_BASE_SHA || process.env.BASE_SHA;
++  const headSha = process.env.GITHUB_HEAD_SHA || process.env.HEAD_SHA;
++
++  // If we have explicit SHAs, use them
++  if (baseSha && headSha) {
++    console.log(`Comparing ${baseSha}...${headSha}`);
++    try {
++      // Ensure we have the base commit
++      try {
++        execSync(`git cat-file -e ${baseSha}`, { stdio: 'ignore' });
++      } catch {
++        // Try to fetch the base commit if not available locally
++        console.log('Base commit not available locally, attempting fetch...');
++        try {
++          execSync(`git fetch origin ${baseSha}`, { stdio: 'inherit' });
++        } catch {
++          // If that fails, try fetching all
++          execSync(`git fetch origin`, { stdio: 'inherit' });
++        }
++      }
++
++      const diffOutput = execSync(`git diff --name-status ${baseSha} ${headSha}`, {
++        encoding: 'utf-8',
++      });
++
++      const addedChangesets = [];
++      for (const line of diffOutput.trim().split('\n')) {
++        if (!line) continue;
++        const [status, filePath] = line.split('\t');
++        // Only count files that were Added (A) in the changeset directory
++        if (status === 'A' && filePath.startsWith(`${changesetDir}/`) && filePath.endsWith('.md') && !filePath.endsWith('README.md')) {
++          addedChangesets.push(filePath.replace(`${changesetDir}/`, ''));
++        }
++      }
++      return addedChangesets;
++    } catch (error) {
++      console.log(`Git diff with explicit SHAs failed: ${error.message}`);
++      // Fall through to alternative detection
++    }
++  }
++
++  // Try GitHub PR context (available in pull_request events)
++  const prBase = process.env.GITHUB_BASE_REF;
++  if (prBase) {
++    console.log(`Comparing against base branch: ${prBase}`);
++    try {
++      // Fetch the base branch to ensure we have it
++      try {
++        execSync(`git fetch origin ${prBase}`, { stdio: 'inherit' });
++      } catch {
++        // Ignore fetch errors, we might already have it
++      }
++
++      const diffOutput = execSync(`git diff --name-status origin/${prBase}...HEAD`, {
++        encoding: 'utf-8',
++      });
++
++      const addedChangesets = [];
++      for (const line of diffOutput.trim().split('\n')) {
++        if (!line) continue;
++        const [status, filePath] = line.split('\t');
++        if (status === 'A' && filePath.startsWith(`${changesetDir}/`) && filePath.endsWith('.md') && !filePath.endsWith('README.md')) {
++          addedChangesets.push(filePath.replace(`${changesetDir}/`, ''));
++        }
++      }
++      return addedChangesets;
++    } catch (error) {
++      console.log(`Git diff with base ref failed: ${error.message}`);
++    }
++  }
++
++  // Fallback: If we can't determine the diff, check all changesets in directory
++  // This maintains backward compatibility for local development
++  console.log('Warning: Could not determine PR diff, checking all changesets in directory');
++  if (!existsSync(changesetDir)) {
++    return [];
++  }
++
++  const allChangesets = readdirSync(changesetDir).filter(file => file.endsWith('.md') && file !== 'README.md');
++
++  return allChangesets;
++}
++
++/**
++ * Validate a single changeset file
++ * @param {string} filePath Full path to the changeset file
++ * @returns {{valid: boolean, type?: string, description?: string, error?: string}}
++ */
++function validateChangesetFile(filePath) {
++  try {
++    const content = readFileSync(filePath, 'utf-8');
+ 
+-  // Ensure exactly one changeset file exists
++    // Check if changeset has a valid type (major, minor, or patch)
++    const versionTypeRegex = new RegExp(`^['"]${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]:\\s+(major|minor|patch)`, 'm');
++    const versionTypeMatch = content.match(versionTypeRegex);
++
++    if (!versionTypeMatch) {
++      return {
++        valid: false,
++        error: `Changeset must specify a version type: major, minor, or patch\nExpected format:\n---\n'${PACKAGE_NAME}': patch\n---\n\nYour description here`,
++      };
++    }
++
++    // Extract description (everything after the closing ---) and check it's not empty
++    const parts = content.split('---');
++    if (parts.length < 3) {
++      return {
++        valid: false,
++        error: "Changeset must include a description of the changes (after the closing '---')",
++      };
++    }
++
++    const description = parts.slice(2).join('---').trim();
++    if (!description) {
++      return {
++        valid: false,
++        error: 'Changeset must include a non-empty description of the changes',
++      };
++    }
++
++    return {
++      valid: true,
++      type: versionTypeMatch[1],
++      description,
++    };
++  } catch (error) {
++    return {
++      valid: false,
++      error: `Failed to read changeset file: ${error.message}`,
++    };
++  }
++}
++
++try {
++  console.log('Validating changesets added by this PR...');
++
++  // Get changeset files added in this PR
++  const addedChangesetFiles = getAddedChangesetFiles();
++  const changesetCount = addedChangesetFiles.length;
++
++  console.log(`Found ${changesetCount} changeset file(s) added by this PR`);
++  if (changesetCount > 0) {
++    console.log('Added changesets:');
++    addedChangesetFiles.forEach(file => console.log(`  - ${file}`));
++  }
++
++  // Ensure exactly one changeset file was added
+   if (changesetCount === 0) {
+-    console.error("::error::No changeset found. Please add a changeset by running 'npm run changeset' and commit the result.");
++    console.error("::error::No changeset found in this PR. Please add a changeset by running 'npm run changeset' and commit the result.");
+     process.exit(1);
+   } else if (changesetCount > 1) {
+-    console.error(`::error::Multiple changesets found (${changesetCount}). Each PR should have exactly ONE changeset.`);
+-    console.error('::error::Found changeset files:');
+-    changesetFiles.forEach(file => console.error(`  ${file}`));
++    console.error(`::error::Multiple changesets found in this PR (${changesetCount}). Each PR should add exactly ONE changeset.`);
++    console.error('::error::Found changeset files added by this PR:');
++    addedChangesetFiles.forEach(file => console.error(`  ${file}`));
++    console.error('\n::error::Please combine these into a single changeset or remove the extras.');
+     process.exit(1);
+   }
+ 
+-  // Get the changeset file
+-  const changesetFile = join(changesetDir, changesetFiles[0]);
++  // Validate the single changeset file
++  const changesetFile = join('.changeset', addedChangesetFiles[0]);
+   console.log(`Validating changeset: ${changesetFile}`);
+ 
+-  // Read the changeset file
+-  const content = readFileSync(changesetFile, 'utf-8');
+-
+-  // Check if changeset has a valid type (major, minor, or patch)
+-  const versionTypeRegex = new RegExp(`^['"]${PACKAGE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]:\\s+(major|minor|patch)`, 'm');
+-  if (!versionTypeRegex.test(content)) {
+-    console.error('::error::Changeset must specify a version type: major, minor, or patch');
+-    console.error(`::error::Expected format in ${changesetFile}:`);
+-    console.error('::error::---');
+-    console.error(`::error::'${PACKAGE_NAME}': patch`);
+-    console.error('::error::---');
+-    console.error('::error::');
+-    console.error('::error::Your description here');
+-    console.error('\nFile content:');
+-    console.error(content);
+-    process.exit(1);
+-  }
++  const validation = validateChangesetFile(changesetFile);
+ 
+-  // Extract description (everything after the closing ---) and check it's not empty
+-  const parts = content.split('---');
+-  if (parts.length < 3) {
+-    console.error('::error::Changeset must include a description of the changes');
+-    console.error("::error::The description should appear after the closing '---' in the changeset file");
+-    console.error(`::error::Current content of ${changesetFile}:`);
+-    console.error(content);
++  if (!validation.valid) {
++    console.error(`::error::${validation.error}`);
++    console.error(`\nFile content of ${changesetFile}:`);
++    try {
++      console.error(readFileSync(changesetFile, 'utf-8'));
++    } catch {
++      console.error('(could not read file)');
++    }
+     process.exit(1);
+   }
+ 
+-  const description = parts.slice(2).join('---').trim();
+-  if (!description) {
+-    console.error('::error::Changeset must include a description of the changes');
+-    console.error("::error::The description should appear after the closing '---' in the changeset file");
+-    console.error(`::error::Current content of ${changesetFile}:`);
+-    console.error(content);
+-    process.exit(1);
+-  }
+-
+-  // Extract version type
+-  const versionTypeMatch = content.match(versionTypeRegex);
+-  const versionType = versionTypeMatch ? versionTypeMatch[1] : 'unknown';
+-
+   console.log('Changeset validation passed');
+-  console.log(`   Type: ${versionType}`);
+-  console.log(`   Description: ${description}`);
++  console.log(`   Type: ${validation.type}`);
++  console.log(`   Description: ${validation.description}`);
+ } catch (error) {
+   console.error('Error during changeset validation:', error.message);
+   if (process.env.DEBUG) {

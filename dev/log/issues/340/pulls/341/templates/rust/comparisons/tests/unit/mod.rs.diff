@@ -1,0 +1,16 @@
+--- template/tests/unit/mod.rs
++++ rust/src/util/mod.rs
+@@ -1,4 +1,10 @@
+-mod sum;
++//! Utility modules for the Agent CLI
++//!
++//! This module contains various utility functions and types used throughout
++//! the agent implementation, mirroring the js/src/util/ directory structure.
+ 
+-#[path = "ci-cd/mod.rs"]
+-mod ci_cd;
++pub mod binary;
++pub mod filesystem;
++
++pub use binary::is_binary_file;
++pub use filesystem::Filesystem;

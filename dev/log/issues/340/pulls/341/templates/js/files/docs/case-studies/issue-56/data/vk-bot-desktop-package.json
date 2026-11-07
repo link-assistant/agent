@@ -1,0 +1,166 @@
+{
+  "name": "vk-bot-desktop",
+  "version": "0.9.17",
+  "description": "Cross-platform desktop wrapper around konard/vk-bot, written with React and Electron.",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "exports": {
+    ".": {
+      "import": "./src/index.js"
+    }
+  },
+  "bin": {
+    "vk-bot-desktop": "./src/cli.mjs"
+  },
+  "scripts": {
+    "test": "node --test --test-timeout=30000 tests/*.test.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:duplication": "jscpd .",
+    "check": "npm run lint && npm run format:check && npm run check:duplication",
+    "prepare": "husky || true",
+    "changeset": "changeset",
+    "changeset:version": "node scripts/changeset-version.mjs",
+    "changeset:publish": "changeset publish",
+    "changeset:status": "changeset status --since=origin/main",
+    "build:renderer": "node scripts/build-renderer.mjs",
+    "build:renderer:watch": "node scripts/build-renderer.mjs --watch",
+    "electron:dev": "npm run build:renderer && electron .",
+    "electron:build": "npm run build:renderer && electron-builder --publish never",
+    "electron:build:linux": "npm run build:renderer && electron-builder --linux --publish never",
+    "electron:build:mac": "npm run build:renderer && electron-builder --mac --publish never",
+    "electron:build:win": "npm run build:renderer && electron-builder --win --publish never",
+    "build:site": "node scripts/build-site.mjs",
+    "test:pages:e2e": "node scripts/test-pages-e2e.mjs"
+  },
+  "keywords": [
+    "vk",
+    "vk-bot",
+    "electron",
+    "react",
+    "desktop"
+  ],
+  "author": "konard",
+  "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/konard/vk-bot-desktop"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "lino-arguments": "^0.3.0",
+    "lino-objects-codec": "^0.3.6",
+    "node-ssh": "^13.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vk-io": "^4.9.0"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "husky": "^9.1.7",
+    "jscpd": "^4.0.5",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2",
+    "test-anywhere": "^0.8.48"
+  },
+  "build": {
+    "appId": "team.deep.vk-bot-desktop",
+    "productName": "VK Bot Desktop",
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "linux": {
+      "artifactName": "vk-bot-desktop-linux-${arch}-${version}.${ext}",
+      "target": [
+        "AppImage",
+        "deb",
+        "tar.gz"
+      ],
+      "category": "Network",
+      "maintainer": "Konstantin Diachenko <1431904+konard@users.noreply.github.com>"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.social-networking",
+      "artifactName": "vk-bot-desktop-macos-${arch}-${version}.${ext}",
+      "hardenedRuntime": true,
+      "notarize": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "appImage": {
+      "artifactName": "vk-bot-desktop-linux-${arch}-${version}.AppImage"
+    },
+    "deb": {
+      "artifactName": "vk-bot-desktop-linux-${arch}-${version}.deb"
+    },
+    "dmg": {
+      "artifactName": "vk-bot-desktop-macos-${arch}-${version}.dmg",
+      "title": "Install VK Bot Desktop",
+      "backgroundColor": "#f4f6f5",
+      "iconSize": 96,
+      "iconTextSize": 14,
+      "window": {
+        "width": 620,
+        "height": 420
+      },
+      "contents": [
+        {
+          "x": 185,
+          "y": 220
+        },
+        {
+          "x": 435,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "nsis": {
+      "artifactName": "vk-bot-desktop-windows-installer-${arch}-${version}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "runAfterFinish": false
+    },
+    "portable": {
+      "artifactName": "vk-bot-desktop-windows-portable-${arch}-${version}.${ext}"
+    }
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,jsx}": [
+      "eslint --fix --max-warnings 0 --no-warn-ignored",
+      "prettier --write",
+      "prettier --check"
+    ],
+    "*.md": [
+      "prettier --write",
+      "prettier --check"
+    ]
+  }
+}

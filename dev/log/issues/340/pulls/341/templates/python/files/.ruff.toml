@@ -1,0 +1,5 @@
+# Ruff configuration
+# This file provides additional settings beyond pyproject.toml
+
+[lint.isort]
+known-first-party = ["my_package"]

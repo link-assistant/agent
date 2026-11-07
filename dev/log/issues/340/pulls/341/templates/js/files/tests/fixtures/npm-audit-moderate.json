@@ -1,0 +1,107 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@actions/artifact": {
+      "name": "@actions/artifact",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": ["archiver"],
+      "effects": [],
+      "range": ">=2.0.0",
+      "nodes": ["node_modules/@actions/artifact"],
+      "fixAvailable": {
+        "name": "@actions/artifact",
+        "version": "1.1.3",
+        "isSemVerMajor": true
+      }
+    },
+    "@actions/glob": {
+      "name": "@actions/glob",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": ["minimatch"],
+      "effects": [],
+      "range": "*",
+      "nodes": ["node_modules/@actions/glob"],
+      "fixAvailable": false
+    },
+    "archiver": {
+      "name": "archiver",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["readdir-glob"],
+      "effects": ["@actions/artifact"],
+      "range": ">=5.0.0",
+      "nodes": ["node_modules/archiver"],
+      "fixAvailable": {
+        "name": "@actions/artifact",
+        "version": "1.1.3",
+        "isSemVerMajor": true
+      }
+    },
+    "minimatch": {
+      "name": "minimatch",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1244012,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has potential denial of service via globparts amplification",
+          "url": "https://github.com/advisories/GHSA-g3hv-75wg-m249",
+          "severity": "moderate",
+          "cwe": ["CWE-405"],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<11.0.1"
+        }
+      ],
+      "effects": ["@actions/glob", "readdir-glob"],
+      "range": "<11.0.1",
+      "nodes": [
+        "node_modules/minimatch",
+        "node_modules/readdir-glob/node_modules/minimatch"
+      ],
+      "fixAvailable": {
+        "name": "@actions/artifact",
+        "version": "1.1.3",
+        "isSemVerMajor": true
+      }
+    },
+    "readdir-glob": {
+      "name": "readdir-glob",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["minimatch"],
+      "effects": ["archiver"],
+      "range": "*",
+      "nodes": ["node_modules/readdir-glob"],
+      "fixAvailable": {
+        "name": "@actions/artifact",
+        "version": "1.1.3",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 5,
+      "high": 0,
+      "critical": 0,
+      "total": 5
+    },
+    "dependencies": {
+      "prod": 226,
+      "dev": 0,
+      "optional": 0,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 225
+    }
+  }
+}
