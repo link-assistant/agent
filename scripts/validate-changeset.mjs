@@ -17,6 +17,8 @@
 import { execFileSync } from 'child_process';
 import { readdirSync, readFileSync } from 'fs';
 import { basename, join } from 'path';
+import { codeChanged } from './detect-ci-changes.mjs';
+import { getPrChanges, getPrComparison } from './pr-comparison.mjs';
 
 // Package name from package.json
 const PACKAGE_NAME = '@link-assistant/agent';
@@ -53,22 +55,12 @@ try {
   const changesetDir = 'js/.changeset';
   const baseRef = process.env.CHANGESET_BASE_REF || process.env.GITHUB_BASE_REF;
   if (baseRef) {
-    const changed = execFileSync(
-      'git',
-      ['diff', '--name-only', `origin/${baseRef}...HEAD`],
-      { encoding: 'utf8' }
-    )
-      .trim()
-      .split('\n')
-      .filter(Boolean);
-    if (
-      changed.length > 0 &&
-      changed.every(
-        (file) => file.endsWith('.md') && !file.startsWith('js/.changeset/')
-      )
-    ) {
+    const changed = getPrChanges(
+      getPrComparison({ ...process.env, BASE_SHA: `origin/${baseRef}` })
+    ).flatMap(({ path, oldPath }) => (oldPath ? [path, oldPath] : [path]));
+    if (changed.length > 0 && !codeChanged(changed, 'js')) {
       console.log(
-        'Documentation-only pull request; no package release required.'
+        'Documentation-only or unrelated package changes; no JavaScript release required.'
       );
       process.exit(0);
     }

@@ -560,6 +560,12 @@ describe('JS release workflow wiring', () => {
         .split('\n  release:\n')[1]
         .split('\n  instant-release:\n')[0];
       expect(releaseJob).not.toContain('git checkout -B main origin/main');
+      expect(
+        releaseJob.indexOf('node scripts/sync-release-checkout.mjs')
+      ).toBeGreaterThan(0);
+      expect(
+        releaseJob.indexOf('node scripts/sync-release-checkout.mjs')
+      ).toBeLessThan(releaseJob.indexOf('node scripts/recover-js-release.mjs'));
       expect(releaseJob).toContain('scripts/version-and-commit.mjs');
       expect(workflow).toContain('run: node scripts/recover-js-release.mjs');
       expect(workflow).toContain(

@@ -57,6 +57,15 @@ export function setLockPackageVersion(text, name, version) {
   return next;
 }
 
+export function setJsLockVersion(text, version) {
+  const lock = JSON.parse(text);
+  lock.version = version;
+  if (lock.packages?.['']) {
+    lock.packages[''].version = version;
+  }
+  return `${JSON.stringify(lock, null, 2)}\n`;
+}
+
 export function equivalentMetadata(file, before, after, crateName) {
   if (file.endsWith('package.json') || file.endsWith('package-lock.json')) {
     const normalize = (text) => {
@@ -135,4 +144,6 @@ export function assertStagedReleaseMetadata(roots) {
     git(['diff', '--cached', '--name-only']).split('\n').filter(Boolean),
     roots
   );
+  // Path allowlists alone cannot catch dependency edits inside a lockfile.
+  assertSafeAdvance('HEAD', git(['write-tree']), roots);
 }

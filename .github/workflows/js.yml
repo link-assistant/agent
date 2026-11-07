@@ -366,6 +366,9 @@ jobs:
           node-version: '26.x'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Safely synchronize release metadata before recovery
+        run: node scripts/sync-release-checkout.mjs
+
       # `changeset version` formats the changelog through the package manager
       # it detects, which is bun because of js/bun.lock. Without bun it fails
       # with `spawn bun ENOENT` before deleting the consumed changesets.

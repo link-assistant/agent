@@ -17,9 +17,11 @@ import { readFileSync, writeFileSync } from 'fs';
 import {
   getJsRoot,
   getPackageJsonPath,
+  getPackageLockPath,
   needsCd,
   parseJsRootConfig,
 } from './js-paths.mjs';
+import { setJsLockVersion } from './release-safety.mjs';
 
 // Load dependencies through the shared use-m loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
@@ -133,15 +135,13 @@ try {
   writeFileSync(changelogPath, changelog, 'utf-8');
   console.log('✅ CHANGELOG.md updated');
 
-  // Synchronize package-lock.json
+  // Preserve the tested dependency graph while synchronizing the root version.
   console.log('\nSynchronizing package-lock.json...');
-  // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
-  if (needsCd({ jsRoot })) {
-    await $`cd ${jsRoot} && npm install --package-lock-only --legacy-peer-deps`;
-    process.chdir(originalCwd);
-  } else {
-    await $`npm install --package-lock-only --legacy-peer-deps`;
-  }
+  const lockPath = getPackageLockPath({ jsRoot });
+  writeFileSync(
+    lockPath,
+    setJsLockVersion(readFileSync(lockPath, 'utf8'), newVersion)
+  );
 
   console.log('\n✅ Instant version bump complete');
   console.log(`Version: ${oldVersion} → ${newVersion}`);

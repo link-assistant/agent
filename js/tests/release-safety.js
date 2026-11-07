@@ -3,11 +3,95 @@ import {
   assertReleaseMetadata,
   equivalentMetadata,
   setLockPackageVersion,
+  setJsLockVersion,
 } from '../../scripts/release-safety.mjs';
 import { pushWithRebaseRetry } from '../../scripts/push-with-rebase-retry.mjs';
 import { codeChanged } from '../../scripts/detect-ci-changes.mjs';
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { URL } from 'node:url';
 
 describe('release safety (#340)', () => {
+  test('staged release metadata rejects dependency changes inside an allowed lockfile', () => {
+    const root = mkdtempSync(join(tmpdir(), 'release-index-340-'));
+    const run = (command, args) =>
+      spawnSync(command, args, { cwd: root, encoding: 'utf8' });
+    const git = (...args) => {
+      const result = run('git', [
+        '-c',
+        'user.name=test',
+        '-c',
+        'user.email=test@example.com',
+        ...args,
+      ]);
+      if (result.status !== 0) {
+        throw new Error(result.stderr);
+      }
+    };
+    try {
+      mkdirSync(join(root, 'js'));
+      const lock = {
+        version: '1.0.0',
+        packages: {
+          '': { version: '1.0.0' },
+          'node_modules/a': { version: '2.0.0' },
+        },
+      };
+      writeFileSync(join(root, 'js/package-lock.json'), JSON.stringify(lock));
+      git('init', '-q', '-b', 'main');
+      git('add', '.');
+      git('commit', '-qm', 'tested dependency graph');
+      const probe = `import { assertStagedReleaseMetadata } from ${JSON.stringify(new URL('../../scripts/release-safety.mjs', import.meta.url).href)}; assertStagedReleaseMetadata();`;
+      writeFileSync(
+        join(root, 'js/package-lock.json'),
+        setJsLockVersion(JSON.stringify(lock), '1.0.1')
+      );
+      git('add', '.');
+      expect(run('node', ['--input-type=module', '--eval', probe]).status).toBe(
+        0
+      );
+      lock.packages['node_modules/a'].version = '2.1.0';
+      writeFileSync(
+        join(root, 'js/package-lock.json'),
+        setJsLockVersion(JSON.stringify(lock), '1.0.1')
+      );
+      git('add', '.');
+      const rejected = run('node', ['--input-type=module', '--eval', probe]);
+      expect(rejected.status).toBe(1);
+      expect(rejected.stderr).toContain(
+        'dependencies changed after validation'
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+  test('JavaScript versioning preserves every resolved dependency in both lock formats', () => {
+    for (const lock of [
+      {
+        version: '1.0.0',
+        lockfileVersion: 1,
+        dependencies: { a: { version: '2.0.0', integrity: 'sha512-tested' } },
+      },
+      {
+        version: '1.0.0',
+        lockfileVersion: 3,
+        packages: {
+          '': { version: '1.0.0', dependencies: { a: '^2' } },
+          'node_modules/a': { version: '2.0.0', integrity: 'sha512-tested' },
+        },
+      },
+    ]) {
+      const before = JSON.stringify(lock);
+      const updated = setJsLockVersion(before, '1.0.1');
+      expect(JSON.parse(updated).version).toBe('1.0.1');
+      expect(updated).toContain('sha512-tested');
+      expect(equivalentMetadata('js/package-lock.json', before, updated)).toBe(
+        true
+      );
+    }
+  });
   test('generated release commits cannot include source files', () => {
     expect(() =>
       assertReleaseMetadata([

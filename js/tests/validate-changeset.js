@@ -132,6 +132,42 @@ describe('validate-changeset', () => {
     expect(result.output).toContain('Documentation-only');
   });
 
+  test('runtime Markdown prompts still require a changeset', () => {
+    const root = repoWithUnreleasedChangeset();
+    mkdirSync(join(root, 'js', 'src'), { recursive: true });
+    writeFileSync(join(root, 'js', 'src', 'prompt.md'), 'New behavior\n');
+    git(root, 'add', '.');
+    git(
+      root,
+      '-c',
+      'user.name=test',
+      '-c',
+      'user.email=test@example.com',
+      'commit',
+      '-qm',
+      'change runtime prompt'
+    );
+    expect(validate(root).status).toBe(1);
+  });
+
+  test('Rust-only source changes do not require a JavaScript release', () => {
+    const root = repoWithUnreleasedChangeset();
+    mkdirSync(join(root, 'rust', 'src'), { recursive: true });
+    writeFileSync(join(root, 'rust', 'src', 'lib.rs'), 'pub fn changed() {}\n');
+    git(root, 'add', '.');
+    git(
+      root,
+      '-c',
+      'user.name=test',
+      '-c',
+      'user.email=test@example.com',
+      'commit',
+      '-qm',
+      'change Rust'
+    );
+    expect(validate(root).status).toBe(0);
+  });
+
   test('passes a pull request that adds one changeset next to a pending one', () => {
     const root = repoWithUnreleasedChangeset();
     commitChangeset(root, 'this-pr.md');
