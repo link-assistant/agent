@@ -1,0 +1,103 @@
+name: JavaScript-first example
+
+on:
+  pull_request:
+    paths: ['examples/javascript-first/**', 'scripts/run-javascript-first.sh', 'scripts/*javascript*.mjs', 'experiments/issue-196-*.mjs', '.github/workflows/javascript-first-*.yml']
+  push:
+    branches: [main]
+    paths: ['examples/javascript-first/**', 'scripts/run-javascript-first.sh', 'scripts/*javascript*.mjs', 'experiments/issue-196-*.mjs', '.github/workflows/javascript-first-*.yml']
+
+permissions:
+  contents: read
+
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  javascript-first:
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-javascript-first-caller
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    # A relative call binds the gate to the same candidate commit as this caller.
+    uses: ./.github/workflows/javascript-first-gate.yml # zizmor: ignore[self-repository]
+    with:
+      source-sha: ${{ github.sha }}
+      project-directory: examples/javascript-first
+
+  rust:
+    name: Test, build and package the translated example
+    needs: javascript-first
+    if: needs.javascript-first.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-rust
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # input handling fix
+        with:
+          toolchain: stable
+      - name: Verify native Rust observations and package
+        run: |
+          test "$(git rev-parse HEAD)" = "$TESTED_SHA"
+          bash scripts/run-with-budget-warning.sh "$RUST_BUDGET_SECONDS" "Translated Rust checks" bash -e -o pipefail -c '
+            cargo test --manifest-path examples/javascript-first/Cargo.toml --locked
+            cargo build --manifest-path examples/javascript-first/Cargo.toml --locked
+            cargo package --manifest-path examples/javascript-first/Cargo.toml --locked
+            cargo publish --manifest-path examples/javascript-first/Cargo.toml --locked --dry-run
+          '
+        env:
+          TESTED_SHA: ${{ needs.javascript-first.outputs.tested-sha }}
+          RUST_BUDGET_SECONDS: 360
+
+  container:
+    name: Build translated container
+    needs: javascript-first
+    if: needs.javascript-first.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-container
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.javascript-first.outputs.tested-sha }}
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: examples/javascript-first
+          push: false
+
+  pipeline-status:
+    name: Pipeline Status
+    needs:
+      - javascript-first
+      - rust
+      - container
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # Read this run's jobs and annotations to name runner-acquisition failures (issue #226).
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check aggregate pipeline status
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

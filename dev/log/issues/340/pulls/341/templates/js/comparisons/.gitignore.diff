@@ -1,0 +1,32 @@
+--- template/.gitignore
++++ .gitignore
+@@ -52,7 +52,6 @@
+ 
+ # Optional eslint cache
+ .eslintcache
+-.playwright-mcp/
+ 
+ # Optional stylelint cache
+ .stylelintcache
+@@ -139,5 +138,19 @@
+ vite.config.js.timestamp-*
+ vite.config.ts.timestamp-*
+ 
+-# jscpd reports
+-reports/
++# Test temporary files
++tmp/
++
++# API cache data
++data/api-cache/
++js/data/api-cache/
++ci-logs/
++
++# Investigation evidence committed on purpose: the CI logs, GitHub API dumps and
++# analysis for an issue live under dev/log/issues/<issue>/pulls/<pr>/ and must
++# survive the generic "logs", "*.log" and "ci-logs/" rules above.
++!dev/log/**
++
++# lychee writes a cache file next to .lycheeignore when run locally with
++# --cache; it is machine-local state, never a repository artifact.
++.lycheecache

@@ -44,7 +44,7 @@ function git(cwd, ...args) {
 // A bare `origin`, a release checkout cloned from it, and a second clone that
 // the release checkout's pre-push hook uses to land a concurrent commit on
 // main exactly once, so the first `git push` of the release is rejected.
-function releaseCheckoutRacingAnotherPush() {
+function releaseCheckoutRacingAnotherPush(sourceChange = false) {
   const root = mkdtempSync(join(tmpdir(), 'rust-version-and-commit-'));
   roots.push(root);
   const origin = join(root, 'origin.git');
@@ -59,7 +59,10 @@ function releaseCheckoutRacingAnotherPush() {
     join(seed, 'rust', 'Cargo.toml'),
     '[package]\nname = "demo"\nversion = "0.1.0"\nedition = "2021"\n'
   );
-  writeFileSync(join(seed, 'rust', 'Cargo.lock'), '# lock\n');
+  writeFileSync(
+    join(seed, 'rust', 'Cargo.lock'),
+    '[[package]]\nname = "demo"\nversion = "0.1.0"\n'
+  );
   writeFileSync(
     join(seed, 'rust', 'changelog.d', '20260101_000000_fix.md'),
     '### Fixed\n\n- A fix\n'
@@ -82,8 +85,10 @@ function releaseCheckoutRacingAnotherPush() {
       `touch '${marker}'`,
       'unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE',
       `cd '${other}' || exit 1`,
-      'echo concurrent > concurrent.txt',
-      'git add concurrent.txt',
+      sourceChange
+        ? 'mkdir -p rust/src && echo concurrent > rust/src/lib.rs'
+        : 'mkdir -p js/.changeset && echo concurrent > js/.changeset/concurrent.md',
+      'git add .',
       'git -c user.name=other -c user.email=other@example.com commit -q -m concurrent',
       'git push -q origin main',
       '',
@@ -91,7 +96,7 @@ function releaseCheckoutRacingAnotherPush() {
   );
   chmodSync(join(release, '.git', 'hooks', 'pre-push'), 0o755);
 
-  // The script regenerates Cargo.lock; the lockfile content is irrelevant here.
+  // Keep cargo off the PATH for real compilation: only release metadata is tested.
   mkdirSync(bin);
   writeFileSync(join(bin, 'cargo'), '#!/bin/sh\nexit 0\n');
   chmodSync(join(bin, 'cargo'), 0o755);
@@ -106,6 +111,35 @@ afterEach(() => {
 });
 
 describe('rust-version-and-commit', () => {
+  test.skipIf(process.platform === 'win32')(
+    'rejects untested source landing during a release push race',
+    () => {
+      const { origin, release, bin } = releaseCheckoutRacingAnotherPush(true);
+      const env = {
+        ...process.env,
+        PATH: `${bin}${delimiter}${process.env.PATH}`,
+      };
+      delete env.GITHUB_OUTPUT;
+      const result = spawnSync(
+        'node',
+        [scriptPath, '--bump-type', 'patch', '--rust-root', 'rust'],
+        {
+          cwd: release,
+          encoding: 'utf8',
+          env,
+        }
+      );
+      expect(result.status).toBe(1);
+      expect(`${result.stdout}${result.stderr}`).toContain(
+        'Main source changed after validation'
+      );
+      expect(git(origin, 'show', 'main:rust/Cargo.toml')).toContain(
+        'version = "0.1.0"'
+      );
+      expect(git(origin, 'tag', '--list')).toBe('');
+    },
+    30000
+  );
   // The hook and the cargo stub are POSIX shell scripts.
   test.skipIf(process.platform === 'win32')(
     'tags the commit that reached main when the first push loses a race',

@@ -1,0 +1,20 @@
+--- template/.husky/pre-commit
++++ .husky/pre-commit
+@@ -1,2 +1,15 @@
+-#!/usr/bin/env sh
+-npx lint-staged --config package.json
++#!/bin/sh
++# Lint and format staged files under js/.
++cd js && npx lint-staged || exit 1
++cd ..
++
++# Apply the same source size limit to staged TypeScript, Rust and helper files.
++node scripts/check-file-size.mjs || exit 1
++
++# lint-staged is configured (and can only resolve node_modules) inside js/, so
++# the shared CI helper scripts in scripts/ are checked separately here. Without
++# this the hook passed while `npm run check` in CI failed on the same commit.
++if git diff --cached --name-only --diff-filter=ACM | grep -q '^scripts/.*\.mjs$'; then
++  npm --prefix js run --silent lint:scripts || exit 1
++  ./js/node_modules/.bin/prettier --check scripts || exit 1
++fi

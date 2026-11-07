@@ -1,0 +1,27 @@
+--- template/.github/zizmor.yml
++++ .github/zizmor.yml
+@@ -1,15 +1,20 @@
+-# zizmor configuration - https://docs.zizmor.sh/configuration/
++# zizmor configuration — https://docs.zizmor.sh/configuration/
++#
++# Added for issue #301: nothing linted the workflow files themselves, so a
++# `${{ github.base_ref }}` template injection in rust.yml and eight unpinned
++# third-party actions sat in the pipeline unnoticed.
+ rules:
+   unpinned-uses:
+     config:
+       policies:
+-        # These publishers are trusted at tag granularity: their release tags
+-        # are the reference this template is meant to read at a glance.
+-        # Everything else must be pinned to a full commit hash.
++        # First-party publishers whose release tags are the reference we want
++        # to read at a glance. Everything else must be pinned to a full commit
++        # hash so a moved tag cannot silently change what CI executes.
+         actions/*: ref-pin
+         github/*: ref-pin
+         docker/*: ref-pin
+         astral-sh/*: ref-pin
+         lycheeverse/*: ref-pin
+         zizmorcore/*: ref-pin
++        changesets/*: ref-pin
+         '*': hash-pin

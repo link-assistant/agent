@@ -241,7 +241,7 @@ describe('check-pipeline-status.sh', () => {
     );
 
     expect(output).toContain(
-      "[pipeline-status] test: cancel-in-progress=${{ github.ref != 'refs/heads/main' }} -> true"
+      '[pipeline-status] test: cancel-in-progress=true -> true'
     );
     expect(status).toBe(0);
   });

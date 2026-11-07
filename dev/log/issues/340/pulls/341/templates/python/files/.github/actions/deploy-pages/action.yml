@@ -1,0 +1,18 @@
+name: Deploy GitHub Pages with bounded retries
+description: >-
+  The REST protocol of actions/deploy-pages v5, plus bounded retries of
+  transient failures to create the deployment. Never creates a second
+  deployment of the same commit.
+inputs:
+  artifact_id:
+    description: ID of the github-pages artifact uploaded earlier in this workflow run
+    required: true
+  token:
+    description: Token with the pages write permission
+    default: ${{ github.token }}
+outputs:
+  page_url:
+    description: URL of the deployed site
+runs:
+  using: node24
+  main: index.mjs

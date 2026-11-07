@@ -5,6 +5,8 @@ on:
     branches:
       - main
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - '**.md'
       - '**.html'
       - '.github/workflows/links.yml'
@@ -14,6 +16,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - '**.md'
       - '**.html'
       - '.github/workflows/links.yml'
@@ -36,19 +40,22 @@ env:
 jobs:
   link-checker:
     name: Check Links
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Typical run: <1min with lychee cache. 10min prevents slow
     # external hosts or Wayback Machine probes from hanging the workflow.
     timeout-minutes: 10
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-link-checker
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+
+      - name: Initialize link diagnostics
+        run: mkdir -p lychee && echo 'Link checker did not complete; inspect the job log.' > lychee/out.md
 
       - name: Check links with lychee
         id: lychee
@@ -116,16 +123,24 @@ jobs:
           echo "Report location: lychee/out.md (available as a workflow artifact if configured)."
           exit 1
 
+      - name: Preserve link diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: link-checker
+          path: lychee/out.md
+          if-no-files-found: error
+
   # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
   # the run grey instead of red. This gate fails the run on any unsuccessful
   # job and on any cancellation a newer run does not explain (#301, #337).
   pipeline-status:
     name: Pipeline Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: always()
     needs:
       - link-checker

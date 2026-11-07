@@ -1,0 +1,13 @@
+title:	`--prompt-subagents-via-agent-commander` option
+state:	CLOSED
+author:	konard
+labels:	documentation, enhancement
+comments:	0
+assignees:	
+projects:	
+milestone:	
+number:	1126
+--
+We should have an option that will allow as to use instead of SubAgents tool the `start-agent` CLI command: https://github.com/link-assistant/agent-commander.
+
+That may allow to save context for main agent, and allow it to execute any agents required (not only claude), but with simple and unified API.

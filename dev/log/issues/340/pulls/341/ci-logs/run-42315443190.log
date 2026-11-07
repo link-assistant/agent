@@ -1,0 +1,894 @@
+cargo outdated	Set up job	﻿2026-11-06T23:59:56.0480980Z Current runner version: '2.338.2'
+cargo outdated	Set up job	2026-11-06T23:59:56.0502988Z ##[group]Runner Image Provisioner
+cargo outdated	Set up job	2026-11-06T23:59:56.0503815Z Hosted Compute Agent
+cargo outdated	Set up job	2026-11-06T23:59:56.0504322Z Version: 20261028.624
+cargo outdated	Set up job	2026-11-06T23:59:56.0504847Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+cargo outdated	Set up job	2026-11-06T23:59:56.0505543Z Build Date: 2026-10-28T21:51:42Z
+cargo outdated	Set up job	2026-11-06T23:59:56.0506148Z Worker ID: {d4907a68-bba4-4c4c-ae49-8817e02f3057}
+cargo outdated	Set up job	2026-11-06T23:59:56.0506775Z Region: northcentralus
+cargo outdated	Set up job	2026-11-06T23:59:56.0507270Z Cloud: Azure
+cargo outdated	Set up job	2026-11-06T23:59:56.0507719Z ##[endgroup]
+cargo outdated	Set up job	2026-11-06T23:59:56.0509147Z ##[group]Operating System
+cargo outdated	Set up job	2026-11-06T23:59:56.0509735Z Ubuntu
+cargo outdated	Set up job	2026-11-06T23:59:56.0510233Z 24.04.5
+cargo outdated	Set up job	2026-11-06T23:59:56.0510693Z LTS
+cargo outdated	Set up job	2026-11-06T23:59:56.0511143Z ##[endgroup]
+cargo outdated	Set up job	2026-11-06T23:59:56.0511653Z ##[group]Runner Image
+cargo outdated	Set up job	2026-11-06T23:59:56.0512242Z Image: ubuntu-24.04
+cargo outdated	Set up job	2026-11-06T23:59:56.0512756Z Version: 20261101.360.1
+cargo outdated	Set up job	2026-11-06T23:59:56.0513640Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+cargo outdated	Set up job	2026-11-06T23:59:56.0515110Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+cargo outdated	Set up job	2026-11-06T23:59:56.0515977Z ##[endgroup]
+cargo outdated	Set up job	2026-11-06T23:59:56.0516923Z ##[group]GITHUB_TOKEN Permissions
+cargo outdated	Set up job	2026-11-06T23:59:56.0518478Z Contents: read
+cargo outdated	Set up job	2026-11-06T23:59:56.0519196Z Metadata: read
+cargo outdated	Set up job	2026-11-06T23:59:56.0519703Z ##[endgroup]
+cargo outdated	Set up job	2026-11-06T23:59:56.0521440Z Secret source: Actions
+cargo outdated	Set up job	2026-11-06T23:59:56.0522319Z Cache mode: write
+cargo outdated	Set up job	2026-11-06T23:59:56.0522908Z Prepare workflow directory
+cargo outdated	Set up job	2026-11-06T23:59:56.0919707Z Prepare all required actions
+cargo outdated	Set up job	2026-11-06T23:59:56.0974384Z Getting action download info
+cargo outdated	Set up job	2026-11-06T23:59:56.3614758Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+cargo outdated	Set up job	2026-11-06T23:59:56.5490649Z Download action repository 'dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8' (SHA:683b588c487a69d01f6c6ddf40f036ff682cc2c8)
+cargo outdated	Set up job	2026-11-06T23:59:56.6791560Z Download action repository 'taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b' (SHA:e67fa11c4b9316fa714ddf0abed07a0c3143b95b)
+cargo outdated	Set up job	2026-11-06T23:59:57.0437125Z Download action repository 'actions/setup-node@v6' (SHA:249970729cb0ef3589644e2896645e5dc5ba9c38)
+cargo outdated	Set up job	2026-11-06T23:59:57.3437807Z Complete job name: cargo outdated
+cargo outdated	Run actions/checkout@v6	﻿2026-11-06T23:59:57.4196210Z ##[group]Run actions/checkout@v6
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4197089Z with:
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4197619Z   repository: link-assistant/agent
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4201250Z   token: ***
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4201750Z   ssh-strict: true
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4202280Z   ssh-user: git
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4202830Z   persist-credentials: true
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4203369Z   clean: true
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4203872Z   sparse-checkout-cone-mode: true
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4204438Z   fetch-depth: 1
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4204956Z   fetch-tags: false
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4205449Z   show-progress: true
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4205945Z   lfs: false
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4206407Z   submodules: false
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4206920Z   set-safe-directory: true
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4207525Z   allow-unsafe-pr-checkout: false
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4208269Z env:
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4208880Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4209442Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4210028Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run actions/checkout@v6	2026-11-06T23:59:57.4210577Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.1810051Z Syncing repository: link-assistant/agent
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.1811692Z ##[group]Getting Git version info
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.1812045Z Working directory is '/home/runner/work/agent/agent'
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.2181556Z [command]/usr/bin/git version
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.3792102Z git version 2.56.0
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.3809864Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.3822478Z Temporarily overriding HOME='/home/runner/work/_temp/6a1e042e-aab5-442e-bd70-82db1100b974' before making global git config changes
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.3823513Z Adding repository directory to the temporary git global config as a safe directory
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.3827361Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.4148972Z Deleting the contents of '/home/runner/work/agent/agent'
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.4152785Z ##[group]Determining repository object format
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.4154622Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.4155195Z ##[group]Initializing the repository
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.4158771Z [command]/usr/bin/git init /home/runner/work/agent/agent
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.4876778Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.4886010Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.5174527Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.5175071Z ##[group]Disabling automatic garbage collection
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.5178285Z [command]/usr/bin/git config --local gc.auto 0
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.5217013Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.5217622Z ##[group]Setting up auth
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.5218488Z Removing SSH command configuration
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.5224178Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.5263319Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.7557876Z Removing HTTP extra header
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.7563863Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.7600706Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.7800052Z Removing includeIf entries pointing to credentials config files
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.7806748Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.7846791Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.8056497Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.8098358Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.8133481Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.8176487Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.8210752Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.8242030Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.8242534Z ##[group]Fetching the repository
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:00.8248438Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c52c0b86176a110cb5a9285651d8f04d3b1fdc3c:refs/remotes/pull/341/merge
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8721985Z From https://github.com/link-assistant/agent
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8723121Z  * [new ref]         c52c0b86176a110cb5a9285651d8f04d3b1fdc3c -> pull/341/merge
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8725214Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8725816Z ##[group]Determining the checkout info
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8726353Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8731547Z [command]/usr/bin/git sparse-checkout disable
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8950210Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8991445Z ##[group]Checking out the ref
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:01.8994491Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1836561Z Note: switching to 'refs/remotes/pull/341/merge'.
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1836983Z 
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1837216Z You are in 'detached HEAD' state. You can look around, make experimental
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1837606Z changes and commit them, and you can discard any commits you make in this
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1838022Z state without impacting any branches by switching back to a branch.
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1838240Z 
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1838444Z If you want to create a new branch to retain commits you create, you may
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1839033Z do so (now or later) by using -c with the switch command. Example:
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1839305Z 
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1839427Z   git switch -c <new-branch-name>
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1839596Z 
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1839691Z Or undo this operation with:
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1839860Z 
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1839947Z   git switch -
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1840075Z 
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1840256Z Turn off this advice by setting config variable advice.detachedHead to false
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1840517Z 
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1840785Z HEAD is now at c52c0b8 Merge 7795b588df490c9434736b7c10a5005c828ae89d into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.1947989Z ##[endgroup]
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.2042628Z [command]/usr/bin/git log -1 --format=%H
+cargo outdated	Run actions/checkout@v6	2026-11-07T00:00:02.2073311Z c52c0b86176a110cb5a9285651d8f04d3b1fdc3c
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	﻿2026-11-07T00:00:02.2425305Z ##[group]Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2425648Z with:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2425820Z   toolchain: stable
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2425993Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2426156Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2426351Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2426586Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2426777Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2479352Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2529748Z ##[group]Run if [[ -z $toolchain ]]; then
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2530122Z ^[[36;1mif [[ -z $toolchain ]]; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2530564Z ^[[36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2531019Z ^[[36;1m  echo "'toolchain' is a required input" >&2^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2531265Z ^[[36;1m  exit 1^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2531539Z ^[[36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2531920Z ^[[36;1m  if [[ Linux == macOS ]]; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2532332Z ^[[36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2532722Z ^[[36;1m  else^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2533040Z ^[[36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2533456Z ^[[36;1m  fi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2533750Z ^[[36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2534204Z ^[[36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2534560Z ^[[36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2534963Z ^[[36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2535340Z ^[[36;1melse^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2535510Z ^[[36;1m  delimiter=EOF^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2535754Z ^[[36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2536146Z ^[[36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2536478Z ^[[36;1mfi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2557337Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2557628Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2557796Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2557994Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2558411Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2558618Z   toolchain: stable
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2558927Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2639156Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=15]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2642783Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2671543Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2671941Z ^[[36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2687649Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2687927Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2688097Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2688289Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2688509Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2688698Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2730153Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=8]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2732039Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2756256Z ##[group]Run if ! command -v rustup &>/dev/null; then
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2756573Z ^[[36;1mif ! command -v rustup &>/dev/null; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2757174Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2757956Z ^[[36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2758208Z ^[[36;1mfi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2773960Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2774245Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2774417Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2774614Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2774855Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2775057Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2775274Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2814442Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=8]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2816242Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2821713Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2832794Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2851590Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2852119Z ^[[36;1mset -f  # split targets and components on commas and whitespace, without glob expansion^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2852466Z ^[[36;1mflags=()^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2852695Z ^[[36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2853019Z ^[[36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2853424Z ^[[36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2853772Z ^[[36;1mlog=$(mktemp)^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2853974Z ^[[36;1mtrap 'rm -f "$log"' EXIT^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2854192Z ^[[36;1mfor attempt in 1 2 3 4 5; do^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2854646Z ^[[36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2855088Z ^[[36;1m    break^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2855261Z ^[[36;1m  else^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2855430Z ^[[36;1m    status=$?^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2855609Z ^[[36;1m  fi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2855853Z ^[[36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2856293Z ^[[36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2856651Z ^[[36;1m    exit "$status"^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2856989Z ^[[36;1m  fi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2857274Z ^[[36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2857602Z ^[[36;1m  sleep 30^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2857774Z ^[[36;1mdone^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2873153Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2873423Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2873604Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2873806Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2874046Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2874269Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2874480Z   toolchain: stable
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2874651Z   targets: 
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2874814Z   components: 
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2875000Z   RUSTUP_PERMIT_COPY_RENAME: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:02.2875202Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.6043895Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9011695Z 
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9088231Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9088756Z 
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9165693Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=2633]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9173703Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9194236Z ##[group]Run rustup default "$toolchain" --force-non-host
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9194731Z ^[[36;1mrustup default "$toolchain" --force-non-host^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9211712Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9211982Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9212150Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9212356Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9212579Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9212778Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9212981Z   toolchain: stable
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9213156Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9288489Z info: using existing install for stable-x86_64-unknown-linux-gnu
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9296626Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9297003Z 
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9369328Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9369756Z 
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9384967Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=21]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9388281Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9405822Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9406523Z ^[[36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9407038Z ^[[36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9407455Z ^[[36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9424494Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9424766Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9424929Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9425124Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9425348Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9425554Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9425754Z   toolchain: stable
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:04.9425928Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0070794Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=68]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0073066Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0091173Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0091485Z ^[[36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0091747Z ^[[36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0092141Z ^[[36;1mfi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0109534Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0109829Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0109996Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0110191Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0110415Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0110614Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0110834Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0150216Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=7]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0151979Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0168428Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0168726Z ^[[36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0169185Z ^[[36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0169431Z ^[[36;1mfi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0184264Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0184653Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0184881Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0185079Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0185303Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0185503Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0185712Z   CARGO_INCREMENTAL: 0
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0186072Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0223973Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=7]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0226661Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0243990Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0244399Z ^[[36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0244950Z ^[[36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0245533Z ^[[36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0245997Z ^[[36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0246434Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0246870Z ^[[36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0247319Z ^[[36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0247728Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0248012Z ^[[36;1m  fi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0248180Z ^[[36;1mfi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0263024Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0263305Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0263484Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0263686Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0263916Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0264118Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0264326Z   CARGO_INCREMENTAL: 0
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0264512Z   CARGO_TERM_COLOR: always
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0264697Z   toolchain: stable
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0264871Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0539710Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=31]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0543320Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0560561Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0561146Z ^[[36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0561646Z ^[[36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0562150Z ^[[36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0562402Z ^[[36;1mfi^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0579378Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0579650Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0579817Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0580017Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0580256Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0580453Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0580660Z   CARGO_INCREMENTAL: 0
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0580841Z   CARGO_TERM_COLOR: always
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0581039Z   toolchain: stable
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0581212Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0742356Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=19]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0746642Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0764245Z ##[group]Run rustc +"$toolchain" --version --verbose
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0764565Z ^[[36;1mrustc +"$toolchain" --version --verbose^[[0m
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0781683Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0781965Z env:
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0782134Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0782334Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0782569Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0782943Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0783157Z   CARGO_INCREMENTAL: 0
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0783342Z   CARGO_TERM_COLOR: always
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0783533Z   toolchain: stable
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0783711Z ##[endgroup]
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0925221Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0925634Z binary: rustc
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0925954Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0926363Z commit-date: 2026-10-13
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0926656Z host: x86_64-unknown-linux-gnu
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0926950Z release: 1.99.1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0927132Z LLVM version: 23.1.1
+cargo outdated	Run dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8	2026-11-07T00:00:05.0946344Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=19]
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	﻿2026-11-07T00:00:05.1056817Z ##[group]Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1057148Z with:
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1057328Z   tool: cargo-outdated@0.19.0
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1057537Z   fallback: cargo-binstall
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1057741Z   checksum: true
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1068493Z env:
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1068661Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1069054Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1069287Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1069491Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1069698Z   CARGO_INCREMENTAL: 0
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1069883Z   CARGO_TERM_COLOR: always
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1070067Z ##[endgroup]
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1075990Z ##[start-action display=Run bail() {;id=__taiki-e_install-action.__run]
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1093775Z ##[group]Run bail() {
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1094021Z ^[[36;1mbail() {^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1094229Z ^[[36;1m  printf '::error::install-action: %s\n' "$*"^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1094476Z ^[[36;1m  exit 1^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1094702Z ^[[36;1m}^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1094989Z ^[[36;1m# If /bin/sh is dash, environment variable containing % is not imported, but is fine^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1095423Z ^[[36;1m# because it also means that it will not be exposed to subprocess.^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1095758Z ^[[36;1mif /usr/bin/env | grep -Eq '^BASH_FUNC_'; then^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1096178Z ^[[36;1m  bail 'bash function injection via BASH_FUNC_ environment variable is not allowed for security reasons'^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1096562Z ^[[36;1mfi^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1096752Z ^[[36;1mif ! command -v bash >/dev/null; then^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1097020Z ^[[36;1m  if grep -Eq '^ID=alpine' /etc/os-release; then^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1097363Z ^[[36;1m    printf '::group::Install packages required for install-action (bash)\n'^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1097869Z ^[[36;1m    # NB: sync with apk_install in main.sh^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1098118Z ^[[36;1m    if command -v sudo >/dev/null; then^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1098367Z ^[[36;1m      sudo apk --no-cache add bash^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1098608Z ^[[36;1m    elif command -v doas >/dev/null; then^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1099059Z ^[[36;1m      doas apk --no-cache add bash^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1099319Z ^[[36;1m    else^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1099503Z ^[[36;1m      apk --no-cache add bash^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1099707Z ^[[36;1m    fi^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1099883Z ^[[36;1m    printf '::endgroup::\n'^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1100087Z ^[[36;1m  else^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1100270Z ^[[36;1m    bail 'this action requires bash'^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1100487Z ^[[36;1m  fi^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1100643Z ^[[36;1mfi^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1100869Z ^[[36;1mbash --noprofile --norc "${GITHUB_ACTION_PATH:?}/main.sh"^[[0m
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1101853Z shell: /usr/bin/env -u ENV -u BASH_ENV -u CDPATH -u SHELLOPTS -u BASHOPTS /bin/sh -eu {0}
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1102188Z env:
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1102350Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1102544Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1102771Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1102965Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1103169Z   CARGO_INCREMENTAL: 0
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1103350Z   CARGO_TERM_COLOR: always
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1103549Z   INPUT_TOOL: cargo-outdated@0.19.0
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1103758Z   INPUT_CHECKSUM: true
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1103953Z   INPUT_FALLBACK: cargo-binstall
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1106400Z   DEFAULT_GITHUB_TOKEN: ***
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1106742Z   ACTION_USER_AGENT: taiki-e/install-action (e67fa11c4b9316fa714ddf0abed07a0c3143b95b)
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1107074Z   RUNNER_OS: Linux
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1107249Z   RUNNER_ARCH: X64
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1107422Z ##[endgroup]
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1303750Z info: host platform: x86_64_linux
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1319618Z info: install-action does not support cargo-outdated@0.19.0 (updating install-action might resolve this); fallback to cargo-binstall
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1363139Z info: installing cargo-binstall@latest (1.22.0)
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.1710681Z info: downloading https://github.com/cargo-bins/cargo-binstall/releases/download/v1.22.0/cargo-binstall-x86_64-unknown-linux-musl.tgz
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.4171830Z info: verifying sha256 checksum for cargo-binstall-x86_64-unknown-linux-musl.tgz
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.5463544Z info: cargo-binstall installed at /home/runner/.cargo/bin/cargo-binstall
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.5466363Z + cargo-binstall binstall -V
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.5474129Z 1.22.0
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:05.5579680Z  INFO resolve: Resolving package: 'cargo-outdated@=0.19.0'
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:07.1312207Z  WARN The package cargo-outdated v0.19.0 (x86_64-unknown-linux-musl) has been downloaded from github.com
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:07.1312989Z  INFO This will install the following binaries:
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:07.1313536Z  INFO   - cargo-outdated => /home/runner/.cargo/bin/cargo-outdated
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:07.1313976Z  INFO Installing binaries...
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:07.1320258Z  INFO Done in 1.583204227s
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:07.1342808Z ##[end-action id=__taiki-e_install-action.__run;outcome=success;conclusion=success;duration_ms=2026]
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:07.1348067Z ##[start-action display=Run Set-StrictMode -Version Latest;id=__taiki-e_install-action.__run_2]
+cargo outdated	Run taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b	2026-11-07T00:00:07.1351765Z ##[end-action id=__taiki-e_install-action.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+cargo outdated	Run actions/setup-node@v6	﻿2026-11-07T00:00:07.1402506Z ##[group]Run actions/setup-node@v6
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1402743Z with:
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1402914Z   node-version: 26.x
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1403107Z   check-latest: false
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1405097Z   token: ***
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1405284Z   package-manager-cache: true
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1405496Z env:
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1405652Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1405841Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1406218Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1406419Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1406624Z   CARGO_INCREMENTAL: 0
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1406807Z   CARGO_TERM_COLOR: always
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.1406988Z ##[endgroup]
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:07.3333902Z Attempting to download 26.x...
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:08.1442005Z Acquiring 26.13.0 - x64 from https://github.com/actions/node-versions/releases/download/26.13.0-41378513395/node-26.13.0-linux-x64.tar.gz
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:08.6676315Z Extracting ...
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:08.6881536Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/1322d570-d8f1-4ea0-8646-89156d0bc4a4 -f /home/runner/work/_temp/861d0006-963b-4ba4-b776-8d18ec9626a4
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:09.8580229Z Adding to the cache ...
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:11.7986600Z ##[group]Environment details
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:12.0928395Z node: v26.13.0
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:12.0928683Z npm: 11.20.0
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:12.0929036Z yarn: 1.22.22
+cargo outdated	Run actions/setup-node@v6	2026-11-07T00:00:12.0929518Z ##[endgroup]
+cargo outdated	Check direct dependencies against their latest releases	﻿2026-11-07T00:00:12.1079157Z ##[group]Run node ../scripts/check-cargo-freshness.mjs
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1079529Z ^[[36;1mnode ../scripts/check-cargo-freshness.mjs^[[0m
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1099526Z shell: /usr/bin/bash -e {0}
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1099732Z env:
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1099898Z   GIT_CONFIG_COUNT: 1
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1100097Z   GIT_CONFIG_KEY_0: init.defaultBranch
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1100326Z   GIT_CONFIG_VALUE_0: main
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1100524Z   CARGO_HOME: /home/runner/.cargo
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1100736Z   CARGO_INCREMENTAL: 0
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1100916Z   CARGO_TERM_COLOR: always
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:12.1101100Z ##[endgroup]
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:17.4910930Z Name  Project  Compat  Latest  Kind    Platform
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:17.4911546Z ----  -------  ------  ------  ----    --------
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:17.4911913Z uuid  1.29.0   1.29.1  1.29.1  Normal  ---
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:17.4912099Z 
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:17.4927829Z ##[error]Dependency freshness findings:
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:17.4934969Z Update the direct Rust dependencies listed above.
+cargo outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:17.4940884Z ##[error]Process completed with exit code 1.
+cargo outdated	Post Run actions/checkout@v6	﻿2026-11-07T00:00:17.5028054Z Post job cleanup.
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.5729635Z [command]/usr/bin/git version
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.5800520Z git version 2.56.0
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.5834423Z Temporarily overriding HOME='/home/runner/work/_temp/e137af87-8388-42f5-b5ab-1007709fb402' before making global git config changes
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.5835631Z Adding repository directory to the temporary git global config as a safe directory
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.5839026Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.5876226Z Removing SSH command configuration
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.5883456Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.5922942Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.6175082Z Removing HTTP extra header
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.6182143Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.6224619Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.6504763Z Removing includeIf entries pointing to credentials config files
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.6505826Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7335237Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7336539Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7337479Z includeif.gitdir:/github/workspace/.git.path
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7338044Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7346637Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7380499Z /home/runner/work/_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7390700Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7434517Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7463301Z /home/runner/work/_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7472419Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7509767Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7537665Z /github/runner_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7545984Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7583272Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7616093Z /github/runner_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7622045Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7658603Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+cargo outdated	Post Run actions/checkout@v6	2026-11-07T00:00:17.7864775Z Removing credentials config '/home/runner/work/_temp/git-credentials-050c5a36-0400-4b41-8bea-8ac98efab3aa.config'
+cargo outdated	Complete job	﻿2026-11-07T00:00:17.8003706Z Cleaning up orphan processes
+npm outdated	Set up job	﻿2026-11-06T23:59:55.9728817Z Current runner version: '2.338.2'
+npm outdated	Set up job	2026-11-06T23:59:55.9749249Z ##[group]Runner Image Provisioner
+npm outdated	Set up job	2026-11-06T23:59:55.9749868Z Hosted Compute Agent
+npm outdated	Set up job	2026-11-06T23:59:55.9750281Z Version: 20261028.624
+npm outdated	Set up job	2026-11-06T23:59:55.9750685Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+npm outdated	Set up job	2026-11-06T23:59:55.9751164Z Build Date: 2026-10-28T21:51:42Z
+npm outdated	Set up job	2026-11-06T23:59:55.9751642Z Worker ID: {8c123773-e622-4f10-8567-70baedc99429}
+npm outdated	Set up job	2026-11-06T23:59:55.9752214Z Region: southcentralus
+npm outdated	Set up job	2026-11-06T23:59:55.9752562Z Cloud: Azure
+npm outdated	Set up job	2026-11-06T23:59:55.9752945Z ##[endgroup]
+npm outdated	Set up job	2026-11-06T23:59:55.9753804Z ##[group]Operating System
+npm outdated	Set up job	2026-11-06T23:59:55.9754217Z Ubuntu
+npm outdated	Set up job	2026-11-06T23:59:55.9754591Z 24.04.5
+npm outdated	Set up job	2026-11-06T23:59:55.9754902Z LTS
+npm outdated	Set up job	2026-11-06T23:59:55.9755276Z ##[endgroup]
+npm outdated	Set up job	2026-11-06T23:59:55.9755652Z ##[group]Runner Image
+npm outdated	Set up job	2026-11-06T23:59:55.9756053Z Image: ubuntu-24.04
+npm outdated	Set up job	2026-11-06T23:59:55.9756423Z Version: 20261101.360.1
+npm outdated	Set up job	2026-11-06T23:59:55.9757058Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+npm outdated	Set up job	2026-11-06T23:59:55.9758244Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+npm outdated	Set up job	2026-11-06T23:59:55.9758844Z ##[endgroup]
+npm outdated	Set up job	2026-11-06T23:59:55.9759588Z ##[group]GITHUB_TOKEN Permissions
+npm outdated	Set up job	2026-11-06T23:59:55.9761074Z Contents: read
+npm outdated	Set up job	2026-11-06T23:59:55.9761484Z Metadata: read
+npm outdated	Set up job	2026-11-06T23:59:55.9761955Z ##[endgroup]
+npm outdated	Set up job	2026-11-06T23:59:55.9763422Z Secret source: Actions
+npm outdated	Set up job	2026-11-06T23:59:55.9764010Z Cache mode: write
+npm outdated	Set up job	2026-11-06T23:59:55.9764728Z Prepare workflow directory
+npm outdated	Set up job	2026-11-06T23:59:56.0027885Z Prepare all required actions
+npm outdated	Set up job	2026-11-06T23:59:56.0072703Z Getting action download info
+npm outdated	Set up job	2026-11-06T23:59:56.2357614Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+npm outdated	Set up job	2026-11-06T23:59:56.4285166Z Download action repository 'actions/setup-node@v6' (SHA:249970729cb0ef3589644e2896645e5dc5ba9c38)
+npm outdated	Set up job	2026-11-06T23:59:56.6284916Z Complete job name: npm outdated
+npm outdated	Run actions/checkout@v6	﻿2026-11-06T23:59:56.6816569Z ##[group]Run actions/checkout@v6
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6817045Z with:
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6817297Z   repository: link-assistant/agent
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6819742Z   token: ***
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6819981Z   ssh-strict: true
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6820232Z   ssh-user: git
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6820484Z   persist-credentials: true
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6820761Z   clean: true
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6821019Z   sparse-checkout-cone-mode: true
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6821311Z   fetch-depth: 1
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6821555Z   fetch-tags: false
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6822003Z   show-progress: true
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6822255Z   lfs: false
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6822488Z   submodules: false
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6822743Z   set-safe-directory: true
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6823027Z   allow-unsafe-pr-checkout: false
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6823389Z env:
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6823611Z   GIT_CONFIG_COUNT: 1
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6823878Z   GIT_CONFIG_KEY_0: init.defaultBranch
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6824183Z   GIT_CONFIG_VALUE_0: main
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.6824447Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8724637Z Syncing repository: link-assistant/agent
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8726207Z ##[group]Getting Git version info
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8726756Z Working directory is '/home/runner/work/agent/agent'
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8727418Z [command]/usr/bin/git version
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8794281Z git version 2.56.0
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8809081Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8819248Z Temporarily overriding HOME='/home/runner/work/_temp/cbef706a-c21a-49a9-a37b-b5b711b5c986' before making global git config changes
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8820561Z Adding repository directory to the temporary git global config as a safe directory
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8823348Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8872665Z Deleting the contents of '/home/runner/work/agent/agent'
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8874038Z ##[group]Determining repository object format
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8874922Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8875649Z ##[group]Initializing the repository
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.8876721Z [command]/usr/bin/git init /home/runner/work/agent/agent
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9020503Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9029302Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9104104Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9104820Z ##[group]Disabling automatic garbage collection
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9107337Z [command]/usr/bin/git config --local gc.auto 0
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9151258Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9151736Z ##[group]Setting up auth
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9152219Z Removing SSH command configuration
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9152665Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9210499Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9499474Z Removing HTTP extra header
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9507476Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9548369Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9738589Z Removing includeIf entries pointing to credentials config files
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9744458Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9782135Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:56.9976803Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:57.0017699Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:57.0058434Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:57.0098280Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:57.0134746Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:57.0168370Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:57.0169227Z ##[group]Fetching the repository
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:57.0174321Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c52c0b86176a110cb5a9285651d8f04d3b1fdc3c:refs/remotes/pull/341/merge
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6683328Z From https://github.com/link-assistant/agent
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6684667Z  * [new ref]         c52c0b86176a110cb5a9285651d8f04d3b1fdc3c -> pull/341/merge
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6687076Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6687840Z ##[group]Determining the checkout info
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6689683Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6692195Z [command]/usr/bin/git sparse-checkout disable
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6746017Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6783956Z ##[group]Checking out the ref
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.6786365Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9393610Z Note: switching to 'refs/remotes/pull/341/merge'.
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9394192Z 
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9394458Z You are in 'detached HEAD' state. You can look around, make experimental
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9394986Z changes and commit them, and you can discard any commits you make in this
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9395889Z state without impacting any branches by switching back to a branch.
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9396218Z 
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9396497Z If you want to create a new branch to retain commits you create, you may
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9397000Z do so (now or later) by using -c with the switch command. Example:
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9397282Z 
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9397479Z   git switch -c <new-branch-name>
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9397696Z 
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9397851Z Or undo this operation with:
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9398036Z 
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9398156Z   git switch -
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9398340Z 
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9398587Z Turn off this advice by setting config variable advice.detachedHead to false
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9398937Z 
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9399301Z HEAD is now at c52c0b8 Merge 7795b588df490c9434736b7c10a5005c828ae89d into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9441248Z ##[endgroup]
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9494393Z [command]/usr/bin/git log -1 --format=%H
+npm outdated	Run actions/checkout@v6	2026-11-06T23:59:58.9529878Z c52c0b86176a110cb5a9285651d8f04d3b1fdc3c
+npm outdated	Run actions/setup-node@v6	﻿2026-11-06T23:59:58.9810335Z ##[group]Run actions/setup-node@v6
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9810593Z with:
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9810753Z   node-version: 26.x
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9810904Z   cache: npm
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9811072Z   cache-dependency-path: js/package-lock.json
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9811276Z   check-latest: false
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9813164Z   token: ***
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9813344Z   package-manager-cache: true
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9813518Z env:
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9813662Z   GIT_CONFIG_COUNT: 1
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9813833Z   GIT_CONFIG_KEY_0: init.defaultBranch
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9814021Z   GIT_CONFIG_VALUE_0: main
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:58.9814178Z ##[endgroup]
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:59.0800856Z Attempting to download 26.x...
+npm outdated	Run actions/setup-node@v6	2026-11-06T23:59:59.9066551Z Acquiring 26.13.0 - x64 from https://github.com/actions/node-versions/releases/download/26.13.0-41378513395/node-26.13.0-linux-x64.tar.gz
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:00.4218080Z Extracting ...
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:00.4344594Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/575df6f9-ab6f-4008-b3fe-596095139fd9 -f /home/runner/work/_temp/7db3fb39-3182-4d1d-a82a-ec635a3bcd43
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:01.4767316Z Adding to the cache ...
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:04.3148602Z ##[group]Environment details
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:04.4951666Z node: v26.13.0
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:04.4952244Z npm: 11.20.0
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:04.4952444Z yarn: 1.22.22
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:04.4953028Z ##[endgroup]
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:04.4964532Z [command]/opt/hostedtoolcache/node/26.13.0/x64/bin/npm config get cache
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:04.5650017Z /home/runner/.npm
+npm outdated	Run actions/setup-node@v6	2026-11-07T00:00:04.7198005Z npm cache is not found
+npm outdated	Install dependencies from the committed lockfile	﻿2026-11-07T00:00:04.7405958Z ##[group]Run npm ci --legacy-peer-deps --ignore-scripts
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:04.7406317Z ^[[36;1mnpm ci --legacy-peer-deps --ignore-scripts^[[0m
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:04.7427166Z shell: /usr/bin/bash -e {0}
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:04.7427376Z env:
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:04.7427496Z   GIT_CONFIG_COUNT: 1
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:04.7427654Z   GIT_CONFIG_KEY_0: init.defaultBranch
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:04.7427811Z   GIT_CONFIG_VALUE_0: main
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:04.7427945Z ##[endgroup]
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:09.2582978Z 
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:09.2589009Z added 507 packages, and audited 509 packages in 4s
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:09.2589297Z 
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:09.2589435Z 139 packages are looking for funding
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:09.2589628Z   run `npm fund` for details
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:09.2592228Z 
+npm outdated	Install dependencies from the committed lockfile	2026-11-07T00:00:09.2592336Z found 0 vulnerabilities
+npm outdated	Check direct dependencies against their latest releases	﻿2026-11-07T00:00:09.3140997Z ##[group]Run node ../scripts/check-npm-freshness.mjs
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:09.3141282Z ^[[36;1mnode ../scripts/check-npm-freshness.mjs^[[0m
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:09.3160325Z shell: /usr/bin/bash -e {0}
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:09.3160494Z env:
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:09.3160610Z   GIT_CONFIG_COUNT: 1
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:09.3160746Z   GIT_CONFIG_KEY_0: init.defaultBranch
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:09.3160940Z   GIT_CONFIG_VALUE_0: main
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:09.3163006Z   GITHUB_TOKEN: ***
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:09.3163132Z ##[endgroup]
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:10.9078614Z web-tree-sitter: pinned at 0.25.10; latest 0.27.1 (https://github.com/anomalyco/opentui/issues/1550)
+npm outdated	Check direct dependencies against their latest releases	2026-11-07T00:00:10.9079289Z All unpinned npm dependencies are current.
+npm outdated	Post Run actions/setup-node@v6	﻿2026-11-07T00:00:10.9202474Z Post job cleanup.
+npm outdated	Post Run actions/setup-node@v6	2026-11-07T00:00:11.0228564Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/agent/agent --files-from manifest.txt --use-compress-program zstdmt
+npm outdated	Post Run actions/setup-node@v6	2026-11-07T00:00:12.3445993Z Sent 45940736 of 85117284 (54.0%), 43.8 MBs/sec
+npm outdated	Post Run actions/setup-node@v6	2026-11-07T00:00:13.3453182Z Sent 85117284 of 85117284 (100.0%), 40.5 MBs/sec
+npm outdated	Post Run actions/setup-node@v6	2026-11-07T00:00:13.8366383Z Cache saved with the key: node-cache-Linux-x64-npm-462148d97d3058149d29d69cba4f94307403cb136ada441e4c47ea1dc72c89f7
+npm outdated	Post Run actions/checkout@v6	﻿2026-11-07T00:00:13.8522340Z Post job cleanup.
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9132608Z [command]/usr/bin/git version
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9162231Z git version 2.56.0
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9190829Z Temporarily overriding HOME='/home/runner/work/_temp/9dd344ed-d589-45b2-9a1a-b1a9e17e9499' before making global git config changes
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9191732Z Adding repository directory to the temporary git global config as a safe directory
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9194322Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9228191Z Removing SSH command configuration
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9233829Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9268924Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9491381Z Removing HTTP extra header
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9497327Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9535799Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9758931Z Removing includeIf entries pointing to credentials config files
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9767175Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9804756Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9805274Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9805662Z includeif.gitdir:/github/workspace/.git.path
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9806048Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9816166Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9846890Z /home/runner/work/_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9873205Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9901619Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9933475Z /home/runner/work/_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9941435Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:13.9980947Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:14.0010598Z /github/runner_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:14.0018225Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:14.0057888Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:14.0087118Z /github/runner_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:14.0128689Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:14.0189535Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+npm outdated	Post Run actions/checkout@v6	2026-11-07T00:00:14.0395955Z Removing credentials config '/home/runner/work/_temp/git-credentials-4fc7d6de-95cc-4a40-aae6-06ea91848da5.config'
+npm outdated	Complete job	﻿2026-11-07T00:00:14.0540173Z Cleaning up orphan processes
+Pipeline Status	Set up job	﻿2026-11-07T00:00:21.6754688Z Current runner version: '2.338.2'
+Pipeline Status	Set up job	2026-11-07T00:00:21.6775583Z ##[group]Runner Image Provisioner
+Pipeline Status	Set up job	2026-11-07T00:00:21.6776370Z Hosted Compute Agent
+Pipeline Status	Set up job	2026-11-07T00:00:21.6776743Z Version: 20261028.624
+Pipeline Status	Set up job	2026-11-07T00:00:21.6777197Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Pipeline Status	Set up job	2026-11-07T00:00:21.6777657Z Build Date: 2026-10-28T21:51:42Z
+Pipeline Status	Set up job	2026-11-07T00:00:21.6778294Z Worker ID: {75bd6ea1-f3f6-4755-b1e9-4dd015b5f6a9}
+Pipeline Status	Set up job	2026-11-07T00:00:21.6778779Z Region: centralus
+Pipeline Status	Set up job	2026-11-07T00:00:21.6779130Z Cloud: Azure
+Pipeline Status	Set up job	2026-11-07T00:00:21.6779524Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:00:21.6780398Z ##[group]Operating System
+Pipeline Status	Set up job	2026-11-07T00:00:21.6780779Z Ubuntu
+Pipeline Status	Set up job	2026-11-07T00:00:21.6781158Z 24.04.5
+Pipeline Status	Set up job	2026-11-07T00:00:21.6781485Z LTS
+Pipeline Status	Set up job	2026-11-07T00:00:21.6781828Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:00:21.6782228Z ##[group]Runner Image
+Pipeline Status	Set up job	2026-11-07T00:00:21.6782626Z Image: ubuntu-24.04
+Pipeline Status	Set up job	2026-11-07T00:00:21.6783032Z Version: 20261101.360.1
+Pipeline Status	Set up job	2026-11-07T00:00:21.6783667Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Pipeline Status	Set up job	2026-11-07T00:00:21.6784802Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Pipeline Status	Set up job	2026-11-07T00:00:21.6785416Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:00:21.6786124Z ##[group]GITHUB_TOKEN Permissions
+Pipeline Status	Set up job	2026-11-07T00:00:21.6787661Z Contents: read
+Pipeline Status	Set up job	2026-11-07T00:00:21.6788075Z Metadata: read
+Pipeline Status	Set up job	2026-11-07T00:00:21.6788596Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:00:21.6790101Z Secret source: Actions
+Pipeline Status	Set up job	2026-11-07T00:00:21.6790768Z Cache mode: write
+Pipeline Status	Set up job	2026-11-07T00:00:21.6791448Z Prepare workflow directory
+Pipeline Status	Set up job	2026-11-07T00:00:21.7086632Z Prepare all required actions
+Pipeline Status	Set up job	2026-11-07T00:00:21.7123744Z Getting action download info
+Pipeline Status	Set up job	2026-11-07T00:00:21.9428857Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Pipeline Status	Set up job	2026-11-07T00:00:22.1576313Z Complete job name: Pipeline Status
+Pipeline Status	Run actions/checkout@v6	﻿2026-11-07T00:00:22.2165177Z ##[group]Run actions/checkout@v6
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2165662Z with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2165918Z   persist-credentials: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2166252Z   repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2168700Z   token: ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2169024Z   ssh-strict: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2169281Z   ssh-user: git
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2169530Z   clean: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2169793Z   sparse-checkout-cone-mode: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2170096Z   fetch-depth: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2170348Z   fetch-tags: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2170606Z   show-progress: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2170866Z   lfs: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2171107Z   submodules: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2171367Z   set-safe-directory: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2171656Z   allow-unsafe-pr-checkout: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2172038Z env:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2172272Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2172554Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2172867Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.2173173Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4565191Z Syncing repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4566757Z ##[group]Getting Git version info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4567201Z Working directory is '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4567767Z [command]/usr/bin/git version
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4660741Z git version 2.56.0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4679595Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4692068Z Temporarily overriding HOME='/home/runner/work/_temp/d477e70b-6282-4b60-9ed2-e83392786189' before making global git config changes
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4693558Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4697731Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4758798Z Deleting the contents of '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4763511Z ##[group]Determining repository object format
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4765244Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4765951Z ##[group]Initializing the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4770028Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4895316Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4905608Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4955155Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4955982Z ##[group]Disabling automatic garbage collection
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4966529Z [command]/usr/bin/git config --local gc.auto 0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4997505Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4998565Z ##[group]Setting up auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.4999080Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5003691Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5043670Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5382335Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5388807Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5427450Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5622868Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5628760Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5668311Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5871243Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5915006Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5953278Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.5990852Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.6028011Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.6062681Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.6063357Z ##[group]Fetching the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:22.6070107Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c52c0b86176a110cb5a9285651d8f04d3b1fdc3c:refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5153354Z From https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5154731Z  * [new ref]         c52c0b86176a110cb5a9285651d8f04d3b1fdc3c -> pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5162620Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5163328Z ##[group]Determining the checkout info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5164166Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5164826Z [command]/usr/bin/git sparse-checkout disable
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5218731Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5258317Z ##[group]Checking out the ref
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.5260790Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7899803Z Note: switching to 'refs/remotes/pull/341/merge'.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7900671Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7901174Z You are in 'detached HEAD' state. You can look around, make experimental
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7902290Z changes and commit them, and you can discard any commits you make in this
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7903539Z state without impacting any branches by switching back to a branch.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7904438Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7904918Z If you want to create a new branch to retain commits you create, you may
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7905958Z do so (now or later) by using -c with the switch command. Example:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7906544Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7906838Z   git switch -c <new-branch-name>
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7907259Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7907520Z Or undo this operation with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7907895Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7908269Z   git switch -
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7908615Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7909111Z Turn off this advice by setting config variable advice.detachedHead to false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7909826Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7910601Z HEAD is now at c52c0b8 Merge 7795b588df490c9434736b7c10a5005c828ae89d into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7939952Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.7991808Z [command]/usr/bin/git log -1 --format=%H
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8025823Z c52c0b86176a110cb5a9285651d8f04d3b1fdc3c
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8035672Z ##[group]Removing auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8036669Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8039517Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8080216Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8283061Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8286439Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8325860Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8524223Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8527151Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8565278Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8566735Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8568315Z includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8569445Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8574500Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8604285Z /home/runner/work/_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8614751Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8655963Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8685981Z /home/runner/work/_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8694118Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8739715Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8772267Z /github/runner_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8779912Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8820011Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8849535Z /github/runner_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8856039Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.8895418Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.9100032Z Removing credentials config '/home/runner/work/_temp/git-credentials-e40951d5-0bd4-4d9b-9bb8-db5ddb13f4f4.config'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:00:23.9107672Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	﻿2026-11-07T00:00:23.9352746Z ##[group]Run bash scripts/check-pipeline-status.sh
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9353760Z ^[[36;1mbash scripts/check-pipeline-status.sh^[[0m
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9373800Z shell: /usr/bin/bash -e {0}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9374446Z env:
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9374955Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9375560Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9376241Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9377447Z   NEEDS_JSON: {
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "npm-outdated": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  },
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "cargo-outdated": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "failure",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  }
+Pipeline Status	Fail the run when a required job was cancelled or failed	}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9379070Z   RUN_SHA: 7795b588df490c9434736b7c10a5005c828ae89d
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9379806Z   HEAD_REF: refs/pull/341/head
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:23.9380423Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:24.1470356Z Failed jobs:    cargo-outdated
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:24.1471563Z Cancelled jobs: <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:24.1489881Z ##[error]Pipeline failed. Failing jobs: cargo-outdated
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:00:24.1500346Z ##[error]Process completed with exit code 1.
+Pipeline Status	Post Run actions/checkout@v6	﻿2026-11-07T00:00:24.1738030Z Post job cleanup.
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2406749Z [command]/usr/bin/git version
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2446745Z git version 2.56.0
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2478903Z Temporarily overriding HOME='/home/runner/work/_temp/fedc365e-01f8-4162-8de9-4f97afb60d95' before making global git config changes
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2481611Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2486095Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2523976Z Removing SSH command configuration
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2530208Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2574527Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2835584Z Removing HTTP extra header
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2837659Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.2878045Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.3133455Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.3140137Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:00:24.3185058Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Complete job	﻿2026-11-07T00:00:24.3536664Z Cleaning up orphan processes

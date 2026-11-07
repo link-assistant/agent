@@ -1,0 +1,306 @@
+--- template/.github/workflows/security.yml
++++ .github/workflows/security.yml
+@@ -1,61 +1,33 @@
+ name: Security
+ 
++# Dependency and code scanning. The pipeline used to report nothing about
++# vulnerable dependencies at all, so a known-vulnerable package could be added
++# to a lockfile and merged with every check green (issue #301).
+ on:
+   push:
+-    branches: [main]
++    branches:
++      - main
+   pull_request:
++    types: [opened, synchronize, reopened]
++  # Advisories are published after a dependency is merged, so a weekly run is
++  # what turns a new advisory into a signal without a code change.
+   schedule:
+     - cron: '0 6 * * 1'
++  workflow_dispatch:
+ 
+-# Keep the workflow read-only unless a job explicitly needs an additional scope.
++# Least-privilege default; jobs escalate individually when needed.
+ permissions:
+   contents: read
+ 
+-# Configure checkout's git init before the first step runs.
++# Provide Git config to actions/checkout itself; checkout runs git init before
++# any workflow step can configure Git.
+ env:
+   GIT_CONFIG_COUNT: '1'
+   GIT_CONFIG_KEY_0: init.defaultBranch
+   GIT_CONFIG_VALUE_0: main
+ 
+ jobs:
+-  javascript-first:
+-    concurrency:
+-      group: check-${{ github.workflow }}-${{ github.ref }}-javascript-first-caller
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    uses: ./.github/workflows/javascript-first-gate.yml # zizmor: ignore[self-repository]
+-    with:
+-      source-sha: ${{ github.sha }}
+-
+-  cargo-audit:
+-    if: needs.javascript-first.result == 'success' && needs.javascript-first.outputs.tested-sha == github.sha
+-    needs: [javascript-first]
+-    name: Cargo audit
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 10
+-    concurrency:
+-      group: check-${{ github.workflow }}-${{ github.ref }}-cargo-audit
+-      cancel-in-progress: true
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          ref: ${{ needs.javascript-first.outputs.tested-sha == github.sha && github.sha }}
+-          persist-credentials: false
+-
+-      - uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+-        with:
+-          tool: cargo-audit@0.22.2
+-
+-      - name: Audit committed Cargo.lock
+-        # `unmaintained`, `unsound` and `yanked` are *warnings*, and a warning
+-        # does not move `cargo audit`'s exit status -- it prints
+-        # "warning: N allowed warnings found" and exits 0. Without this flag the
+-        # step reports a passing audit while displaying the findings; a yanked
+-        # release ("we shipped a vulnerability") is exactly such a warning.
+-        run: cargo audit --file Cargo.lock --deny warnings
+-
+   codeql:
+-    if: needs.javascript-first.result == 'success' && needs.javascript-first.outputs.tested-sha == github.sha
+-    needs: [javascript-first]
+     name: CodeQL (${{ matrix.language }})
+     runs-on: ubuntu-24.04
+     timeout-minutes: 30
+@@ -63,74 +35,35 @@
+       group: check-${{ github.workflow }}-${{ github.ref }}-codeql-${{ matrix.language }}
+       cancel-in-progress: true
+     permissions:
++      actions: read
+       contents: read
+       security-events: write
+     strategy:
+       fail-fast: false
+       matrix:
+-        language: [rust, actions]
++        # `actions` analyses the workflow files themselves; it complements
++        # zizmor rather than duplicating it.
++        language: [javascript-typescript, actions, rust]
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+-          ref: ${{ needs.javascript-first.outputs.tested-sha == github.sha && github.sha }}
+           persist-credentials: false
+ 
+-      - uses: github/codeql-action/init@v4
++      - name: Initialize CodeQL
++        uses: github/codeql-action/init@v4
+         with:
+           languages: ${{ matrix.language }}
+-          build-mode: none
+-          config-file: ./.github/codeql/codeql-config.yml
++          config-file: ./.github/codeql-config.yml
+ 
+-      - name: Test SARIF gate
+-        run: node --test scripts/check-codeql-results.test.mjs
++      - name: Autobuild
++        uses: github/codeql-action/autobuild@v4
+ 
+-      - uses: github/codeql-action/analyze@v4
+-        with:
+-          output: codeql-results
+-
+-      - name: Reject unresolved CodeQL findings
+-        if: ${{ !cancelled() }}
+-        run: node scripts/check-codeql-results.mjs codeql-results
+-
+-      - name: Preserve CodeQL reports
+-        if: ${{ !cancelled() }}
+-        uses: actions/upload-artifact@v7
+-        with:
+-          name: codeql-results-${{ matrix.language }}
+-          path: codeql-results/
+-          if-no-files-found: error
+-
+-  dependency-graph:
+-    name: Dependency Graph Availability
+-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 5
+-    concurrency:
+-      group: check-${{ github.workflow }}-${{ github.ref }}-dependency-graph
+-      cancel-in-progress: true
+-    outputs:
+-      enabled: ${{ steps.graph.outputs.enabled }}
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-      - name: Probe dependency graph
+-        id: graph
+-        env:
+-          GH_TOKEN: ${{ github.token }}
+-          REPO: ${{ github.repository }}
+-          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+-          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+-          REQUIRE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && '--require' || '' }}
+-        run: |
+-          args=("${BASE:-$HEAD}" "$HEAD")
+-          if [ -n "$REQUIRE" ]; then args+=("$REQUIRE"); fi
+-          bash scripts/check-dependency-graph.sh "${args[@]}"
++      - name: Analyze
++        uses: github/codeql-action/analyze@v4
+ 
+   dependency-review:
+     name: Dependency Review
+-    needs: dependency-graph
+-    if: github.event_name == 'pull_request' && needs.dependency-graph.outputs.enabled == 'true'
++    if: github.event_name == 'pull_request'
+     runs-on: ubuntu-24.04
+     timeout-minutes: 10
+     concurrency:
+@@ -140,45 +73,116 @@
+       contents: read
+       pull-requests: write
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+           persist-credentials: false
+ 
+-      - uses: actions/dependency-review-action@v5
++      # actions/dependency-review-action fails the job outright with
++      # "Dependency review is not supported on this repository" when the
++      # dependency graph is disabled, which turns every pull request red for a
++      # repository-settings reason rather than a dependency problem - exactly
++      # the kind of false positive issue #301 is about. Probe the API first and
++      # downgrade only that case to a warning; a real advisory still fails.
++      - name: Check whether the dependency graph is available
++        id: graph
++        env:
++          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++          BASE_SHA: ${{ github.event.pull_request.base.sha }}
++          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
++        run: |
++          code=$(curl -sS -o /dev/null -w '%{http_code}' \
++            -H "Authorization: Bearer $GITHUB_TOKEN" \
++            -H "Accept: application/vnd.github+json" \
++            -H "X-GitHub-Api-Version: 2022-11-28" \
++            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/dependency-graph/compare/$BASE_SHA...$HEAD_SHA")
++
++          case "$code" in
++            200)
++              echo 'available=true' >> "$GITHUB_OUTPUT"
++              ;;
++            403 | 404)
++              echo 'available=false' >> "$GITHUB_OUTPUT"
++              echo "::warning::Dependency review skipped: the dependency graph is not enabled for $GITHUB_REPOSITORY (dependency-graph API returned $code). Enable it under Settings -> Code security -> Dependency graph; npm audit and cargo audit still run."
++              ;;
++            *)
++              echo "::error::Unexpected HTTP $code from the dependency-graph API"
++              exit 1
++              ;;
++          esac
++
++      - name: Review dependency changes
++        if: steps.graph.outputs.available == 'true'
++        uses: actions/dependency-review-action@v5
+         with:
+           fail-on-severity: high
+           comment-summary-in-pr: on-failure
+ 
+-  # Terminal status gate (issue #156): GitHub reports jobs killed by
+-  # timeout-minutes as cancelled. Observe every other job so a timeout on main
+-  # becomes a visible failure instead of a grey run, while a run that was
+-  # superseded by a newer commit is recognised as expected churn.
+-  pipeline-status:
+-    name: Pipeline Status
+-    needs:
+-      - javascript-first
+-      - cargo-audit
+-      - codeql
+-      - dependency-review
+-      - dependency-graph
+-    if: ${{ !cancelled() }}
++  npm-audit:
++    name: Audit npm lock
+     runs-on: ubuntu-24.04
+-    timeout-minutes: 5
+-    # Read this run's jobs and annotations to name runner-acquisition failures (issue #226).
+-    permissions:
+-      contents: read
+-      actions: read
+-      checks: read
++    timeout-minutes: 10
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-npm-audit
++      cancel-in-progress: true
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+           persist-credentials: false
+ 
+-      - name: Check aggregate pipeline status
++      - uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
++
++      # `--package-lock-only` audits the committed lockfile, so the result does
++      # not depend on what a fresh install happens to resolve today.
++      - name: Audit committed package-lock.json
++        working-directory: js
++        run: npm audit --package-lock-only --audit-level=high
++
++  cargo-audit:
++    name: Cargo audit
++    runs-on: ubuntu-24.04
++    timeout-minutes: 10
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-cargo-audit
++      cancel-in-progress: true
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          persist-credentials: false
++
++      - uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
++        with:
++          tool: cargo-audit@0.22.2
++
++      - name: Audit committed Cargo.lock
++        working-directory: rust
++        run: cargo audit --file Cargo.lock
++
++  # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
++  # the run grey instead of red. This gate fails the run on any unsuccessful
++  # job and on any cancellation a newer run does not explain (#301, #337).
++  pipeline-status:
++    name: Pipeline Status
++    runs-on: ubuntu-24.04
++    timeout-minutes: 5
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
++      cancel-in-progress: true
++    if: always()
++    needs:
++      - codeql
++      - dependency-review
++      - npm-audit
++      - cargo-audit
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          persist-credentials: false
++
++      - name: Fail the run when a required job was cancelled or failed
+         env:
+           NEEDS_JSON: ${{ toJSON(needs) }}
+-          GH_TOKEN: ${{ github.token }}
+-          IS_MAIN: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+           RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+           HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+         run: bash scripts/check-pipeline-status.sh

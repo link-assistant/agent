@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/tmp/gh-issue-solver-1794007881352/experiments/issue-340/compare-templates.py", line 89, in <module>
+    closest = max(candidates, key=lambda p: difflib.SequenceMatcher(None, lines, read_chunks(ROOT / p), autojunk=True).ratio())
+  File "/tmp/gh-issue-solver-1794007881352/experiments/issue-340/compare-templates.py", line 89, in <lambda>
+    closest = max(candidates, key=lambda p: difflib.SequenceMatcher(None, lines, read_chunks(ROOT / p), autojunk=True).ratio())
+                                                                                 ~~~~~~~~~~~^^^^^^^^^^
+  File "/tmp/gh-issue-solver-1794007881352/experiments/issue-340/compare-templates.py", line 16, in read_chunks
+    with path.open(errors='replace') as handle:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/box/.pyenv/versions/3.15.0/lib/python3.15/pathlib/__init__.py", line 970, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/gh-issue-solver-1794007881352/scripts/install-git-hooks.mjs'

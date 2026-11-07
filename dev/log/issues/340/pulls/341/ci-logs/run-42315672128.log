@@ -1,0 +1,600 @@
+Check Links	Set up job	﻿2026-11-07T00:01:56.3814112Z Current runner version: '2.338.2'
+Check Links	Set up job	2026-11-07T00:01:56.3839955Z ##[group]Runner Image Provisioner
+Check Links	Set up job	2026-11-07T00:01:56.3840858Z Hosted Compute Agent
+Check Links	Set up job	2026-11-07T00:01:56.3841585Z Version: 20261028.624
+Check Links	Set up job	2026-11-07T00:01:56.3842322Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Check Links	Set up job	2026-11-07T00:01:56.3843096Z Build Date: 2026-10-28T21:51:42Z
+Check Links	Set up job	2026-11-07T00:01:56.3843817Z Worker ID: {9b8dd116-961f-4247-9f83-8fc0bebc29af}
+Check Links	Set up job	2026-11-07T00:01:56.3844534Z Region: westus2
+Check Links	Set up job	2026-11-07T00:01:56.3845153Z Cloud: Azure
+Check Links	Set up job	2026-11-07T00:01:56.3846138Z ##[endgroup]
+Check Links	Set up job	2026-11-07T00:01:56.3847665Z ##[group]Operating System
+Check Links	Set up job	2026-11-07T00:01:56.3848448Z Ubuntu
+Check Links	Set up job	2026-11-07T00:01:56.3848987Z 24.04.5
+Check Links	Set up job	2026-11-07T00:01:56.3849548Z LTS
+Check Links	Set up job	2026-11-07T00:01:56.3850168Z ##[endgroup]
+Check Links	Set up job	2026-11-07T00:01:56.3850708Z ##[group]Runner Image
+Check Links	Set up job	2026-11-07T00:01:56.3851378Z Image: ubuntu-24.04
+Check Links	Set up job	2026-11-07T00:01:56.3851962Z Version: 20261101.360.1
+Check Links	Set up job	2026-11-07T00:01:56.3853056Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Check Links	Set up job	2026-11-07T00:01:56.3854835Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Check Links	Set up job	2026-11-07T00:01:56.3856277Z ##[endgroup]
+Check Links	Set up job	2026-11-07T00:01:56.3857406Z ##[group]GITHUB_TOKEN Permissions
+Check Links	Set up job	2026-11-07T00:01:56.3859432Z Contents: read
+Check Links	Set up job	2026-11-07T00:01:56.3860083Z Metadata: read
+Check Links	Set up job	2026-11-07T00:01:56.3860725Z ##[endgroup]
+Check Links	Set up job	2026-11-07T00:01:56.3862757Z Secret source: Actions
+Check Links	Set up job	2026-11-07T00:01:56.3863819Z Cache mode: write
+Check Links	Set up job	2026-11-07T00:01:56.3864586Z Prepare workflow directory
+Check Links	Set up job	2026-11-07T00:01:56.4323691Z Prepare all required actions
+Check Links	Set up job	2026-11-07T00:01:56.4372600Z Getting action download info
+Check Links	Set up job	2026-11-07T00:01:56.7716695Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Check Links	Set up job	2026-11-07T00:01:56.8710929Z Download action repository 'lycheeverse/lychee-action@v2' (SHA:e7477775783ea5526144ba13e8db5eec57747ce8)
+Check Links	Set up job	2026-11-07T00:01:57.0542983Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+Check Links	Set up job	2026-11-07T00:01:57.2431476Z Complete job name: Check Links
+Check Links	Run actions/checkout@v6	﻿2026-11-07T00:01:57.3308184Z ##[group]Run actions/checkout@v6
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3309090Z with:
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3309538Z   persist-credentials: false
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3310076Z   repository: link-assistant/agent
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3314015Z   token: ***
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3314446Z   ssh-strict: true
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3314951Z   ssh-user: git
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3315599Z   clean: true
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3316072Z   sparse-checkout-cone-mode: true
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3316600Z   fetch-depth: 1
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3317020Z   fetch-tags: false
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3317464Z   show-progress: true
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3317918Z   lfs: false
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3318326Z   submodules: false
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3318771Z   set-safe-directory: true
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3319274Z   allow-unsafe-pr-checkout: false
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3320044Z env:
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3320453Z   GIT_CONFIG_COUNT: 1
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3320931Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3321496Z   GIT_CONFIG_VALUE_0: main
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.3321998Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6419342Z Syncing repository: link-assistant/agent
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6422160Z ##[group]Getting Git version info
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6423252Z Working directory is '/home/runner/work/agent/agent'
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6424795Z [command]/usr/bin/git version
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6542928Z git version 2.56.0
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6570629Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6587378Z Temporarily overriding HOME='/home/runner/work/_temp/9802b063-52bd-4605-947c-f58a0d470571' before making global git config changes
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6589166Z Adding repository directory to the temporary git global config as a safe directory
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6593105Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6660685Z Deleting the contents of '/home/runner/work/agent/agent'
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6666739Z ##[group]Determining repository object format
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6677289Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6678942Z ##[group]Initializing the repository
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6680386Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6829871Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6842260Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6903609Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6905014Z ##[group]Disabling automatic garbage collection
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6914199Z [command]/usr/bin/git config --local gc.auto 0
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6996941Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6998373Z ##[group]Setting up auth
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.6999270Z Removing SSH command configuration
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.7000540Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.7009457Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.7452357Z Removing HTTP extra header
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.7459498Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.7506235Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.7746882Z Removing includeIf entries pointing to credentials config files
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.7754225Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.7801617Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.8076318Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.8125970Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.8169732Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.8211561Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.8251826Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.8291684Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.8292960Z ##[group]Fetching the repository
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:57.8300323Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f312504c84a561522dc7927d1deae1ae7104a06c:refs/remotes/pull/341/merge
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7356587Z From https://github.com/link-assistant/agent
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7358923Z  * [new ref]         f312504c84a561522dc7927d1deae1ae7104a06c -> pull/341/merge
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7377517Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7379592Z ##[group]Determining the checkout info
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7470160Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7471183Z [command]/usr/bin/git sparse-checkout disable
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7473850Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7482757Z ##[group]Checking out the ref
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:58.7486885Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0937525Z Note: switching to 'refs/remotes/pull/341/merge'.
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0938223Z 
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0938513Z You are in 'detached HEAD' state. You can look around, make experimental
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0939393Z changes and commit them, and you can discard any commits you make in this
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0939946Z state without impacting any branches by switching back to a branch.
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0940289Z 
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0940550Z If you want to create a new branch to retain commits you create, you may
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0941087Z do so (now or later) by using -c with the switch command. Example:
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0941378Z 
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0941560Z   git switch -c <new-branch-name>
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0941807Z 
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0941945Z Or undo this operation with:
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0942149Z 
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0942261Z   git switch -
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0942461Z 
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0942706Z Turn off this advice by setting config variable advice.detachedHead to false
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0943057Z 
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0943445Z HEAD is now at f312504 Merge 4cef980456f355d40576b2d6f6d63bec338419a0 into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.0987840Z ##[endgroup]
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1044249Z [command]/usr/bin/git log -1 --format=%H
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1079763Z f312504c84a561522dc7927d1deae1ae7104a06c
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1090424Z ##[group]Removing auth
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1091067Z Removing SSH command configuration
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1094929Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1138355Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1388433Z Removing HTTP extra header
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1393636Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1436928Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1693148Z Removing includeIf entries pointing to credentials config files
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1698907Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1740302Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1741387Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1742466Z includeif.gitdir:/github/workspace/.git.path
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1743403Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1753244Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1788427Z /home/runner/work/_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1805649Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1862084Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1898949Z /home/runner/work/_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1912064Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.1970722Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.2013375Z /github/runner_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.2024467Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.2069590Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.2102737Z /github/runner_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.2113291Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.2158326Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.2403479Z Removing credentials config '/home/runner/work/_temp/git-credentials-d14e9c7d-f2d6-47db-9524-554b2e873566.config'
+Check Links	Run actions/checkout@v6	2026-11-07T00:01:59.2413785Z ##[endgroup]
+Check Links	Initialize link diagnostics	﻿2026-11-07T00:01:59.2636639Z ##[group]Run mkdir -p lychee && echo 'Link checker did not complete; inspect the job log.' > lychee/out.md
+Check Links	Initialize link diagnostics	2026-11-07T00:01:59.2637560Z ^[[36;1mmkdir -p lychee && echo 'Link checker did not complete; inspect the job log.' > lychee/out.md^[[0m
+Check Links	Initialize link diagnostics	2026-11-07T00:01:59.2661575Z shell: /usr/bin/bash -e {0}
+Check Links	Initialize link diagnostics	2026-11-07T00:01:59.2661959Z env:
+Check Links	Initialize link diagnostics	2026-11-07T00:01:59.2662205Z   GIT_CONFIG_COUNT: 1
+Check Links	Initialize link diagnostics	2026-11-07T00:01:59.2662496Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check Links	Initialize link diagnostics	2026-11-07T00:01:59.2662832Z   GIT_CONFIG_VALUE_0: main
+Check Links	Initialize link diagnostics	2026-11-07T00:01:59.2663122Z ##[endgroup]
+Check Links	Check links with lychee	﻿2026-11-07T00:01:59.2909310Z ##[group]Run lycheeverse/lychee-action@v2
+Check Links	Check links with lychee	2026-11-07T00:01:59.2909744Z with:
+Check Links	Check links with lychee	2026-11-07T00:01:59.2910778Z   args: --verbose --no-progress --cache --max-cache-age 1d --max-retries 3 --timeout 30 --exclude-path docs/case-studies --exclude-path scripts/fixtures --exclude-path node_modules --exclude-path js/node_modules --exclude-path dev --extensions md,html .
+Check Links	Check links with lychee	2026-11-07T00:01:59.2911857Z   fail: false
+Check Links	Check links with lychee	2026-11-07T00:01:59.2912256Z   output: lychee/out.md
+Check Links	Check links with lychee	2026-11-07T00:01:59.2912727Z   jobSummary: true
+Check Links	Check links with lychee	2026-11-07T00:01:59.2913031Z   debug: false
+Check Links	Check links with lychee	2026-11-07T00:01:59.2913290Z   failIfEmpty: true
+Check Links	Check links with lychee	2026-11-07T00:01:59.2913549Z   format: markdown
+Check Links	Check links with lychee	2026-11-07T00:01:59.2913804Z   lycheeVersion: v0.24.2
+Check Links	Check links with lychee	2026-11-07T00:01:59.2914108Z   checkbox: true
+Check Links	Check links with lychee	2026-11-07T00:01:59.2917230Z   token: ***
+Check Links	Check links with lychee	2026-11-07T00:01:59.2917524Z   workingDirectory: .
+Check Links	Check links with lychee	2026-11-07T00:01:59.2917791Z env:
+Check Links	Check links with lychee	2026-11-07T00:01:59.2918024Z   GIT_CONFIG_COUNT: 1
+Check Links	Check links with lychee	2026-11-07T00:01:59.2918306Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check Links	Check links with lychee	2026-11-07T00:01:59.2918624Z   GIT_CONFIG_VALUE_0: main
+Check Links	Check links with lychee	2026-11-07T00:01:59.2921400Z   GITHUB_TOKEN: ***
+Check Links	Check links with lychee	2026-11-07T00:01:59.2921656Z ##[endgroup]
+Check Links	Check links with lychee	2026-11-07T00:01:59.2982704Z ##[start-action display=Set up environment;id=lychee.__run]
+Check Links	Check links with lychee	2026-11-07T00:01:59.3019686Z ##[group]Run # Install into $RUNNER_TEMP (not $HOME) so the install path is stable
+Check Links	Check links with lychee	2026-11-07T00:01:59.3020369Z ^[[36;1m# Install into $RUNNER_TEMP (not $HOME) so the install path is stable^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3020955Z ^[[36;1m# across composite steps. On some runners $HOME is overridden per step^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3021513Z ^[[36;1m# (e.g. actions/checkout temporarily sets it), which made the PATH^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3022031Z ^[[36;1m# entry from one step and the install in another step diverge.^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3022520Z ^[[36;1mecho "$RUNNER_TEMP/lychee/bin" >> "$GITHUB_PATH"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3022922Z ^[[36;1mmkdir -p "$RUNNER_TEMP/lychee/bin"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3044402Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Check Links	Check links with lychee	2026-11-07T00:01:59.3044838Z env:
+Check Links	Check links with lychee	2026-11-07T00:01:59.3045076Z   GIT_CONFIG_COUNT: 1
+Check Links	Check links with lychee	2026-11-07T00:01:59.3045523Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check Links	Check links with lychee	2026-11-07T00:01:59.3045860Z   GIT_CONFIG_VALUE_0: main
+Check Links	Check links with lychee	2026-11-07T00:01:59.3048669Z   GITHUB_TOKEN: ***
+Check Links	Check links with lychee	2026-11-07T00:01:59.3048948Z ##[endgroup]
+Check Links	Check links with lychee	2026-11-07T00:01:59.3120089Z ##[end-action id=lychee.__run;outcome=success;conclusion=success;duration_ms=13]
+Check Links	Check links with lychee	2026-11-07T00:01:59.3123915Z ##[start-action display=Download and extract lychee in temp directory;id=lychee.lychee-setup]
+Check Links	Check links with lychee	2026-11-07T00:01:59.3151382Z ##[group]Run # Create a temporary directory for downloads and extraction
+Check Links	Check links with lychee	2026-11-07T00:01:59.3151962Z ^[[36;1m# Create a temporary directory for downloads and extraction^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3152605Z ^[[36;1mTEMP_DIR="${RUNNER_TEMP}/lychee-download"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3153012Z ^[[36;1mrm -rf "${TEMP_DIR}" && mkdir -p "${TEMP_DIR}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3153384Z ^[[36;1mcd "${TEMP_DIR}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3153664Z ^[[36;1m^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3153913Z ^[[36;1mARCH=$(uname -m)^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3154283Z ^[[36;1m# Determine filename and download URL based on version^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3154740Z ^[[36;1mif [[ "${LYCHEE_VERSION}" =~ ^v0\.0|^v0\.1[0-5]\. ]]; then^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3155257Z ^[[36;1m  FILENAME="lychee-${LYCHEE_VERSION}-${ARCH}-unknown-linux-gnu.tar.gz"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3156160Z ^[[36;1m  DOWNLOAD_URL="https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VERSION}/${FILENAME}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3156716Z ^[[36;1melse^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3157040Z ^[[36;1m  FILENAME="lychee-${ARCH}-unknown-linux-gnu.tar.gz"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3157474Z ^[[36;1m  if [[ "${LYCHEE_VERSION}" == 'nightly' ]]; then^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3158032Z ^[[36;1m    DOWNLOAD_URL="https://github.com/lycheeverse/lychee/releases/download/nightly/${FILENAME}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3158605Z ^[[36;1m  elif [[ "${LYCHEE_VERSION}" == 'latest' ]]; then^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3159156Z ^[[36;1m    DOWNLOAD_URL="https://github.com/lycheeverse/lychee/releases/latest/download/${FILENAME}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3159946Z ^[[36;1m  else^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3160473Z ^[[36;1m    DOWNLOAD_URL="https://github.com/lycheeverse/lychee/releases/download/lychee-${LYCHEE_VERSION}/${FILENAME}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3161116Z ^[[36;1m  fi^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3161357Z ^[[36;1mfi^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3161585Z ^[[36;1m^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3161858Z ^[[36;1mecho "Downloading from: ${DOWNLOAD_URL}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3162219Z ^[[36;1mcurl -sfLO "${DOWNLOAD_URL}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3162521Z ^[[36;1m^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3162768Z ^[[36;1mecho "Extracting ${FILENAME}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3163096Z ^[[36;1mtar -xvzf "${FILENAME}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3163410Z ^[[36;1mrm -rv "${FILENAME}"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3163690Z ^[[36;1m^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3164009Z ^[[36;1m# Detect if lychee binary is in a subfolder within the tar.gz^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3164437Z ^[[36;1mif ! [[ -f "${TEMP_DIR}/lychee" ]]; then^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3164886Z ^[[36;1m  TEMP_DIR="$(echo "${TEMP_DIR}"/lychee-*)"  # need `echo` to evaluate glob^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3165456Z ^[[36;1mfi^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3165739Z ^[[36;1mif ! [[ -f "${TEMP_DIR}/lychee" ]]; then^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3166238Z ^[[36;1m  echo "Cannot find lychee binary in $TEMP_DIR. Did the archive structure change?" >&2^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3166713Z ^[[36;1m  exit 1^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3166955Z ^[[36;1mfi^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3167184Z ^[[36;1m^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3167466Z ^[[36;1m# Output temp directory for use in later steps^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3167864Z ^[[36;1mecho "temp_dir=${TEMP_DIR}" >> $GITHUB_OUTPUT^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.3189275Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Check Links	Check links with lychee	2026-11-07T00:01:59.3189716Z env:
+Check Links	Check links with lychee	2026-11-07T00:01:59.3189961Z   GIT_CONFIG_COUNT: 1
+Check Links	Check links with lychee	2026-11-07T00:01:59.3190261Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check Links	Check links with lychee	2026-11-07T00:01:59.3190593Z   GIT_CONFIG_VALUE_0: main
+Check Links	Check links with lychee	2026-11-07T00:01:59.3193446Z   GITHUB_TOKEN: ***
+Check Links	Check links with lychee	2026-11-07T00:01:59.3193738Z   LYCHEE_VERSION: v0.24.2
+Check Links	Check links with lychee	2026-11-07T00:01:59.3194033Z ##[endgroup]
+Check Links	Check links with lychee	2026-11-07T00:01:59.3271556Z Downloading from: https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz
+Check Links	Check links with lychee	2026-11-07T00:01:59.4438321Z Extracting lychee-x86_64-unknown-linux-gnu.tar.gz
+Check Links	Check links with lychee	2026-11-07T00:01:59.4469967Z lychee-x86_64-unknown-linux-gnu/
+Check Links	Check links with lychee	2026-11-07T00:01:59.4471056Z lychee-x86_64-unknown-linux-gnu/README.md
+Check Links	Check links with lychee	2026-11-07T00:01:59.4471766Z lychee-x86_64-unknown-linux-gnu/docs/
+Check Links	Check links with lychee	2026-11-07T00:01:59.4472353Z lychee-x86_64-unknown-linux-gnu/docs/lychee.1
+Check Links	Check links with lychee	2026-11-07T00:01:59.4473033Z lychee-x86_64-unknown-linux-gnu/docs/TROUBLESHOOTING.md
+Check Links	Check links with lychee	2026-11-07T00:01:59.4473740Z lychee-x86_64-unknown-linux-gnu/docs/PRE_COMMIT.md
+Check Links	Check links with lychee	2026-11-07T00:01:59.4474740Z lychee-x86_64-unknown-linux-gnu/complete/
+Check Links	Check links with lychee	2026-11-07T00:01:59.4475670Z lychee-x86_64-unknown-linux-gnu/complete/_lychee.ps1
+Check Links	Check links with lychee	2026-11-07T00:01:59.4476423Z lychee-x86_64-unknown-linux-gnu/complete/lychee.elv
+Check Links	Check links with lychee	2026-11-07T00:01:59.4478510Z lychee-x86_64-unknown-linux-gnu/complete/lychee.fish
+Check Links	Check links with lychee	2026-11-07T00:01:59.4479276Z lychee-x86_64-unknown-linux-gnu/complete/lychee.bash
+Check Links	Check links with lychee	2026-11-07T00:01:59.4479987Z lychee-x86_64-unknown-linux-gnu/complete/_lychee
+Check Links	Check links with lychee	2026-11-07T00:01:59.4480571Z lychee-x86_64-unknown-linux-gnu/lychee
+Check Links	Check links with lychee	2026-11-07T00:01:59.5829130Z removed 'lychee-x86_64-unknown-linux-gnu.tar.gz'
+Check Links	Check links with lychee	2026-11-07T00:01:59.5862786Z ##[end-action id=lychee.lychee-setup;outcome=success;conclusion=success;duration_ms=273]
+Check Links	Check links with lychee	2026-11-07T00:01:59.5868731Z ##[start-action display=Install lychee;id=lychee.__run_2]
+Check Links	Check links with lychee	2026-11-07T00:01:59.5918074Z ##[group]Run # Install lychee from the temporary directory
+Check Links	Check links with lychee	2026-11-07T00:01:59.5918550Z ^[[36;1m# Install lychee from the temporary directory^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.5919225Z ^[[36;1minstall -t "$RUNNER_TEMP/lychee/bin" -D "/home/runner/work/_temp/lychee-download/lychee-x86_64-unknown-linux-gnu/lychee"^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.5939666Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Check Links	Check links with lychee	2026-11-07T00:01:59.5940081Z env:
+Check Links	Check links with lychee	2026-11-07T00:01:59.5940320Z   GIT_CONFIG_COUNT: 1
+Check Links	Check links with lychee	2026-11-07T00:01:59.5940790Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check Links	Check links with lychee	2026-11-07T00:01:59.5941112Z   GIT_CONFIG_VALUE_0: main
+Check Links	Check links with lychee	2026-11-07T00:01:59.5943954Z   GITHUB_TOKEN: ***
+Check Links	Check links with lychee	2026-11-07T00:01:59.5944227Z ##[endgroup]
+Check Links	Check links with lychee	2026-11-07T00:01:59.6081052Z ##[end-action id=lychee.__run_2;outcome=success;conclusion=success;duration_ms=21]
+Check Links	Check links with lychee	2026-11-07T00:01:59.6090186Z ##[start-action display=Run Lychee;id=lychee.run-lychee]
+Check Links	Check links with lychee	2026-11-07T00:01:59.6118675Z ##[group]Run /home/runner/work/_actions/lycheeverse/lychee-action/v2/entrypoint.sh
+Check Links	Check links with lychee	2026-11-07T00:01:59.6119307Z ^[[36;1m/home/runner/work/_actions/lycheeverse/lychee-action/v2/entrypoint.sh^[[0m
+Check Links	Check links with lychee	2026-11-07T00:01:59.6139235Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Check Links	Check links with lychee	2026-11-07T00:01:59.6139654Z env:
+Check Links	Check links with lychee	2026-11-07T00:01:59.6139897Z   GIT_CONFIG_COUNT: 1
+Check Links	Check links with lychee	2026-11-07T00:01:59.6140184Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check Links	Check links with lychee	2026-11-07T00:01:59.6140519Z   GIT_CONFIG_VALUE_0: main
+Check Links	Check links with lychee	2026-11-07T00:01:59.6143366Z   GITHUB_TOKEN: ***
+Check Links	Check links with lychee	2026-11-07T00:01:59.6146244Z   INPUT_TOKEN: ***
+Check Links	Check links with lychee	2026-11-07T00:01:59.6147287Z   INPUT_ARGS: --verbose --no-progress --cache --max-cache-age 1d --max-retries 3 --timeout 30 --exclude-path docs/case-studies --exclude-path scripts/fixtures --exclude-path node_modules --exclude-path js/node_modules --exclude-path dev --extensions md,html .
+Check Links	Check links with lychee	2026-11-07T00:01:59.6148329Z   INPUT_DEBUG: false
+Check Links	Check links with lychee	2026-11-07T00:01:59.6148588Z   INPUT_FAIL: false
+Check Links	Check links with lychee	2026-11-07T00:01:59.6148845Z   INPUT_FAILIFEMPTY: true
+Check Links	Check links with lychee	2026-11-07T00:01:59.6149125Z   INPUT_FORMAT: markdown
+Check Links	Check links with lychee	2026-11-07T00:01:59.6149395Z   INPUT_JOBSUMMARY: true
+Check Links	Check links with lychee	2026-11-07T00:01:59.6149666Z   INPUT_CHECKBOX: true
+Check Links	Check links with lychee	2026-11-07T00:01:59.6149948Z   INPUT_OUTPUT: lychee/out.md
+Check Links	Check links with lychee	2026-11-07T00:01:59.6150469Z   SUMMARY_URL: https://github.com/link-assistant/agent/actions/runs/42315672128#summary-128227529999
+Check Links	Check links with lychee	2026-11-07T00:01:59.6151002Z ##[endgroup]
+Check Links	Check links with lychee	2026-11-07T00:01:59.8678133Z [EXCLUDED] https://api.kilo.ai/api/gateway/models (at 107:45) | This is due to your 'exclude' values
+Check Links	Check links with lychee	2026-11-07T00:01:59.8680672Z [EXCLUDED] https://api.kilo.ai/api/gateway (at 1212:30) | This is due to your 'exclude' values
+Check Links	Check links with lychee	2026-11-07T00:01:59.8699046Z [EXCLUDED] https://www.npmjs.com/package/@link-assistant/agent (at 5:1) | This is due to your 'exclude' values
+Check Links	Check links with lychee	2026-11-07T00:01:59.8746293Z [EXCLUDED] https://claude.ai/code (at 262:3) | This is due to your 'exclude' values
+Check Links	Check links with lychee	2026-11-07T00:01:59.9210007Z [EXCLUDED] https://medium.com/@jdxcode/12-factor-cli-apps-dd3c227a0e46 (at 650:3) | This is due to your 'exclude' values
+Check Links	Check links with lychee	2026-11-07T00:01:59.9214013Z [EXCLUDED] https://api.kilo.ai/api/gateway/models (at 3:179) | This is due to your 'exclude' values
+Check Links	Check links with lychee	2026-11-07T00:01:59.9216730Z [EXCLUDED] https://www.npmjs.com/package/@link-assistant/agent (at 42:1) | This is due to your 'exclude' values
+Check Links	Check links with lychee	2026-11-07T00:01:59.9231523Z [EXCLUDED] https://api.kilo.ai/api/gateway/models (at 5:50) | This is due to your 'exclude' values
+Check Links	Check links with lychee	2026-11-07T00:02:02.5535296Z # Summary
+Check Links	Check links with lychee	2026-11-07T00:02:02.5535912Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5536085Z | Status         | Count |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5536810Z |----------------|-------|
+Check Links	Check links with lychee	2026-11-07T00:02:02.5537625Z | 🔍 Total       | 270   |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5538085Z | 🔗 Unique      | 141   |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5538588Z | ✅ Successful  | 262   |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5539151Z | ⏳ Timeouts    | 0     |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5539835Z | 🔀 Redirected  | 25    |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5540628Z | 👻 Excluded    | 8     |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5541219Z | ❓ Unknown     | 0     |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5541679Z | 🚫 Errors      | 0     |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5542142Z | ⛔ Unsupported | 0     |
+Check Links	Check links with lychee	2026-11-07T00:02:02.5542461Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5542627Z ## Redirects per input
+Check Links	Check links with lychee	2026-11-07T00:02:02.5542860Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5543061Z ### Redirects in ./docs/claude-oauth.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5543482Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5543896Z * https://console.anthropic.com/ --[301]--> https://platform.claude.com/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5544437Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5544624Z ### Redirects in ./docs/google-oauth.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5545017Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5545804Z * https://ai.google.dev/gemini-api/docs/oauth --[301]--> https://aistudio.google.com/docs/oauth
+Check Links	Check links with lychee	2026-11-07T00:02:02.5549785Z * https://aistudio.google.com/app/apikey --[302]--> https://accounts.google.com/ServiceLogin?passive=1209600&continue=https://aistudio.google.com/app/apikey&followup=https://aistudio.google.com/app/apikey --[302]--> https://accounts.google.com/v3/signin/identifier?continue=https://aistudio.google.com/app/apikey&followup=https://aistudio.google.com/app/apikey&passive=1209600&flowName=WebLiteSignIn&flowEntry=ServiceLogin&dsh=S-989748222:1794009720129752
+Check Links	Check links with lychee	2026-11-07T00:02:02.5552788Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5552999Z ### Redirects in ./docs/groq.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5553306Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5553837Z * https://console.groq.com/docs/tool-use --[308]--> https://console.groq.com/docs/tool-use/overview
+Check Links	Check links with lychee	2026-11-07T00:02:02.5555002Z * https://groq.com/pricing/ --[308]--> https://groq.com/pricing --[308]--> https://groq.com/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5555869Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5556151Z ### Redirects in ./docs/kilo.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5556509Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5556833Z * https://app.kilo.ai/ --[307]--> https://app.kilo.ai/users/sign_in
+Check Links	Check links with lychee	2026-11-07T00:02:02.5557314Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5557444Z ### Redirects in ./docs/openrouter.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5557641Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5558308Z * https://openrouter.ai/activity --[307]--> https://openrouter.ai/sign-in?redirect_url=https%3A%2F%2Fopenrouter.ai%2Factivity
+Check Links	Check links with lychee	2026-11-07T00:02:02.5559940Z * https://openrouter.ai/credits --[308]--> https://openrouter.ai/settings/credits --[307]--> https://openrouter.ai/sign-in?redirect_url=https%3A%2F%2Fopenrouter.ai%2Fsettings%2Fcredits
+Check Links	Check links with lychee	2026-11-07T00:02:02.5560843Z * https://openrouter.ai/docs --[308]--> https://openrouter.ai/docs/quickstart
+Check Links	Check links with lychee	2026-11-07T00:02:02.5561487Z * https://openrouter.ai/docs/api-reference/limits --[308]--> https://openrouter.ai/docs/api_reference/limits
+Check Links	Check links with lychee	2026-11-07T00:02:02.5562259Z * https://openrouter.ai/docs/api-reference/overview --[308]--> https://openrouter.ai/docs/api_reference/overview
+Check Links	Check links with lychee	2026-11-07T00:02:02.5563302Z * https://openrouter.ai/keys --[307]--> https://openrouter.ai/workspace-redirect/keys --[307]--> https://openrouter.ai/sign-in?redirect_url=https%3A%2F%2Fopenrouter.ai%2Fworkspace-redirect%2Fkeys
+Check Links	Check links with lychee	2026-11-07T00:02:02.5564122Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5564303Z ### Redirects in ./FREE_MODELS.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5564586Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5565007Z * https://opencode.ai/docs/zen/ --[301]--> https://opencode.ai/docs/console/models/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5565893Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5566071Z ### Redirects in ./js/README.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5566357Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5566621Z * http://unlicense.org/ --[301]--> https://unlicense.org/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5568521Z * https://badge.fury.io/js/@link-assistant%2Fagent.svg --[302]--> https://d25lcipzij17d.cloudfront.net/badge.svg?c=***
+Check Links	Check links with lychee	2026-11-07T00:02:02.5569485Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5569615Z ### Redirects in ./MODELS.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5569781Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5570338Z * https://docs.anthropic.com/ --[301]--> https://platform.claude.com/docs/ --[308]--> https://platform.claude.com/docs --[307]--> https://platform.claude.com/docs/en/home
+Check Links	Check links with lychee	2026-11-07T00:02:02.5571265Z * https://opencode.ai/docs/zen/ --[301]--> https://opencode.ai/docs/console/models/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5571597Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5571694Z ### Redirects in ./README.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5571857Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5572020Z * http://unlicense.org/ --[301]--> https://unlicense.org/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5573108Z * https://badge.fury.io/js/@link-assistant%2Fagent.svg --[302]--> https://d25lcipzij17d.cloudfront.net/badge.svg?c=***
+Check Links	Check links with lychee	2026-11-07T00:02:02.5573562Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5573680Z ### Redirects in ./rust/changelog.d/README.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5573886Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5574131Z * https://scriv.readthedocs.io/ --[302]--> https://scriv.readthedocs.io/en/latest/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5574491Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5574591Z ### Redirects in ./rust/README.md
+Check Links	Check links with lychee	2026-11-07T00:02:02.5574764Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5574923Z * http://unlicense.org/ --[301]--> https://unlicense.org/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5576202Z * https://www.rust-lang.org/tools/install --[301]--> https://rust-lang.org/tools/install --[301]--> https://rust-lang.org/tools/install/
+Check Links	Check links with lychee	2026-11-07T00:02:02.5576737Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5576747Z 
+Check Links	Check links with lychee	2026-11-07T00:02:02.5593836Z ##[notice]Summary report available at: https://github.com/link-assistant/agent/actions/runs/42315672128#summary-128227529999
+Check Links	Check links with lychee	2026-11-07T00:02:02.5621942Z ##[end-action id=lychee.run-lychee;outcome=success;conclusion=success;duration_ms=2953]
+Check Links	Preserve link diagnostics	﻿2026-11-07T00:02:02.5782669Z ##[group]Run actions/upload-artifact@v7
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5783009Z with:
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5783211Z   name: link-checker
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5783441Z   path: lychee/out.md
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5783666Z   if-no-files-found: error
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5783926Z   compression-level: 6
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5784138Z   overwrite: false
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5784353Z   include-hidden-files: false
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5784587Z   archive: true
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5784780Z env:
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5784962Z   GIT_CONFIG_COUNT: 1
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5785205Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5785677Z   GIT_CONFIG_VALUE_0: main
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.5785905Z ##[endgroup]
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.7353092Z With the provided path, there will be 1 file uploaded
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.7376355Z Artifact name is valid!
+Check Links	Preserve link diagnostics	2026-11-07T00:02:02.7376856Z Root directory input is valid!
+Check Links	Preserve link diagnostics	2026-11-07T00:02:03.1088931Z Uploading artifact: link-checker.zip
+Check Links	Preserve link diagnostics	2026-11-07T00:02:03.1134180Z Beginning upload of artifact content to blob storage
+Check Links	Preserve link diagnostics	2026-11-07T00:02:03.4420728Z Uploaded bytes 1213
+Check Links	Preserve link diagnostics	2026-11-07T00:02:03.5210910Z Finished uploading artifact content to blob storage!
+Check Links	Preserve link diagnostics	2026-11-07T00:02:03.5211974Z SHA256 digest of uploaded artifact is 68a78a6e0437f6697874e31bcd2248355a815c3b95840003fbd7b9ab6678d592
+Check Links	Preserve link diagnostics	2026-11-07T00:02:03.5212938Z Finalizing artifact upload
+Check Links	Preserve link diagnostics	2026-11-07T00:02:04.1218397Z Artifact link-checker successfully finalized. Artifact ID 13550049814
+Check Links	Preserve link diagnostics	2026-11-07T00:02:04.1219937Z Artifact link-checker has been successfully uploaded! Final size is 1213 bytes. Artifact ID is 13550049814
+Check Links	Preserve link diagnostics	2026-11-07T00:02:04.1223210Z Artifact download URL: https://github.com/link-assistant/agent/actions/runs/42315672128/artifacts/13550049814
+Check Links	Post Run actions/checkout@v6	﻿2026-11-07T00:02:04.1418175Z Post job cleanup.
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2296778Z [command]/usr/bin/git version
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2378228Z git version 2.56.0
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2426002Z Temporarily overriding HOME='/home/runner/work/_temp/922e758b-6213-499e-8677-c1861ca1b486' before making global git config changes
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2427366Z Adding repository directory to the temporary git global config as a safe directory
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2432197Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2468144Z Removing SSH command configuration
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2476087Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2530385Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2792464Z Removing HTTP extra header
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2799391Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.2838485Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.3123112Z Removing includeIf entries pointing to credentials config files
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.3132076Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check Links	Post Run actions/checkout@v6	2026-11-07T00:02:04.3181176Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check Links	Complete job	﻿2026-11-07T00:02:04.3589136Z Cleaning up orphan processes
+Pipeline Status	Set up job	﻿2026-11-07T00:02:10.3446906Z Current runner version: '2.338.2'
+Pipeline Status	Set up job	2026-11-07T00:02:10.3473707Z ##[group]Runner Image Provisioner
+Pipeline Status	Set up job	2026-11-07T00:02:10.3474817Z Hosted Compute Agent
+Pipeline Status	Set up job	2026-11-07T00:02:10.3475376Z Version: 20261028.624
+Pipeline Status	Set up job	2026-11-07T00:02:10.3476016Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Pipeline Status	Set up job	2026-11-07T00:02:10.3476815Z Build Date: 2026-10-28T21:51:42Z
+Pipeline Status	Set up job	2026-11-07T00:02:10.3477466Z Worker ID: {cd9ee68f-1a15-43a5-8dc7-457fb16d0649}
+Pipeline Status	Set up job	2026-11-07T00:02:10.3478162Z Region: westus3
+Pipeline Status	Set up job	2026-11-07T00:02:10.3478670Z Cloud: Azure
+Pipeline Status	Set up job	2026-11-07T00:02:10.3479165Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:02:10.3480662Z ##[group]Operating System
+Pipeline Status	Set up job	2026-11-07T00:02:10.3481493Z Ubuntu
+Pipeline Status	Set up job	2026-11-07T00:02:10.3482071Z 24.04.5
+Pipeline Status	Set up job	2026-11-07T00:02:10.3482548Z LTS
+Pipeline Status	Set up job	2026-11-07T00:02:10.3483035Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:02:10.3483622Z ##[group]Runner Image
+Pipeline Status	Set up job	2026-11-07T00:02:10.3484175Z Image: ubuntu-24.04
+Pipeline Status	Set up job	2026-11-07T00:02:10.3484724Z Version: 20261101.360.1
+Pipeline Status	Set up job	2026-11-07T00:02:10.3485704Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Pipeline Status	Set up job	2026-11-07T00:02:10.3487363Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Pipeline Status	Set up job	2026-11-07T00:02:10.3488253Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:02:10.3489313Z ##[group]GITHUB_TOKEN Permissions
+Pipeline Status	Set up job	2026-11-07T00:02:10.3491904Z Contents: read
+Pipeline Status	Set up job	2026-11-07T00:02:10.3492552Z Metadata: read
+Pipeline Status	Set up job	2026-11-07T00:02:10.3493126Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:02:10.3495303Z Secret source: Actions
+Pipeline Status	Set up job	2026-11-07T00:02:10.3496361Z Cache mode: write
+Pipeline Status	Set up job	2026-11-07T00:02:10.3497310Z Prepare workflow directory
+Pipeline Status	Set up job	2026-11-07T00:02:10.3939350Z Prepare all required actions
+Pipeline Status	Set up job	2026-11-07T00:02:10.3990903Z Getting action download info
+Pipeline Status	Set up job	2026-11-07T00:02:10.6997455Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Pipeline Status	Set up job	2026-11-07T00:02:10.8859628Z Complete job name: Pipeline Status
+Pipeline Status	Run actions/checkout@v6	﻿2026-11-07T00:02:10.9727528Z ##[group]Run actions/checkout@v6
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9728533Z with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9729105Z   persist-credentials: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9729743Z   repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9733707Z   token: ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9734426Z   ssh-strict: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9735270Z   ssh-user: git
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9736050Z   clean: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9736679Z   sparse-checkout-cone-mode: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9737274Z   fetch-depth: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9737797Z   fetch-tags: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9738428Z   show-progress: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9739085Z   lfs: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9739608Z   submodules: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9740124Z   set-safe-directory: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9740701Z   allow-unsafe-pr-checkout: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9742103Z env:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9742587Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9743448Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9744194Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:10.9744971Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2499014Z Syncing repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2502609Z ##[group]Getting Git version info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2504075Z Working directory is '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2505751Z [command]/usr/bin/git version
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2559656Z git version 2.56.0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2581405Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2596425Z Temporarily overriding HOME='/home/runner/work/_temp/9b22f245-f747-44f3-ad0f-c3e4bdc240d9' before making global git config changes
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2598985Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2601679Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2656943Z Deleting the contents of '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2660996Z ##[group]Determining repository object format
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2663369Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2664680Z ##[group]Initializing the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2668606Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2793581Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2807281Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2853358Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2854808Z ##[group]Disabling automatic garbage collection
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2859660Z [command]/usr/bin/git config --local gc.auto 0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2894248Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2895546Z ##[group]Setting up auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2896443Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2904220Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.2947087Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3318734Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3328426Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3365387Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3572224Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3573741Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3608938Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3821695Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3865663Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3900814Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3937094Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.3973260Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.4005877Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.4007149Z ##[group]Fetching the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:11.4017511Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f312504c84a561522dc7927d1deae1ae7104a06c:refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.6912998Z From https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.6933197Z  * [new ref]         f312504c84a561522dc7927d1deae1ae7104a06c -> pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.6937690Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.6939109Z ##[group]Determining the checkout info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.6944172Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.6945487Z [command]/usr/bin/git sparse-checkout disable
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.6987917Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.7013739Z ##[group]Checking out the ref
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:12.7026719Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0226623Z Note: switching to 'refs/remotes/pull/341/merge'.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0229037Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0229933Z You are in 'detached HEAD' state. You can look around, make experimental
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0230946Z changes and commit them, and you can discard any commits you make in this
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0232289Z state without impacting any branches by switching back to a branch.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0233333Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0233836Z If you want to create a new branch to retain commits you create, you may
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0234836Z do so (now or later) by using -c with the switch command. Example:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0235455Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0235796Z   git switch -c <new-branch-name>
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0236209Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0236495Z Or undo this operation with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0236873Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0237129Z   git switch -
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0237464Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0238044Z Turn off this advice by setting config variable advice.detachedHead to false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0238697Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0239400Z HEAD is now at f312504 Merge 4cef980456f355d40576b2d6f6d63bec338419a0 into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0253971Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0307591Z [command]/usr/bin/git log -1 --format=%H
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0337480Z f312504c84a561522dc7927d1deae1ae7104a06c
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0346835Z ##[group]Removing auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0347313Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0351532Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0384608Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0591359Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0592362Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0625276Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0830071Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0834687Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0864967Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0865820Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0866381Z includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0866984Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0874908Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0898921Z /home/runner/work/_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0913265Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0950595Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0974795Z /home/runner/work/_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.0985078Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1021840Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1057128Z /github/runner_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1067389Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1102989Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1126470Z /github/runner_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1134496Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1171933Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1365848Z Removing credentials config '/home/runner/work/_temp/git-credentials-8173231b-68c7-4b48-88af-0053acc9931e.config'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:02:13.1375609Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	﻿2026-11-07T00:02:13.1644223Z ##[group]Run bash scripts/check-pipeline-status.sh
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1644856Z ^[[36;1mbash scripts/check-pipeline-status.sh^[[0m
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1662348Z shell: /usr/bin/bash -e {0}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1662756Z env:
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1663022Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1663334Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1663698Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1664152Z   NEEDS_JSON: {
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "link-checker": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  }
+Pipeline Status	Fail the run when a required job was cancelled or failed	}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1664755Z   RUN_SHA: 4cef980456f355d40576b2d6f6d63bec338419a0
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1665157Z   HEAD_REF: refs/pull/341/head
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.1665472Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.3496424Z Failed jobs:    <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.3497095Z Cancelled jobs: <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:02:13.3497820Z All required jobs succeeded or were legitimately skipped.
+Pipeline Status	Post Run actions/checkout@v6	﻿2026-11-07T00:02:13.3642980Z Post job cleanup.
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4534863Z [command]/usr/bin/git version
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4574188Z git version 2.56.0
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4613267Z Temporarily overriding HOME='/home/runner/work/_temp/c0507dd2-2584-4d40-93a4-11abf0a1e9f9' before making global git config changes
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4614840Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4619591Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4649743Z Removing SSH command configuration
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4656494Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4691590Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4916097Z Removing HTTP extra header
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4922472Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.4954719Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.5185443Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.5192941Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:02:13.5241841Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Complete job	﻿2026-11-07T00:02:13.5600543Z Cleaning up orphan processes

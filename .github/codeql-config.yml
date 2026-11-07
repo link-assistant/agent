@@ -1,0 +1,5 @@
+name: Agent source
+# Raw evidence and immutable third-party template snapshots are not executable
+# agent source. Scan the actual application, tests and workflows normally.
+paths-ignore:
+  - dev/log/**

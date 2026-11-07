@@ -1,0 +1,172 @@
+--- template/docs/issue-287/research.md
++++ docs/case-studies/issue-76/research.md
+@@ -1,112 +1,74 @@
+-# Issue 287 investigation and component decisions
++# CLI Stdin Handling Best Practices Research
+ 
+-The investigation read the complete parent issue, its four native sub-issues,
+-all their comments and all three comment/review endpoints for PR 288. The
+-requirements and alternative approaches are inventoried in [plan.md](plan.md).
+-The immutable upstream baseline is
+-`7877a27980664bc6453e80262f8391d1c2562ab1`. Related downstream implementations
+-were inspected at sensitive-data-sanitizer PR 93 commit
+-`dedbee4a681487ec1051ac160816aa23617e7ffa` and PR 96 commit
+-`d4a80a5951095e092459a2eb0c96477b10f94921`; reusable helpers and tests were
+-adapted to this repository rather than introducing a new orchestration library.
+-Recent merged template PRs 282, 276, 274, 263 and 255 supplied repository context.
++## Key Sources
+ 
+-## Release integrity and push recovery (#283)
++1. [Command Line Interface Guidelines](https://clig.dev/) - Comprehensive CLI UX guide
++2. [Node.js TTY Documentation](https://nodejs.org/api/tty.html) - Official TTY API
++3. [12 Factor CLI Apps](https://medium.com/@jdxcode/12-factor-cli-apps-dd3c227a0e46) - CLI best practices
++4. [Node.js CLI Apps Best Practices](https://github.com/lirantal/nodejs-cli-apps-best-practices) - Community best practices
++5. [Stylelint PR #7131](https://github.com/stylelint/stylelint/pull/7131) - Example of fixing stdin waiting behavior
++6. [Heroku CLI Style Guide](https://devcenter.heroku.com/articles/cli-style-guide) - Enterprise CLI patterns
+ 
+-The reproducible client defect is treating GitHub's internal push rejection as
+-permanent or as a source race. The server's internal root cause is unknown.
+-Git already supplies the required primitives: unchanged ref updates are safe to
+-retry, `diff-tree` can attest changed paths and the parent, and
+-`merge-base --is-ancestor` can check remote publication without modifying the
+-checkout. Generic retry packages would add dependencies without implementing
+-these release-specific invariants. Existing `run-command`, push classification,
+-metadata attestation, version-lock comparison and explicit changeset-PR helpers
+-are retained and extended.
++## Key Findings
+ 
+-Retry only the reported internal failure and explicit HTTP 429/5xx, at most
+-three times with one/two second backoff. Authentication and rule failures take
+-precedence. Release pushes attest every attempt and cannot fall back to a PR or
+-rebase onto unvalidated code. Preview updates retain their existing recovery.
++### 1. Don't Hang Waiting for Stdin
+ 
+-A validated SHA or a single metadata-only child with identical manifest/lock
+-content excluding versions may publish. Remote recovery first verifies those
+-same properties, then adopts the exact version. Publishing may fetch and check
+-ancestry but never pull source after validation. Ordinary same-version registry
+-self-healing and explicitly requested changeset PRs remain covered by existing
+-tests. Manual gates explicitly override skipped-needs behavior using a status
+-function, as described in [GitHub's workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds).
++From clig.dev:
+ 
+-## Dependency and workflow compatibility (#284)
++> "If your command is expecting to have something piped to it and stdin is an interactive terminal, display help immediately and quit. This means it doesn't just hang, like cat. Alternatively, you could print a log message to stderr."
+ 
+-The [minimatch advisory](https://github.com/isaacs/minimatch/security/advisories/GHSA-g3hv-75wg-m249)
+-and [glob advisory](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)
+-motivate scoped overrides in all three package manifests/locks. Blanket major
+-replacement can break older callable APIs, so legacy dependency branches stay
+-unchanged. The existing real SDK archive probe and desktop ASAR probe exercise
+-the consumers; hosted artifact upload/download roundtrips remain the final CI
+-integration evidence. No replacement archive library is necessary.
++From Stylelint PR:
+ 
+-[zizmor's self-repository audit](https://docs.zizmor.sh/audits/#self-repository)
+-conflicts with the repository's pinned actionlint 1.7.12 syntax support. The
+-baseline already contains the required narrow exceptions, including links,
+-security and workflows. Keep those exact filenames and add a drift gate that
+-compares every local action consumer with the exception list; other zizmor
+-audits and regular/pedantic passes remain active. Do not change local references
+-to syntax unsupported by the pinned validator.
++> "just running the stylelint command immediately exits, instead of waiting. I believe this behavior is more user-friendly."
+ 
+-[dependency-review-action](https://github.com/actions/dependency-review-action)
+-already supports visible OpenSSF scores with a warning threshold of zero;
+-retain its high-severity vulnerability failure threshold. npm's
+-[documented audit exit behavior](https://docs.npmjs.com/cli/v11/commands/npm-audit/#exit-code)
+-does not make arbitrary nonzero process results valid audit evidence. Validate
+-normal exits 0/1, the vulnerability map, advisory evidence and reference graph;
+-reject transport failures, dangling references and reference-only components.
+-The existing reporter supplies complete findings with the repository's high
+-failure threshold and scheduled policy for fixable moderate advisories. Temporary Git fixtures explicitly disable autocrlf; acceptance
+-assertions are unchanged.
++### 2. TTY Detection is Standard Practice
+ 
+-## Preview container tools (#285)
++From Node.js TTY documentation:
+ 
+-The official [Playwright noble Dockerfile](https://github.com/microsoft/playwright/blob/v1.59.1/utils/docker/Dockerfile.noble)
+-is the image source, not a promise that arbitrary host tools are installed. Keep
+-the existing immutable Playwright digest and install the official
+-[GitHub CLI 2.103.3 release](https://github.com/cli/cli/releases/tag/v2.103.3)
+-archive with a fixed SHA256 before extraction. This avoids an extra package
+-repository, mutable apt result or unpinned setup action. A read-only PR job uses
+-the same image, checks all required tools and performs isolated dummy-token
+-credential setup/fill without contacting GitHub. The writer depends on that job;
+-the terminal gate and both path filters include it and its transitive helpers.
+-Tool-path diagnostics are opt-in.
++> "The preferred method of determining whether Node.js is being run within a TTY context is to check that the value of the `process.stdout.isTTY` property is true."
+ 
+-## Report integrity (#286)
++> "When running in a terminal it returns `true`, but when piped (e.g., `| cat`) it returns `false`."
+ 
+-The lychee bug is a multiline whitespace match consuming the next failure
+-record. Horizontal whitespace and same-line descriptions fix that boundary;
+-shared section extraction excludes redirects while preserving supported timeout
+-and legacy fixtures. A Markdown parser would be a larger dependency for a small
+-stable report grammar.
++### 3. Never Require Prompts
+ 
+-[SARIF guidance](https://docs.github.com/en/code-security/reference/code-scanning/sarif-files/sarif-support)
+-and the existing CodeQL action favor keeping the native result checker. Examine
+-both invocation notification arrays in every run, reject warning/error/default
+-warning and malformed evidence, allow note/none, and print descriptor, location
+-and message. A separate SARIF validator can check schema, but cannot replace the
+-repository policy that extraction/configuration warnings block a green scan.
+-Normal security findings continue to fail independently.
++From 12 Factor CLI Apps:
+ 
+-## Reproductions and verification
++> "Never require a prompt. Always provide a way of passing input with flags or arguments. If stdin is not an interactive terminal, skip prompting and just require those flags/args."
+ 
+-Run `node experiments/issue-287/reproduce.mjs --before` and `node experiments/issue-287/reproduce.mjs`. These offline
+-probes use an owned temporary tree and the immutable baseline to demonstrate
+-push retry, audit process, adjacent lychee and SARIF notification failures and
+-fixes. They perform no registry or repository writes. Real temporary-Git tests
+-cover publication races, local/remote metadata recovery, tracked source changes,
+-manifest/lock dependency drift and metadata staging. Focused tests exercise
+-workflow conditions, pinned installer/checksum failure, tool availability,
+-scorecard policy, dependency ranges and exception inventory.
++> "For accepting input, if stdin is a tty then prompt rather than forcing the user to specify a flag. Never require a prompt though. The user needs to be able to automate your CLI in a script so allow them to override prompts always."
+ 
+-Native JavaScript is the implementation; there are no incomplete ports,
+-unsupported translations, native adapters or Rust changes. Full platform,
+-container and hosted artifact checks are delegated to existing CI for the exact
+-candidate commit, avoiding duplicate resource-heavy local builds. Local logs
+-are kept outside tracked source; final CI links and results belong in PR 288.
++### 4. Standard Help/Version Flags
++
++From 12 Factor CLI Apps:
++
++> "-V (capitalized) and of course --version. These should both work, just like -h and --help should both work."
++
++### 5. Exit Immediately When No Input
++
++From multiple sources:
++
++- Check `isatty()` or `isTTY` to determine if input is piped or interactive
++- Exit immediately rather than blocking when no input is provided in interactive mode
++- Support `-h`/`--help` and `-V`/`--version` flags
++
++## Application to Issue #76
++
++### Problem Statement
++
++When running `agent` without arguments, the CLI hangs indefinitely waiting for stdin input that will never come in an interactive terminal.
++
++### Expected Behavior (Based on Research)
++
++1. **TTY Detection**: Check if stdin is a TTY (interactive terminal)
++2. **Show Help**: If TTY and no arguments, show help and exit
++3. **Provide Flags**: Offer `-p`/`--prompt` as explicit input method
++4. **Status Message**: When waiting for stdin, output a status message explaining what the CLI is doing
++5. **Keyboard Shortcut Guidance**: Mention CTRL+C to exit and `--help` for more info
++
++### Recommended Implementation
++
++1. **Primary Check**: `process.stdin.isTTY` - if true and no command/prompt provided, show help
++2. **Stdin Listening Mode**: When stdin is NOT a TTY (piped), output a JSON status message
++3. **Explicit Prompt Flag**: `-p`/`--prompt` bypasses stdin waiting entirely
++4. **No Default Timeout**: Don't use timeout by default (allows long JSON inputs)
++5. **Optional Timeout**: `--stdin-stream-timeout` for users who want timeout behavior

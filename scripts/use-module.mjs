@@ -1,13 +1,12 @@
 /**
- * Shared `use-m` loader with CommonJS-namespace normalization.
+ * Lockfile-installed release dependencies with CommonJS normalization.
  *
  * Why this file exists
  * --------------------
- * Every release script loads its dependencies through `use-m`, which resolves a
- * package with `createRequire(...).resolve` and then loads the resolved file
- * with dynamic `import()`. Because the `require` export condition wins during
- * resolution, a dual package such as `command-stream@>=0.19.0` is loaded
- * through its CommonJS entry point.
+ * Resolve from the installed js/package.json dependency tree rather than
+ * evaluating an unpinned loader downloaded from a CDN. Because the `require`
+ * export condition wins during resolution, a dual package such as
+ * `command-stream@>=0.19.0` is loaded through its CommonJS entry point.
  *
  * Node.js 23.0.0+ adds a synthetic `'module.exports'` named export to CommonJS
  * namespaces (https://nodejs.org/api/esm.html#commonjs-namespaces). `use-m`
@@ -27,7 +26,13 @@
  * like the one above diagnosable from a CI log alone.
  */
 
-const USE_M_URL = 'https://unpkg.com/use-m/use.js';
+import { createRequire } from 'node:module';
+import { pathToFileURL, URL } from 'node:url';
+
+const requireInstalled = createRequire(
+  new URL('../js/package.json', import.meta.url)
+);
+const SUPPORTED_MODULES = new Set(['command-stream', 'lino-arguments']);
 
 /**
  * Keys Node.js and bundlers attach to a namespace that carry no user-facing
@@ -98,38 +103,33 @@ export const normalizeModule = (loaded) => {
   return normalized;
 };
 
-let usePromise;
-
-/** Fetch and evaluate `use-m` once per process. */
-export const loadUse = async () => {
-  usePromise ??= (async () => {
-    debug('loading use-m from', USE_M_URL);
-    const response = await fetch(USE_M_URL);
-    if (!response.ok) {
+/** Apply the failure semantics required by every release command's try/catch. */
+export const configureModule = (specifier, loaded) => {
+  const normalized = normalizeModule(loaded);
+  if (specifier === 'command-stream') {
+    if (typeof normalized?.shell?.errexit !== 'function') {
       throw new Error(
-        `Failed to fetch use-m from ${USE_M_URL}: ${response.status} ${response.statusText}`
+        'command-stream must expose shell.errexit for CI commands'
       );
     }
-    const { use } = await eval(await response.text());
-    if (typeof use !== 'function') {
-      throw new Error(
-        `use-m did not export a callable "use" (got ${typeof use}) from ${USE_M_URL}`
-      );
-    }
-    return use;
-  })();
-  return await usePromise;
+    normalized.shell.errexit(true);
+    debug('enabled command-stream exit-on-error');
+  }
+  return normalized;
 };
 
 /**
- * Load a package through `use-m` and return a namespace whose named exports are
+ * Load a reviewed, installed package and return a namespace whose named exports are
  * reachable at the top level on every supported Node.js version.
  */
 export const useModule = async (specifier) => {
-  const use = await loadUse();
-  const loaded = await use(specifier);
-  debug(`use(${specifier}) on ${process.version} ->`, describe(loaded));
-  return normalizeModule(loaded);
+  if (!SUPPORTED_MODULES.has(specifier)) {
+    throw new Error(`Unsupported release dependency: ${specifier}`);
+  }
+  const resolved = requireInstalled.resolve(specifier);
+  const loaded = await import(pathToFileURL(resolved).href);
+  debug(`installed ${specifier} on ${process.version} ->`, describe(loaded));
+  return configureModule(specifier, loaded);
 };
 
 export default useModule;

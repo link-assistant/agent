@@ -1,0 +1,85 @@
+--- template/scripts/js-paths.mjs
++++ scripts/js-paths.mjs
+@@ -8,19 +8,14 @@
+  * - Multi-language repositories (package.json in js/ subfolder)
+  *
+  * Usage:
+- *   import { getJsRoot, getPackageJsonPath, getChangesetDir, needsCd } from './js-paths.mjs';
++ *   import { getJsRoot, getPackageJsonPath, getChangesetDir } from './js-paths.mjs';
+  *
+- *   const jsRoot = getJsRoot();           // Returns 'js' or '.'
++ *   const jsRoot = getJsRoot();          // Returns 'js' or '.'
+  *   const pkgPath = getPackageJsonPath(); // Returns 'js/package.json' or './package.json'
+- *   const changesetDir = getChangesetDir(); // Returns 'js/.changeset' or './.changeset'
+- *
+- * Configuration:
+- *   - CLI: --js-root <path>
+- *   - Environment: JS_ROOT=<path>
+  */
+ 
+-import { existsSync } from 'node:fs';
+-import { join } from 'node:path';
++import { existsSync } from 'fs';
++import { join } from 'path';
+ 
+ // Cache for detected paths (computed once per process)
+ let cachedJsRoot = null;
+@@ -41,7 +36,7 @@
+   const { jsRoot: explicitRoot, verbose = false } = options;
+ 
+   // If explicitly configured, use that
+-  if (explicitRoot !== undefined && explicitRoot !== '') {
++  if (explicitRoot !== undefined) {
+     if (verbose) {
+       console.log(
+         `Using explicitly configured JavaScript root: ${explicitRoot}`
+@@ -92,8 +87,7 @@
+  * @returns {string} Path to package.json
+  */
+ export function getPackageJsonPath(options = {}) {
+-  const jsRoot =
+-    options.jsRoot !== undefined ? options.jsRoot : getJsRoot(options);
++  const jsRoot = getJsRoot(options);
+   return jsRoot === '.' ? './package.json' : join(jsRoot, 'package.json');
+ }
+ 
+@@ -103,8 +97,7 @@
+  * @returns {string} Path to package-lock.json
+  */
+ export function getPackageLockPath(options = {}) {
+-  const jsRoot =
+-    options.jsRoot !== undefined ? options.jsRoot : getJsRoot(options);
++  const jsRoot = getJsRoot(options);
+   return jsRoot === '.'
+     ? './package-lock.json'
+     : join(jsRoot, 'package-lock.json');
+@@ -116,8 +109,7 @@
+  * @returns {string} Path to .changeset directory
+  */
+ export function getChangesetDir(options = {}) {
+-  const jsRoot =
+-    options.jsRoot !== undefined ? options.jsRoot : getJsRoot(options);
++  const jsRoot = getJsRoot(options);
+   return jsRoot === '.' ? './.changeset' : join(jsRoot, '.changeset');
+ }
+ 
+@@ -128,8 +120,7 @@
+  * @returns {string} CD prefix for shell commands
+  */
+ export function getCdPrefix(options = {}) {
+-  const jsRoot =
+-    options.jsRoot !== undefined ? options.jsRoot : getJsRoot(options);
++  const jsRoot = getJsRoot(options);
+   return jsRoot === '.' ? '' : `cd ${jsRoot} && `;
+ }
+ 
+@@ -139,8 +130,7 @@
+  * @returns {boolean} True if cd is needed
+  */
+ export function needsCd(options = {}) {
+-  const jsRoot =
+-    options.jsRoot !== undefined ? options.jsRoot : getJsRoot(options);
++  const jsRoot = getJsRoot(options);
+   return jsRoot !== '.';
+ }
+ 

@@ -57,6 +57,10 @@ export default [
       ],
       'no-console': 'off', // Allow console in this project
       'no-debugger': 'error',
+      'max-lines': [
+        'error',
+        { max: 1500, skipBlankLines: false, skipComments: false },
+      ],
 
       // Best practices
       eqeqeq: ['error', 'always'],

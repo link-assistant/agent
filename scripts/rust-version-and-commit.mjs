@@ -1,4 +1,11 @@
 #!/usr/bin/env node
+import {
+  assertSafeAdvance,
+  assertStagedReleaseMetadata,
+  setLockPackageVersion,
+  syncReleaseCheckout,
+} from './release-safety.mjs';
+import { pushWithRebaseRetry } from './push-with-rebase-retry.mjs';
 
 /**
  * Bump version in Cargo.toml and commit changes for Rust
@@ -18,14 +25,17 @@ import {
 import { join } from 'path';
 import { execFileSync, execSync } from 'child_process';
 
-import { readPackageKey, setPackageVersion } from './rust-package-info.mjs';
+import {
+  parseCrateInfo,
+  readPackageKey,
+  setPackageVersion,
+} from './rust-package-info.mjs';
 import {
   getRustRoot,
   getCargoTomlPath,
   getCargoLockPath,
   getChangelogDir,
   getChangelogPath,
-  needsCd,
   parseRustRootConfig,
 } from './rust-paths.mjs';
 
@@ -251,9 +261,7 @@ ${newEntry}
   }
 }
 
-const MAX_PUSH_RETRIES = 3;
-
-function main() {
+async function main() {
   try {
     // Configure git
     exec('git config user.name "github-actions[bot]"');
@@ -275,6 +283,7 @@ function main() {
     const remoteHead = exec('git rev-parse origin/main');
 
     if (localHead !== remoteHead) {
+      assertSafeAdvance(localHead, remoteHead, { rustRoot });
       console.log(
         `Remote main has advanced (local: ${localHead.slice(0, 7)}, remote: ${remoteHead.slice(0, 7)})`
       );
@@ -296,13 +305,13 @@ function main() {
     // Update version in Cargo.toml
     updateCargoToml(newVersion);
 
-    // Regenerate Cargo.lock to reflect the new version in Cargo.toml.
-    // This is necessary because cargo publish refuses to publish when
-    // Cargo.lock has uncommitted changes. Without this step, the next
-    // `cargo build` would update Cargo.lock, leaving it dirty.
-    const generateLockfileCmd = `cargo generate-lockfile${needsCd({ rustRoot }) ? ` --manifest-path ${CARGO_TOML}` : ''}`;
-    exec(generateLockfileCmd);
-    console.log('Regenerated Cargo.lock');
+    // Change only this crate's version; generating a fresh lockfile also
+    // upgrades transitive dependencies that this release run never tested.
+    const { name } = parseCrateInfo(readFileSync(CARGO_TOML, 'utf8'));
+    writeFileSync(
+      CARGO_LOCK,
+      setLockPackageVersion(readFileSync(CARGO_LOCK, 'utf8'), name, newVersion)
+    );
 
     // Collect changelog fragments
     collectChangelog(newVersion);
@@ -327,6 +336,8 @@ function main() {
       // There are changes to commit (git diff exits with 1 when there are differences)
     }
 
+    assertStagedReleaseMetadata({ rustRoot });
+
     // Commit changes
     const commitMsg = description
       ? `chore(rust): release v${newVersion}\n\n${description}`
@@ -336,23 +347,10 @@ function main() {
     execFileSync('git', ['commit', '-m', commitMsg], { stdio: 'pipe' });
     console.log(`Committed version ${newVersion}`);
 
-    // Push with retry: if another CI job (e.g. JS release) pushed to main
-    // concurrently, pull --rebase and retry
-    for (let attempt = 1; attempt <= MAX_PUSH_RETRIES; attempt++) {
-      try {
-        exec('git push');
-        break;
-      } catch (pushError) {
-        if (attempt < MAX_PUSH_RETRIES) {
-          console.log(
-            `Push failed (attempt ${attempt}/${MAX_PUSH_RETRIES}), pulling and retrying...`
-          );
-          exec('git pull --rebase origin main');
-        } else {
-          throw pushError;
-        }
-      }
-    }
+    await pushWithRebaseRetry({
+      push: () => exec('git push'),
+      pullRebase: () => syncReleaseCheckout({ rustRoot }),
+    });
 
     // Tag only after the push: a retry rebases the release commit, and a tag
     // created before it would point at a commit that never reached main (#337).

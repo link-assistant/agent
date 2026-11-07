@@ -1,0 +1,89 @@
+bun test v1.4.4 (38afee6c8)
+
+tests/validate-changeset.js:
+(pass) validate-changeset > fails a pull request that adds no changeset, even if one is pending [230.81ms]
+(pass) validate-changeset > documentation-only pull requests do not require a release [220.79ms]
+(pass) validate-changeset > runtime Markdown prompts still require a changeset [322.67ms]
+(pass) validate-changeset > Rust-only source changes do not require a JavaScript release [352.59ms]
+(pass) validate-changeset > passes a pull request that adds one changeset next to a pending one [380.24ms]
+(pass) validate-changeset > fails a pull request that adds two changesets [312.92ms]
+
+tests/release-safety.js:
+(pass) release safety (#340) > JavaScript versioning preserves every resolved dependency in both lock formats [0.64ms]
+(pass) release safety (#340) > generated release commits cannot include source files [5.53ms]
+(pass) release safety (#340) > a queued release can accept a version change but cannot accept new dependencies [0.92ms]
+(pass) release safety (#340) > a rule, authentication or network refusal is never retried as a lost race [6.88ms]
+(pass) relevant change detection > docs do not build packages, while sources, dependencies and CI scripts do [0.71ms]
+
+tests/ci-scripts.js:
+(pass) rust-package-info > reads name and version from the [package] section only [3.42ms]
+(pass) rust-package-info > does not leak names from [lib]/[[bin]]/[[test]] sections [0.12ms]
+(pass) rust-package-info > ignores keys defined before any section header [0.21ms]
+(pass) rust-package-info > bumps only the [package] version [0.32ms]
+(pass) rust-package-info > refuses to rewrite a Cargo.toml without a package version [0.54ms]
+(pass) rust-package-info > throws when the package name or version is missing [0.67ms]
+(pass) package-info > parses name and version [0.48ms]
+(pass) package-info > reports the file path on invalid JSON [1.58ms]
+(pass) package-info > formats a package@version specifier [0.13ms]
+(pass) npm-registry > percent-encodes the slash in scoped package names [0.19ms]
+(pass) npm-registry > strips trailing slashes from the registry URL [0.08ms]
+(pass) npm-registry > builds the metadata URL [0.04ms]
+(pass) npm-registry > returns true only when the exact version exists [1.42ms]
+(pass) npm-registry > treats a 404 as not published [0.25ms]
+(pass) publish failure classification > recognises already-published conflicts [0.16ms]
+(pass) publish failure classification > marks auth/registry errors as non-retryable [0.07ms]
+(pass) waitForVersionOnRegistry > allows at least five minutes of npm propagation [0.74ms]
+(pass) waitForVersionOnRegistry > waits through a registry 404 for 20 seconds, then succeeds [0.27ms]
+(pass) waitForVersionOnRegistry > polls until the version appears [0.15ms]
+(pass) waitForVersionOnRegistry > gives up after the configured number of attempts [0.12ms]
+(pass) publishWithRetry > does not republish when verification lags behind a successful publish [0.56ms]
+(pass) publishWithRetry > treats an already-published conflict as a cue to verify, not to fail [0.25ms]
+(pass) publishWithRetry > retries a genuine publish failure and succeeds [0.27ms]
+(pass) publishWithRetry > fails fast on a non-retryable error [0.21ms]
+(pass) publishWithRetry > reports a terminal verification failure without republishing [0.18ms]
+(pass) JS release recovery > tags the exact version commit during late recovery [0.35ms]
+(pass) JS release recovery > dry run: an npm version without a GitHub release completes the post-steps [0.40ms]
+(pass) JS release recovery > records npm publication when the GitHub release lookup fails [0.18ms]
+(pass) JS release recovery > resumes formatting when release creation succeeded earlier [0.21ms]
+(pass) JS release recovery > does not republish a completed release [0.14ms]
+(pass) JS release recovery > formats a release with misleading badge text [0.12ms]
+(pass) JS release recovery > leaves a version missing from npm for the publish step [0.11ms]
+(pass) JS release workflow wiring > resumes existing versions and writes a summary with LF and CRLF [1.93ms]
+(pass) JS release summary > distinguishes npm acceptance with failed post-steps from no publish [0.31ms]
+(pass) JS release summary > reports recovered releases as complete [0.04ms]
+(pass) cargo publish classification > a zero exit code is success even when the log mentions errors [0.41ms]
+(pass) cargo publish classification > an already-uploaded conflict is not a failure to retry [0.13ms]
+(pass) cargo publish classification > marks auth failures as non-retryable [0.12ms]
+(pass) cargo publish classification > retries an ordinary non-zero exit [0.04ms]
+(pass) crates-registry > builds the version metadata URL [0.76ms]
+(pass) crates-registry > returns true only for an exact version match [0.41ms]
+(pass) crates-registry > treats a 404 as not published [0.12ms]
+(pass) crates-registry > surfaces other registry errors instead of reporting "not published" [0.22ms]
+(pass) changeset version result > lists changesets without README.md and config.json [3.67ms]
+(pass) changeset version result > a changeset left behind fails the version step [1.56ms]
+(pass) changeset version result > a fully consumed changeset directory passes [0.87ms]
+(pass) release rerun detection > a first instant release attempt is never an earlier release [0.14ms]
+(pass) release rerun detection > a rerun of an instant release may resume an earlier bump [0.02ms]
+(pass) release rerun detection > consumed changesets mean an earlier attempt released [0.02ms]
+(pass) Rust release state (#337) > nothing to do once tag, crate and GitHub release all exist [0.07ms]
+(pass) Rust release state (#337) > fragments always release a new version [0.10ms]
+(pass) Rust release state (#337) > a tagged and released but unpublished crate is still published [0.05ms]
+(pass) Rust release state (#337) > a bare tag goes through publish before the GitHub release [0.03ms]
+(pass) Rust release state (#337) > a missing tag completes the current version without a bump [0.03ms]
+crates.io lookup failed (attempt 1/3): crates.io responded with 503
+(pass) Rust release state (#337) > a transient crates.io error is retried [9.29ms]
+crates.io lookup failed (attempt 1/3): fetch failed
+crates.io lookup failed (attempt 2/3): fetch failed
+crates.io lookup failed (attempt 3/3): fetch failed
+(pass) Rust release state (#337) > an unreachable crates.io is an error, not "not published" [3.43ms]
+(pass) pushWithRebaseRetry (#337) > rebases and pushes again when main moved [1.27ms]
+(pass) pushWithRebaseRetry (#337) > gives up after the last attempt [0.31ms]
+
+tests/rust-version-and-commit.js:
+(pass) rust-version-and-commit > rejects untested source landing during a release push race [951.26ms]
+(pass) rust-version-and-commit > tags the commit that reached main when the first push loses a race [1082.42ms]
+
+ 71 pass
+ 0 fail
+ 192 expect() calls
+Ran 71 tests across 4 files. [3.99s]

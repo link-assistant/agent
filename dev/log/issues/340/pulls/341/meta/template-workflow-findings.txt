@@ -1,0 +1,120 @@
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/javascript-first-example.yml:39:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/javascript-first-example.yml:57:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/javascript-first-example.yml:75:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/javascript-first-example.yml:94:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/javascript-first-example.yml:112:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/javascript-first-example.yml:130:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/workflows.yml:53:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/workflows.yml:81:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/workflows.yml:99:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/workflows.yml:125:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/workflows.yml:178:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/workflows.yml:253:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/desktop-release.yml:33:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/desktop-release.yml:71:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/desktop-release.yml:81:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/desktop-release.yml:167:      group: main-writer-${{ github.repository }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/desktop-release.yml:168:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/security.yml:24:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/security.yml:37:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/security.yml:64:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/security.yml:110:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/security.yml:138:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:65:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:98:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:124:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:158:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:184:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:229:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:302:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:414:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:466:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:548:      group: main-writer-${{ github.repository }}-main
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:549:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:708:      group: main-writer-${{ github.repository }}-main
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:709:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:798:      group: main-writer-${{ github.repository }}-main
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:799:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:904:      group: main-writer-${{ github.repository }}-main
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:905:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:983:      group: main-writer-${{ github.repository }}-main
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:984:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/release.yml:1061:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/workflows.yml:40:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/workflows.yml:85:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/workflows.yml:132:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/workflows.yml:147:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/links.yml:63:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/links.yml:187:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/rerun-infrastructure-failures.yml:46:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/rerun-unacquired.yml:40:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/security.yml:32:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/security.yml:78:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/security.yml:106:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/security.yml:131:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/security.yml:169:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/security.yml:25:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/security.yml:49:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/security.yml:75:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/links.yml:53:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/javascript-first-gate.yml:46:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/javascript-first-example.yml:22:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/javascript-first-example.yml:37:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/javascript-first-example.yml:67:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/workflows.yml:24:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/workflows.yml:35:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/workflows.yml:84:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/workflows.yml:118:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/workflows.yml:176:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/workflows.yml:192:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:69:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:82:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:125:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:186:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:221:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:257:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:287:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:340:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:387:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:426:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:523:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:599:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:655:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:728:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:778:      group: main-writer-${{ github.repository }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:779:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:846:        continue-on-error: true # Existing repositories may still need token fallback.
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:986:      group: main-writer-${{ github.repository }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:987:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1044:        continue-on-error: true # Existing repositories may still need token fallback.
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1148:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1173:      group: main-writer-${{ github.repository }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1174:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1244:      group: main-writer-${{ github.repository }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1245:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1299:      group: main-writer-${{ github.repository }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1300:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1375:      group: main-writer-${{ github.repository }}
+dev/log/issues/340/pulls/341/templates/rust/files/.github/workflows/release.yml:1376:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/docs.yml:47:  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:48:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:110:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:213:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:279:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:368:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:445:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:501:      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:549:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/release.yml:666:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/python/files/.github/workflows/links.yml:47:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:72:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:142:      group: main-writer-${{ github.repository }}-main
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:143:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:181:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:236:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:283:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:316:      cancel-in-progress: true
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:345:      group: main-writer-${{ github.repository }}-main
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:346:      cancel-in-progress: false
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:388:        run: npm install --no-save --package-lock=false --no-audit --no-fund browser-commander@0.8.1 playwright@1.59.1 # zizmor: ignore[adhoc-packages]
+dev/log/issues/340/pulls/341/templates/js/files/.github/workflows/example-app.yml:491:      cancel-in-progress: true

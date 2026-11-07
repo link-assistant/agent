@@ -10,3 +10,6 @@ bun.lock
 # `*` bullets lychee emits into `-`, which would make the fixture stop
 # resembling the reports scripts/check-web-archive.mjs has to parse.
 scripts/fixtures/
+
+# Archived issue evidence and pinned upstream snapshots are immutable.
+dev/log/

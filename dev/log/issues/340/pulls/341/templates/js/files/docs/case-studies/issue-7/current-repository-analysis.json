@@ -1,0 +1,70 @@
+{
+  "repository": "https://github.com/link-foundation/js-ai-driven-development-pipeline-template",
+  "analysis_date": "2025-12-18",
+  "description": "A JavaScript/TypeScript package template for AI-driven development",
+  "package_manager": "npm",
+  "configuration_files": {
+    "build_and_development": ["package.json", "bunfig.toml", "deno.json"],
+    "code_quality": ["eslint.config.js", ".prettierrc", ".prettierignore"],
+    "git_hooks": [".husky/pre-commit"],
+    "changesets": [".changeset/config.json"]
+  },
+  "github_workflows": {
+    "release.yml": {
+      "triggers": ["push to main", "pull_request", "workflow_dispatch"],
+      "jobs": [
+        "changeset-check",
+        "lint",
+        "test",
+        "release",
+        "instant-release",
+        "changeset-pr"
+      ],
+      "test_matrix": "3 runtimes x 3 OS = 9 combinations"
+    }
+  },
+  "eslint_rules": {
+    "base_configs": ["@eslint/js recommended", "prettier"],
+    "rules": {
+      "prettier_integration": true,
+      "no_unused_vars": "error",
+      "no_console": "off",
+      "no_debugger": "error",
+      "eqeqeq": "always",
+      "curly": "all",
+      "no_var": true,
+      "prefer_const": true,
+      "prefer_arrow_callback": true,
+      "no_duplicate_imports": true,
+      "object_shorthand": true,
+      "prefer_template": true
+    }
+  },
+  "prettier_config": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 80,
+    "tabWidth": 2,
+    "useTabs": false,
+    "arrowParens": "always",
+    "endOfLine": "lf"
+  },
+  "features": {
+    "multi_runtime_support": ["Node.js", "Bun", "Deno"],
+    "test_framework": "test-anywhere",
+    "release_automation": "Changesets",
+    "code_quality": ["ESLint", "Prettier", "Husky", "lint-staged"],
+    "file_size_limit": "1000 lines"
+  },
+  "devDependencies": [
+    "@changesets/cli",
+    "eslint",
+    "eslint-config-prettier",
+    "eslint-plugin-prettier",
+    "husky",
+    "lint-staged",
+    "prettier",
+    "test-anywhere"
+  ]
+}

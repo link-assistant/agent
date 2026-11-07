@@ -34,7 +34,10 @@ import {
   buildCrateVersionUrl,
   isCrateVersionPublished,
 } from '../../scripts/crates-registry.mjs';
-import { isNonRetryableFailure } from '../../scripts/publish-failure-classifier.mjs';
+import {
+  isNonRetryableFailure,
+  publishCommandOutput,
+} from '../../scripts/publish-failure-classifier.mjs';
 import { pushWithRebaseRetry } from '../../scripts/push-with-rebase-retry.mjs';
 import {
   decideRustRelease,
@@ -66,6 +69,19 @@ import {
 
 const noSleep = () => Promise.resolve();
 const noLog = () => {};
+
+test('strict command errors retain auth and already-published diagnostics', () => {
+  const error = Object.assign(new Error('Command failed with exit code 1'), {
+    stdout: 'npm publish output',
+    stderr: 'npm error E401 Unable to authenticate',
+  });
+  const output = publishCommandOutput(null, error);
+  expect(output).toContain('npm publish output');
+  expect(isNonRetryableFailure(output)).toBe(true);
+  error.stderr =
+    'npm error EPUBLISHCONFLICT Cannot publish over previously published version';
+  expect(isAlreadyPublishedError(publishCommandOutput(null, error))).toBe(true);
+});
 
 // A Cargo.toml shaped like rust/Cargo.toml: many sections carry `name = "..."`.
 const CARGO_TOML = `[package]
@@ -559,7 +575,14 @@ describe('JS release workflow wiring', () => {
       const releaseJob = workflow
         .split('\n  release:\n')[1]
         .split('\n  instant-release:\n')[0];
-      expect(releaseJob).toContain('git checkout -B main origin/main');
+      expect(releaseJob).not.toContain('git checkout -B main origin/main');
+      expect(
+        releaseJob.indexOf('node scripts/sync-release-checkout.mjs')
+      ).toBeGreaterThan(0);
+      expect(
+        releaseJob.indexOf('node scripts/sync-release-checkout.mjs')
+      ).toBeLessThan(releaseJob.indexOf('node scripts/recover-js-release.mjs'));
+      expect(releaseJob).toContain('scripts/version-and-commit.mjs');
       expect(workflow).toContain('run: node scripts/recover-js-release.mjs');
       expect(workflow).toContain(
         "steps.recover.outputs.needs_publish == 'true'"
@@ -862,7 +885,7 @@ describe('pushWithRebaseRetry (#337)', () => {
     await expect(
       pushWithRebaseRetry({
         push: async () => {
-          throw new Error('rejected');
+          throw new Error('rejected: non-fast-forward');
         },
         pullRebase: async () => rebases++,
         attempts: 3,

@@ -1,0 +1,42 @@
+--- template/.lycheeignore
++++ .lycheeignore
+@@ -1,12 +1,33 @@
+ # Lychee ignore patterns - regex patterns for URLs to skip during link checking
++#
++# Add patterns here for:
++# - Local/placeholder URLs
++# - URLs that require authentication
++# - Known false positives (rate-limited sites, etc.)
++# - URLs intentionally used as examples
+ 
+ # Localhost and local development URLs
+-https?://localhost
+-https?://127\.0\.0\.1
++http://localhost
++https://localhost
++http://127.0.0.1
++https://127.0.0.1
+ 
+-# Example and placeholder URLs used by the template
+-https?://example\.com
+-https://docs\.rs/example-sum-package-name
++# Example/placeholder URLs commonly used in documentation
++https://example\.com
++http://example\.com
+ 
+-# Web Archive rejects automated checks despite serving browser requests
++# npm.js returns 403 to link checkers (bot protection)
++https://www\.npmjs\.com
++
++# Medium.com returns 403 to link checkers (bot protection)
++https://medium\.com
++
++# Web Archive returns 502 to link checkers (bot protection)
+ https://web\.archive\.org
++
++# claude.ai returns 403 to link checkers (bot protection)
++https://claude\.ai
++
++# API base URLs quoted in the changelog answer 404 to a bare GET; they are
++# endpoints, not pages.
++https://api\.kilo\.ai

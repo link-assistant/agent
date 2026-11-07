@@ -1,0 +1,23 @@
+name: Artifact SDK runner
+description: Run the installed artifact SDK in a JavaScript action credential context.
+inputs:
+  name:
+    description: Artifact name
+  path:
+    description: Evidence glob or download destination
+    required: true
+  required-file:
+    description: Optional nonempty required evidence file
+  pages:
+    description: Package a Pages site
+  retention-days:
+    description: Retention duration
+  if-no-files-found:
+    description: Evidence policy
+  mode:
+    description: Transfer direction
+  pattern:
+    description: Download name pattern
+runs:
+  using: node24
+  main: ../index.mjs

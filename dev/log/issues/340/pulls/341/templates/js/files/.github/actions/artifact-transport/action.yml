@@ -1,0 +1,49 @@
+name: Artifact transport with bounded retries
+description: Retry transient SDK transport failures while requiring complete evidence.
+inputs:
+  name:
+    description: Unique artifact name within the workflow run
+  path:
+    description: Upload glob(s) or download destination
+    required: true
+  required-file:
+    description: Optional nonempty file required even when other diagnostics exist
+  pages:
+    description: Package a static site in the official Pages tar layout
+    default: 'false'
+  retention-days:
+    description: Artifact retention in days (0 uses repository default)
+    default: '0'
+  if-no-files-found:
+    description: Required evidence policy (only error is supported)
+    default: error
+  mode:
+    description: upload or download
+    default: upload
+  pattern:
+    description: Download name or prefix followed by an asterisk
+outputs:
+  artifact-id:
+    description: Uploaded artifact ID
+    value: ${{ steps.transport.outputs.artifact-id }}
+runs:
+  using: composite
+  steps:
+    - name: Install pinned artifact SDK
+      shell: bash
+      env:
+        ACTION_DIRECTORY: ${{ github.action_path }}
+      run: npm ci --prefix "$ACTION_DIRECTORY" --ignore-scripts --no-audit --no-fund
+    # Runner artifact credentials are supplied only to the JavaScript action.
+    - name: Transfer artifact
+      id: transport
+      uses: ./.github/actions/artifact-transport/run
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        required-file: ${{ inputs.required-file }}
+        pages: ${{ inputs.pages }}
+        retention-days: ${{ inputs.retention-days }}
+        if-no-files-found: ${{ inputs.if-no-files-found }}
+        mode: ${{ inputs.mode }}
+        pattern: ${{ inputs.pattern }}

@@ -1,0 +1,262 @@
+name: Desktop Release
+
+# zizmor: ignore[dangerous-triggers] - `workflow_run` is only used to react to
+# the CI/CD Pipeline finishing on `main`; every job runs with `contents: read`,
+# checks out either the default branch or a published release tag, and never
+# checks out the triggering run's head commit, so no untrusted code is executed.
+on: # zizmor: ignore[dangerous-triggers]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: [CI/CD Pipeline]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (defaults to the latest published release)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+# Configure checkout's git init before the first step runs.
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  resolve:
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-resolve
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    name: Resolve release
+    if: ${{ vars.DESKTOP_RELEASE_ENABLED == 'true' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      should_build: ${{ steps.release.outputs.should_build }}
+      sha: ${{ steps.revision.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Resolve release tag
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: bash scripts/desktop-release-resolve.sh
+
+      - name: Resolve immutable release revision
+        id: revision
+        if: steps.release.outputs.should_build == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          sha="$(gh api "repos/$REPO/commits/$TAG" --jq .sha)"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+          printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
+
+  javascript-first:
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-javascript-first-caller
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    needs: resolve
+    if: ${{ !cancelled() && (github.event_name == 'pull_request' || needs.resolve.outputs.should_build == 'true') }}
+    uses: ./.github/workflows/javascript-first-gate.yml # zizmor: ignore[self-repository]
+    with:
+      source-sha: ${{ github.event_name == 'pull_request' && github.sha || needs.resolve.outputs.sha }}
+
+  build:
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-build-${{ matrix.label }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    name: Build ${{ matrix.label }}
+    needs: [resolve, javascript-first]
+    if: ${{ !cancelled() && needs.javascript-first.result == 'success' && (github.event_name == 'pull_request' || needs.resolve.outputs.should_build == 'true') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { label: linux-x64, runner: ubuntu-24.04 }
+          - { label: linux-arm64, runner: ubuntu-24.04-arm }
+          - { label: macos-x64, runner: macos-15-intel }
+          - { label: macos-arm64, runner: macos-15 }
+          - { label: windows-x64, runner: windows-2025 }
+          - { label: windows-arm64, runner: windows-11-arm }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          ref: ${{ github.event_name == 'pull_request' && github.sha || needs.resolve.outputs.tag }}
+      - name: Verify prerequisite revision
+        shell: bash
+        env:
+          TESTED_SHA: ${{ needs.javascript-first.outputs.tested-sha }}
+        run: test "$(git rev-parse HEAD)" = "$TESTED_SHA"
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # safely handle action inputs (#187)
+        with:
+          # The `stable` ref is what supplied the action's default toolchain;
+          # once pinned to a hash the input has to be restated explicitly.
+          toolchain: stable
+      - name: Package desktop application
+        env:
+          DESKTOP_RELEASE_TAG: ${{ github.event_name == 'pull_request' && 'dry-run' || needs.resolve.outputs.tag }}
+          # electron-builder 26 requires both values for certificate-free PR builds:
+          CSC_FOR_PULL_REQUEST: 'true'
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          MATRIX_LABEL: ${{ matrix.label }}
+        run: bash scripts/package-desktop.sh "$MATRIX_LABEL" desktop-dist
+      - name: Smoke test release assets
+        env:
+          OUTPUT_DIR: desktop-dist
+        run: |
+          set -euo pipefail
+          first_asset="$(find "$OUTPUT_DIR" -type f -size +0c -print -quit)"
+          [ -n "$first_asset" ] || { echo "No non-empty desktop assets were produced" >&2; exit 1; }
+          find "$OUTPUT_DIR" -type f -size +0c -print | sed 's/^/Verified /'
+          # Electron apps must retain a signature envelope. Use
+          # electron-builder --mac ... -c.mac.identity=- and set
+          # CSC_FOR_PULL_REQUEST=true on the ad-hoc path.
+          while IFS= read -r app; do
+            [ -f "$app/Contents/_CodeSignature/CodeResources" ] || {
+              echo "Missing macOS CodeResources signature envelope: $app" >&2; exit 1;
+            }
+          done < <(find "$OUTPUT_DIR" -type d -name '*.app' -print)
+      - name: Create checksum fragment
+        env:
+          MATRIX_LABEL: ${{ matrix.label }}
+        run: |
+          set -euo pipefail
+          cd desktop-dist
+          if command -v sha256sum >/dev/null; then
+            find . -type f -print0 | sort -z | xargs -0 sha256sum
+          else
+            find . -type f -exec shasum -a 256 {} +
+          fi | sed 's#  \./#  #' > "SHA256SUMS-$MATRIX_LABEL.partial"
+      - name: Upload packaged assets
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-assets-${{ matrix.label }}
+          path: desktop-dist
+          retention-days: 7
+      - name: Upload checksum fragment
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-checksums-${{ matrix.label }}
+          path: desktop-dist/SHA256SUMS-${{ matrix.label }}.partial
+          retention-days: 7
+
+  finalize:
+    concurrency:
+      group: main-writer-${{ github.repository }}
+      cancel-in-progress: false
+      queue: max
+    name: Publish checksums and provenance
+    needs: [resolve, build]
+    if: ${{ !cancelled() && github.event_name != 'pull_request' && needs.build.result == 'success' && needs.resolve.outputs.should_build == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      # actionlint 1.7.12 rejects the newer $/ syntax; use the checked-out adapter.
+      - uses: ./.github/actions/download-artifact # zizmor: ignore[self-repository]
+        with:
+          pattern: desktop-assets-*
+          path: release-assets
+      - uses: ./.github/actions/download-artifact # zizmor: ignore[self-repository]
+        with:
+          pattern: desktop-checksums-*
+          path: checksums
+          merge-multiple: true
+      - name: Consolidate release metadata
+        env:
+          TAG: ${{ needs.resolve.outputs.tag }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          cat checksums/*.partial | sort -k2 > SHA256SUMS.txt
+          {
+            echo 'Desktop build provenance'
+            echo '========================'
+            echo 'Status     : complete'
+            echo "Repository : $REPOSITORY"
+            echo "Release tag: $TAG"
+            echo 'Targets    : linux-x64 linux-arm64 macos-x64 macos-arm64 windows-x64 windows-arm64'
+            echo "Attestation: verify each asset with gh attestation verify <file> --repo $REPOSITORY"
+            echo "Run        : $SERVER_URL/$REPOSITORY/actions/runs/$RUN_ID"
+          } > BUILD-PROVENANCE.txt
+      - name: Attest build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            release-assets/**/*
+            SHA256SUMS.txt
+      - name: Upload release metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mapfile -d '' assets < <(find release-assets -type f ! -name '*.partial' -print0)
+          [ ${#assets[@]} -gt 0 ] || { echo 'No release assets were downloaded' >&2; exit 1; }
+          gh release upload "$TAG" "${assets[@]}" SHA256SUMS.txt BUILD-PROVENANCE.txt \
+            --repo "$REPOSITORY" --clobber
+
+  # Terminal status gate (issue #156): GitHub reports jobs killed by
+  # timeout-minutes as cancelled. Observe every other job so a timeout becomes
+  # a visible failure instead of a grey run, while a run that was superseded by
+  # a newer commit is recognised as expected churn.
+  pipeline-status:
+    name: Pipeline Status
+    needs:
+      - javascript-first
+      - resolve
+      - build
+      - finalize
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # Read this run's jobs and annotations to name runner-acquisition failures (issue #226).
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check aggregate pipeline status
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          GH_TOKEN: ${{ github.token }}
+          IS_MAIN: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+          RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+        run: bash scripts/check-pipeline-status.sh

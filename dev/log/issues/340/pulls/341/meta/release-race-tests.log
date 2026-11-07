@@ -1,0 +1,10 @@
+bun test v1.4.4 (38afee6c8)
+
+tests/rust-version-and-commit.js:
+(pass) rust-version-and-commit > rejects untested source landing during a release push race [1017.23ms]
+(pass) rust-version-and-commit > tags the commit that reached main when the first push loses a race [1253.09ms]
+
+ 2 pass
+ 0 fail
+ 7 expect() calls
+Ran 2 tests across 1 file. [2.29s]

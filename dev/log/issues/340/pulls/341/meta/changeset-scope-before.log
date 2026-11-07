@@ -1,0 +1,40 @@
+bun test v1.4.4 (38afee6c8)
+
+tests/validate-changeset.js:
+(pass) validate-changeset > fails a pull request that adds no changeset, even if one is pending [282.78ms]
+(pass) validate-changeset > documentation-only pull requests do not require a release [248.95ms]
+137 |     mkdirSync(join(root, 'js', 'src'), { recursive: true });
+138 |     writeFileSync(join(root, 'js', 'src', 'prompt.md'), 'New behavior\n');
+139 |     git(root, 'add', '.');
+140 |     git(root, '-c', 'user.name=test', '-c', 'user.email=test@example.com',
+141 |       'commit', '-qm', 'change runtime prompt');
+142 |     expect(validate(root).status).toBe(1);
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 0
+
+      at <anonymous> (/tmp/gh-issue-solver-1794007881352/js/tests/validate-changeset.js:142:35)
+(fail) validate-changeset > runtime Markdown prompts still require a changeset [226.68ms]
+147 |     mkdirSync(join(root, 'rust', 'src'), { recursive: true });
+148 |     writeFileSync(join(root, 'rust', 'src', 'lib.rs'), 'pub fn changed() {}\n');
+149 |     git(root, 'add', '.');
+150 |     git(root, '-c', 'user.name=test', '-c', 'user.email=test@example.com',
+151 |       'commit', '-qm', 'change Rust');
+152 |     expect(validate(root).status).toBe(0);
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/tmp/gh-issue-solver-1794007881352/js/tests/validate-changeset.js:152:35)
+(fail) validate-changeset > Rust-only source changes do not require a JavaScript release [194.06ms]
+(pass) validate-changeset > passes a pull request that adds one changeset next to a pending one [207.39ms]
+(pass) validate-changeset > fails a pull request that adds two changesets [301.40ms]
+
+ 4 pass
+ 2 fail
+ 12 expect() calls
+Ran 6 tests across 1 file. [1.67s]

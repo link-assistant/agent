@@ -1,0 +1,36 @@
+name: Artifact transport with bounded retries
+description: Retry transient artifact transfers, preserving evidence and digest verification.
+inputs:
+  operation:
+    description: upload or download
+    default: upload
+  name:
+    description: Unique artifact name (required for uploads)
+  path:
+    description: Input glob/directory for uploads or destination for downloads
+    required: true
+  pages:
+    description: Package a Pages site as artifact.tar before uploading
+    default: 'false'
+  retention-days:
+    description: Retention in days (Pages defaults to 1, other uploads use repository default)
+  if-no-files-found:
+    description: Compatibility input; this action always errors on missing evidence
+    default: error
+  pattern:
+    description: Download artifact name pattern supporting star wildcards
+  merge-multiple:
+    description: Merge matching downloads into the destination
+    default: 'false'
+outputs:
+  artifact-id:
+    description: Uploaded artifact ID
+  artifact-digest:
+    description: Uploaded artifact digest
+  artifact-url:
+    description: Uploaded artifact URL
+  download-path:
+    description: Absolute download destination
+runs:
+  using: node24
+  main: dist/index.mjs

@@ -426,6 +426,22 @@ describe('release gating', () => {
 });
 
 describe('release tooling', () => {
+  test('both Rust publishers install the locked JS helpers before GitHub release creation', () => {
+    const body = workflows.find(
+      (workflow) => workflow.file === 'rust.yml'
+    ).body;
+    for (const job of ['auto-release', 'manual-release']) {
+      const block = getJobBlock(body, job);
+      const install = block.indexOf(
+        'npm ci --legacy-peer-deps --ignore-scripts'
+      );
+      expect(install).toBeGreaterThan(-1);
+      expect(install).toBeLessThan(
+        block.indexOf('node scripts/create-github-release.mjs')
+      );
+      expect(block.slice(install)).toContain('working-directory: js');
+    }
+  });
   // `changeset version` formats files with the package manager it detects
   // (bun, because of js/bun.lock). Without bun the 0.26.15 release left its
   // changeset in js/.changeset.
@@ -533,4 +549,48 @@ describe('concurrency control', () => {
 
     expect(offenders).toEqual([]);
   });
+});
+
+describe('queued writer policy (#340)', () => {
+  test('only non-cancellable writers may use queue: max', () => {
+    for (const { file, body } of workflows) {
+      for (const jobId of listJobs(body)) {
+        const block = getJobBlock(body, jobId);
+        const queue = block.match(/^ {6}queue: (.+)$/m)?.[1];
+        const concurrency = getJobConcurrency(body, jobId);
+        if (concurrency?.group.startsWith('main-writer-')) {
+          expect([file, jobId, queue]).toEqual([file, jobId, 'max']);
+          expect(concurrency.cancelInProgress).toBe('false');
+        } else {
+          expect([file, jobId, queue]).toEqual([file, jobId, undefined]);
+        }
+      }
+    }
+  });
+  test('each publisher explicitly requires credential preflight success', () => {
+    for (const [file, jobs] of Object.entries({
+      'js.yml': ['release', 'instant-release'],
+      'rust.yml': ['auto-release', 'manual-release'],
+    })) {
+      for (const job of jobs) {
+        const block = getJobBlock(
+          workflows.find((workflow) => workflow.file === file).body,
+          job
+        );
+        expect(listNeededJobs(block)).toContain('release-preflight');
+        expect(block).toContain("needs.release-preflight.result == 'success'");
+        expect(block).toContain("github.ref == 'refs/heads/main'");
+      }
+    }
+  });
+});
+
+test('CodeQL scans application code without treating archived upstream snapshots as agent source', () => {
+  const security = readWorkflow('security.yml');
+  const config = readFileSync(
+    join(repoRoot, '.github/codeql-config.yml'),
+    'utf8'
+  );
+  expect(security).toContain('config-file: ./.github/codeql-config.yml');
+  expect(config.match(/^ {2}- .+$/gm)).toEqual(['  - dev/log/**']);
 });

@@ -1,0 +1,76 @@
+Could not resolve "/tmp/gh-issue-solver-1794007881352/js/src/util/error" in file /tmp/gh-issue-solver-1794007881352/unknown.
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- [class DOMException] {
+-   ABORT_ERR: 20,
+-   DATA_CLONE_ERR: 25,
+-   DOMSTRING_SIZE_ERR: 2,
+-   HIERARCHY_REQUEST_ERR: 3,
+-   INDEX_SIZE_ERR: 1,
+-   INUSE_ATTRIBUTE_ERR: 10,
+-   INVALID_ACCESS_ERR: 15,
+-   INVALID_CHARACTER_ERR: 5,
+-   INVALID_MODIFICATION_ERR: 13,
+-   INVALID_NODE_TYPE_ERR: 24,
+-   INVALID_STATE_ERR: 11,
+-   NAMESPACE_ERR: 14,
+-   NETWORK_ERR: 19,
+-   NOT_FOUND_ERR: 8,
+-   NOT_SUPPORTED_ERR: 9,
+-   NO_DATA_ALLOWED_ERR: 6,
+-   NO_MODIFICATION_ALLOWED_ERR: 7,
+-   QUOTA_EXCEEDED_ERR: 22,
+-   SECURITY_ERR: 18,
+-   SYNTAX_ERR: 12,
+-   TIMEOUT_ERR: 23,
+-   TYPE_MISMATCH_ERR: 17,
+-   URL_MISMATCH_ERR: 21,
+-   VALIDATION_ERR: 16,
+-   WRONG_DOCUMENT_ERR: 4
+- }
+
+    at file:///tmp/gh-issue-solver-1794007881352/experiments/issue-340/dependency-compat.mjs:15:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: [class DOMException] {
+    INDEX_SIZE_ERR: 1,
+    DOMSTRING_SIZE_ERR: 2,
+    HIERARCHY_REQUEST_ERR: 3,
+    WRONG_DOCUMENT_ERR: 4,
+    INVALID_CHARACTER_ERR: 5,
+    NO_DATA_ALLOWED_ERR: 6,
+    NO_MODIFICATION_ALLOWED_ERR: 7,
+    NOT_FOUND_ERR: 8,
+    NOT_SUPPORTED_ERR: 9,
+    INUSE_ATTRIBUTE_ERR: 10,
+    INVALID_STATE_ERR: 11,
+    SYNTAX_ERR: 12,
+    INVALID_MODIFICATION_ERR: 13,
+    NAMESPACE_ERR: 14,
+    INVALID_ACCESS_ERR: 15,
+    VALIDATION_ERR: 16,
+    TYPE_MISMATCH_ERR: 17,
+    SECURITY_ERR: 18,
+    NETWORK_ERR: 19,
+    ABORT_ERR: 20,
+    URL_MISMATCH_ERR: 21,
+    QUOTA_EXCEEDED_ERR: 22,
+    TIMEOUT_ERR: 23,
+    INVALID_NODE_TYPE_ERR: 24,
+    DATA_CLONE_ERR: 25
+  },
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.13.0

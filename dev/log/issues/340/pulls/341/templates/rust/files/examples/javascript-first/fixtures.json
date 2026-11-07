@@ -1,0 +1,10 @@
+[
+  {"feature":"addition", "args":[2,3], "result":5},
+  {"feature":"signed-zero", "args":[-5,5], "result":0},
+  {"feature":"lower-bound", "args":[-2147483648,0], "result":-2147483648},
+  {"feature":"upper-bound", "args":[2147483647,0], "result":2147483647},
+  {"feature":"invalid-input", "args":[1.5,0], "error":"invalid i32"},
+  {"feature":"out-of-range", "args":[2147483648,0], "error":"invalid i32"},
+  {"feature":"positive-overflow", "args":[2147483647,1], "error":"overflow"},
+  {"feature":"negative-overflow", "args":[-2147483648,-1], "error":"overflow"}
+]

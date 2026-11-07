@@ -1,0 +1,1358 @@
+[
+  {
+    "path": ".gitattributes",
+    "lines": 2,
+    "binary": false,
+    "sha256": "9a702e1f90aa4f0a8cacbf742c50d66046465d163e958e1d2e566848f3f64cec",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": ".github/actionlint.yaml",
+    "lines": 9,
+    "binary": false,
+    "sha256": "17113b637d935fe981dd9378736060e75a8736ec29ab8a27e6e284869f852d4b",
+    "nearest": [
+      ".github/actionlint.yaml"
+    ],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/action.yml",
+    "lines": 36,
+    "binary": false,
+    "sha256": "d64435687e636d9524be823da5206112c1254eff4d944e57e70e06361cd34c4f",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/dist/835.index.mjs",
+    "lines": 17228,
+    "binary": false,
+    "sha256": "f421fba4ec6a5622017503ba19ee5c54e16247a26ea6c9902c5fb7d06b0176b5",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/dist/extract.py",
+    "lines": 75,
+    "binary": false,
+    "sha256": "72dc2371cc4c1b42c9c75bf641c0457feda498c6e860fee7fe928dd30500514f",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/dist/index.mjs",
+    "lines": 88,
+    "binary": false,
+    "sha256": "94e3277f2f20e4e6217a4af0959c083f303aca86b4be1e728e9930f815ef347a",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/dist/licenses.txt",
+    "lines": 426,
+    "binary": false,
+    "sha256": "4b48d179c3439e819d3d0fdcea562e76ebfe7368fc4be1324e65ce776e4f93f3",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/extract.py",
+    "lines": 75,
+    "binary": false,
+    "sha256": "72dc2371cc4c1b42c9c75bf641c0457feda498c6e860fee7fe928dd30500514f",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/files.mjs",
+    "lines": 79,
+    "binary": false,
+    "sha256": "2545b6ae774c1380875478cb39834e6429ab012ecc58b2b081fdfc5edd301949",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/index.mjs",
+    "lines": 50,
+    "binary": false,
+    "sha256": "3dac63cf98f28f0001ba0d1c3ee743f2477aa90f18d323b225421c17f1988e00",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/package-lock.json",
+    "lines": 3020,
+    "binary": false,
+    "sha256": "7824f180908de3040d6b68c65363afdb80da15ab5b8de2198916f4cad8ece6ef",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/package.json",
+    "lines": 23,
+    "binary": false,
+    "sha256": "804c097715c1d9a371a2b085466830e2f66523d7d000ab7ddc185c758946e93a",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/artifact/transport.mjs",
+    "lines": 74,
+    "binary": false,
+    "sha256": "3f7384eaea69e0ef29410dfcd75c5dcdd2d67fe7394d465c31304f033813c781",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/actions/deploy-pages/action.yml",
+    "lines": 18,
+    "binary": false,
+    "sha256": "c01cb544a8c0e43586e4e481333b9d52af2751578e12340126fb3170e004f3f8",
+    "nearest": [],
+    "decision": "Conditional: no desktop, site, container or deployment artifact is released by this CLI; retain template evidence."
+  },
+  {
+    "path": ".github/actions/deploy-pages/deploy.mjs",
+    "lines": 267,
+    "binary": false,
+    "sha256": "77fb2f039379ae84e760688e4efbc5927abb1cf3eefb68d39df857dc9f39e45d",
+    "nearest": [],
+    "decision": "Conditional: no desktop, site, container or deployment artifact is released by this CLI; retain template evidence."
+  },
+  {
+    "path": ".github/actions/deploy-pages/index.mjs",
+    "lines": 4,
+    "binary": false,
+    "sha256": "fdf9ae6c24b58f46768f3aacff169d376c07b625dffa182b6ff9ebb8c658d27a",
+    "nearest": [],
+    "decision": "Conditional: no desktop, site, container or deployment artifact is released by this CLI; retain template evidence."
+  },
+  {
+    "path": ".github/codeql/codeql-config.yml",
+    "lines": 7,
+    "binary": false,
+    "sha256": "fe47e90d27b74328306bd63d754e53b4ea703455a86bde74ec61fd29878639f5",
+    "nearest": [
+      ".github/codeql-config.yml"
+    ],
+    "decision": "Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained."
+  },
+  {
+    "path": ".github/dependabot.yml",
+    "lines": 30,
+    "binary": false,
+    "sha256": "8fa2e376b06dbc95f1fd014642ec3a3ed6d585caa4d0dd59fa4f7f85918b29cf",
+    "nearest": [],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".github/workflows/docs.yml",
+    "lines": 153,
+    "binary": false,
+    "sha256": "d78492b5e61dea1f3f00ef1481b0d90b519ee55b1b90f8e4adf962c5007f9dff",
+    "nearest": [],
+    "decision": "Compared job graph, triggers, permissions, cancellation, runners, install flags and artifacts; applicable policies mapped in ANALYSIS.md."
+  },
+  {
+    "path": ".github/workflows/links.yml",
+    "lines": 167,
+    "binary": false,
+    "sha256": "1d449d500a45655e138033d04bc9724550d6af710856128eed021d1c2873a5aa",
+    "nearest": [
+      ".github/workflows/links.yml"
+    ],
+    "decision": "Applied: existing lychee/archive validation retained; broken live links still fail; diagnostics always uploaded."
+  },
+  {
+    "path": ".github/workflows/release.yml",
+    "lines": 984,
+    "binary": false,
+    "sha256": "d14107caf22854393d64b91d1d976901992b70a8a3a1f51bfce91b22689b5e7a",
+    "nearest": [
+      ".github/workflows/js.yml"
+    ],
+    "decision": "Compared job graph, triggers, permissions, cancellation, runners, install flags and artifacts; applicable policies mapped in ANALYSIS.md."
+  },
+  {
+    "path": ".github/workflows/security.yml",
+    "lines": 164,
+    "binary": false,
+    "sha256": "2ae04ebe9eaaa9ee72e8d35776b9e536d6f728f5815dd47bb6b44edda6067a59",
+    "nearest": [
+      ".github/workflows/security.yml"
+    ],
+    "decision": "Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained."
+  },
+  {
+    "path": ".github/workflows/workflows.yml",
+    "lines": 258,
+    "binary": false,
+    "sha256": "3ddd419fcd980d0a725546611cbede4eef4cf9b50fd223d698ae63d96d640ea1",
+    "nearest": [
+      ".github/workflows/workflows.yml"
+    ],
+    "decision": "Compared job graph, triggers, permissions, cancellation, runners, install flags and artifacts; applicable policies mapped in ANALYSIS.md."
+  },
+  {
+    "path": ".github/zizmor.yml",
+    "lines": 15,
+    "binary": false,
+    "sha256": "172c7481e1de4bcf0e9c01b39d752dd0ab3ec6be86e969705957141c9c667872",
+    "nearest": [
+      ".github/zizmor.yml"
+    ],
+    "decision": "Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding."
+  },
+  {
+    "path": ".gitignore",
+    "lines": 212,
+    "binary": false,
+    "sha256": "9f65f8a55ddf71a2389fcb722100f73f92d9e081a0fe9c60043860886b357281",
+    "nearest": [
+      ".gitignore",
+      "rust/.gitignore"
+    ],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": ".lycheeignore",
+    "lines": 2,
+    "binary": false,
+    "sha256": "85851656d4a5a6140fd7096d1f5f9818658aa2e3648c3dec7f85cbaca6d3c33f",
+    "nearest": [
+      ".lycheeignore"
+    ],
+    "decision": "Applied: existing lychee/archive validation retained; broken live links still fail; diagnostics always uploaded."
+  },
+  {
+    "path": ".pre-commit-config.yaml",
+    "lines": 33,
+    "binary": false,
+    "sha256": "866b8d6345ec459e227dff6b2aaa1942dc79b0082fa2ea72c94e6e42d3b92e77",
+    "nearest": [],
+    "decision": "Applied: staged formatting/lint hooks, warnings-as-errors, synchronized line limits and CI format checks."
+  },
+  {
+    "path": ".ruff.toml",
+    "lines": 5,
+    "binary": false,
+    "sha256": "aa49cec3d48d27d1327a96de9f044a281fb4d5915a25678429a2085c0ab08474",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": ".secretlintrc.json",
+    "lines": 7,
+    "binary": false,
+    "sha256": "1c0e86ca72216c22cc77b1c94c27f975b731aa9e104167f5d57a5befa654c10e",
+    "nearest": [
+      ".secretlintrc.json"
+    ],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "lines": 22,
+    "binary": false,
+    "sha256": "9206206e5c8479164217670a95f607c2a5965ce6fdc24cd027ab4324e280d9c3",
+    "nearest": [
+      "CHANGELOG.md",
+      "js/CHANGELOG.md",
+      "rust/CHANGELOG.md"
+    ],
+    "decision": "Applied/adapted: existing JS changesets and Rust changelog.d plus version and metadata guards; preserve language-specific release recovery."
+  },
+  {
+    "path": "CONTRIBUTING.md",
+    "lines": 277,
+    "binary": false,
+    "sha256": "98cc90f09db614acdaaef09f3c650635f6b0406594f2671f25a77bce0e0f805b",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "LICENSE",
+    "lines": 24,
+    "binary": false,
+    "sha256": "6b0382b16279f26ff69014300541967a356a666eb0b91b422f6862f6b7dad17e",
+    "nearest": [
+      "LICENSE",
+      "js/LICENSE"
+    ],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "README.md",
+    "lines": 458,
+    "binary": false,
+    "sha256": "54444ccea357feeb375ef374da5447e9a020d933bdf7c9c88da5c141a084d040",
+    "nearest": [
+      "README.md"
+    ],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "changelog.d/20251218_133759_drakonard_issue_1_3b50e2f12be6.md",
+    "lines": 7,
+    "binary": false,
+    "sha256": "f13398f621e0d4dda55f55d57e114181831e81a5c80e5129b0966f52285e1ca2",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260509_204000_issue_6_release_metadata.md",
+    "lines": 3,
+    "binary": false,
+    "sha256": "e3ecb0b5f404fc29d4cc8d80eae337e8e526d2f14adbb6250e7152d0a14ae71b",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260515_000000_issue_8_docs_pages.md",
+    "lines": 5,
+    "binary": false,
+    "sha256": "8a0ce1423e753c8da437eb177d8020ba68f6f02e37310bf8330dd4c68ad377fb",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260529_222900_issue_9_preview_regeneration.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "7fdf10a0fc16666d59190f85e2ad152307465f09ec214ba48f82e8bf0e44d1ee",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260604_170000_issue_16_release_notes_limit.md",
+    "lines": 5,
+    "binary": false,
+    "sha256": "fffe0e3032f6d2ecedf9196e359a2dc894f8b055931035edc70ec7cedf32f7fb",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260609_000000_issue_18_manual_release_skip.md",
+    "lines": 7,
+    "binary": false,
+    "sha256": "1dfa9683a2fd5fb7680070d953a51c57b7c26c40e9e7c6d90daeabe8ddc78b0f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260614_000000_issue_20_published_package_smoke_test.md",
+    "lines": 7,
+    "binary": false,
+    "sha256": "95450c73029dc9213448fe49baed4256857ce135a7bec76ec418ca8ba4392136",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260614_issue_21_python_monorepo_releases.md",
+    "lines": 3,
+    "binary": false,
+    "sha256": "d5579906cc9c29723222894ea44d104d120882e7b57411ab0b08bcc2d9a0fc2f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260628_issue_24_file_size_warnings.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "757ed13128a14c307ad80a331f66fbfe5f5203717d2c8a38b417652016c9d9dd",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260703_issue_26_docs_pages_opt_in.md",
+    "lines": 3,
+    "binary": false,
+    "sha256": "ec0e2468fefa85ac9247d54a50e5b66866892d70680d531fa9e2df8cedf5c3c4",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260703_issue_27_codecov_token_gate.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "e7d0dac93f6f8f15384ac7db85facb4aeab11a93445dce7f008ff89dc422e344",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260703_issue_28_git_default_branch_env.md",
+    "lines": 2,
+    "binary": false,
+    "sha256": "652cfe6be40c8321a7d89ce9f29997024b44bdbca4a63fdacb99bb211c965d5d",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260722_issue_32_node24_actions.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "916ab018d0bfff54e153c80c8b5eeaecdd44f9d189421d88a963f0bf78e462f1",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260722_issue_33_release_permissions.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "6ac3be408885874efc42f8eb7ad84f8e2f8883a91f6890c2737e57fa9175cb09",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260722_issue_34_codecov_v7_input.md",
+    "lines": 3,
+    "binary": false,
+    "sha256": "c6e260aa3e4d46e8a56a4ff3f976333987a9c5db8d7417b41911e37d4a8ef969",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260722_issue_35_ci_release_guards.md",
+    "lines": 9,
+    "binary": false,
+    "sha256": "43965adf790d49938adb8118695fc1658cd0d68275e97ce1b2bc3fbc378c4996",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260727_issue_40_change_detection.md",
+    "lines": 5,
+    "binary": false,
+    "sha256": "77a6d95e933f8d03d78520b7923ccc0e5c1cd02c8d2ec6ddcfa7bd803f1f1cfe",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260801_issue_42_workflow_hardening.md",
+    "lines": 9,
+    "binary": false,
+    "sha256": "0299d34ec3640be34547b1b0a24dce6088cab073451dc4f74f8eb3c997353ebf",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260802_issue_44_mypy_python_39.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "6bc7671f5cee2679583fda3e76db73ba2d86e9408bd0401d2b8f034ee0d44b33",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260802_issue_45_changelog_check.md",
+    "lines": 8,
+    "binary": false,
+    "sha256": "071ecceb4057a56eb612c9a494969bd0f3b6a6492c01a983f8e47a4520870f1b",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260809_issue_48_security_scanning.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "b3a02aa6a2b0028df0247beb414d2cacae1a6f152147999354e8c8ca28dff2ea",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260809_issue_49_broken_links.md",
+    "lines": 3,
+    "binary": false,
+    "sha256": "3e75a5b096caf368ab0bbd698fdb48803586d0a9fcbb97a8436e58bd9270b7fb",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260809_issue_50_pipeline_timeout_status.md",
+    "lines": 5,
+    "binary": false,
+    "sha256": "a60f3b4d3dbd33e65bf41e3e8f6d7aedbb8423b1ecb83dce73a608a348c0d338",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260812_issue_54_archived_broken_links.md",
+    "lines": 3,
+    "binary": false,
+    "sha256": "1c60e42df38d35d14ce5882b03539c847dad7608a8c4646b2f47a973f07a5c3f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260812_issue_55_multi_arch_docker.md",
+    "lines": 5,
+    "binary": false,
+    "sha256": "2a80d5c7470c0e9e2566d568b2c20675c96195f2ad07a0cbdf411669307528c2",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260816_issue_58_dependency_audit.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "489109417c8d3ef78ed66a0fa9017e7e7ec5079da3395421a014cb30ee6a1c71",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260820_issue_60_step_execution_budgets.md",
+    "lines": 15,
+    "binary": false,
+    "sha256": "d269b2221c2206ed0e648c4e6807830b6a0cb0bd6327f794bc57aa11a9368c06",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260828_issue_62_workflow_lint.md",
+    "lines": 17,
+    "binary": false,
+    "sha256": "bafc4e5862fe8c8e604c28c43c341450fbce41ce8c3f67725257a3a0d260ae41",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260903_issue_64_workflow_audit.md",
+    "lines": 24,
+    "binary": false,
+    "sha256": "efbd405a838bef6530c83d43607486088812b7ef5a0ad9d63152e0a3719ccdfd",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260909_issue_66_pipeline_hardening.md",
+    "lines": 50,
+    "binary": false,
+    "sha256": "970daa44b88219167265e9262ae8b66c0e09746d994fd657d6eabc7a9e054df4",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260915_issue_83_pipeline_false_negatives.md",
+    "lines": 9,
+    "binary": false,
+    "sha256": "d2f35a8e09977b8236ba8f96fd0f46ff691751461572e80cb94eabce9bc32c4a",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20260927_issue_85_86_release_changelog_artifact.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "283def13298b44cd1014bc67b245036f84b741d7b1029ed4de0f02c06c8194cf",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261005_issue_91_ci_links.md",
+    "lines": 7,
+    "binary": false,
+    "sha256": "0899a4b2f9735a304eef49587092acc484054f6a20ace5bac3c4b076f91caa98",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261007_issue_100_fragment_replacements.md",
+    "lines": 5,
+    "binary": false,
+    "sha256": "12c3eeebff2bd7d3f610de4110eeeac0a33f79e1d9a59445c25dbb146aeccedc",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261007_issue_93_changelog_validation.md",
+    "lines": 7,
+    "binary": false,
+    "sha256": "7efbe8264bec85c5f362d04b40319489fe214d8def6b8838ea6583e1a20aa031",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261007_issue_98_ci_release_recovery.md",
+    "lines": 14,
+    "binary": false,
+    "sha256": "ea29054482aee32ef546e1856f0812d2818813c02fed850d109586996ad388d7",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261010_issue_102_zizmor_reproduction.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "0557db654f7282c378dba6485e30bbc709721b441f0498ec1e63630667b49cd7",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261024_pipeline_safeguards.md",
+    "lines": 13,
+    "binary": false,
+    "sha256": "0efb8a049263a474941f1bd4d48e3c7a2aafa4d9a0f8e71fe214efcdc0e59ef1",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261029_issue_126_ci_evidence.md",
+    "lines": 15,
+    "binary": false,
+    "sha256": "61ffdf7dca8c72eb26eba343a963061145a66dda9a47cbdc10b9743124e0be87",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261101_issue_128_archiver_glob.md",
+    "lines": 7,
+    "binary": false,
+    "sha256": "6e9db2ee51b35ee4a7961274faebfbd48d918f778dac11daa7d0543f2717d70f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261102_issue_133_ci_reliability.md",
+    "lines": 21,
+    "binary": false,
+    "sha256": "c49b6c91f76df2738958f6b514789ff809d2624294982fcca4f74e7420652695",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261106_issue_136_release_integrity.md",
+    "lines": 4,
+    "binary": false,
+    "sha256": "f5aab8b9a1f4edf0a2727b2026f2dd64958bc1bff629dc32079183ec9148889d",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/20261106_issue_137_sarif_notifications.md",
+    "lines": 3,
+    "binary": false,
+    "sha256": "369e7710f430b0239e3207ec1f7ebb0a1f0ead12a4841180f5fd6f6aff177e8a",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/README.md",
+    "lines": 86,
+    "binary": false,
+    "sha256": "fe8d4b1dc0e865e9c70698cb9e3927e118451cf0dcca885e84dca491285994ab",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "changelog.d/fragment_template.md.j2",
+    "lines": 31,
+    "binary": false,
+    "sha256": "1417d68060218437cea3cdfc3e1f72182e4997b2fff6ede26b5c46bf379c3551",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "dev/log/issues/138/pulls/139/sessions/01a1af75-ad8e-7230-a043-d5bf39a4d8c7/metadata.json",
+    "lines": 20,
+    "binary": false,
+    "sha256": "c95a8b0fa77d82a0a9a79c05d1700471c3528a99871424095300b11610ec662a",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "dev/log/issues/138/pulls/139/sessions/01a1af75-ad8e-7230-a043-d5bf39a4d8c7/solve.log",
+    "lines": 3249,
+    "binary": false,
+    "sha256": "d7770ddc783ec32b9663fa0a539867bd5afa2f21fe43d6a26d1e6f20b3bdac7e",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "docs/api.md",
+    "lines": 9,
+    "binary": false,
+    "sha256": "3fd3d777c29da3a4c8809dfcc9752a7a0f68bb3bef9b0440b1fc601b94ab4031",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "docs/ci-evidence.md",
+    "lines": 83,
+    "binary": false,
+    "sha256": "d8f6c1a682196744f502689d24c223cbc171ae45adc431871a9d649e1982957b",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "docs/conf.py",
+    "lines": 59,
+    "binary": false,
+    "sha256": "a3eb8f878a9cc734898fca544a0d5b4fd22d24a2ad35e87ae2c7a67bffa0985f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "docs/index.md",
+    "lines": 23,
+    "binary": false,
+    "sha256": "8e861454fec3169062ac0229587980d1dcbb466d8244e6bb67044610e3ae93ca",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "docs/preview-regeneration.md",
+    "lines": 57,
+    "binary": false,
+    "sha256": "4ab7639eeb95cdf77307eed5962865d087890d82e1d2dfff567e4b790bb695b2",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "docs/requirements.txt",
+    "lines": 3,
+    "binary": false,
+    "sha256": "e0170e6ad53cadb3ded62843719ebdc954df28925445b3f85df3cfa76c91bbe1",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "examples/basic_usage.py",
+    "lines": 39,
+    "binary": false,
+    "sha256": "c19c01204e02e66c7c90ca69b1b43a5dda0f403e73de6372344659b7be3412ca",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/archiver_glob_probe.cjs",
+    "lines": 8,
+    "binary": false,
+    "sha256": "8914dd793d719faf6ee6a15532226cdebfd340225c4229b394fb157101c999ab",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/create_codeql_diff_fixture.py",
+    "lines": 24,
+    "binary": false,
+    "sha256": "d66fee0a32855d807e0cf2ac895f7895480ad3de4e802a09d694d7c9cf1b1bac",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/find_files_differential.mjs",
+    "lines": 39,
+    "binary": false,
+    "sha256": "f2affb1a889c03bd5a8101ca38230af613f9ca476a32737a319c6776585103e6",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/issue-138/PLAN.md",
+    "lines": 56,
+    "binary": false,
+    "sha256": "f83b066ca55748d967c827044ce8f830439c7852a83c781555bde04f96f90e3e",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/issue-138/VERIFICATION.md",
+    "lines": 48,
+    "binary": false,
+    "sha256": "0f490d680f75c2a90e37c2a9b03c6d00ca18c078c61b53ae97bb3423228436ec",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/issue-138/original-reproduction.log",
+    "lines": 16,
+    "binary": false,
+    "sha256": "3c45bc7d17bb7e3a774bb2a0620bcad379e0d0762a0daef13051db2ae0f6bdf9",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/issue-138/reproduce_original.py",
+    "lines": 84,
+    "binary": false,
+    "sha256": "924f79bf52be45d6afc52f56e6c7d61626a004cac595c3a46a7fc18a50e9f800",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/issue-138/verify_uv_lock.py",
+    "lines": 31,
+    "binary": false,
+    "sha256": "d642431613fd5a862ac1a5a5cf0c4060fab8d6e5d3fb60199015b2d7b70f6823",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/issue_126_plan.md",
+    "lines": 206,
+    "binary": false,
+    "sha256": "69be5b1acfed4968220a25cd6ebb065d84b9520b0f583ad38bbf59603d05dea8",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/issue_98_analysis.md",
+    "lines": 120,
+    "binary": false,
+    "sha256": "28d2558d734b4b4b43934bf0d9fbcefe733781c164cf5dafed9dc1f4fd595cce",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/reproduce_actionlint_queue.py",
+    "lines": 53,
+    "binary": false,
+    "sha256": "c051ccc0d629e947f43738046af8ec22eed39e16a525bd4fc08858e7c375a578",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/reproduce_artifact_buffer.mjs",
+    "lines": 8,
+    "binary": false,
+    "sha256": "da4ca9cf524b6fd059106a382030eacd79f5c12958eb35c6f5a8c7e49ab42f28",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/reproduce_partial_release.py",
+    "lines": 115,
+    "binary": false,
+    "sha256": "16b7389736889f62864348ba14e0b6865417f94dcf8d71233e19dae605d9617b",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "experiments/reproduce_zizmor_scope.py",
+    "lines": 87,
+    "binary": false,
+    "sha256": "d86dff8d5fe0b3863d74e79eba7597d358341c7f7879377a1972b621499750ae",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "lychee.toml",
+    "lines": 4,
+    "binary": false,
+    "sha256": "0326816cd0dac6bfe5a804fc0148f79a754a518210dee1bd81be6d90c18a27e5",
+    "nearest": [],
+    "decision": "Applied: existing lychee/archive validation retained; broken live links still fail; diagnostics always uploaded."
+  },
+  {
+    "path": "pyproject.toml",
+    "lines": 165,
+    "binary": false,
+    "sha256": "39594a0fffa67cd25e22aec3819c8cac69ea923483e4bf5104e58a9b633bb282",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/audit-npm-locks.sh",
+    "lines": 53,
+    "binary": false,
+    "sha256": "40bdae551f88431166778fa4f041a437afcf1ff73bf5b82fb59d5fe586b2a7a2",
+    "nearest": [],
+    "decision": "Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained."
+  },
+  {
+    "path": "scripts/audit_dependencies.py",
+    "lines": 143,
+    "binary": false,
+    "sha256": "6a88c4e568121fe15d7f206738645047fcb8f3da135bde10a20d2837dbecdc05",
+    "nearest": [],
+    "decision": "Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained."
+  },
+  {
+    "path": "scripts/bump_version.py",
+    "lines": 177,
+    "binary": false,
+    "sha256": "d8e47381dc86e259d95db964de5b1ab519fec7ecdbfa9fa33f59b48d59825ea9",
+    "nearest": [],
+    "decision": "Applied/adapted: existing JS changesets and Rust changelog.d plus version and metadata guards; preserve language-specific release recovery."
+  },
+  {
+    "path": "scripts/check-dependency-graph.sh",
+    "lines": 56,
+    "binary": false,
+    "sha256": "525d548daf5f959b8a09f16ba6dd36f0863a712361edbdc835b9c38c5f77f3b8",
+    "nearest": [],
+    "decision": "Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained."
+  },
+  {
+    "path": "scripts/check-pipeline-status.sh",
+    "lines": 137,
+    "binary": false,
+    "sha256": "30b451cffa6e8bdf6a5a5119ec83be1d24902fdff1604d64cfee7384761de511",
+    "nearest": [
+      "scripts/check-pipeline-status.sh"
+    ],
+    "decision": "Applied: every job covered by status gate, job/matrix cancellation policy, strict budget wrapper and shared writer queue."
+  },
+  {
+    "path": "scripts/check-required-docs.sh",
+    "lines": 101,
+    "binary": false,
+    "sha256": "02134fa51ab872898a43824093bfa1727df4d99b65cdebb342022ac90d2f6afb",
+    "nearest": [],
+    "decision": "Applied: repository-wide 1500-line source limit and documentation validation, with archived evidence excluded."
+  },
+  {
+    "path": "scripts/check_codeql_results.py",
+    "lines": 167,
+    "binary": false,
+    "sha256": "91b4a77cda1a6f0f58fb3fa21e394afafdb63608a369dfb66758328a0ab4a814",
+    "nearest": [],
+    "decision": "Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained."
+  },
+  {
+    "path": "scripts/check_file_size.py",
+    "lines": 262,
+    "binary": false,
+    "sha256": "5636d5260b7feea70bba7b4adf38b82d4b6a8d166015ec12eec4f4bdc998001b",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/check_release.py",
+    "lines": 226,
+    "binary": false,
+    "sha256": "702a5eaf9ea65bbff6e685979ccb2e20284fa576b08f35828e04cc664cedadab",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/check_web_archive.py",
+    "lines": 204,
+    "binary": false,
+    "sha256": "e75880f5ac9c3f70a1252d343cfd6b81453d413e040bd3a21e6c676936b0460b",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/create_github_release.py",
+    "lines": 344,
+    "binary": false,
+    "sha256": "53256a4c598b48a7d4fce88b624ffb2c2b98a1d7727de9036a2e77425ccc6418",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/create_manual_changeset.py",
+    "lines": 249,
+    "binary": false,
+    "sha256": "d921b57a5814e4d1f582111785dd5351d553eab8f04ade02393e1b5eaab322b5",
+    "nearest": [],
+    "decision": "Applied/adapted: existing JS changesets and Rust changelog.d plus version and metadata guards; preserve language-specific release recovery."
+  },
+  {
+    "path": "scripts/detect_code_changes.py",
+    "lines": 200,
+    "binary": false,
+    "sha256": "a497d94f0ad964a7f8912236c7e3461d168ca038f203e783addf84468c081b78",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/format_release_notes.py",
+    "lines": 266,
+    "binary": false,
+    "sha256": "1d33ffb5d87a6b9a3036231d41ff79e085fd645e8c2611fac959c23c6fd75254",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/preflight-credentials.sh",
+    "lines": 347,
+    "binary": false,
+    "sha256": "0efc7345b04a89dcd24cbdcede41e02b1798ede464e22c3134819a0208879b42",
+    "nearest": [],
+    "decision": "Applied: scripts/release-preflight.mjs; PR report mode, main verified writes, unknown fails closed."
+  },
+  {
+    "path": "scripts/publish_to_pypi.py",
+    "lines": 157,
+    "binary": false,
+    "sha256": "72348917dc1ca44649bd4e1fd3b5342a089ce3d4ea19fbca9f6461b74fb2a9c4",
+    "nearest": [],
+    "decision": "Applied/adapted: existing registry verification, idempotent recovery, bounded publish retries and exact released-version targeting retained."
+  },
+  {
+    "path": "scripts/read-job-cancel-in-progress.sh",
+    "lines": 96,
+    "binary": false,
+    "sha256": "d5f7ac76c961b7b24a1f304ce54a046abb3c7293c06cbac88f0d60a171340e6f",
+    "nearest": [],
+    "decision": "Applied: every job covered by status gate, job/matrix cancellation policy, strict budget wrapper and shared writer queue."
+  },
+  {
+    "path": "scripts/read_manifest.py",
+    "lines": 76,
+    "binary": false,
+    "sha256": "a359ecaad2a0ed741063654e50c5cadaebd60f5cf85a3df78b52c6a4494c6b9b",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/recheck_broken_links.py",
+    "lines": 383,
+    "binary": false,
+    "sha256": "6c1e88f0149f83a02c45e40016d4c7e4add8e62b21de28a7cf9db60c74636f0e",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/release_naming.py",
+    "lines": 105,
+    "binary": false,
+    "sha256": "36e7dd583aedd3082adeab78fc2886458317e31e02cdd1ae7a022fabe4098096",
+    "nearest": [],
+    "decision": "Compared helper/configuration; existing agent equivalent retained where applicable (see nearest-path content diff)."
+  },
+  {
+    "path": "scripts/run-with-budget-warning.sh",
+    "lines": 273,
+    "binary": false,
+    "sha256": "5afeaa50352115e7807aabfbe2d4d169cd984087fd91346dffc90b1fd83a510a",
+    "nearest": [
+      "scripts/run-with-budget-warning.sh"
+    ],
+    "decision": "Applied: every job covered by status gate, job/matrix cancellation policy, strict budget wrapper and shared writer queue."
+  },
+  {
+    "path": "scripts/simulate-fresh-merge.sh",
+    "lines": 77,
+    "binary": false,
+    "sha256": "e0ee63cf4c5d194552694b09baa0e2731a7cd7d48effaf3e63c3ae393e920635",
+    "nearest": [
+      "scripts/simulate-fresh-merge.sh"
+    ],
+    "decision": "Applied/adapted: merge-base comparison, rename handling, relevant-change detection and fresh-merge validation."
+  },
+  {
+    "path": "scripts/smoke_test_published_package.py",
+    "lines": 406,
+    "binary": false,
+    "sha256": "c03e125b8432fa7e8533fc5d786549107a90768509bd2ead0756f1cec6d944d1",
+    "nearest": [],
+    "decision": "Applied/adapted: existing registry verification, idempotent recovery, bounded publish retries and exact released-version targeting retained."
+  },
+  {
+    "path": "scripts/validate_changeset.py",
+    "lines": 240,
+    "binary": false,
+    "sha256": "299426f36218694904cb08d2402f73f6caf68e8704587dd25628e50c2ab66621",
+    "nearest": [],
+    "decision": "Applied/adapted: existing JS changesets and Rust changelog.d plus version and metadata guards; preserve language-specific release recovery."
+  },
+  {
+    "path": "scripts/version_and_commit.py",
+    "lines": 581,
+    "binary": false,
+    "sha256": "dd7f639cc9f819b7784050dcd1a4d904c1dc2c0c2db66cee048ecbc4ea3226fa",
+    "nearest": [],
+    "decision": "Applied/adapted: existing JS changesets and Rust changelog.d plus version and metadata guards; preserve language-specific release recovery."
+  },
+  {
+    "path": "src/my_package/__init__.py",
+    "lines": 47,
+    "binary": false,
+    "sha256": "b2a806b2899561356c9fdc6ecd6bd4e0737950afc4b59d8c6a0ee95c096e7d6f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "src/my_package/py.typed",
+    "lines": 0,
+    "binary": false,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/__init__.py",
+    "lines": 1,
+    "binary": false,
+    "sha256": "d053d872f065af8999b8601fb0e6980354074e235cac2f81364f322ee820271a",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/artifact.test.mjs",
+    "lines": 205,
+    "binary": false,
+    "sha256": "43907b7217106abd7dc681b0475cc12cb19ea59834fff1413ceb70061bbb0d3e",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/deploy-pages.test.mjs",
+    "lines": 315,
+    "binary": false,
+    "sha256": "60d33468c67459740bd12692f47ab2fa3773f3331547f76108f75d1148331de2",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_audit_dependencies.py",
+    "lines": 89,
+    "binary": false,
+    "sha256": "eb007161eb5e66769a6e577012305860975247307c9df38086ae99526b4b1bc1",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_check_codeql_results.py",
+    "lines": 249,
+    "binary": false,
+    "sha256": "5fdd7e204f347b1c91fa5c85b92c8808d5d0f1b150418896430b39c5d6df48cd",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_check_dependency_graph.py",
+    "lines": 114,
+    "binary": false,
+    "sha256": "03729036068f00f2064c6f0444cf4f529f3a2f1d9678074c6b545d7361d2d574",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_check_file_size.py",
+    "lines": 156,
+    "binary": false,
+    "sha256": "5364074daf33c44fa0ff3796efb9a753228fd89e58185558d783de78bc2f34b9",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_check_pipeline_status.py",
+    "lines": 274,
+    "binary": false,
+    "sha256": "966e16e689785e3bef5ba6a45c5809145681c8396e1882970a127182c370e86f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_check_release.py",
+    "lines": 315,
+    "binary": false,
+    "sha256": "d8dc1c76bad324fd52c51ebb00750d6f9ef49dde8e75a82b33abd8314253c12b",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_check_required_docs.py",
+    "lines": 55,
+    "binary": false,
+    "sha256": "819a9af5cf0b58ca3aaa45e3dc630309d9a145bfaba2137890b815a16d54698f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_check_web_archive.py",
+    "lines": 149,
+    "binary": false,
+    "sha256": "2440e72b00963d090bd8ac1f5fe07969934aaae44cd532b51432c6579bb3d6e3",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_create_github_release.py",
+    "lines": 371,
+    "binary": false,
+    "sha256": "642fd9fa814d04332627c14722969db2e7a1e155e13d8c14d2e7f80ad5b7b2a6",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_detect_code_changes.py",
+    "lines": 73,
+    "binary": false,
+    "sha256": "217e74927b69830d81b920778d8edd6325c6f38f81cf3dd39374ed552d7fe20a",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_extract_artifact.py",
+    "lines": 88,
+    "binary": false,
+    "sha256": "5d81c39a3b3a77c2a1149014a6c53e8bfcc36b96cce20c4344aefff9c6a370b2",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_issue_118_workflows.py",
+    "lines": 150,
+    "binary": false,
+    "sha256": "bd6272a5fdd128bab8f846aaaceb0a9a80b09c5288e2eb59d871703da919f099",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_issue_126_workflows.py",
+    "lines": 39,
+    "binary": false,
+    "sha256": "596e78ec5914edd6feac9fcc66ad1acff91726b951f00966db316ff4ebe06b50",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_issue_133_workflows.py",
+    "lines": 190,
+    "binary": false,
+    "sha256": "a1724f512d1f579759193644ae4af6bef708b83529b79e8f7d4731a8776e24ad",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_issue_91.py",
+    "lines": 306,
+    "binary": false,
+    "sha256": "e1e650852cef62e864592b66558cb2985ac5b3f7d0c600ef905f5a0a0aa3bb18",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_issue_98.py",
+    "lines": 157,
+    "binary": false,
+    "sha256": "63786f6825c4d71c46d66bd5431d9f3c9cd31dcaca830c8fc21eee845b5630d3",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_my_package.py",
+    "lines": 64,
+    "binary": false,
+    "sha256": "bfed38cf721c7b5ab6a8efc01da2983ba73a7d6cc80b46d1e28ab459414378ce",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_preflight_credentials.py",
+    "lines": 359,
+    "binary": false,
+    "sha256": "b4be97d76a8f0481d876c210a70b776d560105d30cdb28266a25e361d9977525",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_preview_regeneration_docs.py",
+    "lines": 31,
+    "binary": false,
+    "sha256": "abc632df65703c2fb43a34288f83b7dfad3dbf4a836e26b30f7d6387ab316fb9",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_project_metadata.py",
+    "lines": 34,
+    "binary": false,
+    "sha256": "dfbb378d575285c67b833d290cb4e4b8dfd9fcd081877c5976c24d04db42878d",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_read_manifest.py",
+    "lines": 82,
+    "binary": false,
+    "sha256": "59009711d8361397cf78899ffedd508af5bcbcf396cbd20e93404cfa89ca2d95",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_recheck_broken_links.py",
+    "lines": 432,
+    "binary": false,
+    "sha256": "431e6b649ecc350b2bb34b49c2dd5839cc3e20e83c8181f4d9fc7685f5260cac",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_release_badges.py",
+    "lines": 40,
+    "binary": false,
+    "sha256": "ab8a1fe962ccf984a44869abfcc3dbdc70cb5e2b2e97196efa1cca59ecc9985e",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_release_integrity.py",
+    "lines": 308,
+    "binary": false,
+    "sha256": "6bfcc77cc236beea6b0ae60a0217b195de623b985c8efeecbeb44bd82aafc015",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_release_workflow.py",
+    "lines": 587,
+    "binary": false,
+    "sha256": "dc09ad317184254d62b9ab59b7c1b8e169a3656423ca133a76a191c357a8347c",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_run_with_budget_warning.py",
+    "lines": 270,
+    "binary": false,
+    "sha256": "f06e25f8b328c844db193991d9942926a6cbdf3266cd5879684ef5ea0a5c03d0",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_simulate_fresh_merge.py",
+    "lines": 139,
+    "binary": false,
+    "sha256": "0591d616a23fcf49df949c74f56fbdd551cc2b3ae78a36fb02f2c326fda3626d",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_smoke_test_published_package.py",
+    "lines": 131,
+    "binary": false,
+    "sha256": "7fb6c8be6e5522ab84b0e52b62ba322938a95b5190c5be62654a1d67130c00c2",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_validate_changeset.py",
+    "lines": 400,
+    "binary": false,
+    "sha256": "3a43e4c51bc33f60c21b427fed2daf41926f5d98b7e590df62d0b1a379439f00",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_version_and_commit.py",
+    "lines": 395,
+    "binary": false,
+    "sha256": "a71930f23e6a1c3dd94da5eedbeb2745f8475cba75723f49e26649b0b2736e05",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/test_workflows.py",
+    "lines": 464,
+    "binary": false,
+    "sha256": "26d33659b7c49a4c57f01962ffee1a0a564fb702249a353d440c887657fe662f",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  },
+  {
+    "path": "tests/workflow_helpers.py",
+    "lines": 187,
+    "binary": false,
+    "sha256": "439ce60a9f24242208b870031243fe3129b586105b851cc2e31ff71b4afb5f13",
+    "nearest": [],
+    "decision": "Compared template application/test/documentation/asset content: product-specific example, not a reusable agent pipeline component."
+  }
+]

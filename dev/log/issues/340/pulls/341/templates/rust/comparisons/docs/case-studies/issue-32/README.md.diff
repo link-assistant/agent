@@ -1,0 +1,216 @@
+--- template/docs/case-studies/issue-32/README.md
++++ docs/case-studies/issue-32/README.md
+@@ -1,97 +1,150 @@
+-# Case Study: Issue #32 — Publish Steps Override Workflow-Level CARGO_TOKEN Fallback
++# Case Study: Issue #32 - groq/qwen/qwen3-32b Model Test Failure
+ 
+-## Summary
++## Overview
+ 
+-The CI/CD pipeline's publish steps used a step-level `env` block that overrode the workflow-level `CARGO_TOKEN` fallback chain, breaking repositories that only configure `CARGO_REGISTRY_TOKEN` as a secret. Additionally, the `version-and-commit.rs` script lacked push retry logic, causing failures in multi-workflow repositories with concurrent release jobs.
++**Issue**: [#32 - groq/QWEN/QWEN3-32B model test failed](https://github.com/link-assistant/agent/issues/32)
+ 
+-## Timeline of Events
++**CI Run**: https://github.com/link-assistant/agent/actions/runs/20117892062/job/57731581537
+ 
+-1. **Origin**: The issue was first observed in [link-assistant/web-capture#46](https://github.com/link-assistant/web-capture/issues/46), where `CARGO_REGISTRY_TOKEN` was not set in the publish step, causing the publish to skip silently.
++**Date**: 2025-12-11
+ 
+-2. **Discovery**: Investigation revealed that the workflow-level `env` block correctly defined a fallback chain (`${{ secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}`), but the per-step `env` blocks in both `auto-release` and `manual-release` jobs overrode this with only `${{ secrets.CARGO_TOKEN }}`, which would be empty if only `CARGO_REGISTRY_TOKEN` was configured.
++**Status**: ✅ Resolved
+ 
+-3. **Related issue #31**: In [link-assistant/agent](https://github.com/link-assistant/agent), the Rust auto-release job failed with `non-fast-forward` errors when a JS release job pushed to `main` first. The `version-and-commit.rs` script did a single `git push` with no retry or rebase logic.
++## Problem Statement
+ 
+-4. **Scope expansion**: Comparison with reference repos (browser-commander, lino-arguments, trees-rs, Numbers) revealed additional gaps in mono-repo path support across several scripts.
++A CI test run for the `groq/qwen/qwen3-32b` model reported success (exit code 0), but actually failed with a `ProviderModelNotFoundError`. The error indicated that the model could not be found, and the CI system did not properly detect and report this failure.
+ 
+-## Root Cause Analysis
++## Root Causes Identified
+ 
+-### Problem 1: CARGO_TOKEN Fallback (Issue #32)
++### 1. Model Parsing Bug in src/index.js
+ 
+-**Root cause**: GitHub Actions step-level `env` blocks override workflow-level `env` for the same variable name. The publish steps set:
++**Severity**: Critical
+ 
+-```yaml
+-env:
+-  CARGO_TOKEN: ${{ secrets.CARGO_TOKEN }}
++The CLI argument parser incorrectly handled model IDs containing multiple slashes:
++
++```javascript
++// BEFORE (buggy)
++const modelParts = argv.model.split('/');
++const providerID = modelParts[0] || 'opencode';
++const modelID = modelParts[1] || 'grok-code';
++
++// Input: "groq/qwen/qwen3-32b"
++// Result: providerID="groq", modelID="qwen" ❌
+ ```
+ 
+-This overrides the workflow-level `CARGO_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}`, making `CARGO_TOKEN` empty when only `CARGO_REGISTRY_TOKEN` is configured as a repository secret.
++This caused the agent to look for model `groq/qwen` instead of `groq/qwen/qwen3-32b`.
+ 
+-**Mitigating factor**: The `publish-crate.rs` script checks both `CARGO_REGISTRY_TOKEN` and `CARGO_TOKEN` environment variables (in that order), so publishing still worked because `CARGO_REGISTRY_TOKEN` was inherited from the workflow-level env. However, this was fragile and misleading.
++**Fix Applied**:
+ 
+-**Fix**: Set both `CARGO_REGISTRY_TOKEN` (with fallback) and `CARGO_TOKEN` at both workflow and step levels:
++```javascript
++// AFTER (correct)
++const modelParts = argv.model.split('/');
++const providerID = modelParts[0] || 'opencode';
++const modelID = modelParts.slice(1).join('/') || 'grok-code';
+ 
+-```yaml
+-env:
+-  CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN || secrets.CARGO_TOKEN }}
+-  CARGO_TOKEN: ${{ secrets.CARGO_TOKEN }}
++// Input: "groq/qwen/qwen3-32b"
++// Result: providerID="groq", modelID="qwen/qwen3-32b" ✅
+ ```
+ 
+-### Problem 2: Non-Fast-Forward Push (Issue #31)
++### 2. False Positive CI - Exit Code Handling
+ 
+-**Root cause**: The `version-and-commit.rs` script performed a single `git push` without first rebasing on the remote branch. In multi-workflow repositories where multiple release jobs can push to `main` concurrently, the first push succeeds but subsequent pushes fail with `non-fast-forward` errors.
++**Severity**: High
+ 
+-**Fix**: Added pre-commit `git fetch` + `rebase` and post-commit push retry (3 attempts) with `git pull --rebase` between failures.
++The test scripts (`scripts/test-model-simple.mjs` and `scripts/test-model-tools.mjs`) checked the process exit code but did not verify whether errors occurred in the output. This allowed tests to pass even when the agent threw exceptions.
+ 
+-### Problem 3: Inconsistent Mono-Repo Support
++**Fix Applied**: Added error pattern detection before checking exit codes:
+ 
+-**Root cause**: Several scripts (`check-changelog-fragment.rs`, `check-version-modification.rs`, `create-changelog-fragment.rs`) hardcoded paths like `Cargo.toml`, `changelog.d/`, `src/`, `tests/` without considering the `rust/` subdirectory prefix used in multi-language repositories.
++```javascript
++// Check for errors in output (even if exit code is 0)
++const errorPatterns = [
++  /\w+Error:/, // Any JavaScript error (TypeError, ReferenceError, etc.)
++  /Error:/, // Generic "Error:"
++  /Exception:/, // Exceptions
++  /ENOENT/, // File not found
++  /ECONNREFUSED/, // Connection refused
++];
+ 
+-**Fix**: Added `get_rust_root()` detection (checks `RUST_ROOT` env var, then auto-detects `./Cargo.toml` vs `./rust/Cargo.toml`) to all affected scripts.
++const hasError = errorPatterns.some((pattern) => pattern.test(output));
+ 
+-## Requirements from Issue
++if (hasError) {
++  console.log('');
++  console.log('❌ Test FAILED: Error detected in output');
++  process.exit(1);
++}
++```
+ 
+-| # | Requirement | Status |
+-|---|---|---|
+-| 1 | Fix CARGO_TOKEN fallback in publish steps | Done |
+-| 2 | Support CARGO_REGISTRY_TOKEN-only configurations | Done |
+-| 3 | Fix non-fast-forward push in multi-workflow repos (#31) | Done |
+-| 4 | Compare CI/CD with reference repos for best practices | Done |
+-| 5 | Ensure mono-repo support across all scripts | Done |
+-| 6 | Add `!cancelled()` guard to test job | Done |
+-| 7 | Create case study documentation | Done |
++## Impact
+ 
+-## Affected Repositories
++### Affected Models
+ 
+-The same CARGO_TOKEN fallback issue exists in:
+-- `link-foundation/browser-commander` (`.github/workflows/rust.yml`)
+-- `link-foundation/lino-arguments` (`.github/workflows/rust.yml`)
+-- `linksplatform/Numbers` (`.github/workflows/rust.yml`)
++All Groq models with slashes in their model IDs were broken:
+ 
+-Since these are derived from this template, fixing it here allows downstream repos to adopt the fix.
++- ✅ **Fixed**: `groq/qwen/qwen3-32b`
++- ✅ **Fixed**: `groq/meta-llama/llama-4-maverick-17b-128e-instruct`
++- ✅ **Fixed**: `groq/meta-llama/llama-4-scout-17b-16e-instruct`
++- ✅ **Fixed**: `groq/meta-llama/llama-guard-4-12b`
++- ✅ **Fixed**: `groq/moonshotai/kimi-k2-instruct`
++- ✅ **Fixed**: `groq/moonshotai/kimi-k2-instruct-0905`
++- ✅ **Fixed**: `groq/openai/gpt-oss-120b`
++- ✅ **Fixed**: `groq/openai/gpt-oss-20b`
+ 
+-## Reference Comparison Results
++### Working Models (No slash in model ID)
+ 
+-A full comparison of CI/CD files was performed against 4 reference repos. Key findings:
++These models were unaffected:
+ 
+-### Our template is ahead of all references in:
+-- Push retry logic (3 attempts with pull-rebase)
+-- Pre-commit fetch/rebase for concurrent workflows
+-- Dual CARGO_REGISTRY_TOKEN + CARGO_TOKEN env setup
+-- Code coverage with cargo-llvm-cov + Codecov
+-- Automated badges in GitHub release notes
+-- Template-aware skips (example-sum-package-name guard)
+-- Configurable tag prefix and release label
+-- Updated GitHub Actions versions (v5/v6/v8)
+-- `--all-features` in cargo doc
++- ✅ `groq/llama-3.3-70b-versatile`
++- ✅ `groq/llama-3.1-8b-instant`
++- ✅ `groq/qwen-qwq-32b`
+ 
+-### Adopted from references:
+-- `!cancelled()` guard in test job condition (from lino-arguments, browser-commander)
++## Solution Implemented
+ 
+-## Files Changed
++### Changes Made
+ 
+-- `.github/workflows/release.yml` — CARGO_REGISTRY_TOKEN fallback, `!cancelled()` guard
+-- `scripts/version-and-commit.rs` — fetch/rebase + push retry logic
+-- `scripts/check-changelog-fragment.rs` — mono-repo path support
+-- `scripts/check-version-modification.rs` — mono-repo path support
+-- `scripts/create-changelog-fragment.rs` — mono-repo path support
++1. **src/index.js** (line 70)
++   - Updated model parsing to handle multi-slash model IDs
++   - Used `slice(1).join('/')` instead of `modelParts[1]`
++
++2. **scripts/test-model-simple.mjs** (lines 90-105)
++   - Added error detection patterns
++   - Exit with code 1 if errors detected in output
++
++3. **scripts/test-model-tools.mjs** (lines 90-105)
++   - Added identical error detection patterns
++   - Exit with code 1 if errors detected in output
++
++### Model Name Research
++
++Confirmed via Groq API documentation and models.dev:
++
++- ✅ Correct model ID: `qwen/qwen3-32b`
++- ✅ Full reference: `groq/qwen/qwen3-32b`
++- ✅ Lowercase is correct (not `QWEN/QWEN3-32B`)
++- ✅ Model supports tool calling
++- ✅ Context window: 131,072 tokens
++
++## Files in This Case Study
++
++- `README.md` - This overview document
++- `root-cause-analysis.md` - Detailed technical analysis
++- `ci-run-20117892062.log` - Original CI logs showing the failure
++
++## Lessons Learned
++
++1. **Pattern Matching**: When implementing string parsing logic, always consider edge cases like multiple delimiters
++2. **Test Validation**: Exit codes alone are insufficient; test scripts must validate expected behavior
++3. **Error Detection**: Pattern-based error detection catches issues that exit codes miss
++4. **Consistency**: The codebase already had a correct `parseModel()` function in `provider.ts` - reuse existing patterns
++
++## Testing Recommendations
++
++1. Test model parsing with multi-slash IDs: `groq/qwen/qwen3-32b`
++2. Test model parsing with single-slash IDs: `groq/llama-3.3-70b-versatile`
++3. Verify CI correctly fails when models don't exist
++4. Test all affected Groq models to ensure they work
++
++## References
++
++- Issue: https://github.com/link-assistant/agent/issues/32
++- CI Run: https://github.com/link-assistant/agent/actions/runs/20117892062
++- Groq Docs: https://console.groq.com/docs/models
++- Models API: https://models.dev/api.json

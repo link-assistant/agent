@@ -1,0 +1,8 @@
+
+> @link-assistant/agent@0.27.1 lint
+> eslint . --max-warnings 0 && npm run lint:scripts
+
+
+> @link-assistant/agent@0.27.1 lint:scripts
+> cd ../scripts && eslint . --config ./eslint.config.mjs --max-warnings 0
+

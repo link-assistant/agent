@@ -1,0 +1,56 @@
+bun test v1.4.4 (38afee6c8)
+
+js/tests/google-security.js:
+(pass) Google OAuth security (#340 review) > real callback displays untrusted errors as text and terminates authentication [26.49ms]
+(pass) Google OAuth security (#340 review) > rejects a lookalike or unsupported API origin: https://generativelanguage.googleapis.com.attacker.invalid [0.31ms]
+(pass) Google OAuth security (#340 review) > rejects a lookalike or unsupported API origin: https://attacker-generativelanguage.googleapis.com [0.09ms]
+(pass) Google OAuth security (#340 review) > rejects a lookalike or unsupported API origin: https://generativelanguage.googleapis.com@attacker.invalid [0.02ms]
+(pass) Google OAuth security (#340 review) > rejects a lookalike or unsupported API origin: http://generativelanguage.googleapis.com [0.02ms]
+(pass) Google OAuth security (#340 review) > rejects a lookalike or unsupported API origin: https://attacker.invalid/?host=generativelanguage.googleapis.com
+(pass) Google OAuth security (#340 review) > rejects a lookalike or unsupported API origin: not a URL [0.03ms]
+(pass) Google OAuth security (#340 review) > uses the exact Google host and preserves configured Cloud Code routing [0.14ms]
+(pass) Google OAuth security (#340 review) > OAuth initialization retains shared PKCE helpers for google [0.53ms]
+(pass) Google OAuth security (#340 review) > OAuth initialization retains shared PKCE helpers for openai [0.20ms]
+
+js/tests/instant-changelog.js:
+(pass) manual release writes only its package changelog (.) [3.07ms]
+(pass) manual release writes only its package changelog (js) [1.84ms]
+
+js/tests/split-bindings.js:
+(pass) split TypeScript module has no unresolved runtime names: auth/plugins [202.10ms]
+(pass) split TypeScript module has no unresolved runtime names: auth/google-plugin [91.98ms]
+(pass) split TypeScript module has no unresolved runtime names: auth/plugin-utils [6.35ms]
+(pass) split TypeScript module has no unresolved runtime names: auth/google-security [9.42ms]
+(pass) split TypeScript module has no unresolved runtime names: provider/provider [65.73ms]
+(pass) split TypeScript module has no unresolved runtime names: provider/provider-loaders [27.37ms]
+(pass) split TypeScript module has no unresolved runtime names: provider/provider-sdk [48.02ms]
+(pass) split TypeScript module has no unresolved runtime names: session/prompt [47.75ms]
+(pass) split TypeScript module has no unresolved runtime names: session/prompt-helpers [23.24ms]
+
+js/tests/integration/google-cloudcode.js:
+(pass) Google Cloud Code API request transformations > transforms generateContent URL to Cloud Code format [0.09ms]
+(pass) Google Cloud Code API request transformations > transforms streamGenerateContent URL to Cloud Code format [0.04ms]
+(pass) Google Cloud Code API request transformations > transforms countTokens URL to Cloud Code format [0.02ms]
+(pass) Google Cloud Code API request transformations > returns null for non-Google URLs [0.02ms]
+(pass) Google Cloud Code API request transformations > returns null for URLs without method [0.03ms]
+(pass) Google Cloud Code API request transformations > extracts model name from URL [0.13ms]
+(pass) Google Cloud Code API request transformations > extracts flash model name from URL [0.05ms]
+(pass) Google Cloud Code API request transformations > wraps request body in Cloud Code format [0.38ms]
+(pass) Google Cloud Code API request transformations > wraps request body without project when not available [0.07ms]
+(pass) Google Cloud Code API request transformations > injects thoughtSignature into function call parts in active loop [0.08ms]
+(pass) Google Cloud Code API request transformations > preserves existing thoughtSignature values [0.06ms]
+(pass) Google Cloud Code API request transformations > does not inject thoughtSignature before active loop [0.04ms]
+(pass) Google Cloud Code API request transformations > handles request with no function calls [0.07ms]
+(pass) Google Cloud Code API request transformations > handles empty request [0.03ms]
+(pass) Google Cloud Code API request transformations > handles request with no user text (only function responses) [0.04ms]
+(pass) Google Cloud Code API request transformations > only injects into first function call per model turn [0.06ms]
+(pass) Google Cloud Code API request transformations > detects streaming requests from URL method [0.03ms]
+(pass) Google Cloud Code API request transformations > detects streaming requests from alt=sse parameter
+(pass) Google Cloud Code API request transformations > does not detect non-streaming requests [0.01ms]
+(pass) Cloud Code API response unwrapping > unwraps non-streaming Cloud Code response [0.10ms]
+(pass) Cloud Code API response unwrapping > passes through response without wrapper [0.03ms]
+
+ 42 pass
+ 0 fail
+ 66 expect() calls
+Ran 42 tests across 4 files. [816.00ms]

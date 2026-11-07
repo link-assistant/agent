@@ -5,6 +5,12 @@ on:
     branches:
       - main
     paths:
+      - '.prettierrc'
+      - '.prettierignore'
+      - '.secretlintrc.json'
+      - '.husky/**'
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - 'js/**'
       - 'scripts/**'
       - '.github/workflows/js.yml'
@@ -12,6 +18,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
+      - '.prettierrc'
+      - '.prettierignore'
+      - '.secretlintrc.json'
+      - '.husky/**'
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - 'js/**'
       - 'scripts/**'
       - '.github/workflows/js.yml'
@@ -30,6 +42,7 @@ on:
         description: 'Manual release type'
         required: true
         type: choice
+        default: patch
         options:
           - patch
           - minor
@@ -56,21 +69,67 @@ env:
 # templates use):
 #
 #   * read-only checks share `check-<workflow>-<ref>-<job>` and cancel in
-#     progress off the default branch, so a force-push stops only the stale
+#     progress on every branch, so a force-push stops only the stale
 #     copy of that one job instead of queueing the entire workflow;
 #   * jobs that push to main or publish share the repository-wide
 #     `main-writer-...` group and never cancel in progress, so a release is
 #     never interrupted between the version bump and the publish, and the JS
 #     and Rust releases cannot race each other.
 jobs:
+  detect-changes:
+    name: Detect Relevant Changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-detect-changes
+      cancel-in-progress: true
+    outputs:
+      code-changed: ${{ steps.changes.outputs.code-changed }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26.x'
+      - id: changes
+        env:
+          GITHUB_BEFORE_SHA: ${{ github.event.before }}
+        run: node scripts/detect-ci-changes.mjs js
+
+  release-preflight:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.code-changed == 'true'
+    name: Release Credential Preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-release-preflight
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26.x'
+      - name: Verify the publishing credential before builds
+        env:
+          PREFLIGHT_MODE: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && 'release' || 'report' }}
+        run: node scripts/release-preflight.mjs npm
+
   # Changeset check - only runs on PRs
   changeset-check:
     name: Check for Changesets
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-changeset-check
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v6
@@ -83,34 +142,25 @@ jobs:
           node-version: '26.x'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
         working-directory: js
 
       - name: Check for changesets
-        # HEAD_REF is a branch name chosen by the PR author. Interpolating it
-        # into the script would let a branch name execute shell code.
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          # Skip changeset check for automated version PRs
-          if [[ "$HEAD_REF" == "changeset-release/"* ]]; then
-            echo "Skipping changeset check for automated release PR"
-            exit 0
-          fi
+        run: node scripts/validate-changeset.mjs
 
-          # Run changeset validation script
-          node scripts/validate-changeset.mjs
+      - name: Guard CI-managed package versions
+        run: node scripts/check-version.mjs
 
   # Linting and formatting - runs after changeset check on PRs, immediately on main
   lint:
     name: Lint and Format Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-lint
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    needs: [changeset-check]
-    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
+      cancel-in-progress: true
+    needs: [changeset-check, release-preflight, detect-changes]
+    if: ${{ !cancelled() && needs.detect-changes.outputs.code-changed == 'true' && needs.release-preflight.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -132,7 +182,7 @@ jobs:
           node-version: '26.x'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
         working-directory: js
 
       - name: Scan for committed secrets
@@ -159,22 +209,23 @@ jobs:
     timeout-minutes: 20
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-test-${{ matrix.os }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    needs: [changeset-check]
-    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
+      cancel-in-progress: true
+    needs: [changeset-check, lint]
+    if: ${{ !cancelled() && needs.lint.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    permissions:
-      contents: write
+        os: [ubuntu-24.04, macos-15, windows-2025]
     steps:
       - uses: actions/checkout@v6
         with:
-          # Need to checkout the PR branch for push access
-          ref: ${{ github.head_ref || github.ref }}
-          # Use a token with write access for pushing cache commits
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Simulate fresh merge with base branch (PR only)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: bash scripts/simulate-fresh-merge.sh
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
@@ -182,7 +233,7 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
         working-directory: js
 
       # Use the package script so CI and local runs execute the same suite.
@@ -197,51 +248,32 @@ jobs:
         working-directory: js
 
       - name: Verify packed bash tool with both tree-sitter runtimes
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         run: bun experiments/issue-322/verify-bash-parser.mjs
-
-      - name: Commit cached API responses
-        # Only commit on the primary OS to avoid conflicts
-        if: matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request'
-        run: |
-          # Check if there are any new cached files in data/api-cache
-          if [ -d "data/api-cache" ] && [ -n "$(git status --porcelain data/api-cache/)" ]; then
-            echo "Found uncommitted cached API responses"
-            git config user.name "github-actions[bot]"
-            # The 41898282+ prefix links the commit to the github-actions[bot]
-            # account. Without it the commit is "unattributed" and a ruleset
-            # requiring extra approval for unattributed changes blocks it.
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add data/api-cache/
-            git commit -m "chore: commit cached API responses (Links Notation format)
-
-            🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-            Co-Authored-By: Claude <noreply@anthropic.com>"
-            git push
-            echo "Pushed cached API responses to branch"
-          else
-            echo "No new cached API responses to commit"
-          fi
 
   # Verbose HTTP logging integration test - verifies --verbose mode logs HTTP traffic
   # This is the ONLY real-API test in CI/CD. Uses free-tier model (kilo/nemotron-3-ultra-free)
   # to verify HTTP request/response logging works end-to-end.
-  # Runs only on ubuntu-latest to conserve free API limits.
+  # Runs only on ubuntu-24.04 to conserve free API limits.
   # See: https://github.com/link-assistant/agent/issues/221
   verbose-integration:
     name: Verbose HTTP Logging Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-verbose-integration
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    needs: [changeset-check]
-    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
+      cancel-in-progress: true
+    needs: [changeset-check, lint]
+    if: ${{ !cancelled() && needs.lint.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          fetch-depth: 0
+      - name: Simulate fresh merge with base branch (PR only)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: bash scripts/simulate-fresh-merge.sh
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
@@ -249,7 +281,7 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
         working-directory: js
 
       - name: Run verbose HTTP logging integration test
@@ -262,15 +294,22 @@ jobs:
   # Verify the published dependency graph installs without peer warnings.
   package-install:
     name: Clean Package Install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-package-install
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    needs: [changeset-check]
-    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
+      cancel-in-progress: true
+    needs: [changeset-check, lint]
+    if: ${{ !cancelled() && needs.lint.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Simulate fresh merge with base branch (PR only)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: bash scripts/simulate-fresh-merge.sh
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
@@ -302,15 +341,15 @@ jobs:
   # Release - only runs on main after tests pass (for push events)
   release:
     name: Release
-    needs: [lint, test, verbose-integration, package-install]
-    # Use always() to ensure this job runs even if changeset-check was skipped
-    # This is needed because lint/test jobs have a transitive dependency on changeset-check
-    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.verbose-integration.result == 'success' && needs.package-install.result == 'success' }}
-    runs-on: ubuntu-latest
+    needs: [release-preflight, lint, test, verbose-integration, package-install]
+    # Evaluate explicit quality results even when the PR-only check was skipped.
+    if: ${{ !cancelled() && needs.release-preflight.result == 'success' && github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.verbose-integration.result == 'success' && needs.package-install.result == 'success' }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     concurrency:
       group: main-writer-${{ github.repository }}-main
       cancel-in-progress: false
+      queue: max
     # Permissions required for npm OIDC trusted publishing
     permissions:
       contents: write
@@ -321,18 +360,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      # A rerun checks out the original trigger SHA. The version bump may have
-      # already reached main, so use its package.json and changelog for recovery.
-      - name: Sync release checkout to current main
-        run: |
-          git fetch origin main
-          git checkout -B main origin/main
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '26.x'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Safely synchronize release metadata before recovery
+        run: node scripts/sync-release-checkout.mjs
 
       # `changeset version` formats the changelog through the package manager
       # it detects, which is bun because of js/bun.lock. Without bun it fails
@@ -343,7 +378,7 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bash ../scripts/run-with-budget-warning.sh 300 "Release dependency install" npm install --legacy-peer-deps
+        run: bash ../scripts/run-with-budget-warning.sh 300 "Release dependency install" npm ci --legacy-peer-deps
         working-directory: js
 
       - name: Update npm for OIDC trusted publishing
@@ -407,20 +442,20 @@ jobs:
         run: node scripts/js-release-summary.mjs
 
   # Manual Instant Release - triggered via workflow_dispatch with instant mode
-  # This job is in js.yml because npm trusted publishing
-  # only allows one workflow file to be registered as a trusted publisher
+  # Keep manual and automatic publishing in the registered js.yml workflow.
   instant-release:
     name: Instant Release
     # Publishing must wait for the same quality gates as the automated release
     # and require their explicit success (#337): without `needs`, a manual
     # release published while lint or the tests were failing.
-    needs: [lint, test, verbose-integration, package-install]
-    if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && github.event.inputs.release_mode == 'instant' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.verbose-integration.result == 'success' && needs.package-install.result == 'success' }}
-    runs-on: ubuntu-latest
+    needs: [release-preflight, lint, test, verbose-integration, package-install]
+    if: ${{ !cancelled() && needs.release-preflight.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.release_mode == 'instant' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.verbose-integration.result == 'success' && needs.package-install.result == 'success' }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     concurrency:
       group: main-writer-${{ github.repository }}-main
       cancel-in-progress: false
+      queue: max
     # Permissions required for npm OIDC trusted publishing
     permissions:
       contents: write
@@ -438,7 +473,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: bash ../scripts/run-with-budget-warning.sh 300 "Release dependency install" npm install --legacy-peer-deps
+        run: bash ../scripts/run-with-budget-warning.sh 300 "Release dependency install" npm ci --legacy-peer-deps
         working-directory: js
 
       - name: Update npm for OIDC trusted publishing
@@ -486,11 +521,12 @@ jobs:
   changeset-pr:
     name: Create Changeset PR
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_mode == 'changeset-pr'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
       group: main-writer-${{ github.repository }}-main
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write
       pull-requests: write
@@ -505,7 +541,7 @@ jobs:
           node-version: '26.x'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
         working-directory: js
 
       - name: Create changeset file
@@ -545,8 +581,7 @@ jobs:
             ### Next Steps
             1. Review the changeset in this PR
             2. Merge this PR to main
-            3. The automated release workflow will create a version PR
-            4. Merge the version PR to publish to npm and create a GitHub release
+            3. CI commits the version metadata and publishes npm and GitHub releases after validation
 
   # GitHub reports a job killed by timeout-minutes as cancelled rather than
   # failed, and every gate above is written as `result == 'success'`, so a
@@ -554,13 +589,15 @@ jobs:
   # Observing every job here makes that visible.
   pipeline-status:
     name: Pipeline Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: always()
     needs:
+      - detect-changes
+      - release-preflight
       - changeset-check
       - lint
       - test

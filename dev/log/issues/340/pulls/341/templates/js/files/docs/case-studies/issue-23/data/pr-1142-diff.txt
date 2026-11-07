@@ -1,0 +1,716 @@
+diff --git a/.changeset/sync-line-count-checks.md b/.changeset/sync-line-count-checks.md
+new file mode 100644
+index 00000000..56dd96c0
+--- /dev/null
++++ b/.changeset/sync-line-count-checks.md
+@@ -0,0 +1,12 @@
++---
++'@link-assistant/hive-mind': patch
++---
++
++Synchronize line count checks in CI/CD
++
++- Add ESLint max-lines rule (1500 lines) to match CI workflow check
++- Extract handleClaudeRuntimeSwitch to claude.runtime-switch.lib.mjs
++- Reduce claude.lib.mjs from 1506 to 1354 lines
++- Add case study documentation for issue #1141
++
++Fixes #1141
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index b4363957..f7730771 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -170,6 +170,8 @@ jobs:
+   # === ESLINT CODE QUALITY CHECK ===
+   # Lint runs independently of changeset-check - it's a fast check that should always run
+   # See: docs/case-studies/issue-1023 for why this dependency was removed
++  # IMPORTANT: ESLint now includes max-lines rule (1500 lines) to synchronize with check-file-line-limits
++  # See docs/case-studies/issue-1141 for why fresh merge simulation is critical
+   lint:
+     runs-on: ubuntu-latest
+     needs: [detect-changes]
+@@ -178,6 +180,58 @@ jobs:
+     steps:
+     - name: Checkout repository
+       uses: actions/checkout@v4
++      with:
++        # For PRs, fetch enough history to merge with base branch
++        fetch-depth: 0
++
++    - name: Simulate fresh merge with base branch (PR only)
++      if: github.event_name == 'pull_request'
++      env:
++        BASE_REF: ${{ github.base_ref }}
++      run: |
++        echo "=== Synchronizing PR with latest $BASE_REF ==="
++        echo "This prevents stale merge preview issues (see issue #1141)"
++        echo ""
++
++        # Configure git for merge
++        git config user.email "github-actions[bot]@users.noreply.github.com"
++        git config user.name "github-actions[bot]"
++
++        # Fetch the latest base branch
++        echo "Fetching latest $BASE_REF..."
++        git fetch origin "$BASE_REF"
++
++        # Get current and base branch info
++        CURRENT_SHA=$(git rev-parse HEAD)
++        BASE_SHA=$(git rev-parse "origin/$BASE_REF")
++
++        echo "Current checkout (merge preview): $CURRENT_SHA"
++        echo "Latest base branch ($BASE_REF): $BASE_SHA"
++        echo ""
++
++        # Check if base branch has new commits not in the merge preview
++        BEHIND_COUNT=$(git rev-list --count HEAD..origin/$BASE_REF)
++
++        if [ "$BEHIND_COUNT" -eq 0 ]; then
++          echo "Merge preview is up-to-date with $BASE_REF. No simulation needed."
++        else
++          echo "Base branch has $BEHIND_COUNT new commit(s) since PR was opened/synced."
++          echo "Simulating fresh merge to validate actual merge result..."
++          echo ""
++
++          # Attempt to merge the latest base branch
++          if git merge origin/$BASE_REF --no-edit; then
++            echo ""
++            echo "Fresh merge simulation successful!"
++            echo "Checks will now run against the up-to-date merged state."
++          else
++            echo ""
++            echo "::error::Merge conflict detected! PR needs to be rebased/updated before it can be merged."
++            echo "The PR branch is out of sync with $BASE_REF and cannot be automatically merged."
++            exit 1
++          fi
++        fi
++        echo ""
+ 
+     - name: Setup Node.js
+       uses: actions/setup-node@v4
+@@ -200,6 +254,8 @@ jobs:
+         echo "ESLint checks passed"
+ 
+   # === FILE LINE LIMIT CHECK ===
++  # IMPORTANT: This check must validate the ACTUAL merge result, not a stale merge preview.
++  # See docs/case-studies/issue-1141 for why this is critical.
+   check-file-line-limits:
+     runs-on: ubuntu-latest
+     needs: [detect-changes, changeset-check]
+@@ -209,6 +265,58 @@ jobs:
+     steps:
+     - name: Checkout repository
+       uses: actions/checkout@v4
++      with:
++        # For PRs, fetch enough history to merge with base branch
++        fetch-depth: 0
++
++    - name: Simulate fresh merge with base branch (PR only)
++      if: github.event_name == 'pull_request'
++      env:
++        BASE_REF: ${{ github.base_ref }}
++      run: |
++        echo "=== Synchronizing PR with latest $BASE_REF ==="
++        echo "This prevents stale merge preview issues (see issue #1141)"
++        echo ""
++
++        # Configure git for merge
++        git config user.email "github-actions[bot]@users.noreply.github.com"
++        git config user.name "github-actions[bot]"
++
++        # Fetch the latest base branch
++        echo "Fetching latest $BASE_REF..."
++        git fetch origin "$BASE_REF"
++
++        # Get current and base branch info
++        CURRENT_SHA=$(git rev-parse HEAD)
++        BASE_SHA=$(git rev-parse "origin/$BASE_REF")
++
++        echo "Current checkout (merge preview): $CURRENT_SHA"
++        echo "Latest base branch ($BASE_REF): $BASE_SHA"
++        echo ""
++
++        # Check if base branch has new commits not in the merge preview
++        BEHIND_COUNT=$(git rev-list --count HEAD..origin/$BASE_REF)
++
++        if [ "$BEHIND_COUNT" -eq 0 ]; then
++          echo "Merge preview is up-to-date with $BASE_REF. No simulation needed."
++        else
++          echo "Base branch has $BEHIND_COUNT new commit(s) since PR was opened/synced."
++          echo "Simulating fresh merge to validate actual merge result..."
++          echo ""
++
++          # Attempt to merge the latest base branch
++          if git merge origin/$BASE_REF --no-edit; then
++            echo ""
++            echo "Fresh merge simulation successful!"
++            echo "Checks will now run against the up-to-date merged state."
++          else
++            echo ""
++            echo "::error::Merge conflict detected! PR needs to be rebased/updated before it can be merged."
++            echo "The PR branch is out of sync with $BASE_REF and cannot be automatically merged."
++            exit 1
++          fi
++        fi
++        echo ""
+ 
+     - name: Check .mjs file line limits
+       run: |
+diff --git a/docs/case-studies/issue-1141/README.md b/docs/case-studies/issue-1141/README.md
+new file mode 100644
+index 00000000..c96624ce
+--- /dev/null
++++ b/docs/case-studies/issue-1141/README.md
+@@ -0,0 +1,160 @@
++# Case Study: Issue #1141 - CI/CD Line Count Check Synchronization
++
++## Summary
++
++This case study documents a CI/CD failure on the main branch caused by `src/claude.lib.mjs` exceeding the 1500-line limit, while a PR that passed CI validation contributed to pushing the file over the limit.
++
++## Timeline of Events
++
++| Date       | Commit   | Event                                     | claude.lib.mjs Lines |
++| ---------- | -------- | ----------------------------------------- | -------------------- |
++| 2026-01-11 | -        | PR #1105 CI run #20889393003 passes       | 1495                 |
++| 2026-01-14 | be6dabdb | Add timezone parsing feature              | 1494                 |
++| 2026-01-15 | cf6a9998 | Merge main + add subagents option         | 1512 (over limit!)   |
++| 2026-01-15 | 0b6f4c6c | Fix line count attempt                    | 1498                 |
++| 2026-01-19 | 593aa64e | Merge PR #1105 (issue #1104 fix)          | 1506 (over limit!)   |
++| 2026-01-19 | -        | Main branch CI run #21128634082 **fails** | 1506                 |
++
++## Root Cause Analysis
++
++### Primary Root Cause: Stale Merge Preview
++
++The fundamental issue is how GitHub Actions handles pull request CI checks:
++
++1. When a PR is opened or synchronized, GitHub creates a synthetic merge commit (`refs/pull/{number}/merge`)
++2. This merge commit is a **snapshot** that represents what the merge would look like **at that moment**
++3. The `actions/checkout@v4` action checks out this merge preview for PR workflows
++4. **The merge preview does NOT automatically update** when the base branch changes
++
++**Critical Timeline Gap:**
++
++```
++Jan 11: PR #1105 opened/synced
++        → GitHub creates merge preview (claude.lib.mjs = 1495 lines)
++        → CI runs on merge preview → PASSES
++
++[8 days pass - other PRs merge to main, adding lines to claude.lib.mjs]
++
++Jan 19: PR #1105 merged (without re-running CI)
++        → Actual merge result: claude.lib.mjs = 1506 lines
++        → Push CI runs on actual merge → FAILS
++```
++
++### Why PR CI and Push CI Behaved Differently
++
++**PR CI (January 11):**
++
++- Checked out `refs/remotes/pull/1105/merge` (SHA: 5881b21c17f5)
++- This was the merge preview from January 11
++- `claude.lib.mjs` had 1495 lines in this snapshot
++- Check passed
++
++**Push CI (January 19):**
++
++- Checked out the actual merge commit (SHA: 593aa64e)
++- This included all changes from both the PR and 8 days of main branch updates
++- `claude.lib.mjs` had 1506 lines in reality
++- Check failed
++
++### Evidence from CI Logs
++
++**Passed CI Run #20889393003 (PR Branch):**
++
++```
++check-file-line-limits: [command]/usr/bin/git checkout --progress --force refs/remotes/pull/1105/merge
++check-file-line-limits: ./src/claude.lib.mjs: 1495 lines
++```
++
++**Failed CI Run #21128634082 (Main Branch):**
++
++```
++detect-changes: Comparing HEAD^ to HEAD
++check-file-line-limits: ./src/claude.lib.mjs: 1506 lines
++check-file-line-limits: ERROR: ./src/claude.lib.mjs has 1506 lines, which exceeds the 1500 line limit!
++```
++
++## Solutions Implemented
++
++### 1. Fresh Merge Simulation in CI Workflow
++
++Added a step to `check-file-line-limits` and `lint` jobs that:
++
++1. Only runs for PR events
++2. Fetches the latest base branch
++3. Merges it into the PR to simulate the actual merge result
++4. Runs checks on the up-to-date merged state
++
++This ensures PR CI validates the **actual** merge result, not a stale snapshot.
++
++```yaml
++- name: Simulate fresh merge with base branch (PR only)
++  if: github.event_name == 'pull_request'
++  env:
++    BASE_REF: ${{ github.base_ref }}
++  run: |
++    git fetch origin "$BASE_REF"
++    BEHIND_COUNT=$(git rev-list --count HEAD..origin/$BASE_REF)
++    if [ "$BEHIND_COUNT" -gt 0 ]; then
++      git merge origin/$BASE_REF --no-edit || exit 1
++    fi
++```
++
++### 2. ESLint max-lines Rule
++
++Added to `eslint.config.mjs`:
++
++```javascript
++'max-lines': ['error', { max: 1500, skipBlankLines: true, skipComments: true }]
++```
++
++This provides:
++
++- Local development feedback via editor integration
++- CI enforcement via `npm run lint`
++- Alignment between ESLint and the workflow script check
++
++### 3. Reduced claude.lib.mjs Below 1500 Lines
++
++Extracted `handleClaudeRuntimeSwitch` function into `src/claude.runtime-switch.lib.mjs`:
++
++- Before: 1506 lines
++- After: 1354 lines
++
++## Prevention Recommendations
++
++For additional protection beyond the implemented fixes:
++
++1. **Enable GitHub Merge Queue**: Ensures PRs are tested against the latest main before merge
++2. **Require Linear History**: Force PRs to be rebased before merge
++3. **Add Pre-commit Hook**: Check line counts locally before pushing
++4. **Branch Protection**: Require branches to be up-to-date before merging
++
++## Best Practices Reference
++
++From [js-ai-driven-development-pipeline-template](https://github.com/link-foundation/js-ai-driven-development-pipeline-template):
++
++> Scripts must stay under 1000 lines for maintainability.
++
++The hive-mind repository uses a 1500-line limit, which is still reasonable but higher than the template's recommendation.
++
++## Files
++
++- `ci-logs/failed-run-21128634082.log` - Full CI log from failed main branch run
++- `ci-logs/passed-run-20889393003.log` - Full CI log from passing PR run
++
++## Related Issues
++
++- Issue #1141: Make sure our lines count checks are synchronized in CI/CD
++- Issue #1104: Price calculated by Anthropic was not extracted from json stream output
++- PR #1105: fix: Preserve Anthropic cost when session ends with error_during_execution
++
++## Conclusion
++
++The CI failure was caused by GitHub's stale merge preview architecture, where a PR's CI validates against a snapshot taken when the PR was opened/synchronized, not when it's actually merged. This can lead to situations where a PR passes validation but causes failures when merged with newer changes.
++
++The fix involves:
++
++1. Simulating a fresh merge in PR CI workflows to validate against the current base branch state
++2. Adding ESLint rules for additional protection during local development
++3. Reducing file sizes to be safely under the limit
++4. Considering stricter merge policies (merge queues, branch protection) to prevent future occurrences
+diff --git a/eslint.config.mjs b/eslint.config.mjs
+index a63a90e5..ac4d804b 100644
+--- a/eslint.config.mjs
++++ b/eslint.config.mjs
+@@ -70,6 +70,17 @@ export default [
+       // Require --paginate on gh api calls that return lists
+       // This prevents missing data when GitHub API returns more than 30 results
+       'gh-paginate/require-gh-paginate': 'warn',
++      // Enforce max 1500 lines per file to match CI workflow check
++      // This ensures ESLint and check-file-line-limits job are synchronized
++      // See: docs/case-studies/issue-1141 for context
++      'max-lines': [
++        'error',
++        {
++          max: 1500,
++          skipBlankLines: true,
++          skipComments: true,
++        },
++      ],
+     },
+   },
+ ];
+diff --git a/src/claude.lib.mjs b/src/claude.lib.mjs
+index 1f109c91..c410aaa9 100644
+--- a/src/claude.lib.mjs
++++ b/src/claude.lib.mjs
+@@ -8,7 +8,7 @@ const { $ } = await use('command-stream');
+ const fs = (await use('fs')).promises;
+ const path = (await use('path')).default;
+ // Import log from general lib
+-import { log, cleanErrorMessage } from './lib.mjs';
++import { log } from './lib.mjs';
+ import { reportError } from './sentry.lib.mjs';
+ import { timeouts, retryLimits, claudeCode, getClaudeEnv } from './config.lib.mjs';
+ import { detectUsageLimit, formatUsageLimitMessage } from './usage-limit.lib.mjs';
+@@ -16,6 +16,8 @@ import { createInteractiveHandler } from './interactive-mode.lib.mjs';
+ import { displayBudgetStats } from './claude.budget-stats.lib.mjs';
+ // Import Claude command builder for generating resume commands
+ import { buildClaudeResumeCommand } from './claude.command-builder.lib.mjs';
++// Import runtime switch module (extracted to maintain file line limits, see issue #1141)
++import { handleClaudeRuntimeSwitch } from './claude.runtime-switch.lib.mjs';
+ 
+ // Helper to display resume command at end of session
+ const showResumeCommand = async (sessionId, tempDir, claudePath, model, log) => {
+@@ -214,163 +216,9 @@ export const validateClaudeConnection = async (model = 'haiku-3') => {
+   // Start the validation with retry logic
+   return await attemptValidation();
+ };
+-// Function to handle Claude runtime switching between Node.js and Bun
+-export const handleClaudeRuntimeSwitch = async argv => {
+-  if (argv['force-claude-bun-run']) {
+-    await log('\n🔧 Switching Claude runtime to bun...');
+-    try {
+-      try {
+-        await $`which bun`;
+-        await log('   ✅ Bun runtime found');
+-      } catch (bunError) {
+-        reportError(bunError, {
+-          context: 'claude.lib.mjs - bun availability check',
+-          level: 'error',
+-        });
+-        await log('❌ Bun runtime not found. Please install bun first: https://bun.sh/', { level: 'error' });
+-        process.exit(1);
+-      }
+-
+-      // Find Claude executable path
+-      const claudePathResult = await $`which claude`;
+-      const claudePath = claudePathResult.stdout.toString().trim();
+-
+-      if (!claudePath) {
+-        await log('❌ Claude executable not found', { level: 'error' });
+-        process.exit(1);
+-      }
+-
+-      await log(`   Claude path: ${claudePath}`);
+-
+-      try {
+-        await fs.access(claudePath, fs.constants.W_OK);
+-      } catch (accessError) {
+-        reportError(accessError, {
+-          context: 'claude.lib.mjs - Claude executable write permission check (bun)',
+-          level: 'error',
+-        });
+-        await log('❌ Cannot write to Claude executable (permission denied)', { level: 'error' });
+-        await log('   Try running with sudo or changing file permissions', { level: 'error' });
+-        process.exit(1);
+-      }
+-      // Read current shebang
+-      const firstLine = await $`head -1 "${claudePath}"`;
+-      const currentShebang = firstLine.stdout.toString().trim();
+-      await log(`   Current shebang: ${currentShebang}`);
+-      if (currentShebang.includes('bun')) {
+-        await log('   ✅ Claude is already configured to use bun');
+-        process.exit(0);
+-      }
+-
+-      // Create backup
+-      const backupPath = `${claudePath}.nodejs-backup`;
+-      await $`cp "${claudePath}" "${backupPath}"`;
+-      await log(`   📦 Backup created: ${backupPath}`);
+-
+-      // Read file content and replace shebang
+-      const content = await fs.readFile(claudePath, 'utf8');
+-      const newContent = content.replace(/^#!.*node.*$/m, '#!/usr/bin/env bun');
+-
+-      if (content === newContent) {
+-        await log('⚠️  No Node.js shebang found to replace', { level: 'warning' });
+-        await log(`   Current shebang: ${currentShebang}`, { level: 'warning' });
+-        process.exit(0);
+-      }
+-
+-      await fs.writeFile(claudePath, newContent);
+-      await log('   ✅ Claude shebang updated to use bun');
+-      await log('   🔄 Claude will now run with bun runtime');
+-    } catch (error) {
+-      await log(`❌ Failed to switch Claude to bun: ${cleanErrorMessage(error)}`, { level: 'error' });
+-      process.exit(1);
+-    }
+-
+-    // Exit after switching runtime
+-    process.exit(0);
+-  }
+-
+-  if (argv['force-claude-nodejs-run']) {
+-    await log('\n🔧 Restoring Claude runtime to Node.js...');
+-    try {
+-      try {
+-        await $`which node`;
+-        await log('   ✅ Node.js runtime found');
+-      } catch (nodeError) {
+-        reportError(nodeError, {
+-          context: 'claude.lib.mjs - Node.js availability check',
+-          level: 'error',
+-        });
+-        await log('❌ Node.js runtime not found. Please install Node.js first', { level: 'error' });
+-        process.exit(1);
+-      }
+-
+-      // Find Claude executable path
+-      const claudePathResult = await $`which claude`;
+-      const claudePath = claudePathResult.stdout.toString().trim();
+-
+-      if (!claudePath) {
+-        await log('❌ Claude executable not found', { level: 'error' });
+-        process.exit(1);
+-      }
+-
+-      await log(`   Claude path: ${claudePath}`);
+-
+-      try {
+-        await fs.access(claudePath, fs.constants.W_OK);
+-      } catch (accessError) {
+-        reportError(accessError, {
+-          context: 'claude.lib.mjs - Claude executable write permission check (nodejs)',
+-          level: 'error',
+-        });
+-        await log('❌ Cannot write to Claude executable (permission denied)', { level: 'error' });
+-        await log('   Try running with sudo or changing file permissions', { level: 'error' });
+-        process.exit(1);
+-      }
+-      // Read current shebang
+-      const firstLine = await $`head -1 "${claudePath}"`;
+-      const currentShebang = firstLine.stdout.toString().trim();
+-      await log(`   Current shebang: ${currentShebang}`);
+-      if (currentShebang.includes('node') && !currentShebang.includes('bun')) {
+-        await log('   ✅ Claude is already configured to use Node.js');
+-        process.exit(0);
+-      }
+-
+-      const backupPath = `${claudePath}.nodejs-backup`;
+-      try {
+-        await fs.access(backupPath);
+-        // Restore from backup
+-        await $`cp "${backupPath}" "${claudePath}"`;
+-        await log(`   ✅ Restored Claude from backup: ${backupPath}`);
+-      } catch (backupError) {
+-        reportError(backupError, {
+-          context: 'claude_restore_backup',
+-          level: 'info',
+-        });
+-        // No backup available, manually update shebang
+-        await log('   📝 No backup found, manually updating shebang...');
+-        const content = await fs.readFile(claudePath, 'utf8');
+-        const newContent = content.replace(/^#!.*bun.*$/m, '#!/usr/bin/env node');
+-
+-        if (content === newContent) {
+-          await log('⚠️  No bun shebang found to replace', { level: 'warning' });
+-          await log(`   Current shebang: ${currentShebang}`, { level: 'warning' });
+-          process.exit(0);
+-        }
+-
+-        await fs.writeFile(claudePath, newContent);
+-        await log('   ✅ Claude shebang updated to use Node.js');
+-      }
+-
+-      await log('   🔄 Claude will now run with Node.js runtime');
+-    } catch (error) {
+-      await log(`❌ Failed to restore Claude to Node.js: ${cleanErrorMessage(error)}`, { level: 'error' });
+-      process.exit(1);
+-    }
+-
+-    // Exit after restoring runtime
+-    process.exit(0);
+-  }
+-};
++// handleClaudeRuntimeSwitch is imported from ./claude.runtime-switch.lib.mjs (see issue #1141)
++// Re-export it for backwards compatibility
++export { handleClaudeRuntimeSwitch };
+ /**
+  * Check if Playwright MCP is available and connected to Claude
+  * @returns {Promise<boolean>} True if Playwright MCP is available, false otherwise
+diff --git a/src/claude.runtime-switch.lib.mjs b/src/claude.runtime-switch.lib.mjs
+new file mode 100644
+index 00000000..c30e100c
+--- /dev/null
++++ b/src/claude.runtime-switch.lib.mjs
+@@ -0,0 +1,175 @@
++#!/usr/bin/env node
++// Claude runtime switching module
++// Extracted from claude.lib.mjs to maintain file line limits
++// See: docs/case-studies/issue-1141
++
++// If not, fetch it (when running standalone)
++if (typeof globalThis.use === 'undefined') {
++  globalThis.use = (await eval(await (await fetch('https://unpkg.com/use-m/use.js')).text())).use;
++}
++const { $ } = await use('command-stream');
++const fs = (await use('fs')).promises;
++import { log, cleanErrorMessage } from './lib.mjs';
++import { reportError } from './sentry.lib.mjs';
++
++// Function to handle Claude runtime switching between Node.js and Bun
++export const handleClaudeRuntimeSwitch = async argv => {
++  if (argv['force-claude-bun-run']) {
++    await log('\n🔧 Switching Claude runtime to bun...');
++    try {
++      try {
++        await $`which bun`;
++        await log('   ✅ Bun runtime found');
++      } catch (bunError) {
++        reportError(bunError, {
++          context: 'claude.runtime-switch.lib.mjs - bun availability check',
++          level: 'error',
++        });
++        await log('❌ Bun runtime not found. Please install bun first: https://bun.sh/', { level: 'error' });
++        process.exit(1);
++      }
++
++      // Find Claude executable path
++      const claudePathResult = await $`which claude`;
++      const claudePath = claudePathResult.stdout.toString().trim();
++
++      if (!claudePath) {
++        await log('❌ Claude executable not found', { level: 'error' });
++        process.exit(1);
++      }
++
++      await log(`   Claude path: ${claudePath}`);
++
++      try {
++        await fs.access(claudePath, fs.constants.W_OK);
++      } catch (accessError) {
++        reportError(accessError, {
++          context: 'claude.runtime-switch.lib.mjs - Claude executable write permission check (bun)',
++          level: 'error',
++        });
++        await log('❌ Cannot write to Claude executable (permission denied)', { level: 'error' });
++        await log('   Try running with sudo or changing file permissions', { level: 'error' });
++        process.exit(1);
++      }
++      // Read current shebang
++      const firstLine = await $`head -1 "${claudePath}"`;
++      const currentShebang = firstLine.stdout.toString().trim();
++      await log(`   Current shebang: ${currentShebang}`);
++      if (currentShebang.includes('bun')) {
++        await log('   ✅ Claude is already configured to use bun');
++        process.exit(0);
++      }
++
++      // Create backup
++      const backupPath = `${claudePath}.nodejs-backup`;
++      await $`cp "${claudePath}" "${backupPath}"`;
++      await log(`   📦 Backup created: ${backupPath}`);
++
++      // Read file content and replace shebang
++      const content = await fs.readFile(claudePath, 'utf8');
++      const newContent = content.replace(/^#!.*node.*$/m, '#!/usr/bin/env bun');
++
++      if (content === newContent) {
++        await log('⚠️  No Node.js shebang found to replace', { level: 'warning' });
++        await log(`   Current shebang: ${currentShebang}`, { level: 'warning' });
++        process.exit(0);
++      }
++
++      await fs.writeFile(claudePath, newContent);
++      await log('   ✅ Claude shebang updated to use bun');
++      await log('   🔄 Claude will now run with bun runtime');
++    } catch (error) {
++      await log(`❌ Failed to switch Claude to bun: ${cleanErrorMessage(error)}`, { level: 'error' });
++      process.exit(1);
++    }
++
++    // Exit after switching runtime
++    process.exit(0);
++  }
++
++  if (argv['force-claude-nodejs-run']) {
++    await log('\n🔧 Restoring Claude runtime to Node.js...');
++    try {
++      try {
++        await $`which node`;
++        await log('   ✅ Node.js runtime found');
++      } catch (nodeError) {
++        reportError(nodeError, {
++          context: 'claude.runtime-switch.lib.mjs - Node.js availability check',
++          level: 'error',
++        });
++        await log('❌ Node.js runtime not found. Please install Node.js first', { level: 'error' });
++        process.exit(1);
++      }
++
++      // Find Claude executable path
++      const claudePathResult = await $`which claude`;
++      const claudePath = claudePathResult.stdout.toString().trim();
++
++      if (!claudePath) {
++        await log('❌ Claude executable not found', { level: 'error' });
++        process.exit(1);
++      }
++
++      await log(`   Claude path: ${claudePath}`);
++
++      try {
++        await fs.access(claudePath, fs.constants.W_OK);
++      } catch (accessError) {
++        reportError(accessError, {
++          context: 'claude.runtime-switch.lib.mjs - Claude executable write permission check (nodejs)',
++          level: 'error',
++        });
++        await log('❌ Cannot write to Claude executable (permission denied)', { level: 'error' });
++        await log('   Try running with sudo or changing file permissions', { level: 'error' });
++        process.exit(1);
++      }
++      // Read current shebang
++      const firstLine = await $`head -1 "${claudePath}"`;
++      const currentShebang = firstLine.stdout.toString().trim();
++      await log(`   Current shebang: ${currentShebang}`);
++      if (currentShebang.includes('node') && !currentShebang.includes('bun')) {
++        await log('   ✅ Claude is already configured to use Node.js');
++        process.exit(0);
++      }
++
++      const backupPath = `${claudePath}.nodejs-backup`;
++      try {
++        await fs.access(backupPath);
++        // Restore from backup
++        await $`cp "${backupPath}" "${claudePath}"`;
++        await log(`   ✅ Restored Claude from backup: ${backupPath}`);
++      } catch (backupError) {
++        reportError(backupError, {
++          context: 'claude_restore_backup',
++          level: 'info',
++        });
++        // No backup available, manually update shebang
++        await log('   📝 No backup found, manually updating shebang...');
++        const content = await fs.readFile(claudePath, 'utf8');
++        const newContent = content.replace(/^#!.*bun.*$/m, '#!/usr/bin/env node');
++
++        if (content === newContent) {
++          await log('⚠️  No bun shebang found to replace', { level: 'warning' });
++          await log(`   Current shebang: ${currentShebang}`, { level: 'warning' });
++          process.exit(0);
++        }
++
++        await fs.writeFile(claudePath, newContent);
++        await log('   ✅ Claude shebang updated to use Node.js');
++      }
++
++      await log('   🔄 Claude will now run with Node.js runtime');
++    } catch (error) {
++      await log(`❌ Failed to restore Claude to Node.js: ${cleanErrorMessage(error)}`, { level: 'error' });
++      process.exit(1);
++    }
++
++    // Exit after restoring runtime
++    process.exit(0);
++  }
++};
++
++export default {
++  handleClaudeRuntimeSwitch,
++};

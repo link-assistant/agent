@@ -1,0 +1,473 @@
+Check live free model catalogs	UNKNOWN STEP	﻿2026-11-06T15:05:53.8567312Z Current runner version: '2.338.2'
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8598787Z ##[group]Runner Image Provisioner
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8600403Z Hosted Compute Agent
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8601707Z Version: 20261028.624
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8602878Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8604390Z Build Date: 2026-10-28T21:51:42Z
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8605809Z Worker ID: {90f664c3-686c-41d5-9320-2d1d0ca71721}
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8607128Z Region: westcentralus
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8608387Z Cloud: Azure
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8609375Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8612208Z ##[group]Operating System
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8613472Z Ubuntu
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8614433Z 26.04.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8615459Z LTS
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8616491Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8617541Z ##[group]Runner Image
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8618735Z Image: ubuntu-26.04
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8620022Z Version: 20261101.186.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8622374Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261101.186/images/ubuntu/Ubuntu2604-Readme.md
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8625146Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261101.186
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8627082Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8629084Z ##[group]GITHUB_TOKEN Permissions
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8632421Z Contents: read
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8633487Z Metadata: read
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8634421Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8637440Z Secret source: Actions
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8639991Z Cache mode: write
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.8641732Z Prepare workflow directory
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.9086553Z Prepare all required actions
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:53.9135492Z Getting action download info
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:54.2495853Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:54.3683015Z Download action repository 'oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6' (SHA:0c5077e51419868618aeaa5fe8019c62421857d6)
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:54.8095497Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:54.9916344Z Complete job name: Check live free model catalogs
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0947235Z ##[group]Run actions/checkout@v6
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0948668Z with:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0949565Z   persist-credentials: false
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0950865Z   repository: link-assistant/agent
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0959529Z   token: ***
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0960504Z   ssh-strict: true
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0961380Z   ssh-user: git
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0962288Z   clean: true
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0963183Z   sparse-checkout-cone-mode: true
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0964266Z   fetch-depth: 1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0965150Z   fetch-tags: false
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0966053Z   show-progress: true
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0966940Z   lfs: false
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0967810Z   submodules: false
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0968712Z   set-safe-directory: true
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0969841Z   allow-unsafe-pr-checkout: false
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0971197Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0971997Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0972981Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0974136Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.0975078Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4135600Z Syncing repository: link-assistant/agent
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4139574Z ##[group]Getting Git version info
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4141651Z Working directory is '/home/runner/work/agent/agent'
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4144833Z [command]/usr/bin/git version
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4153606Z git version 2.56.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4178871Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4195627Z Temporarily overriding HOME='/home/runner/work/_temp/7b9f0da8-f772-4d0f-993f-774e34cd71c1' before making global git config changes
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4200719Z Adding repository directory to the temporary git global config as a safe directory
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4221940Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4293832Z Deleting the contents of '/home/runner/work/agent/agent'
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4297702Z ##[group]Determining repository object format
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4300929Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4303515Z ##[group]Initializing the repository
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4305777Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4464246Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4479008Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4537906Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4541279Z ##[group]Disabling automatic garbage collection
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4543582Z [command]/usr/bin/git config --local gc.auto 0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4579877Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4582383Z ##[group]Setting up auth
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4584244Z Removing SSH command configuration
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4588476Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.4627198Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5133268Z Removing HTTP extra header
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5140742Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5177390Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5442474Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5449538Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5486085Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5757101Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5798618Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5833537Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5871551Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5906445Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5936552Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5938145Z ##[group]Fetching the repository
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:55.5945376Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +dc8f9ead0ce98b7645cd69f1578cfc3057037f45:refs/remotes/origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3070070Z From https://github.com/link-assistant/agent
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3072694Z  * [new ref]         dc8f9ead0ce98b7645cd69f1578cfc3057037f45 -> origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3082269Z [command]/usr/bin/git branch --list --remote origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3116100Z   origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3124368Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3148538Z dc8f9ead0ce98b7645cd69f1578cfc3057037f45
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3154439Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3155451Z ##[group]Determining the checkout info
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3156401Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3160566Z [command]/usr/bin/git sparse-checkout disable
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3211985Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3243419Z ##[group]Checking out the ref
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.3248215Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6245795Z Reset branch 'main'
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6251380Z branch 'main' set up to track 'origin/main'.
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6288240Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6346424Z [command]/usr/bin/git log -1 --format=%H
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6377824Z dc8f9ead0ce98b7645cd69f1578cfc3057037f45
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6391732Z ##[group]Removing auth
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6392302Z Removing SSH command configuration
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6397269Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6438615Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6750850Z Removing HTTP extra header
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6758354Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.6801774Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7083280Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7094305Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7126330Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7148052Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7148886Z includeif.gitdir:/github/workspace/.git.path
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7149530Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7151368Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7167800Z /home/runner/work/_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7182323Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7222065Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7249639Z /home/runner/work/_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7262362Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7304336Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7338609Z /github/runner_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7347300Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7382006Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7405552Z /github/runner_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7414448Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7448969Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7733517Z Removing credentials config '/home/runner/work/_temp/git-credentials-c25b7df5-cb98-4c2f-bb79-c0c732bc68da.config'
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.7742803Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8096477Z ##[group]Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8096916Z with:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8097126Z   no-cache: false
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8099610Z   token: ***
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8100189Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8100407Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8100661Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8100958Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:57.8101194Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:58.6463340Z Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:05:59.1826166Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/5d62c2e2-3467-43a1-8747-823aae9d1256.zip
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0213101Z [command]/home/runner/.bun/bin/bun --revision
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0274773Z 1.4.4+38afee6c8
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0474221Z ##[group]Run bun install --frozen-lockfile
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0474628Z ^[[36;1mbun install --frozen-lockfile^[[0m
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0531900Z shell: /usr/bin/bash -e {0}
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0532191Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0532396Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0532647Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0532932Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0533181Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:00.0655863Z bun install v1.4.4 (38afee6c8)
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.1561832Z 
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.1562485Z $ cd .. && husky || true
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2015012Z 
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2015634Z + @changesets/cli@3.0.3
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2016746Z + @eslint/js@10.0.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2017143Z + eslint@10.13.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2017696Z + eslint-config-prettier@10.1.8
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2018187Z + eslint-plugin-prettier@5.5.7
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2018640Z + eslint-plugin-promise@7.3.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2019049Z + husky@9.1.7
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2019471Z + lint-staged@17.6.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2020045Z + prettier@3.9.10
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2020424Z + @agentclientprotocol/sdk@2.0.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2020860Z + @ai-sdk/alibaba@2.0.74
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2021275Z + @ai-sdk/amazon-bedrock@5.0.122
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2021692Z + @ai-sdk/anthropic@4.0.86
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2022101Z + @ai-sdk/azure@4.0.108
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2022476Z + @ai-sdk/cerebras@3.0.76
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2022855Z + @ai-sdk/cohere@4.0.67
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2023231Z + @ai-sdk/deepinfra@3.0.76
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2023624Z + @ai-sdk/deepseek@3.0.71
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2024008Z + @ai-sdk/fireworks@3.0.79
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2024493Z + @ai-sdk/gateway@4.0.122
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2024868Z + @ai-sdk/google@4.0.103
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2025250Z + @ai-sdk/google-vertex@5.0.120
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2025654Z + @ai-sdk/groq@4.0.68
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2026016Z + @ai-sdk/mcp@2.0.82
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2026369Z + @ai-sdk/mistral@4.0.70
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2026741Z + @ai-sdk/openai@4.0.100
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2027147Z + @ai-sdk/openai-compatible@3.0.76
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2027594Z + @ai-sdk/perplexity@5.0.18
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2027996Z + @ai-sdk/provider@4.0.32
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2028397Z + @ai-sdk/togetherai@3.0.77
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2028791Z + @ai-sdk/xai@5.0.28
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2029152Z + @clack/prompts@1.8.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2029541Z + @hono/standard-validator@0.4.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2030170Z + @hono/zod-validator@0.9.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2030594Z + @modelcontextprotocol/sdk@1.32.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2031047Z + @octokit/graphql@9.0.5
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2031431Z + @octokit/rest@22.0.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2031838Z + @openauthjs/openauth@0.4.3
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2032242Z + @opencode-ai/sdk@1.19.4
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2032651Z + @openrouter/ai-sdk-provider@3.1.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2033083Z + @opentui/core@0.6.6
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2033475Z + @opentui/solid@0.6.6
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2033838Z + @parcel/watcher@2.6.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2034237Z + @solid-primitives/event-bus@1.1.4
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2034724Z + @standard-community/standard-json@0.3.7
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2035247Z + @standard-community/standard-openapi@0.2.11
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2035741Z + @zip.js/zip.js@2.24.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2036406Z + ai@7.0.149
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2036730Z + chokidar@6.0.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2037072Z + clipboardy@5.3.2
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2037425Z + command-stream@2.4.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2037790Z + decimal.js@10.6.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2038127Z + diff@9.0.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2038444Z + fuzzysort@4.0.2
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2038775Z + glob@13.0.6
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2039117Z + google-auth-library@11.3.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2039531Z + gpt-tokenizer@4.1.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2040069Z + gray-matter@4.0.3
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2040409Z + hono@4.13.13
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2040745Z + hono-openapi@1.5.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2041099Z + ignore@7.0.13
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2041440Z + jsonc-parser@3.3.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2041798Z + lino-arguments@0.3.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2042178Z + lino-objects-codec@0.9.2
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2042851Z + log-lazy@1.0.4
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2043267Z + minimatch@10.2.6
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2043611Z + remeda@2.53.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2043939Z + solid-js@1.9.12
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2044291Z + strip-ansi@7.2.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2044637Z + test-anywhere@0.9.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2045011Z + tree-sitter-bash@0.25.1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2045399Z + turndown@7.2.4
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2045727Z + ulid@3.0.2
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2046056Z + vscode-jsonrpc@10.0.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2046463Z + vscode-languageserver-types@3.18.5
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2046971Z + web-tree-sitter@0.25.10
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2047351Z + xdg-basedir@5.1.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2047687Z + yargs@18.2.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2048001Z + zod@4.6.7
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2048261Z 
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2048442Z 518 packages installed [7.14s]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2125386Z ##[group]Run mkdir -p ci-logs
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2125727Z ^[[36;1mmkdir -p ci-logs^[[0m
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2126155Z ^[[36;1mbun scripts/check-model-drift.mjs 2>&1 | tee ci-logs/model-drift.log^[[0m
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2177012Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2177367Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2177565Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2177818Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2178101Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.2178335Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.5017712Z {"checkedAt":"2026-11-06T15:06:07.501Z","provider":"opencode","url":"https://opencode.ai/zen/v1/models","liveCount":80,"builtinCount":2,"missing":[]}
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.7881874Z {"checkedAt":"2026-11-06T15:06:07.787Z","provider":"kilo","url":"https://api.kilo.ai/api/gateway/models","liveCount":381,"builtinCount":3,"missing":["nemotron-3-super-free -> nvidia/nemotron-3-super-120b-a12b:free"]}
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.7883823Z kilo: withdrawn built-in model(s): nemotron-3-super-free -> nvidia/nemotron-3-super-120b-a12b:free
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.7936457Z ##[error]Process completed with exit code 1.
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8165782Z ##[group]Run actions/upload-artifact@v7
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8166277Z with:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8166625Z   name: model-drift
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8167012Z   path: ci-logs/model-drift.log
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8167472Z   if-no-files-found: warn
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8167868Z   compression-level: 6
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8168233Z   overwrite: false
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8168632Z   include-hidden-files: false
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8169070Z   archive: true
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8169402Z env:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8169880Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8170272Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8170728Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.8171106Z ##[endgroup]
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.9682772Z With the provided path, there will be 1 file uploaded
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.9685862Z Artifact name is valid!
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:07.9696839Z Root directory input is valid!
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:08.3001910Z Uploading artifact: model-drift.zip
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:08.3038472Z Beginning upload of artifact content to blob storage
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:08.5444822Z Uploaded bytes 380
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:08.5991226Z Finished uploading artifact content to blob storage!
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:08.5992525Z SHA256 digest of uploaded artifact is afd43793800e09239ee00e6df970a31ceffced124b0a3e192fab730ea46765f1
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:08.5994429Z Finalizing artifact upload
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.1350661Z Artifact model-drift successfully finalized. Artifact ID 13515636050
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.1351831Z Artifact model-drift has been successfully uploaded! Final size is 380 bytes. Artifact ID is 13515636050
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.1353197Z Artifact download URL: https://github.com/link-assistant/agent/actions/runs/42239835585/artifacts/13515636050
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.1527574Z Post job cleanup.
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2420679Z [command]/usr/bin/git version
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2464898Z git version 2.56.0
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2506355Z Temporarily overriding HOME='/home/runner/work/_temp/970cf6a9-60d6-4c1d-ae74-930b95806c82' before making global git config changes
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2507863Z Adding repository directory to the temporary git global config as a safe directory
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2511505Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2545440Z Removing SSH command configuration
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2552806Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2591315Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2887823Z Removing HTTP extra header
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2894613Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.2936848Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.3260241Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.3280714Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.3320792Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	UNKNOWN STEP	2026-11-06T15:06:09.3791033Z Cleaning up orphan processes
+Pipeline Status	UNKNOWN STEP	﻿2026-11-06T15:06:13.8506827Z Current runner version: '2.338.2'
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8546039Z ##[group]Runner Image Provisioner
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8547436Z Hosted Compute Agent
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8548469Z Version: 20261028.624
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8549657Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8550924Z Build Date: 2026-10-28T21:51:42Z
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8552153Z Worker ID: {daa26df5-7acc-45ed-b013-33534dcd43aa}
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8553355Z Region: eastus
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8554446Z Cloud: Azure
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8555998Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8558660Z ##[group]Operating System
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8559742Z Ubuntu
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8560773Z 26.04.1
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8561712Z LTS
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8562803Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8563936Z ##[group]Runner Image
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8565318Z Image: ubuntu-26.04
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8566298Z Version: 20261101.186.1
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8568590Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261101.186/images/ubuntu/Ubuntu2604-Readme.md
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8571372Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261101.186
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8573246Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8575319Z ##[group]GITHUB_TOKEN Permissions
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8578768Z Contents: read
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8579721Z Metadata: read
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8580809Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8583906Z Secret source: Actions
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8585737Z Cache mode: write
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.8586995Z Prepare workflow directory
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.9135250Z Prepare all required actions
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:13.9182995Z Getting action download info
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.0734836Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.2941266Z Complete job name: Pipeline Status
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3951196Z ##[group]Run actions/checkout@v6
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3952119Z with:
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3952579Z   persist-credentials: false
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3953145Z   repository: link-assistant/agent
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3957145Z   token: ***
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3957599Z   ssh-strict: true
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3958048Z   ssh-user: git
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3958473Z   clean: true
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3958923Z   sparse-checkout-cone-mode: true
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3959457Z   fetch-depth: 1
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3959895Z   fetch-tags: false
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3960344Z   show-progress: true
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3960796Z   lfs: false
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3961212Z   submodules: false
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3961671Z   set-safe-directory: true
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3962205Z   allow-unsafe-pr-checkout: false
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3962992Z env:
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3963411Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3963898Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3964943Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.3965439Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6642246Z Syncing repository: link-assistant/agent
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6645516Z ##[group]Getting Git version info
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6646471Z Working directory is '/home/runner/work/agent/agent'
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6647665Z [command]/usr/bin/git version
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6667665Z git version 2.56.0
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6696440Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6723551Z Temporarily overriding HOME='/home/runner/work/_temp/6523e974-89c1-4177-a39d-d46b790746fa' before making global git config changes
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6729486Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6731605Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6810302Z Deleting the contents of '/home/runner/work/agent/agent'
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6814652Z ##[group]Determining repository object format
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6817280Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6818636Z ##[group]Initializing the repository
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6822774Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6960143Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.6971420Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7031074Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7032681Z ##[group]Disabling automatic garbage collection
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7036034Z [command]/usr/bin/git config --local gc.auto 0
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7075270Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7076792Z ##[group]Setting up auth
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7077770Z Removing SSH command configuration
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7082721Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7119791Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7607727Z Removing HTTP extra header
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7615221Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7652520Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7931886Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7938629Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.7981541Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.8287318Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.8335386Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.8373142Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.8419043Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.8459454Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.8490652Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.8492387Z ##[group]Fetching the repository
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:14.8502304Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +dc8f9ead0ce98b7645cd69f1578cfc3057037f45:refs/remotes/origin/main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0524481Z From https://github.com/link-assistant/agent
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0527774Z  * [new ref]         dc8f9ead0ce98b7645cd69f1578cfc3057037f45 -> origin/main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0536472Z [command]/usr/bin/git branch --list --remote origin/main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0570711Z   origin/main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0580320Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0605264Z dc8f9ead0ce98b7645cd69f1578cfc3057037f45
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0610992Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0612749Z ##[group]Determining the checkout info
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0614161Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0617390Z [command]/usr/bin/git sparse-checkout disable
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0688230Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0721526Z ##[group]Checking out the ref
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.0726023Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3761007Z Reset branch 'main'
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3765100Z branch 'main' set up to track 'origin/main'.
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3800431Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3852168Z [command]/usr/bin/git log -1 --format=%H
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3879906Z dc8f9ead0ce98b7645cd69f1578cfc3057037f45
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3891834Z ##[group]Removing auth
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3892424Z Removing SSH command configuration
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3896888Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.3932038Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4226186Z Removing HTTP extra header
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4231100Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4267288Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4553023Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4558255Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4590348Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4591293Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4592058Z includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4592538Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4601672Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4626519Z /home/runner/work/_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4638778Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4675626Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4701773Z /home/runner/work/_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4715102Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4758202Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4787932Z /github/runner_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4795821Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4833061Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4857208Z /github/runner_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4866396Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.4899670Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5175990Z Removing credentials config '/home/runner/work/_temp/git-credentials-917734bf-c539-49cb-85bf-e55277a6dde4.config'
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5186043Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5456393Z ##[group]Run bash scripts/check-pipeline-status.sh
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5456954Z ^[[36;1mbash scripts/check-pipeline-status.sh^[[0m
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5512231Z shell: /usr/bin/bash -e {0}
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5512716Z env:
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5512996Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5513248Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5513774Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5514143Z   NEEDS_JSON: {
+Pipeline Status	UNKNOWN STEP	  "model-drift": {
+Pipeline Status	UNKNOWN STEP	    "result": "failure",
+Pipeline Status	UNKNOWN STEP	    "outputs": {}
+Pipeline Status	UNKNOWN STEP	  }
+Pipeline Status	UNKNOWN STEP	}
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5514930Z   RUN_SHA: dc8f9ead0ce98b7645cd69f1578cfc3057037f45
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5515250Z   HEAD_REF: refs/heads/main
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.5515484Z ##[endgroup]
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.7591466Z Failed jobs:    model-drift
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.7592081Z Cancelled jobs: <none>
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.7611174Z ##[error]Pipeline failed. Failing jobs: model-drift
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.7623763Z ##[error]Process completed with exit code 1.
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.7760676Z Post job cleanup.
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.8672845Z [command]/usr/bin/git version
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.8721649Z git version 2.56.0
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.8771161Z Temporarily overriding HOME='/home/runner/work/_temp/7fe7f510-b880-4543-8fa8-845d5b5bd811' before making global git config changes
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.8772231Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.8778009Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.8818675Z Removing SSH command configuration
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.8827347Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.8881395Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.9254949Z Removing HTTP extra header
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.9255994Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.9258775Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.9580215Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.9588659Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:16.9628152Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	UNKNOWN STEP	2026-11-06T15:06:17.0059871Z Cleaning up orphan processes

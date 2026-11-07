@@ -1,0 +1,614 @@
+diff --git a/.changeset/fix-release-formatting.md b/.changeset/fix-release-formatting.md
+new file mode 100644
+index 0000000..cc77f79
+--- /dev/null
++++ b/.changeset/fix-release-formatting.md
+@@ -0,0 +1,5 @@
++---
++'@link-assistant/agent': patch
++---
++
++Fix GitHub release formatting to remove incorrect title for major/minor/patch versions and properly link related pull requests
+diff --git a/CLAUDE.md b/CLAUDE.md
+new file mode 100644
+index 0000000..bc80f9c
+--- /dev/null
++++ b/CLAUDE.md
+@@ -0,0 +1,5 @@
++Issue to solve: https://github.com/link-assistant/agent/issues/58
++Your prepared branch: issue-58-bc11cbdc23dd
++Your prepared working directory: /tmp/gh-issue-solver-1765919093804
++
++Proceed.
+diff --git a/docs/case-studies/issue-58/README.md b/docs/case-studies/issue-58/README.md
+new file mode 100644
+index 0000000..e1dfa5d
+--- /dev/null
++++ b/docs/case-studies/issue-58/README.md
+@@ -0,0 +1,227 @@
++# Case Study: Issue #58 - Release 0.1.0 Title and PR Link Bug
++
++## Issue Overview
++
++**Issue:** [#58](https://github.com/link-assistant/agent/issues/58)
++**Title:** Release 0.1.0 does show a title `Minor changes` and no linked pull request
++**Status:** In Progress
++**Created:** 2025-12-16
++
++### Problem Statement
++
++The release v0.1.0 shows two bugs:
++
++1. **Incorrect Title Display:** The release notes show "### Minor Changes" as a section header, but according to project requirements, there should be NO title for major/minor/patch version releases.
++2. **Missing PR Link:** The related pull request should be detected and shown in the release notes, but it is not present.
++
++## Timeline of Events
++
++### December 16, 2025
++
++1. **20:24:31 UTC** - Release v0.1.0 created by github-actions[bot]
++2. **20:26:20 UTC** - Release v0.1.0 published
++3. **Issue reported** - User identified that release has incorrect formatting
++
++## Data Collection
++
++### Release Data
++
++**Release URL:** https://github.com/link-assistant/agent/releases/tag/v0.1.0
++
++**Release Body (Raw):**
++
++```
++### Minor Changes
++
++- 2bcef5f: Add support for google/gemini-3-pro model alias
++  - Added `google/gemini-3-pro` as an alias to `gemini-3-pro-preview`
++  - Updated README.md with Google Gemini usage examples
++  - Created comprehensive case study in docs/case-studies/issue-53/
++  - Fixes ProviderModelNotFoundError when using google/gemini-3-pro
++
++  This change allows users to use the commonly expected model name `gemini-3-pro` while maintaining compatibility with Google's official `gemini-3-pro-preview` identifier.
++```
++
++### CHANGELOG.md Content
++
++The CHANGELOG.md file (lines 1-14) shows:
++
++```markdown
++# Changelog
++
++## 0.1.0
++
++### Minor Changes
++
++- 2bcef5f: Add support for google/gemini-3-pro model alias
++  - Added `google/gemini-3-pro` as an alias to `gemini-3-pro-preview`
++  - Updated README.md with Google Gemini usage examples
++  - Created comprehensive case study in docs/case-studies/issue-53/
++  - Fixes ProviderModelNotFoundError when using google/gemini-3-pro
++
++  This change allows users to use the commonly expected model name `gemini-3-pro` while maintaining compatibility with Google's official `gemini-3-pro-preview` identifier.
++```
++
++## Root Cause Analysis
++
++### Bug #1: Incorrect "### Minor Changes" Title
++
++**File:** `scripts/format-release-notes.mjs`
++**Lines:** 92-115
++
++The script only handles `### Patch Changes` section:
++
++```javascript
++// Extract the patch changes section
++// This regex handles two formats:
++// 1. With commit hash: "- abc1234: Description"
++// 2. Without commit hash: "- Description"
++const patchChangesMatchWithHash = currentBody.match(
++  /### Patch Changes\s*\n\s*-\s+([a-f0-9]+):\s+(.+?)$/s
++);
++const patchChangesMatchNoHash = currentBody.match(
++  /### Patch Changes\s*\n\s*-\s+(.+?)$/s
++);
++```
++
++**Root Cause:**
++
++- The script ONLY matches `### Patch Changes` sections
++- When a release contains `### Minor Changes` or `### Major Changes`, the regex doesn't match
++- The script exits early with "⚠️ Could not parse patch changes from release notes" (line 113)
++- As a result, the formatting never happens and the "### Minor Changes" title remains in the release
++
++### Bug #2: Missing PR Link
++
++**Related to Bug #1**
++
++Because the script exits early when it can't find `### Patch Changes`, it never reaches the PR detection logic (lines 136-182). Therefore:
++
++- No commit SHA is extracted
++- No PR lookup is performed
++- No PR link is added to the release notes
++
++## Comparison with Template Repository
++
++### Template Repository Analysis
++
++**Repository:** https://github.com/link-foundation/js-ai-driven-development-pipeline-template
++**Latest Release:** v0.1.0 (2025-12-13)
++
++The template repository has the **EXACT SAME BUG**:
++
++```
++### Minor Changes
++
++- 65d76dc: Initial template setup with complete AI-driven development pipeline
++  ...
++```
++
++The template's `scripts/format-release-notes.mjs` has identical code (lines 92-115) that only handles `### Patch Changes`.
++
++**Conclusion:** This bug exists in the upstream template and was inherited by our repository.
++
++## Proposed Solution
++
++### Fix for Our Repository
++
++Modify `scripts/format-release-notes.mjs` to:
++
++1. **Match all changeset types** (Major, Minor, Patch)
++2. **Remove the section header** (### Major Changes, ### Minor Changes, ### Patch Changes)
++3. **Extract commit hash and description** from any changeset type
++4. **Continue with PR detection and formatting**
++
++### Implementation Strategy
++
++1. Replace single regex patterns with a more flexible approach:
++   - Match `### (Major|Minor|Patch) Changes` pattern
++   - Extract the description regardless of the section type
++   - Remove the section header entirely from the formatted output
++
++2. Update regex patterns:
++
++```javascript
++// Match any changeset type (Major, Minor, or Patch)
++const changesPattern =
++  /### (Major|Minor|Patch) Changes\s*\n\s*-\s+(?:([a-f0-9]+):\s+)?(.+?)$/s;
++```
++
++3. Format output without section headers:
++
++```javascript
++// Remove "### X Changes" header entirely
++const formattedBody = `${cleanDescription}`;
++```
++
++### Fix for Template Repository
++
++Create an issue in the template repository:
++
++- **Repository:** link-foundation/js-ai-driven-development-pipeline-template
++- **Title:** Release formatting script only handles Patch changes, not Minor/Major
++- **Description:** Document the bug and provide the fix
++
++## Expected Outcomes
++
++### After Fix
++
++Release notes should look like:
++
++```
++Add support for google/gemini-3-pro model alias
++- Added `google/gemini-3-pro` as an alias to `gemini-3-pro-preview`
++- Updated README.md with Google Gemini usage examples
++- Created comprehensive case study in docs/case-studies/issue-53/
++- Fixes ProviderModelNotFoundError when using google/gemini-3-pro
++
++This change allows users to use the commonly expected model name `gemini-3-pro` while maintaining compatibility with Google's official `gemini-3-pro-preview` identifier.
++
++**Related Pull Request:** #56
++
++---
++
++[![npm version](https://img.shields.io/badge/npm-0.1.0-blue.svg)](https://www.npmjs.com/package/@link-assistant/agent/v/0.1.0)
++```
++
++**Key Changes:**
++
++1. ✅ NO "### Minor Changes" header
++2. ✅ Clean description starting directly with the content
++3. ✅ PR link detected and shown (#56)
++4. ✅ NPM badge included
++
++## Additional Research
++
++### Changesets Documentation
++
++According to [@changesets/cli](https://github.com/changesets/changesets) documentation:
++
++- Changesets generate CHANGELOG entries with section headers like "### Major Changes", "### Minor Changes", "### Patch Changes"
++- These are useful for the CHANGELOG.md file to organize changes by type
++- However, for GitHub Releases, these headers are redundant because:
++  - The release version already indicates the type (0.1.0 is a minor version)
++  - Users expect clean, concise release notes without internal categorization
++
++### Best Practices for Release Notes
++
++Research indicates that clean release notes should:
++
++1. Start directly with the content (no categorization headers)
++2. Include links to related PRs for context
++3. Include package version badge for quick reference
++4. Be formatted as clean markdown without internal structure headers
++
++## Files Modified
++
++1. `scripts/format-release-notes.mjs` - Fix regex patterns and remove section headers
++2. `docs/case-studies/issue-58/README.md` - This case study document
++3. `.changeset/fix-release-formatting.md` - Changeset for the fix
++
++## Verification Steps
++
++1. Run the fixed script against v0.1.0 release
++2. Verify "### Minor Changes" header is removed
++3. Verify PR #56 link is detected and added
++4. Verify NPM badge is added
++5. Check that formatting is preserved correctly
+diff --git a/docs/case-studies/issue-58/release-v0.1.0-api.json b/docs/case-studies/issue-58/release-v0.1.0-api.json
+new file mode 100644
+index 0000000..5090394
+--- /dev/null
++++ b/docs/case-studies/issue-58/release-v0.1.0-api.json
+@@ -0,0 +1,42 @@
++{
++  "url": "https://api.github.com/repos/link-assistant/agent/releases/270875722",
++  "assets_url": "https://api.github.com/repos/link-assistant/agent/releases/270875722/assets",
++  "upload_url": "https://uploads.github.com/repos/link-assistant/agent/releases/270875722/assets{?name,label}",
++  "html_url": "https://github.com/link-assistant/agent/releases/tag/v0.1.0",
++  "id": 270875722,
++  "author": {
++    "login": "github-actions[bot]",
++    "id": 41898282,
++    "node_id": "MDM6Qm90NDE4OTgyODI=",
++    "avatar_url": "https://avatars.githubusercontent.com/in/15368?v=4",
++    "gravatar_id": "",
++    "url": "https://api.github.com/users/github-actions%5Bbot%5D",
++    "html_url": "https://github.com/apps/github-actions",
++    "followers_url": "https://api.github.com/users/github-actions%5Bbot%5D/followers",
++    "following_url": "https://api.github.com/users/github-actions%5Bbot%5D/following{/other_user}",
++    "gists_url": "https://api.github.com/users/github-actions%5Bbot%5D/gists{/gist_id}",
++    "starred_url": "https://api.github.com/users/github-actions%5Bbot%5D/starred{/owner}{/repo}",
++    "subscriptions_url": "https://api.github.com/users/github-actions%5Bbot%5D/subscriptions",
++    "organizations_url": "https://api.github.com/users/github-actions%5Bbot%5D/orgs",
++    "repos_url": "https://api.github.com/users/github-actions%5Bbot%5D/repos",
++    "events_url": "https://api.github.com/users/github-actions%5Bbot%5D/events{/privacy}",
++    "received_events_url": "https://api.github.com/users/github-actions%5Bbot%5D/received_events",
++    "type": "Bot",
++    "user_view_type": "public",
++    "site_admin": false
++  },
++  "node_id": "RE_kwDOQYTy3M4QJTxK",
++  "tag_name": "v0.1.0",
++  "target_commitish": "main",
++  "name": "0.1.0",
++  "draft": false,
++  "immutable": false,
++  "prerelease": false,
++  "created_at": "2025-12-16T20:24:31Z",
++  "updated_at": "2025-12-16T20:26:20Z",
++  "published_at": "2025-12-16T20:26:20Z",
++  "assets": [],
++  "tarball_url": "https://api.github.com/repos/link-assistant/agent/tarball/v0.1.0",
++  "zipball_url": "https://api.github.com/repos/link-assistant/agent/zipball/v0.1.0",
++  "body": "### Minor Changes\n\n- 2bcef5f: Add support for google/gemini-3-pro model alias\n  - Added `google/gemini-3-pro` as an alias to `gemini-3-pro-preview`\n  - Updated README.md with Google Gemini usage examples\n  - Created comprehensive case study in docs/case-studies/issue-53/\n  - Fixes ProviderModelNotFoundError when using google/gemini-3-pro\n\n  This change allows users to use the commonly expected model name `gemini-3-pro` while maintaining compatibility with Google's official `gemini-3-pro-preview` identifier."
++}
+diff --git a/docs/case-studies/issue-58/release-v0.1.0.json b/docs/case-studies/issue-58/release-v0.1.0.json
+new file mode 100644
+index 0000000..37be6d8
+--- /dev/null
++++ b/docs/case-studies/issue-58/release-v0.1.0.json
+@@ -0,0 +1,10 @@
++{
++  "author": { "id": "MDM6Qm90NDE4OTgyODI=", "login": "github-actions[bot]" },
++  "body": "### Minor Changes\n\n- 2bcef5f: Add support for google/gemini-3-pro model alias\n  - Added `google/gemini-3-pro` as an alias to `gemini-3-pro-preview`\n  - Updated README.md with Google Gemini usage examples\n  - Created comprehensive case study in docs/case-studies/issue-53/\n  - Fixes ProviderModelNotFoundError when using google/gemini-3-pro\n\n  This change allows users to use the commonly expected model name `gemini-3-pro` while maintaining compatibility with Google's official `gemini-3-pro-preview` identifier.",
++  "createdAt": "2025-12-16T20:24:31Z",
++  "name": "0.1.0",
++  "publishedAt": "2025-12-16T20:26:20Z",
++  "tagName": "v0.1.0",
++  "targetCommitish": "main",
++  "url": "https://github.com/link-assistant/agent/releases/tag/v0.1.0"
++}
+diff --git a/docs/case-studies/issue-58/template-format-release-notes.mjs b/docs/case-studies/issue-58/template-format-release-notes.mjs
+new file mode 100644
+index 0000000..913791a
+--- /dev/null
++++ b/docs/case-studies/issue-58/template-format-release-notes.mjs
+@@ -0,0 +1,212 @@
++#!/usr/bin/env node
++
++/**
++ * Script to format GitHub release notes with proper formatting:
++ * - Fix special characters like \n
++ * - Add link to PR that contains the release commit (if found)
++ * - Add shields.io NPM version badge
++ * - Format nicely with proper markdown
++ *
++ * IMPORTANT: Update the PACKAGE_NAME constant below to match your package.json
++ *
++ * PR Detection Logic:
++ * 1. Extract commit hash from changelog entry (if present)
++ * 2. Fall back to --commit-sha argument (passed from workflow)
++ * 3. Look up PRs that contain the commit via GitHub API
++ * 4. If no PR found, simply don't display any PR link (no guessing)
++ *
++ * Uses link-foundation libraries:
++ * - use-m: Dynamic package loading without package.json dependencies
++ * - command-stream: Modern shell command execution with streaming support
++ * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
++ *
++ * Note: Uses --release-version instead of --version to avoid conflict with yargs' built-in --version flag.
++ */
++
++// TODO: Update this to match your package name in package.json
++const PACKAGE_NAME = 'my-package';
++
++// Load use-m dynamically
++const { use } = eval(
++  await (await fetch('https://unpkg.com/use-m/use.js')).text()
++);
++
++// Import link-foundation libraries
++const { $ } = await use('command-stream');
++const { makeConfig } = await use('lino-arguments');
++
++// Parse CLI arguments using lino-arguments
++// Note: Using --release-version instead of --version to avoid conflict with yargs' built-in --version flag
++const config = makeConfig({
++  yargs: ({ yargs, getenv }) =>
++    yargs
++      .option('release-version', {
++        type: 'string',
++        default: getenv('VERSION', ''),
++        describe: 'Version number (e.g., v0.8.36)',
++      })
++      .option('release-id', {
++        type: 'string',
++        default: getenv('RELEASE_ID', ''),
++        describe: 'GitHub release ID',
++      })
++      .option('repository', {
++        type: 'string',
++        default: getenv('REPOSITORY', ''),
++        describe: 'GitHub repository (e.g., owner/repo)',
++      })
++      .option('commit-sha', {
++        type: 'string',
++        default: getenv('COMMIT_SHA', ''),
++        describe: 'Commit SHA for PR detection',
++      }),
++});
++
++const releaseId = config.releaseId;
++const version = config.releaseVersion;
++const repository = config.repository;
++const passedCommitSha = config.commitSha;
++
++if (!releaseId || !version || !repository) {
++  console.error(
++    'Usage: format-release-notes.mjs --release-id <releaseId> --release-version <version> --repository <repository> [--commit-sha <sha>]'
++  );
++  process.exit(1);
++}
++
++try {
++  // Get current release body
++  const result = await $`gh api repos/${repository}/releases/${releaseId}`.run({
++    capture: true,
++  });
++  const releaseData = JSON.parse(result.stdout);
++
++  const currentBody = releaseData.body || '';
++
++  // Skip if already formatted (has shields.io badge image)
++  if (currentBody.includes('img.shields.io')) {
++    console.log('ℹ️ Release notes already formatted');
++    process.exit(0);
++  }
++
++  // Extract the patch changes section
++  // This regex handles two formats:
++  // 1. With commit hash: "- abc1234: Description"
++  // 2. Without commit hash: "- Description"
++  const patchChangesMatchWithHash = currentBody.match(
++    /### Patch Changes\s*\n\s*-\s+([a-f0-9]+):\s+(.+?)$/s
++  );
++  const patchChangesMatchNoHash = currentBody.match(
++    /### Patch Changes\s*\n\s*-\s+(.+?)$/s
++  );
++
++  let commitHash = null;
++  let rawDescription = null;
++
++  if (patchChangesMatchWithHash) {
++    // Format: - abc1234: Description
++    [, commitHash, rawDescription] = patchChangesMatchWithHash;
++  } else if (patchChangesMatchNoHash) {
++    // Format: - Description (no commit hash)
++    [, rawDescription] = patchChangesMatchNoHash;
++  } else {
++    console.log('⚠️ Could not parse patch changes from release notes');
++    process.exit(0);
++  }
++
++  // Clean up the description:
++  // 1. Convert literal \n sequences (escaped newlines from GitHub API) to actual newlines
++  // 2. Remove leading/trailing quotes (including escaped quotes from command-stream shell escaping)
++  // 3. Remove any trailing npm package links or markdown that might be there
++  // 4. Normalize whitespace while preserving line breaks
++  const cleanDescription = rawDescription
++    .replace(/\\n/g, '\n') // Convert escaped \n to actual newlines
++    .replace(/^(\\['"])+/g, '') // Remove leading escaped quotes (e.g., \', \", \'', \'')
++    .replace(/(['"])+$/g, '') // Remove trailing unescaped quotes (e.g., ', ", '', '')
++    .replace(/^(['"])+/g, '') // Remove leading unescaped quotes
++    .replace(/📦.*$/s, '') // Remove any existing npm package info
++    .replace(/---.*$/s, '') // Remove any existing separators and everything after
++    .trim()
++    .split('\n') // Split by lines
++    .map((line) => line.trim()) // Trim whitespace from each line
++    .join('\n') // Rejoin with newlines
++    .replace(/\n{3,}/g, '\n\n'); // Normalize excessive blank lines (3+ becomes 2)
++
++  // Find the PR that contains the release commit
++  // Uses commit hash from changelog or passed commit SHA from workflow
++  let prNumber = null;
++
++  // Determine which commit SHA to use for PR lookup
++  const commitShaToLookup = commitHash || passedCommitSha;
++
++  if (commitShaToLookup) {
++    const source = commitHash ? 'changelog' : 'workflow';
++    console.log(
++      `ℹ️ Looking up PR for commit ${commitShaToLookup} (from ${source})`
++    );
++
++    try {
++      const prResult =
++        await $`gh api "repos/${repository}/commits/${commitShaToLookup}/pulls"`.run(
++          { capture: true }
++        );
++      const prsData = JSON.parse(prResult.stdout);
++
++      // Find the PR that's not the version bump PR (not "chore: version packages")
++      const relevantPr = prsData.find(
++        (pr) => !pr.title.includes('version packages')
++      );
++
++      if (relevantPr) {
++        prNumber = relevantPr.number;
++        console.log(`✅ Found PR #${prNumber} containing commit`);
++      } else if (prsData.length > 0) {
++        console.log(
++          '⚠️ Found PRs but all are version bump PRs, not linking any'
++        );
++      } else {
++        console.log(
++          'ℹ️ No PR found containing this commit - not adding PR link'
++        );
++      }
++    } catch (error) {
++      console.log('⚠️ Could not find PR for commit', commitShaToLookup);
++      console.log('   Error:', error.message);
++      if (process.env.DEBUG) {
++        console.error(error);
++      }
++    }
++  } else {
++    // No commit hash available from any source
++    console.log('ℹ️ No commit SHA available - not adding PR link');
++  }
++
++  // Build formatted release notes
++  const versionWithoutV = version.replace(/^v/, '');
++  const npmBadge = `[![npm version](https://img.shields.io/badge/npm-${versionWithoutV}-blue.svg)](https://www.npmjs.com/package/${PACKAGE_NAME}/v/${versionWithoutV})`;
++
++  let formattedBody = `${cleanDescription}`;
++
++  // Add PR link if available
++  if (prNumber) {
++    formattedBody += `\n\n**Related Pull Request:** #${prNumber}`;
++  }
++
++  formattedBody += `\n\n---\n\n${npmBadge}`;
++
++  // Update the release using JSON input to properly handle special characters
++  const updatePayload = JSON.stringify({ body: formattedBody });
++  await $`gh api repos/${repository}/releases/${releaseId} -X PATCH --input -`.run(
++    { stdin: updatePayload }
++  );
++
++  console.log(`✅ Formatted release notes for v${versionWithoutV}`);
++  if (prNumber) {
++    console.log(`   - Added link to PR #${prNumber}`);
++  }
++  console.log('   - Added shields.io npm badge');
++  console.log('   - Cleaned up formatting');
++} catch (error) {
++  console.error('❌ Error formatting release notes:', error.message);
++  process.exit(1);
++}
+diff --git a/package-lock.json b/package-lock.json
+index 8ec099f..3c851c6 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+   "name": "@link-assistant/agent",
+-  "version": "0.0.17",
++  "version": "0.1.0",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "@link-assistant/agent",
+-      "version": "0.0.17",
++      "version": "0.1.0",
+       "license": "Unlicense",
+       "dependencies": {
+         "@actions/core": "^1.11.1",
+diff --git a/scripts/format-release-notes.mjs b/scripts/format-release-notes.mjs
+index 76fef1c..da0eec4 100644
+--- a/scripts/format-release-notes.mjs
++++ b/scripts/format-release-notes.mjs
+@@ -89,28 +89,35 @@ try {
+     process.exit(0);
+   }
+ 
+-  // Extract the patch changes section
+-  // This regex handles two formats:
+-  // 1. With commit hash: "- abc1234: Description"
+-  // 2. Without commit hash: "- Description"
+-  const patchChangesMatchWithHash = currentBody.match(
+-    /### Patch Changes\s*\n\s*-\s+([a-f0-9]+):\s+(.+?)$/s
+-  );
+-  const patchChangesMatchNoHash = currentBody.match(
+-    /### Patch Changes\s*\n\s*-\s+(.+?)$/s
+-  );
++  // Extract changes section (Major, Minor, or Patch)
++  // This regex handles multiple formats:
++  // 1. With commit hash: "### [Major|Minor|Patch] Changes\n- abc1234: Description"
++  // 2. Without commit hash: "### [Major|Minor|Patch] Changes\n- Description"
++  const changesPattern =
++    /### (Major|Minor|Patch) Changes\s*\n\s*-\s+(?:([a-f0-9]+):\s+)?(.+?)$/s;
++  const changesMatch = currentBody.match(changesPattern);
+ 
+   let commitHash = null;
+   let rawDescription = null;
+-
+-  if (patchChangesMatchWithHash) {
+-    // Format: - abc1234: Description
+-    [, commitHash, rawDescription] = patchChangesMatchWithHash;
+-  } else if (patchChangesMatchNoHash) {
+-    // Format: - Description (no commit hash)
+-    [, rawDescription] = patchChangesMatchNoHash;
++  let changeType = null;
++
++  if (changesMatch) {
++    // Extract: [full match, changeType, commitHash (optional), description]
++    [, changeType, commitHash, rawDescription] = changesMatch;
++    console.log(`ℹ️ Found ${changeType} Changes section`);
++
++    // If commitHash is undefined and description contains it, try to extract
++    if (!commitHash && rawDescription) {
++      // This handles the case where description itself might be null/undefined
++      // and we need to safely check for commit hash at the start
++      const descWithHashMatch = rawDescription.match(/^([a-f0-9]+):\s+(.+)$/s);
++      if (descWithHashMatch) {
++        [, commitHash, rawDescription] = descWithHashMatch;
++      }
++    }
+   } else {
+-    console.log('⚠️ Could not parse patch changes from release notes');
++    console.log('⚠️ Could not parse changes from release notes');
++    console.log('   Looking for pattern: ### [Major|Minor|Patch] Changes');
+     process.exit(0);
+   }
+ 

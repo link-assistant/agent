@@ -1,0 +1,10 @@
+Options:
+      --help             Show help                                     [boolean]
+      --version          Show version number                           [boolean]
+  -c, --configuration    Path to configuration .lenv file               [string]
+      --release-version  Version number (e.g., 1.0.0)     [string] [default: ""]
+      --repository       GitHub repository (e.g., owner/repo)
+                                                          [string] [default: ""]
+      --commit-sha       Commit SHA for PR detection      [string] [default: ""]
+      --prefix           Tag prefix (e.g., "js-" or "rust-")
+                                                          [string] [default: ""]

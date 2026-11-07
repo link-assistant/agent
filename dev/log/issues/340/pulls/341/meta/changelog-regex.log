@@ -1,0 +1,23 @@
+=== JS format (## 0.22.0) ===
+Match: YES
+Notes: ### Minor Changes
+
+- feat: add --temperature CLI option
+
+=== Rust format (## [0.8.0] - date) ===
+Match: YES
+Notes: ### Added
+
+- Separate CI/CD pipelines for JS and Rust code
+
+### Added
+
+- Added `--temperature` CLI option
+
+=== Non-existent version ===
+Match: NO
+
+=== Old regex on Rust format (should fail) ===
+Match: NO
+
+ALL TESTS PASSED

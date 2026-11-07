@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
+      - 'scripts/*freshness*.mjs'
+      - 'js/tests/dependency-freshness.js'
       - 'js/package.json'
       - 'js/package-lock.json'
       - 'rust/Cargo.toml'
@@ -11,6 +15,10 @@ on:
       - '.github/workflows/dependency-freshness.yml'
   pull_request:
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
+      - 'scripts/*freshness*.mjs'
+      - 'js/tests/dependency-freshness.js'
       - 'js/package.json'
       - 'js/package-lock.json'
       - 'rust/Cargo.toml'
@@ -31,11 +39,11 @@ env:
 jobs:
   npm-outdated:
     name: npm outdated
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-npm-outdated
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -46,7 +54,7 @@ jobs:
       - name: Install dependencies from the committed lockfile
         working-directory: js
         run: npm ci --legacy-peer-deps --ignore-scripts
-      - name: Fail if a direct dependency has a newer release
+      - name: Check direct dependencies against their latest releases
         working-directory: js
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -54,11 +62,11 @@ jobs:
 
   cargo-outdated:
     name: cargo outdated
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-cargo-outdated
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
@@ -71,20 +79,23 @@ jobs:
         with:
           tool: cargo-outdated@0.19.0
           fallback: cargo-binstall
-      - name: Fail if a direct dependency has a newer release
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26.x'
+      - name: Check direct dependencies against their latest releases
         working-directory: rust
-        run: cargo outdated --root-deps-only --exit-code 1
+        run: node ../scripts/check-cargo-freshness.mjs
 
   # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
   # the run grey instead of red. This gate fails the run on any unsuccessful
   # job and on any cancellation a newer run does not explain (#301, #337).
   pipeline-status:
     name: Pipeline Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: always()
     needs:
       - npm-outdated

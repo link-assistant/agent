@@ -1,0 +1,1535 @@
+--- template/.github/workflows/release.yml
++++ .github/workflows/js.yml
+@@ -1,15 +1,45 @@
+-name: CI/CD Pipeline
++name: JS CI/CD Pipeline
+ 
+ on:
+   push:
+     branches:
+       - main
++    paths:
++      - '.prettierrc'
++      - '.prettierignore'
++      - '.secretlintrc.json'
++      - '.husky/**'
++      - 'scripts/check-pipeline-status.sh'
++      - 'scripts/job-cancel-policy.mjs'
++      - 'js/**'
++      - 'scripts/**'
++      - '.github/workflows/js.yml'
++      - 'experiments/issue-322/**'
+   pull_request:
+     types: [opened, synchronize, reopened]
++    paths:
++      - '.prettierrc'
++      - '.prettierignore'
++      - '.secretlintrc.json'
++      - '.husky/**'
++      - 'scripts/check-pipeline-status.sh'
++      - 'scripts/job-cancel-policy.mjs'
++      - 'js/**'
++      - 'scripts/**'
++      - '.github/workflows/js.yml'
++      - 'experiments/issue-322/**'
+   workflow_dispatch:
+     inputs:
++      release_mode:
++        description: 'Manual release mode'
++        required: true
++        type: choice
++        default: 'instant'
++        options:
++          - instant
++          - changeset-pr
+       bump_type:
+-        description: 'Version bump type'
++        description: 'Manual release type'
+         required: true
+         type: choice
+         default: patch
+@@ -18,967 +48,575 @@
+           - minor
+           - major
+       description:
+-        description: 'Release description (optional)'
++        description: 'Manual release description (optional)'
+         required: false
+         type: string
+ 
++# Least privilege by default; jobs that need to write escalate individually.
+ permissions:
+   contents: read
+ 
+ env:
++  # actions/checkout runs `git init` before any repository config exists, which
++  # prints a hint about the default branch name on every job. Setting it via
++  # GIT_CONFIG_* silences the hint without an extra step.
+   GIT_CONFIG_COUNT: '1'
+   GIT_CONFIG_KEY_0: init.defaultBranch
+   GIT_CONFIG_VALUE_0: main
+ 
+-# Concurrency is intentionally job-scoped. Superseded read-only jobs cancel
+-# independently away from main. Jobs on main are never superseded, which lets
+-# the terminal status gate reliably treat a cancellation there as a timeout or
+-# manual cancellation. Write-capable release jobs share one non-cancelling
+-# concurrency group: a write that has started is never interrupted, and GitHub
+-# queues up to 100 pending writers with `queue: max` so a third writer does
+-# not discard an earlier pending release.
++# Concurrency is declared per job rather than once for the whole workflow
++# (principle 10 of the CI/CD best practices, and the shape both pipeline
++# templates use):
++#
++#   * read-only checks share `check-<workflow>-<ref>-<job>` and cancel in
++#     progress on every branch, so a force-push stops only the stale
++#     copy of that one job instead of queueing the entire workflow;
++#   * jobs that push to main or publish share the repository-wide
++#     `main-writer-...` group and never cancel in progress, so a release is
++#     never interrupted between the version bump and the publish, and the JS
++#     and Rust releases cannot race each other.
+ jobs:
+-  # === DETECT CHANGES - determines which jobs should run ===
+   detect-changes:
+-    name: Detect Changes
++    name: Detect Relevant Changes
+     runs-on: ubuntu-24.04
+     timeout-minutes: 5
+     concurrency:
+-      group: ${{ github.workflow }}-${{ github.ref }}-detect-changes
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    if: github.event_name != 'workflow_dispatch'
++      group: check-${{ github.workflow }}-${{ github.ref }}-detect-changes
++      cancel-in-progress: true
+     outputs:
+-      any-code-changed: ${{ steps.changes.outputs.any-code-changed }}
+-      docs-changed: ${{ steps.changes.outputs.docs-changed }}
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
++      code-changed: ${{ steps.changes.outputs.code-changed }}
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          fetch-depth: 0
+           persist-credentials: false
+-          fetch-depth: 0
+-
+-      - name: Setup Python
+-        uses: actions/setup-python@v7
+-        with:
+-          python-version: '3.13'
+-
+-      - name: Detect Python layout
+-        id: python_layout
+-        run: |
+-          if [ -f pyproject.toml ]; then
+-            PYTHON_ROOT="."
+-            MULTI_LANGUAGE="false"
+-            echo "root=." >> "$GITHUB_OUTPUT"
+-            echo "multi_language=false" >> "$GITHUB_OUTPUT"
+-          elif [ -f python/pyproject.toml ]; then
+-            PYTHON_ROOT="python"
+-            MULTI_LANGUAGE="true"
+-            echo "root=python" >> "$GITHUB_OUTPUT"
+-            echo "multi_language=true" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "::error::Could not find pyproject.toml at repo root or python/pyproject.toml"
+-            exit 1
+-          fi
+-
+-          if [ "$PYTHON_ROOT" = "." ]; then
+-            echo "dist_dir=dist" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "dist_dir=$PYTHON_ROOT/dist" >> "$GITHUB_OUTPUT"
+-          fi
+-          echo "PYTHON_ROOT=$PYTHON_ROOT" >> "$GITHUB_ENV"
+-          echo "Detected Python layout: root=$PYTHON_ROOT, multi_language=$MULTI_LANGUAGE"
+-
+-      - name: Detect changes
+-        id: changes
+-        env:
+-          GITHUB_EVENT_NAME: ${{ github.event_name }}
+-          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+-          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+-        run: python "$PYTHON_ROOT/scripts/detect_code_changes.py"
+-
+-  # REQUIRED CI CHECKS - All must pass before release
+-  # These jobs ensure code quality and tests pass before any release
+-
+-  # === LINT AND FORMAT CHECK ===
+-  # Lint runs independently of changelog check for detected code changes.
+-  # See: https://github.com/link-assistant/hive-mind/pull/1024 for why this dependency was removed
++      - uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
++      - id: changes
++        env:
++          GITHUB_BEFORE_SHA: ${{ github.event.before }}
++        run: node scripts/detect-ci-changes.mjs js
++
++  release-preflight:
++    needs: detect-changes
++    if: needs.detect-changes.outputs.code-changed == 'true'
++    name: Release Credential Preflight
++    runs-on: ubuntu-24.04
++    timeout-minutes: 5
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-release-preflight
++      cancel-in-progress: true
++    permissions:
++      contents: read
++      id-token: write
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          persist-credentials: false
++      - uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
++      - name: Verify the publishing credential before builds
++        env:
++          PREFLIGHT_MODE: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && 'release' || 'report' }}
++        run: node scripts/release-preflight.mjs npm
++
++  # Changeset check - only runs on PRs
++  changeset-check:
++    name: Check for Changesets
++    runs-on: ubuntu-24.04
++    timeout-minutes: 10
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-changeset-check
++      cancel-in-progress: true
++    if: github.event_name == 'pull_request'
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          fetch-depth: 0
++
++      - name: Setup Node.js
++        uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
++
++      - name: Install dependencies
++        run: npm ci --legacy-peer-deps
++        working-directory: js
++
++      - name: Check for changesets
++        run: node scripts/validate-changeset.mjs
++
++      - name: Guard CI-managed package versions
++        run: node scripts/check-version.mjs
++
++  # Linting and formatting - runs after changeset check on PRs, immediately on main
+   lint:
+     name: Lint and Format Check
+     runs-on: ubuntu-24.04
+-    timeout-minutes: 20
+-    concurrency:
+-      group: ${{ github.workflow }}-${{ github.ref }}-lint
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    needs: [detect-changes]
+-    # !cancelled() lets this job evaluate even though detect-changes is skipped
+-    # for workflow_dispatch while still propagating workflow cancellation.
+-    if: |
+-      !cancelled() && (
+-        github.event_name == 'workflow_dispatch' ||
+-        needs.detect-changes.outputs.any-code-changed == 'true'
+-      )
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-          fetch-depth: 0
+-
++    timeout-minutes: 10
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-lint
++      cancel-in-progress: true
++    needs: [changeset-check, release-preflight, detect-changes]
++    if: ${{ !cancelled() && needs.detect-changes.outputs.code-changed == 'true' && needs.release-preflight.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          # Needed to merge the base branch below.
++          fetch-depth: 0
++
++      # refs/pull/N/merge is built when the pull request is synchronized, so
++      # commits landing on the base branch afterwards are not checked. Merging
++      # them here makes the checks below validate the real merge result.
+       - name: Simulate fresh merge with base branch (PR only)
+         if: github.event_name == 'pull_request'
+         env:
+           BASE_REF: ${{ github.base_ref }}
+         run: bash scripts/simulate-fresh-merge.sh
+ 
+-      - name: Setup Python
+-        uses: actions/setup-python@v7
+-        with:
+-          python-version: '3.13'
+-
+-      - name: Detect Python layout
+-        id: python_layout
+-        run: |
+-          if [ -f pyproject.toml ]; then
+-            PYTHON_ROOT="."
+-            MULTI_LANGUAGE="false"
+-            echo "root=." >> "$GITHUB_OUTPUT"
+-            echo "multi_language=false" >> "$GITHUB_OUTPUT"
+-          elif [ -f python/pyproject.toml ]; then
+-            PYTHON_ROOT="python"
+-            MULTI_LANGUAGE="true"
+-            echo "root=python" >> "$GITHUB_OUTPUT"
+-            echo "multi_language=true" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "::error::Could not find pyproject.toml at repo root or python/pyproject.toml"
+-            exit 1
+-          fi
+-
+-          if [ "$PYTHON_ROOT" = "." ]; then
+-            echo "dist_dir=dist" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "dist_dir=$PYTHON_ROOT/dist" >> "$GITHUB_OUTPUT"
+-          fi
+-          echo "PYTHON_ROOT=$PYTHON_ROOT" >> "$GITHUB_ENV"
+-          echo "Detected Python layout: root=$PYTHON_ROOT, multi_language=$MULTI_LANGUAGE"
++      - name: Setup Node.js
++        uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
+ 
+       - name: Install dependencies
+-        env:
+-          INSTALL_BUDGET_SECONDS: 300
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          bash scripts/run-with-budget-warning.sh \
+-            "$INSTALL_BUDGET_SECONDS" "Install dependencies" \
+-            bash -euo pipefail -c '
+-              python -m pip install --upgrade pip
+-              pip install -e ".[dev]"
+-            '
+-
+-      - name: Run Ruff linting
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          ruff check .
+-
+-      - name: Check Ruff formatting
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          ruff format --check .
+-
+-      - name: Run mypy
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          mypy src
++        run: npm ci --legacy-peer-deps
++        working-directory: js
++
++      - name: Scan for committed secrets
++        run: npx --yes -p secretlint -p @secretlint/secretlint-rule-preset-recommend secretlint "**/*"
++
++      - name: Run ESLint
++        run: npm run lint
++        working-directory: js
++
++      - name: Check formatting
++        run: npm run format:check
++        working-directory: js
+ 
+       - name: Check file size limit
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          python scripts/check_file_size.py
+-
+-      - name: Check for secrets
+-        env:
+-          SECRETLINT_BUDGET_SECONDS: 300
+-        run: |
+-          bash "$PYTHON_ROOT/scripts/run-with-budget-warning.sh" \
+-            "$SECRETLINT_BUDGET_SECONDS" "Check for secrets" \
+-            npx --yes -p secretlint@13.0.7 -p @secretlint/secretlint-rule-preset-recommend@13.0.7 secretlint "**/*"
+-
+-  # === DOCUMENTATION VALIDATION ===
+-  # Principle 12 (issue #72): documentation-only pull requests skip the
+-  # changelog gate, so this is the one job that observes docs changes. It
+-  # verifies the required documents exist with the sections other documents
+-  # link to, and enforces the markdown size budget.
+-  validate-docs:
+-    name: Validate Documentation
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 10
+-    concurrency:
+-      group: ${{ github.workflow }}-${{ github.ref }}-validate-docs
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    needs: [detect-changes]
+-    # !cancelled() lets this job evaluate even though detect-changes is skipped
+-    # for workflow_dispatch while still propagating workflow cancellation.
+-    if: |
+-      !cancelled() && (
+-        github.event_name == 'workflow_dispatch' ||
+-        needs.detect-changes.outputs.docs-changed == 'true'
+-      )
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-
+-      - name: Check required documents and sections
+-        run: bash scripts/check-required-docs.sh
+-
+-      - name: Check file size limit
+-        run: python scripts/check_file_size.py
+-
+-  # Prove the release credentials can write before any expensive job runs
+-  # (issues #74 and #77). Principle 16: a non-empty secret proves nothing and
+-  # a login proves authentication, not authorisation -- so the preflight
+-  # attempts a write (PyPI trusted-publishing token mint, Docker Hub
+-  # blob-upload session) and refuses to release if a credential is refused.
+-  # In report mode (pull requests -- a fork has no publishing secrets) the
+-  # same probes annotate without blocking, which is why the publishing jobs
+-  # gate on `result == 'success'` rather than on the run being green.
+-  release-preflight:
+-    name: Release Preflight (credentials)
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 5
+-    permissions:
+-      contents: read
+-      # The PyPI probe exchanges this job's OIDC token for a short-lived
+-      # upload token -- the same exchange the publish step performs.
+-      id-token: write
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-
+-      - name: Probe every release credential
+-        env:
+-          # Expressions have no ternary operator; this idiom is safe because
+-          # both branch values are non-empty string literals.
+-          PREFLIGHT_MODE: >-
+-            ${{
+-              (
+-                (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+-                github.event_name == 'workflow_dispatch'
+-              ) && 'release' || 'report'
+-            }}
+-          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+-          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME || secrets.DOCKERHUB_USERNAME }}
+-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+-        run: bash scripts/preflight-credentials.sh
+-
+-  # === TEST ===
+-  # Test on latest Python version only
++        run: npm run check:file-size
++        working-directory: js
++
++  # Test with Bun (this project is Bun-only)
++  # Only runs unit tests (no external dependencies/API calls)
++  # Integration/e2e tests are in integration-tests.yml and model-tests.yml (manual execution)
+   test:
+-    name: Test (Python 3.13)
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 30
+-    concurrency:
+-      group: ${{ github.workflow }}-${{ github.ref }}-test
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    needs: [detect-changes]
+-    env:
+-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+-    # !cancelled() lets this job evaluate even though detect-changes is skipped
+-    # for workflow_dispatch while still propagating workflow cancellation.
+-    if: |
+-      !cancelled() && (
+-        github.event_name == 'workflow_dispatch' ||
+-        needs.detect-changes.outputs.any-code-changed == 'true'
+-      )
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-
+-      - name: Setup Python
+-        uses: actions/setup-python@v7
+-        with:
+-          python-version: '3.13'
+-
+-      - name: Detect Python layout
+-        id: python_layout
+-        run: |
+-          if [ -f pyproject.toml ]; then
+-            PYTHON_ROOT="."
+-            MULTI_LANGUAGE="false"
+-            echo "root=." >> "$GITHUB_OUTPUT"
+-            echo "multi_language=false" >> "$GITHUB_OUTPUT"
+-          elif [ -f python/pyproject.toml ]; then
+-            PYTHON_ROOT="python"
+-            MULTI_LANGUAGE="true"
+-            echo "root=python" >> "$GITHUB_OUTPUT"
+-            echo "multi_language=true" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "::error::Could not find pyproject.toml at repo root or python/pyproject.toml"
+-            exit 1
+-          fi
+-
+-          if [ "$PYTHON_ROOT" = "." ]; then
+-            echo "dist_dir=dist" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "dist_dir=$PYTHON_ROOT/dist" >> "$GITHUB_OUTPUT"
+-          fi
+-          echo "PYTHON_ROOT=$PYTHON_ROOT" >> "$GITHUB_ENV"
+-          echo "Detected Python layout: root=$PYTHON_ROOT, multi_language=$MULTI_LANGUAGE"
+-
+-      - name: Install dependencies
+-        env:
+-          INSTALL_BUDGET_SECONDS: 300
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          bash scripts/run-with-budget-warning.sh \
+-            "$INSTALL_BUDGET_SECONDS" "Install dependencies" \
+-            bash -euo pipefail -c '
+-              python -m pip install --upgrade pip
+-              pip install -e ".[dev]"
+-            '
+-
+-      - name: Run tests
+-        env:
+-          TEST_BUDGET_SECONDS: 900
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          bash scripts/run-with-budget-warning.sh \
+-            "$TEST_BUDGET_SECONDS" "Run tests" \
+-            pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
+-
+-      - name: Report skipped Codecov upload
+-        if: env.CODECOV_TOKEN == ''
+-        run: echo "::notice::Skipping Codecov upload because CODECOV_TOKEN is not configured"
+-
+-      - name: Upload coverage to Codecov
+-        if: env.CODECOV_TOKEN != ''
+-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f  # v7.0.0 @ 2026-06-07
+-        with:
+-          files: ${{ steps.python_layout.outputs.root }}/coverage.xml
+-          token: ${{ env.CODECOV_TOKEN }}
+-          disable_search: true
+-          fail_ci_if_error: true
+-
+-  # === BUILD PACKAGE ===
+-  # Build package after required checks pass for detected code changes or dispatches.
+-  build:
+-    name: Build Package
+-    runs-on: ubuntu-24.04
++    name: Unit Tests (Bun on ${{ matrix.os }})
++    runs-on: ${{ matrix.os }}
+     timeout-minutes: 20
+     concurrency:
+-      group: ${{ github.workflow }}-${{ github.ref }}-build
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    needs: [detect-changes, lint, test]
+-    # Build change-bearing automatic events and all manually dispatched releases.
+-    if: |
+-      !cancelled() && (
+-        github.event_name == 'workflow_dispatch' ||
+-        needs.detect-changes.outputs.any-code-changed == 'true'
+-      ) && (
+-        needs.lint.result == 'success' &&
+-        needs.test.result == 'success'
+-      )
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-
+-      - name: Setup Python
+-        uses: actions/setup-python@v7
+-        with:
+-          python-version: '3.13'
+-
+-      - name: Detect Python layout
+-        id: python_layout
+-        run: |
+-          if [ -f pyproject.toml ]; then
+-            PYTHON_ROOT="."
+-            MULTI_LANGUAGE="false"
+-            echo "root=." >> "$GITHUB_OUTPUT"
+-            echo "multi_language=false" >> "$GITHUB_OUTPUT"
+-          elif [ -f python/pyproject.toml ]; then
+-            PYTHON_ROOT="python"
+-            MULTI_LANGUAGE="true"
+-            echo "root=python" >> "$GITHUB_OUTPUT"
+-            echo "multi_language=true" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "::error::Could not find pyproject.toml at repo root or python/pyproject.toml"
+-            exit 1
+-          fi
+-
+-          if [ "$PYTHON_ROOT" = "." ]; then
+-            echo "dist_dir=dist" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "dist_dir=$PYTHON_ROOT/dist" >> "$GITHUB_OUTPUT"
+-          fi
+-          echo "PYTHON_ROOT=$PYTHON_ROOT" >> "$GITHUB_ENV"
+-          echo "Detected Python layout: root=$PYTHON_ROOT, multi_language=$MULTI_LANGUAGE"
+-
+-      - name: Install build dependencies
+-        run: |
+-          python -m pip install --upgrade pip
+-          pip install build twine
+-
+-      - name: Build package
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          python -m build
+-
+-      - name: Check package
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          twine check dist/*
+-
+-      - name: Upload artifacts
+-        uses: $/.github/actions/artifact
+-        with:
+-          name: dist
+-          path: ${{ steps.python_layout.outputs.dist_dir }}
+-          if-no-files-found: error
+-
+-  # === CHANGELOG CHECK - only runs on PRs with code changes ===
+-  # Docs-only PRs (./docs folder, markdown files) don't require changelog fragments
+-  changelog:
+-    name: Changelog Fragment Check
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 10
+-    concurrency:
+-      group: ${{ github.workflow }}-${{ github.ref }}-changelog
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    needs: [detect-changes]
+-    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.any-code-changed == 'true'
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-          fetch-depth: 0
+-
+-      - name: Set up Python
+-        uses: actions/setup-python@v7
+-        with:
+-          python-version: "3.13"
+-
+-      - name: Detect Python layout
+-        id: python_layout
+-        run: |
+-          if [ -f pyproject.toml ]; then
+-            PYTHON_ROOT="."
+-            MULTI_LANGUAGE="false"
+-            echo "root=." >> "$GITHUB_OUTPUT"
+-            echo "multi_language=false" >> "$GITHUB_OUTPUT"
+-          elif [ -f python/pyproject.toml ]; then
+-            PYTHON_ROOT="python"
+-            MULTI_LANGUAGE="true"
+-            echo "root=python" >> "$GITHUB_OUTPUT"
+-            echo "multi_language=true" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "::error::Could not find pyproject.toml at repo root or python/pyproject.toml"
+-            exit 1
+-          fi
+-
+-          if [ "$PYTHON_ROOT" = "." ]; then
+-            echo "dist_dir=dist" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "dist_dir=$PYTHON_ROOT/dist" >> "$GITHUB_OUTPUT"
+-          fi
+-          echo "PYTHON_ROOT=$PYTHON_ROOT" >> "$GITHUB_ENV"
+-          echo "Detected Python layout: root=$PYTHON_ROOT, multi_language=$MULTI_LANGUAGE"
+-
+-      - name: Check for changelog fragments
+-        env:
+-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+-          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+-          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+-        run: python "$PYTHON_ROOT/scripts/validate_changeset.py"
+-
+-  # === DOCKER IMAGE BUILD CHECK (pull requests) ===
+-  # Build without pushing so a broken Dockerfile fails before package publish.
+-  # Skip cleanly when a generated repository does not include a Dockerfile.
+-  docker-build:
+-    name: Docker Image Build Check
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 60
+-    concurrency:
+-      group: ${{ github.workflow }}-${{ github.ref }}-docker-build
+-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+-    needs: [detect-changes]
+-    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.any-code-changed == 'true'
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-
+-      - name: Detect Dockerfile
+-        id: dockerfile
+-        run: |
+-          if [ -f Dockerfile ]; then
+-            echo "exists=true" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "exists=false" >> "$GITHUB_OUTPUT"
+-            echo "::notice::Skipping Docker build because no Dockerfile is present"
+-          fi
+-
+-      - name: Set up Docker Buildx
+-        if: steps.dockerfile.outputs.exists == 'true'
+-        uses: docker/setup-buildx-action@v4
+-
+-      - name: Build Docker image (no push)
+-        if: steps.dockerfile.outputs.exists == 'true'
+-        timeout-minutes: 40
+-        uses: docker/build-push-action@v7
+-        with:
+-          context: .
+-          push: false
+-          load: true
+-          tags: app:pr-check
+-          # Scoped like the per-platform writes below (issue #66): an unscoped
+-          # GHA cache export lands in the shared `buildkit` scope, where builds
+-          # overwrite each other and crowd out actions/cache entries.
+-          cache-from: type=gha,scope=docker-pr-check
+-          cache-to: type=gha,mode=max,scope=docker-pr-check
+-
+-  # RELEASE JOBS - Only run after all CI checks pass
+-
+-  # Automatic release on push to main (if version changed)
+-  auto-release:
+-    name: Auto Release
+-    needs: [lint, test, build, release-preflight, validate-docs, changelog, docker-build]
+-    outputs:
+-      released: ${{ steps.github_release.outputs.released }}
+-      version: ${{ steps.github_release.outputs.version }}
+-    concurrency:
+-      group: ${{ github.workflow }}-main-write
+-      cancel-in-progress: false
+-      queue: max
+-    if: |
+-      !cancelled() &&
+-      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+-      needs.lint.result == 'success' &&
+-      needs.test.result == 'success' &&
+-      needs.build.result == 'success' &&
+-      !contains(needs.*.result, 'failure') &&
+-      !contains(needs.*.result, 'cancelled') &&
+-      needs.release-preflight.result == 'success'
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 30
+-    permissions:
+-      contents: write
+-      id-token: write
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-          fetch-depth: 0
+-
+-      - name: Setup Python
+-        uses: actions/setup-python@v7
+-        with:
+-          python-version: '3.13'
+-
+-      - name: Detect Python layout
+-        id: python_layout
+-        run: |
+-          if [ -f pyproject.toml ]; then
+-            PYTHON_ROOT="."
+-            MULTI_LANGUAGE="false"
+-            echo "root=." >> "$GITHUB_OUTPUT"
+-            echo "multi_language=false" >> "$GITHUB_OUTPUT"
+-          elif [ -f python/pyproject.toml ]; then
+-            PYTHON_ROOT="python"
+-            MULTI_LANGUAGE="true"
+-            echo "root=python" >> "$GITHUB_OUTPUT"
+-            echo "multi_language=true" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "::error::Could not find pyproject.toml at repo root or python/pyproject.toml"
+-            exit 1
+-          fi
+-
+-          if [ "$PYTHON_ROOT" = "." ]; then
+-            echo "dist_dir=dist" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "dist_dir=$PYTHON_ROOT/dist" >> "$GITHUB_OUTPUT"
+-          fi
+-          echo "PYTHON_ROOT=$PYTHON_ROOT" >> "$GITHUB_ENV"
+-          echo "Detected Python layout: root=$PYTHON_ROOT, multi_language=$MULTI_LANGUAGE"
+-
+-      - name: Install dependencies
+-        run: |
+-          python -m pip install --upgrade pip
+-          pip install build twine
+-
+-      - name: Check release artifacts
+-        id: version_check
+-        env:
+-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-        run: python "$PYTHON_ROOT/scripts/check_release.py" check --repository "$GITHUB_REPOSITORY"
+-
+-      - name: Download artifacts
+-        if: steps.version_check.outputs.should_release == 'true'
+-        uses: $/.github/actions/artifact
+-        with:
+-          operation: download
+-          name: dist
+-          path: dist/
+-
+-      - name: Publish to PyPI
+-        if: steps.version_check.outputs.should_release == 'true'
+-        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3 @ 2026-10-20
+-        with:
+-          skip-existing: true
+-
+-      - name: Wait for PyPI
+-        if: steps.version_check.outputs.should_release == 'true'
+-        timeout-minutes: 11
+-        env:
+-          PACKAGE_NAME: ${{ steps.version_check.outputs.package_name }}
+-          RELEASE_VERSION: ${{ steps.version_check.outputs.current_version }}
+-        run: python "$PYTHON_ROOT/scripts/check_release.py" wait --package-name "$PACKAGE_NAME" --version "$RELEASE_VERSION"
+-
+-      - name: Smoke test published package
+-        if: steps.version_check.outputs.should_release == 'true'
+-        env:
+-          RELEASE_VERSION: ${{ steps.version_check.outputs.current_version }}
+-        run: |
+-          python "$PYTHON_ROOT/scripts/smoke_test_published_package.py" \
+-            --project-root "$PYTHON_ROOT" --version "$RELEASE_VERSION"
+-
+-      - name: Create GitHub Release
+-        id: github_release
+-        if: steps.version_check.outputs.should_release == 'true'
+-        env:
+-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-          RELEASE_VERSION: ${{ steps.version_check.outputs.current_version }}
+-        run: |
+-          python "$PYTHON_ROOT/scripts/create_github_release.py" \
+-            --version "$RELEASE_VERSION" \
+-            --repository "$GITHUB_REPOSITORY" \
+-            --repository-root "."
+-          echo "released=true" >> "$GITHUB_OUTPUT"
+-          echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+-
+-  # Manual release via workflow_dispatch - only after CI passes
+-  manual-release:
+-    name: Manual Release
+-    needs: [lint, test, build, release-preflight, validate-docs, changelog, docker-build]
+-    outputs:
+-      released: ${{ steps.github_release.outputs.released }}
+-      version: ${{ steps.github_release.outputs.version }}
+-    concurrency:
+-      group: ${{ github.workflow }}-main-write
+-      cancel-in-progress: false
+-      queue: max
+-    # !cancelled() prevents the skipped detect-changes dependency from propagating
+-    # through lint/test/build while still propagating workflow cancellation.
+-    # The explicit result checks ensure release only proceeds after CI passes.
+-    if: |
+-      !cancelled() &&
+-      github.event_name == 'workflow_dispatch' &&
+-      needs.lint.result == 'success' &&
+-      needs.test.result == 'success' &&
+-      needs.build.result == 'success' &&
+-      !contains(needs.*.result, 'failure') &&
+-      !contains(needs.*.result, 'cancelled') &&
+-      needs.release-preflight.result == 'success'
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 30
+-    permissions:
+-      contents: write
+-      id-token: write
+-    steps:
+-      # The only checkout in this repository that keeps credentials in
+-      # .git/config: scripts/version_and_commit.py runs `git push origin HEAD:refs/heads/main`
+-      # to publish the version bump, which needs the token wired into the
+-      # remote. Every other checkout sets persist-credentials: false.
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: true
+-          fetch-depth: 0
+-          token: ${{ secrets.GITHUB_TOKEN }}
+-
+-      - name: Setup Python
+-        uses: actions/setup-python@v7
+-        with:
+-          python-version: '3.13'
+-
+-      - name: Detect Python layout
+-        id: python_layout
+-        run: |
+-          if [ -f pyproject.toml ]; then
+-            PYTHON_ROOT="."
+-            MULTI_LANGUAGE="false"
+-            echo "root=." >> "$GITHUB_OUTPUT"
+-            echo "multi_language=false" >> "$GITHUB_OUTPUT"
+-          elif [ -f python/pyproject.toml ]; then
+-            PYTHON_ROOT="python"
+-            MULTI_LANGUAGE="true"
+-            echo "root=python" >> "$GITHUB_OUTPUT"
+-            echo "multi_language=true" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "::error::Could not find pyproject.toml at repo root or python/pyproject.toml"
+-            exit 1
+-          fi
+-
+-          if [ "$PYTHON_ROOT" = "." ]; then
+-            echo "dist_dir=dist" >> "$GITHUB_OUTPUT"
+-          else
+-            echo "dist_dir=$PYTHON_ROOT/dist" >> "$GITHUB_OUTPUT"
+-          fi
+-          echo "PYTHON_ROOT=$PYTHON_ROOT" >> "$GITHUB_ENV"
+-          echo "Detected Python layout: root=$PYTHON_ROOT, multi_language=$MULTI_LANGUAGE"
+-
+-      - name: Install dependencies
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          python -m pip install --upgrade pip
+-          pip install build twine "scriv[toml]" uv
+-
+-      - name: Configure git
+-        run: |
+-          git config user.name "github-actions[bot]"
+-          git config user.email "github-actions[bot]@users.noreply.github.com"
+-
+-      - name: Version and commit
+-        id: version
+-        env:
+-          BUMP_TYPE: ${{ github.event.inputs.bump_type }}
+-          DESCRIPTION: ${{ github.event.inputs.description }}
+-          VALIDATED_SHA: ${{ github.sha }}
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          python scripts/version_and_commit.py \
+-            --bump-type "$BUMP_TYPE" \
+-            --description "$DESCRIPTION"
+-
+-      - name: Check release artifacts
+-        id: version_check
+-        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
+-        env:
+-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-        run: python "$PYTHON_ROOT/scripts/check_release.py" check --repository "$GITHUB_REPOSITORY"
+-
+-      - name: Build package
+-        if: steps.version_check.outputs.should_release == 'true'
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          python -m build
+-
+-      - name: Check package
+-        if: steps.version_check.outputs.should_release == 'true'
+-        run: |
+-          cd "$PYTHON_ROOT"
+-          twine check dist/*
+-
+-      - name: Publish to PyPI
+-        if: steps.version_check.outputs.should_release == 'true'
+-        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3 @ 2026-10-20
+-        with:
+-          packages-dir: ${{ steps.python_layout.outputs.dist_dir }}
+-          skip-existing: true
+-
+-      - name: Wait for PyPI
+-        if: steps.version_check.outputs.should_release == 'true'
+-        timeout-minutes: 11
+-        env:
+-          PACKAGE_NAME: ${{ steps.version_check.outputs.package_name }}
+-          RELEASE_VERSION: ${{ steps.version_check.outputs.current_version }}
+-        run: python "$PYTHON_ROOT/scripts/check_release.py" wait --package-name "$PACKAGE_NAME" --version "$RELEASE_VERSION"
+-
+-      - name: Smoke test published package
+-        if: steps.version_check.outputs.should_release == 'true'
+-        env:
+-          RELEASE_VERSION: ${{ steps.version_check.outputs.current_version }}
+-        run: |
+-          python "$PYTHON_ROOT/scripts/smoke_test_published_package.py" \
+-            --project-root "$PYTHON_ROOT" --version "$RELEASE_VERSION"
+-
+-      - name: Create GitHub Release
+-        id: github_release
+-        if: steps.version_check.outputs.should_release == 'true'
+-        env:
+-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-          RELEASE_VERSION: ${{ steps.version_check.outputs.current_version }}
+-        run: |
+-          python "$PYTHON_ROOT/scripts/create_github_release.py" \
+-            --version "$RELEASE_VERSION" \
+-            --repository "$GITHUB_REPOSITORY" \
+-            --repository-root "."
+-          echo "released=true" >> "$GITHUB_OUTPUT"
+-          echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+-
+-  # Optional Docker Hub publishing after the GitHub release exists. Set the
+-  # DOCKERHUB_IMAGE and DOCKERHUB_USERNAME repository variables and the
+-  # DOCKERHUB_TOKEN secret to enable it in repositories that ship a Dockerfile.
+-  docker-publish-config:
+-    name: Configure Docker Hub Publish
+-    needs: [auto-release, manual-release, release-preflight]
+-    if: |
+-      !cancelled() &&
+-      needs.release-preflight.result == 'success' && (
+-        needs.auto-release.outputs.released == 'true' ||
+-        needs.manual-release.outputs.released == 'true'
+-      )
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 5
+-    permissions:
+-      contents: read
+-    outputs:
+-      enabled: ${{ steps.config.outputs.enabled }}
+-      image: ${{ steps.config.outputs.image }}
+-      version: ${{ steps.config.outputs.version }}
+-    env:
+-      DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+-      DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+-      RELEASE_VERSION: ${{ needs.auto-release.outputs.version || needs.manual-release.outputs.version }}
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-
+-      - name: Check Docker publish configuration
+-        id: config
+-        run: |
+-          if [ ! -f Dockerfile ]; then
+-            echo "::notice::Skipping Docker publish because no Dockerfile is present"
+-            echo "enabled=false" >> "$GITHUB_OUTPUT"
+-          elif [ -z "$DOCKERHUB_IMAGE" ] || [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+-            echo "::notice::Skipping Docker publish because Docker Hub is not configured"
+-            echo "enabled=false" >> "$GITHUB_OUTPUT"
+-          else
+-            {
+-              echo "enabled=true"
+-              echo "image=$DOCKERHUB_IMAGE"
+-              echo "version=$RELEASE_VERSION"
+-            } >> "$GITHUB_OUTPUT"
+-          fi
+-
+-  # Native runners build both architectures in parallel and push immutable
+-  # digests. This avoids the performance and reliability cost of QEMU.
+-  docker-publish-build:
+-    name: Build Docker Image (${{ matrix.platform }})
+-    needs: [docker-publish-config, release-preflight]
+-    if: |
+-      needs.release-preflight.result == 'success' &&
+-      needs.docker-publish-config.outputs.enabled == 'true'
+-    timeout-minutes: 60
++      group: check-${{ github.workflow }}-${{ github.ref }}-test-${{ matrix.os }}
++      cancel-in-progress: true
++    needs: [changeset-check, lint]
++    if: ${{ !cancelled() && needs.lint.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
+     strategy:
+       fail-fast: false
+       matrix:
+-        include:
+-          - platform: linux/amd64
+-            runner: ubuntu-24.04
+-          - platform: linux/arm64
+-            runner: ubuntu-24.04-arm
+-    runs-on: ${{ matrix.runner }}
++        os: [ubuntu-24.04, macos-15, windows-2025]
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          fetch-depth: 0
++
++      - name: Simulate fresh merge with base branch (PR only)
++        if: github.event_name == 'pull_request'
++        env:
++          BASE_REF: ${{ github.base_ref }}
++        run: bash scripts/simulate-fresh-merge.sh
++
++      - name: Setup Bun
++        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
++        with:
++          bun-version: latest
++
++      - name: Install dependencies
++        run: bun install --frozen-lockfile
++        working-directory: js
++
++      # Use the package script so CI and local runs execute the same suite.
++      # A hardcoded four-file list silently skipped 48 of the 52 unit test
++      # files, making CI green while regressions went unnoticed (issue #287).
++      # The budget wrapper owns the deadline instead of the job's
++      # timeout-minutes backstop: GitHub reports a job killed by
++      # timeout-minutes as cancelled, not failed, so a suite that quietly
++      # doubles in runtime would never be reported (issue #301).
++      - name: Run unit tests
++        run: bash ../scripts/run-with-budget-warning.sh 600 "Bun test suite" bun run test
++        working-directory: js
++
++      - name: Verify packed bash tool with both tree-sitter runtimes
++        if: matrix.os == 'ubuntu-24.04'
++        run: bun experiments/issue-322/verify-bash-parser.mjs
++
++  # Verbose HTTP logging integration test - verifies --verbose mode logs HTTP traffic
++  # This is the ONLY real-API test in CI/CD. Uses free-tier model (kilo/nemotron-3-ultra-free)
++  # to verify HTTP request/response logging works end-to-end.
++  # Runs only on ubuntu-24.04 to conserve free API limits.
++  # See: https://github.com/link-assistant/agent/issues/221
++  verbose-integration:
++    name: Verbose HTTP Logging Test
++    runs-on: ubuntu-24.04
++    timeout-minutes: 15
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-verbose-integration
++      cancel-in-progress: true
++    needs: [changeset-check, lint]
++    if: ${{ !cancelled() && needs.lint.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          fetch-depth: 0
++      - name: Simulate fresh merge with base branch (PR only)
++        if: github.event_name == 'pull_request'
++        env:
++          BASE_REF: ${{ github.base_ref }}
++        run: bash scripts/simulate-fresh-merge.sh
++
++      - name: Setup Bun
++        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
++        with:
++          bun-version: latest
++
++      - name: Install dependencies
++        run: bun install --frozen-lockfile
++        working-directory: js
++
++      - name: Run verbose HTTP logging integration test
++        run: bun test ./tests/integration/verbose-hi.js
++        working-directory: js
++        timeout-minutes: 5
++        env:
++          KILO_API_KEY: ${{ secrets.KILO_API_KEY }}
++
++  # Verify the published dependency graph installs without peer warnings.
++  package-install:
++    name: Clean Package Install
++    runs-on: ubuntu-24.04
++    timeout-minutes: 15
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-package-install
++      cancel-in-progress: true
++    needs: [changeset-check, lint]
++    if: ${{ !cancelled() && needs.lint.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changeset-check.result == 'success') }}
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          fetch-depth: 0
++      - name: Simulate fresh merge with base branch (PR only)
++        if: github.event_name == 'pull_request'
++        env:
++          BASE_REF: ${{ github.base_ref }}
++        run: bash scripts/simulate-fresh-merge.sh
++
++      - name: Setup Bun
++        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
++        with:
++          bun-version: latest
++
++      - name: Pack package
++        id: pack
++        working-directory: js
++        run: |
++          TARBALL=$(bun pm pack --quiet | tail -1)
++          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
++
++      - name: Install package in a clean project
++        env:
++          TARBALL: ${{ github.workspace }}/js/${{ steps.pack.outputs.tarball }}
++        run: |
++          # `bun add | tee` reports tee's exit status without pipefail, so a
++          # failed install used to leave this job green.
++          set -o pipefail
++          CONSUMER_DIR=$(mktemp -d)
++          cd "$CONSUMER_DIR"
++          bun add "$TARBALL" 2>&1 | tee install.log
++          if grep -q 'warn: incorrect peer dependency' install.log; then
++            echo "::error::Packed package installation emitted an incorrect peer dependency warning"
++            exit 1
++          fi
++
++  # Release - only runs on main after tests pass (for push events)
++  release:
++    name: Release
++    needs: [release-preflight, lint, test, verbose-integration, package-install]
++    # Evaluate explicit quality results even when the PR-only check was skipped.
++    if: ${{ !cancelled() && needs.release-preflight.result == 'success' && github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.verbose-integration.result == 'success' && needs.package-install.result == 'success' }}
++    runs-on: ubuntu-24.04
++    timeout-minutes: 30
++    concurrency:
++      group: main-writer-${{ github.repository }}-main
++      cancel-in-progress: false
++      queue: max
++    # Permissions required for npm OIDC trusted publishing
+     permissions:
+-      contents: read
+-    steps:
+-      - uses: actions/checkout@v7
+-        with:
+-          persist-credentials: false
+-
+-      - name: Set up Docker Buildx
+-        uses: docker/setup-buildx-action@v4
+-
+-      - name: Log in to Docker Hub
+-        uses: docker/login-action@v4
+-        with:
+-          username: ${{ vars.DOCKERHUB_USERNAME }}
+-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+-
+-      - name: Build and push platform image by digest
+-        id: docker_build
+-        timeout-minutes: 40
+-        uses: docker/build-push-action@v7
+-        with:
+-          context: .
+-          platforms: ${{ matrix.platform }}
+-          cache-from: type=gha,scope=${{ matrix.platform }}
+-          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
+-          outputs: type=image,name=${{ needs.docker-publish-config.outputs.image }},push-by-digest=true,name-canonical=true,push=true
+-
+-      - name: Export image digest
+-        env:
+-          DIGEST: ${{ steps.docker_build.outputs.digest }}
++      contents: write
++      pull-requests: write
++      id-token: write
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          fetch-depth: 0
++
++      - name: Setup Node.js
++        uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
++          registry-url: 'https://registry.npmjs.org'
++
++      - name: Safely synchronize release metadata before recovery
++        run: node scripts/sync-release-checkout.mjs
++
++      # `changeset version` formats the changelog through the package manager
++      # it detects, which is bun because of js/bun.lock. Without bun it fails
++      # with `spawn bun ENOENT` before deleting the consumed changesets.
++      - name: Setup Bun
++        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
++        with:
++          bun-version: latest
++
++      - name: Install dependencies
++        run: bash ../scripts/run-with-budget-warning.sh 300 "Release dependency install" npm ci --legacy-peer-deps
++        working-directory: js
++
++      - name: Update npm for OIDC trusted publishing
++        run: node scripts/setup-npm.mjs
++
++      - name: Recover an incomplete GitHub release
++        id: recover
++        env:
++          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++        run: node scripts/recover-js-release.mjs
++
++      - name: Check for changesets
++        id: check_changesets
+         run: |
+-          mkdir -p /tmp/digests
+-          touch "/tmp/digests/${DIGEST#sha256:}"
+-
+-      - name: Upload image digest
+-        uses: $/.github/actions/artifact
+-        with:
+-          name: docker-digest-${{ strategy.job-index }}
+-          path: /tmp/digests/*
+-          if-no-files-found: error
+-          retention-days: 1
+-
+-  docker-publish:
+-    name: Publish Multi-Architecture Docker Image
+-    needs: [docker-publish-config, docker-publish-build, release-preflight]
+-    if: |
+-      needs.release-preflight.result == 'success' &&
+-      needs.docker-publish-build.result == 'success'
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 15
++          # Count changeset files (excluding README.md and config.json)
++          CHANGESET_COUNT=$(find js/.changeset -name "*.md" ! -name "README.md" | wc -l)
++          echo "Found $CHANGESET_COUNT changeset file(s)"
++          if [ "$CHANGESET_COUNT" -gt 0 ]; then
++            echo "has_changesets=true" >> "$GITHUB_OUTPUT"
++          else
++            echo "has_changesets=false" >> "$GITHUB_OUTPUT"
++          fi
++
++      - name: Version packages and commit to main
++        if: steps.check_changesets.outputs.has_changesets == 'true'
++        id: version
++        run: node scripts/version-and-commit.mjs --mode changeset
++
++      - name: Publish to npm
++        # Also resume a version commit whose prior publish attempt never completed.
++        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true' || steps.recover.outputs.needs_publish == 'true'
++        id: publish
++        run: bash scripts/run-with-budget-warning.sh 600 "npm publish" node scripts/publish-to-npm.mjs --should-pull
++
++      - name: Create GitHub Release
++        if: steps.publish.outputs.published == 'true'
++        id: create_release
++        env:
++          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++        run: node scripts/create-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --prefix "js-"
++
++      - name: Format GitHub release notes
++        if: steps.publish.outputs.published == 'true'
++        id: format_release
++        env:
++          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++        run: node scripts/format-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "js-"
++
++      - name: Summarize JS release outcome
++        if: always()
++        env:
++          RELEASE_PUBLISHED: ${{ steps.publish.outputs.published || (steps.publish.outcome == 'skipped' && steps.recover.outputs.published) }}
++          PUBLISH_COMMAND_SUCCEEDED: ${{ steps.publish.outputs.publish_command_succeeded }}
++          RELEASE_RECOVERED: ${{ steps.recover.outputs.recovered }}
++          RELEASE_ALREADY_COMPLETE: ${{ steps.recover.outputs.complete }}
++          RELEASE_VERSION: ${{ steps.publish.outputs.published_version || steps.recover.outputs.current_version }}
++          RECOVER_OUTCOME: ${{ steps.recover.outcome }}
++          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
++          CREATE_OUTCOME: ${{ steps.create_release.outcome }}
++          FORMAT_OUTCOME: ${{ steps.format_release.outcome }}
++        run: node scripts/js-release-summary.mjs
++
++  # Manual Instant Release - triggered via workflow_dispatch with instant mode
++  # Keep manual and automatic publishing in the registered js.yml workflow.
++  instant-release:
++    name: Instant Release
++    # Publishing must wait for the same quality gates as the automated release
++    # and require their explicit success (#337): without `needs`, a manual
++    # release published while lint or the tests were failing.
++    needs: [release-preflight, lint, test, verbose-integration, package-install]
++    if: ${{ !cancelled() && needs.release-preflight.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.release_mode == 'instant' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.verbose-integration.result == 'success' && needs.package-install.result == 'success' }}
++    runs-on: ubuntu-24.04
++    timeout-minutes: 30
++    concurrency:
++      group: main-writer-${{ github.repository }}-main
++      cancel-in-progress: false
++      queue: max
++    # Permissions required for npm OIDC trusted publishing
+     permissions:
+-      contents: read
+-    steps:
+-      - name: Set up Docker Buildx
+-        uses: docker/setup-buildx-action@v4
+-
+-      - name: Log in to Docker Hub
+-        uses: docker/login-action@v4
+-        with:
+-          username: ${{ vars.DOCKERHUB_USERNAME }}
+-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+-
+-      - name: Download image digests
+-        uses: $/.github/actions/artifact
+-        with:
+-          operation: download
+-          path: /tmp/digests
+-          pattern: docker-digest-*
+-          merge-multiple: true
+-
+-      - name: Create multi-architecture manifest
+-        working-directory: /tmp/digests
+-        env:
+-          IMAGE: ${{ needs.docker-publish-config.outputs.image }}
+-          VERSION: ${{ needs.docker-publish-config.outputs.version }}
++      contents: write
++      pull-requests: write
++      id-token: write
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          fetch-depth: 0
++
++      - name: Setup Node.js
++        uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
++          registry-url: 'https://registry.npmjs.org'
++
++      - name: Install dependencies
++        run: bash ../scripts/run-with-budget-warning.sh 300 "Release dependency install" npm ci --legacy-peer-deps
++        working-directory: js
++
++      - name: Update npm for OIDC trusted publishing
++        run: node scripts/setup-npm.mjs
++
++      - name: Version packages and commit to main
++        id: version
++        env:
++          BUMP_TYPE: ${{ github.event.inputs.bump_type }}
++          DESCRIPTION: ${{ github.event.inputs.description }}
++        run: node scripts/version-and-commit.mjs --mode instant
++
++      - name: Publish to npm
++        # Run if version was committed OR if a previous attempt already committed (for re-runs)
++        if: steps.version.outputs.version_committed == 'true' || steps.version.outputs.already_released == 'true'
++        id: publish
++        run: bash scripts/run-with-budget-warning.sh 600 "npm publish" node scripts/publish-to-npm.mjs
++
++      - name: Create GitHub Release
++        if: steps.publish.outputs.published == 'true'
++        id: create_release
++        env:
++          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++        run: node scripts/create-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --prefix "js-"
++
++      - name: Format GitHub release notes
++        if: steps.publish.outputs.published == 'true'
++        id: format_release
++        env:
++          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++        run: node scripts/format-github-release.mjs --release-version "${{ steps.publish.outputs.published_version }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --prefix "js-"
++
++      - name: Summarize JS release outcome
++        if: always()
++        env:
++          RELEASE_PUBLISHED: ${{ steps.publish.outputs.published }}
++          PUBLISH_COMMAND_SUCCEEDED: ${{ steps.publish.outputs.publish_command_succeeded }}
++          RELEASE_VERSION: ${{ steps.publish.outputs.published_version }}
++          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
++          CREATE_OUTCOME: ${{ steps.create_release.outcome }}
++          FORMAT_OUTCOME: ${{ steps.format_release.outcome }}
++        run: node scripts/js-release-summary.mjs
++
++  # Manual Changeset PR - creates a pull request with the changeset for review
++  changeset-pr:
++    name: Create Changeset PR
++    if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_mode == 'changeset-pr'
++    runs-on: ubuntu-24.04
++    timeout-minutes: 10
++    concurrency:
++      group: main-writer-${{ github.repository }}-main
++      cancel-in-progress: false
++      queue: max
++    permissions:
++      contents: write
++      pull-requests: write
++    steps:
++      - uses: actions/checkout@v6
++        with:
++          fetch-depth: 0
++
++      - name: Setup Node.js
++        uses: actions/setup-node@v6
++        with:
++          node-version: '26.x'
++
++      - name: Install dependencies
++        run: npm ci --legacy-peer-deps
++        working-directory: js
++
++      - name: Create changeset file
++        env:
++          BUMP_TYPE: ${{ github.event.inputs.bump_type }}
++          DESCRIPTION: ${{ github.event.inputs.description }}
++        run: node scripts/create-manual-changeset.mjs
++
++      - name: Format changeset with Prettier
++        # No `|| true`: the changeset this job just generated must be
++        # formattable, and swallowing the failure produced a pull request that
++        # then failed the format check in its own pipeline run.
++        working-directory: js
+         run: |
+-          # Word splitting is deliberate: every digest file in this directory
+-          # becomes its own source argument for the manifest.
+-          # shellcheck disable=SC2046
+-          docker buildx imagetools create \
+-            --tag "${IMAGE}:latest" \
+-            --tag "${IMAGE}:${VERSION}" \
+-            $(printf "${IMAGE}@sha256:%s " *)
+-
+-      - name: Verify multi-architecture manifest
+-        env:
+-          IMAGE: ${{ needs.docker-publish-config.outputs.image }}
+-          VERSION: ${{ needs.docker-publish-config.outputs.version }}
+-        run: |
+-          MANIFEST=$(docker buildx imagetools inspect "${IMAGE}:${VERSION}")
+-          grep -q "linux/amd64" <<< "$MANIFEST"
+-          grep -q "linux/arm64" <<< "$MANIFEST"
+-
+-  # A job killed by timeout-minutes concludes "cancelled", not "failure".
+-  # Observe every other job so that state cannot silently hide a broken run.
++          # Run Prettier on the changeset file to ensure it matches project style
++          npx prettier --write ".changeset/*.md"
++          echo "Formatted changeset files"
++
++      - name: Create Pull Request
++        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
++        with:
++          token: ${{ secrets.GITHUB_TOKEN }}
++          commit-message: 'chore: add changeset for manual ${{ github.event.inputs.bump_type }} release'
++          branch: changeset-manual-release-${{ github.run_id }}
++          delete-branch: true
++          title: 'chore: manual ${{ github.event.inputs.bump_type }} release'
++          body: |
++            ## Manual Release Request
++
++            This PR was created by a manual workflow trigger to prepare a **${{ github.event.inputs.bump_type }}** release.
++
++            ### Release Details
++            - **Type:** ${{ github.event.inputs.bump_type }}
++            - **Description:** ${{ github.event.inputs.description || 'Manual release' }}
++            - **Triggered by:** @${{ github.actor }}
++
++            ### Next Steps
++            1. Review the changeset in this PR
++            2. Merge this PR to main
++            3. CI commits the version metadata and publishes npm and GitHub releases after validation
++
++  # GitHub reports a job killed by timeout-minutes as cancelled rather than
++  # failed, and every gate above is written as `result == 'success'`, so a
++  # cancelled check silently skips the release and leaves the run green.
++  # Observing every job here makes that visible.
+   pipeline-status:
+     name: Pipeline Status
+     runs-on: ubuntu-24.04
+     timeout-minutes: 5
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
++      cancel-in-progress: true
+     if: always()
+-    needs: [detect-changes, validate-docs, release-preflight, lint, test, build,
+-            changelog, docker-build, auto-release, manual-release,
+-            docker-publish-config, docker-publish-build, docker-publish]
+-    steps:
+-      - uses: actions/checkout@v7
++    needs:
++      - detect-changes
++      - release-preflight
++      - changeset-check
++      - lint
++      - test
++      - verbose-integration
++      - package-install
++      - release
++      - instant-release
++      - changeset-pr
++    steps:
++      - uses: actions/checkout@v6
+         with:
+           persist-credentials: false
+ 
+       - name: Fail the run when a required job was cancelled or failed
+         env:
+           NEEDS_JSON: ${{ toJSON(needs) }}
++          # A cancellation passes only when a newer commit superseded this
++          # run and the job cancels in progress; refs/pull/<n>/head also
++          # resolves for pull requests from forks.
+           RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+           HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+         run: bash scripts/check-pipeline-status.sh

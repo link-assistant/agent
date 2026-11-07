@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+import {
+  assertSafeAdvance,
+  assertStagedReleaseMetadata,
+  commitReleaseVersion,
+  syncReleaseCheckout,
+} from './release-safety.mjs';
 
 /**
  * Version packages and commit to main
@@ -7,7 +13,6 @@
  *   instant: Run instant version bump with bump_type (patch|minor|major) and optional description
  *
  * Uses link-foundation libraries:
- * - use-m: Dynamic package loading without package.json dependencies
  * - command-stream: Modern shell command execution with streaming support
  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
  */
@@ -24,7 +29,7 @@ import {
 import { pushWithRebaseRetry } from './push-with-rebase-retry.mjs';
 import { isEarlierAttemptRelease } from './release-rerun.mjs';
 
-// Load dependencies through the shared use-m loader, which normalizes the
+// Load locked dependencies through the shared loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
 
@@ -183,6 +188,7 @@ async function main() {
     const remoteHead = remoteHeadResult.stdout.trim();
 
     if (localHead !== remoteHead) {
+      assertSafeAdvance(localHead, remoteHead, { jsRoot });
       console.log(
         `Remote main has advanced (local: ${localHead}, remote: ${remoteHead})`
       );
@@ -258,16 +264,15 @@ async function main() {
 
       // Stage all changes (package.json, package-lock.json, CHANGELOG.md, deleted changesets)
       await $`git add -A`;
+      assertStagedReleaseMetadata({ jsRoot });
 
       // Commit with version number as message
-      const commitMessage = newVersion;
-      const escapedMessage = commitMessage.replace(/"/g, '\\"');
-      await $`git commit -m "${escapedMessage}"`;
+      console.log(commitReleaseVersion(newVersion));
 
       // Push directly to main, rebasing when another merge landed first
       await pushWithRebaseRetry({
         push: () => $`git push origin main`,
-        pullRebase: () => $`git pull --rebase origin main`,
+        pullRebase: () => syncReleaseCheckout({ jsRoot }),
       });
 
       console.log('\u2705 Version bump committed and pushed to main');

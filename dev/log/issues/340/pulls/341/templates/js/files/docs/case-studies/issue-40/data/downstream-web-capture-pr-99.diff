@@ -1,0 +1,555 @@
+diff --git a/docs/case-studies/issue-98/README.md b/docs/case-studies/issue-98/README.md
+new file mode 100644
+index 0000000..48a5fc8
+--- /dev/null
++++ b/docs/case-studies/issue-98/README.md
+@@ -0,0 +1,188 @@
++# Case Study: Issue #98 - JavaScript release version-specific badge broken
++
++- Issue: https://github.com/link-assistant/web-capture/issues/98
++- Pull request: https://github.com/link-assistant/web-capture/pull/99
++- Branch: `issue-98-c765b5595cf4`
++
++## Summary
++
++The JavaScript release notes attached a version-specific npm badge of the form
++`https://img.shields.io/badge/npm-js-v1.7.12-blue.svg`. shields.io responds to
++that URL with the SVG "404: badge not found" because the
++`/badge/<label>-<message>-<color>` path treats every unescaped `-` as a field
++separator. The broken badge was visible at
++https://github.com/link-assistant/web-capture/releases/tag/js-v1.7.12 and on
++every JS release back to `js-v1.7.9`.
++
++The Rust release notes used the same `/badge/` template but passed a clean
++numeric version, so they rendered correctly.
++
++The release titles were also asymmetric with the tag naming scheme - `JS v1.7.12`
++vs. tag `js-v1.7.12` mixes language and version in the same field. The issue
++asked for explicit `[JavaScript]` / `[Rust]` prefixes so the language is
++unambiguous on the releases page.
++
++## Data preserved
++
++- `data/issue.json` - issue body, labels, author, timestamps.
++- `data/pr-99.json` - the prepared pull request for this issue.
++- `data/release-*.json` - release body and title for every live release that
++  touched the badge or title asymmetry (4 JS + 8 Rust).
++- `reference/broken-badge-before.svg` - the shields.io response for the broken
++  URL, showing "404: badge not found".
++- `reference/fixed-badge-after.svg` - the shields.io response after stripping
++  the `js-v` prefix, showing "npm: 1.7.12".
++
++## Timeline
++
++| Date       | Event                                                                                                                                                          |
++| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| 2026-04-14 | First Rust release `rust-v0.1.0` uses `Rust v0.1.0` title and a numeric-only badge, which happens to render.                                                   |
++| 2026-04-20 | First per-language JS release `js-v1.7.9` runs `format-release-notes.mjs` which ships a `/badge/npm-js-v1.7.9-blue.svg` URL. Badge renders as "404 not found". |
++| 2026-04-21 | Release `js-v1.7.12` reproduces the same broken badge. User files issue #98 pointing at the release tag page as evidence.                                      |
++| 2026-04-21 | PR #99 strips the language prefix in `format-release-notes.mjs`, prefixes release titles with `[JavaScript]` / `[Rust]`, and repairs already-published release bodies/titles via `scripts/fix-existing-release-badges.mjs`. |
++
++## Requirements
++
++| ID  | Requirement                                                                         | Status in PR #99 |
++| --- | ----------------------------------------------------------------------------------- | ---------------- |
++| R1  | Version-specific badge on JS release tag pages must render                          | Fixed. `format-release-notes.mjs` now strips `js-` / `rust-` prefixes and a leading `v` before interpolating into the shields URL. Already-published JS release bodies were patched in place to point at `/badge/npm-<version>-blue.svg`. |
++| R2  | Symmetric badge features for JS and Rust                                            | Both language release flows now use the same numeric version in the version-specific badge. Release titles use language-in-brackets prefix on both sides. `README.md`, `js/README.md`, and `rust/README.md` already have matching badge rows; no asymmetry there. |
++| R3  | Use `[JavaScript]` and `[Rust]` prefixes in release titles                          | Fixed. `create-github-release.mjs` and `rust-create-github-release.mjs` now produce `[JavaScript] v<ver>` and `[Rust] v<ver>`. Every existing release has been renamed in place. |
++| R4  | Apply best practices from `link-foundation/js-ai-driven-development-pipeline-template` and `link-foundation/rust-ai-driven-development-pipeline-template`; report the same bug upstream if found. | The JS template ships the same `version.replace(/^v/, '')` logic, but the template repo itself does not prefix tags with `js-` so the bug is latent there. The Rust template computes the badge dynamically from crates.io which sidesteps the issue entirely. See "Upstream follow-up" below for the reporting plan. |
++| R5  | Compile all issue logs/data into `./docs/case-studies/issue-98`                     | Done in this directory. |
++| R6  | Preserve verbose/debug output to support future debugging                           | The badge rendering is an external (shields.io) concern. `scripts/fix-existing-release-badges.mjs` logs every rename/rewrite it does, and prints a `Dry run:` summary when invoked with `--dry-run`. `experiments/test-release-badge-encoding.mjs` is a standalone regression test for the version-normalization regex. |
++
++## Root cause
++
++`scripts/format-release-notes.mjs` is called from `scripts/format-github-release.mjs`:
++
++```js
++// scripts/format-github-release.mjs:77
++await $`node ../scripts/format-release-notes.mjs --release-id "${releaseId}" --release-version "${tag}" --repository "${repository}" --commit-sha "${commitSha}"`;
++```
++
++The caller passes `tag` (for example `js-v1.7.12`) as `--release-version`.
++`format-release-notes.mjs` then built the shields URL with:
++
++```js
++// scripts/format-release-notes.mjs:191 (before)
++const versionWithoutV = version.replace(/^v/, '');
++```
++
++`version.replace(/^v/, '')` only strips a leading single `v`. Given
++`js-v1.7.12`, `versionWithoutV` stays `js-v1.7.12`, and the next line
++interpolates it into
++
++```
++https://img.shields.io/badge/npm-js-v1.7.12-blue.svg
++```
++
++shields.io parses `/badge/<path>` as three hyphen-separated fields. Extra
++unescaped `-` characters shift the boundaries, producing either an invalid
++color parse or an unknown message. Shields returns a valid SVG, but the SVG
++says "404: badge not found" (preserved as `reference/broken-badge-before.svg`).
++
++The fix normalizes the passed tag into a bare semantic version before
++interpolation:
++
++```js
++// scripts/format-release-notes.mjs:191 (after)
++const versionWithoutV = version.replace(/^[a-z]+-/i, '').replace(/^v/i, '');
++```
++
++## Solutions shipped
++
++### 1. Strip language prefix before building the badge
++
++`scripts/format-release-notes.mjs` now removes an optional `[a-z]+-` prefix
++and a leading `v` before interpolation. The fix is conservative: semver
++`MAJOR.MINOR.PATCH` is kept as-is, and pre-release tags with inner hyphens
++(for example `1.2.3-rc.1`) continue to round-trip because the regex is
++anchored to the beginning of the string.
++
++### 2. Use `[JavaScript]` and `[Rust]` release titles
++
++`scripts/create-github-release.mjs` now names releases
++`[JavaScript] v<version>`. `scripts/rust-create-github-release.mjs` uses
++`[Rust] v<version>`. Both match the existing `js-v` / `rust-v` tag scheme
++and remove the previous `JS v` / `Rust v` shorthand that made the title look
++the same as the tag.
++
++### 3. Repair already-published releases in place
++
++`scripts/fix-existing-release-badges.mjs` walks `/repos/<owner>/<repo>/releases`,
++rewrites any badge URL that still contains the language prefix, rewrites the
++matching npmjs package-link target that uses the same broken prefix, and
++renames the release to the `[JavaScript] v<version>` / `[Rust] v<version>`
++format. It supports `--dry-run` and can be re-run safely (rewrites are
++idempotent). Twelve existing releases were updated:
++
++- JS: `js-v1.7.12`, `js-v1.7.11`, `js-v1.7.10`, `js-v1.7.9` - title + body
++- Rust: `rust-v0.3.4`, `rust-v0.3.3`, `rust-v0.3.2`, `rust-v0.3.1`,
++  `rust-v0.3.0`, `rust-v0.2.1`, `rust-v0.2.0`, `rust-v0.1.0` - title only
++
++### 4. Regression test
++
++`experiments/test-release-badge-encoding.mjs` is a Node-assert script that
++asserts `normalizeVersion` strips `js-v` / `rust-v` / `v` prefixes for every
++tag shape we produce today, and that the resulting shields URL uses exactly
++three `-`-separated fields (`npm-<semver>-blue.svg`).
++
++## Upstream follow-up
++
++The JS template (https://github.com/link-foundation/js-ai-driven-development-pipeline-template)
++has the same `version.replace(/^v/, '')` in `scripts/format-release-notes.mjs`.
++The template is intended to be reused by multi-language repos that tag
++releases as `js-v<version>`; in those callers the bug is latent. The Rust
++template (https://github.com/link-foundation/rust-ai-driven-development-pipeline-template)
++avoids the problem because its badge uses the dynamic shields endpoint
++`https://img.shields.io/crates/v/<name>` which reads the latest version from
++crates.io and does not depend on the tag string.
++
++A follow-up upstream issue should describe:
++
++- The shields.io `/badge/<label>-<message>-<color>` escaping contract and why
++  extra `-` characters break it ("404: badge not found" SVG).
++- Reproduction: invoke `format-release-notes.mjs` with `--release-version
++  "js-v1.7.12"`, observe the `https://img.shields.io/badge/npm-js-v1.7.12-blue.svg`
++  URL in the resulting release body.
++- Proposed fix: switch the static `/badge/` URL to the dynamic
++  `/npm/v/<package>/<version>` endpoint, or normalize the version by
++  stripping `[a-z]+-` prefixes and a leading `v` before interpolation.
++- Alternative: encourage downstream repos to pass the clean numeric version
++  (`steps.publish.outputs.published_version`) rather than the tag.
++
++## Related components / libraries
++
++- shields.io static badge syntax reference: https://shields.io/badges/static-badge
++- shields.io npm dynamic badges: https://shields.io/badges/npm-version
++- shields.io crates.io dynamic badges: https://shields.io/badges/crates-io-version
++- Node `node:assert/strict` - used for the regression test.
++- `use-m`, `command-stream`, `lino-arguments` - the shared release scripting
++  stack already used by this repo, reused by `fix-existing-release-badges.mjs`.
++
++## Verification
++
++Regression test:
++
++```bash
++node experiments/test-release-badge-encoding.mjs
++```
++
++Output: `OK: release badge encoding regression test passes.`
++
++Live badge checks (after running `fix-existing-release-badges.mjs`):
++
++```bash
++curl -sS "https://img.shields.io/badge/npm-1.7.12-blue.svg" | head -c 200
++```
++
++Renders `aria-label="npm: 1.7.12"` (see `reference/fixed-badge-after.svg`).
++
++```bash
++gh release view js-v1.7.12 --repo link-assistant/web-capture --json name,body
++```
++
++Returns `"name":"[JavaScript] v1.7.12"` and the badge URL now reads
++`https://img.shields.io/badge/npm-1.7.12-blue.svg`.
+diff --git a/docs/case-studies/issue-98/data/issue.json b/docs/case-studies/issue-98/data/issue.json
+new file mode 100644
+index 0000000..9f52651
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/issue.json
+@@ -0,0 +1 @@
++{"author":{"id":"MDQ6VXNlcjE0MzE5MDQ=","is_bot":false,"login":"konard","name":"Konstantin Diachenko"},"body":"https://github.com/link-assistant/web-capture/releases/tag/js-v1.7.12 - see example, it shouls `404`, badge not found.\n\nAlso double check that in all places we have symmetrical features for badges, what we have for Rust, we also need to have for JavaScript and vice versa.\n\nAlso we need to use [JavaScript] and [Rust] in release names (titles), to clearly separate language from version.\n\nUse all the best practices from CI/CD templates (check full file tree to compare for all GitHub workflow and CI/CD scripts file), if the same issue is found in template report issue also in templates:\n- https://github.com/link-foundation/js-ai-driven-development-pipeline-template\n- https://github.com/link-foundation/rust-ai-driven-development-pipeline-template\n\nWe should compare all files, so we don't have more CI/CD errors in the future and reuse all the best practices from these templates.\n\nWe need to download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, list of each and all requirements from the issue, find root causes of the each problem, and propose possible solutions and solution plans for each requirement (we should also check known existing components/libraries, that solve similar problem or can help in solutions).\n\nIf there is not enough data to find actual root cause, add debug output and verbose mode if not present, that will allow us to find root cause on next iteration.\n\nIf issue related to any other repository/project, where we can report issues on GitHub, please do so. Each issue must contain reproducible examples, workarounds and suggestions for fix the issue in code.","comments":[],"createdAt":"2026-04-21T11:07:44Z","labels":[{"id":"LA_kwDOOlq2Js8AAAAB_u-Pkw","name":"bug","description":"Something isn't working","color":"d73a4a"}],"number":98,"state":"OPEN","title":"In JavaScript release version specific badge is broken"}
+diff --git a/docs/case-studies/issue-98/data/pr-99.json b/docs/case-studies/issue-98/data/pr-99.json
+new file mode 100644
+index 0000000..9cd13b9
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/pr-99.json
+@@ -0,0 +1 @@
++{"author":{"id":"MDQ6VXNlcjE0MzE5MDQ=","is_bot":false,"login":"konard","name":"Konstantin Diachenko"},"baseRefName":"main","body":"## 🤖 AI-Powered Solution Draft\n\nThis pull request is being automatically generated to solve issue #98.\n\n### 📋 Issue Reference\nFixes #98\n\n### 🚧 Status\n**Work in Progress** - The AI assistant is currently analyzing and implementing the solution draft.\n\n### 📝 Implementation Details\n_Details will be added as the solution draft is developed..._\n\n---\n*This PR was created automatically by the AI issue solver*","createdAt":"2026-04-21T11:08:37Z","headRefName":"issue-98-c765b5595cf4","number":99,"state":"OPEN","title":"[WIP] In JavaScript release version specific badge is broken"}
+diff --git a/docs/case-studies/issue-98/data/release-js-v1.7.10.json b/docs/case-studies/issue-98/data/release-js-v1.7.10.json
+new file mode 100644
+index 0000000..e2a4622
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-js-v1.7.10.json
+@@ -0,0 +1 @@
++{"body":"Fix remaining Google Docs capture gaps from issue #92 in both the JS and\nRust CLIs:\n- Browser capture now keeps multi-column table rows intact, renders\nordered lists with sequential `1. 2. 3.` numbering, and joins same-list\nitems with a single newline so tight-list markdown matches the source\ndocument.\n- Archive mode downloads `docs-images-rt/...` image URLs into the\narchive's `images/` directory and rewrites markdown/html references so\nexports are self-contained.\n- API mode (`--capture api`) runs the export HTML through a shared\npreprocessor that hoists inline bold / italic / strikethrough spans to\nsemantic tags, strips Google Docs' heading-numbering spans and empty\nanchor wrappers, unwraps `google.com/url?q=` redirects, and normalizes\nnon-breaking spaces.\n\n**Related Pull Request:** #93\n\n---\n\n[![npm version](https://img.shields.io/badge/npm-1.7.10-blue.svg)](https://www.npmjs.com/package/@link-assistant/web-capture/v/1.7.10)","name":"[JavaScript] v1.7.10","publishedAt":"2026-04-20T19:38:52Z","tagName":"js-v1.7.10","url":"https://github.com/link-assistant/web-capture/releases/tag/js-v1.7.10"}
+diff --git a/docs/case-studies/issue-98/data/release-js-v1.7.11.json b/docs/case-studies/issue-98/data/release-js-v1.7.11.json
+new file mode 100644
+index 0000000..7d4dc88
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-js-v1.7.11.json
+@@ -0,0 +1 @@
++{"body":"Fall back to the Google Docs export pipeline when browser capture cannot read editor model chunks, preserving archive content and embedded images.\n- 7b4d2d2: Fix Rust CLI `--capture browser` silently routing through direct HTTP\nfetches for non-Google-Docs URLs (issue #80):\n- `rust/src/main.rs` now passes `--capture browser` through\n`render_html` for markdown, archive, and html output formats so the\nflag actually launches headless Chrome instead of calling\n`fetch_html`.\n- `rust/src/browser.rs` `capture_screenshot` is no longer a stub — it\nlaunches headless Chrome with `--screenshot` and returns real PNG\nbytes.\n- Adds Rust integration tests that run a local HTTP fixture whose DOM\nis mutated by JavaScript after load and verify the rendered HTML,\nthe CLI `--capture browser` markdown output, and the PNG signature\non the screenshot bytes.\n\nNo JS package behavior changes in this patch; the Rust CLI is the only\naffected surface.\n\n**Related Pull Request:** #82\n\n---\n\n[![npm version](https://img.shields.io/badge/npm-1.7.11-blue.svg)](https://www.npmjs.com/package/@link-assistant/web-capture/v/1.7.11)","name":"[JavaScript] v1.7.11","publishedAt":"2026-04-20T22:29:25Z","tagName":"js-v1.7.11","url":"https://github.com/link-assistant/web-capture/releases/tag/js-v1.7.11"}
+diff --git a/docs/case-studies/issue-98/data/release-js-v1.7.12.json b/docs/case-studies/issue-98/data/release-js-v1.7.12.json
+new file mode 100644
+index 0000000..d666914
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-js-v1.7.12.json
+@@ -0,0 +1 @@
++{"body":"Fix Google Docs browser-model markdown regressions around table separators,\nblockquote continuation, nested inline markers, final newlines, and\npublic-export style preprocessing.\n\n**Related Pull Request:** #97\n\n---\n\n[![npm version](https://img.shields.io/badge/npm-1.7.12-blue.svg)](https://www.npmjs.com/package/@link-assistant/web-capture/v/1.7.12)","name":"[JavaScript] v1.7.12","publishedAt":"2026-04-21T10:18:01Z","tagName":"js-v1.7.12","url":"https://github.com/link-assistant/web-capture/releases/tag/js-v1.7.12"}
+diff --git a/docs/case-studies/issue-98/data/release-js-v1.7.9.json b/docs/case-studies/issue-98/data/release-js-v1.7.9.json
+new file mode 100644
+index 0000000..c574bed
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-js-v1.7.9.json
+@@ -0,0 +1 @@
++{"body":"Add a live Google Docs integration test that captures the public markdown\nround-trip reference document\n(https://docs.google.com/document/d/1f5zI2xOFpKa90v0GjamO_t7lqSdzMlaM/edit)\nand verifies every documented URL variation, capture-method selection path,\nand feature-section heading. The test is gated behind `GDOCS_INTEGRATION=true`\nand is wired into CI so regressions in the `--capture api` HTML-to-Markdown\npipeline surface against a real Google Doc. Addresses issue #90.\n\n**Related Pull Request:** #91\n\n---\n\n[![npm version](https://img.shields.io/badge/npm-1.7.9-blue.svg)](https://www.npmjs.com/package/@link-assistant/web-capture/v/1.7.9)","name":"[JavaScript] v1.7.9","publishedAt":"2026-04-20T15:58:21Z","tagName":"js-v1.7.9","url":"https://github.com/link-assistant/web-capture/releases/tag/js-v1.7.9"}
+diff --git a/docs/case-studies/issue-98/data/release-rust-v0.1.0.json b/docs/case-studies/issue-98/data/release-rust-v0.1.0.json
+new file mode 100644
+index 0000000..9956971
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-rust-v0.1.0.json
+@@ -0,0 +1 @@
++{"body":"Rust web-capture version 0.1.0\n\n---\n\n[![Crates.io](https://img.shields.io/badge/crates.io-0.1.0-orange.svg)](https://crates.io/crates/web-capture/versions)","name":"[Rust] v0.1.0","publishedAt":"2026-04-13T09:12:40Z","tagName":"rust-v0.1.0","url":"https://github.com/link-assistant/web-capture/releases/tag/rust-v0.1.0"}
+diff --git a/docs/case-studies/issue-98/data/release-rust-v0.2.0.json b/docs/case-studies/issue-98/data/release-rust-v0.2.0.json
+new file mode 100644
+index 0000000..621aa33
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-rust-v0.2.0.json
+@@ -0,0 +1 @@
++{"body":"Rust web-capture version 0.2.0\n\n---\n\n[![Crates.io](https://img.shields.io/badge/crates.io-0.2.0-orange.svg)](https://crates.io/crates/web-capture/versions)","name":"[Rust] v0.2.0","publishedAt":"2026-04-14T09:33:46Z","tagName":"rust-v0.2.0","url":"https://github.com/link-assistant/web-capture/releases/tag/rust-v0.2.0"}
+diff --git a/docs/case-studies/issue-98/data/release-rust-v0.2.1.json b/docs/case-studies/issue-98/data/release-rust-v0.2.1.json
+new file mode 100644
+index 0000000..889960c
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-rust-v0.2.1.json
+@@ -0,0 +1 @@
++{"body":"### Patch Changes\n\n- Auto-release unreleased changes\n\n## [0.1.0] - 2025-01-22\n\n### Added\n\n- Initial Rust implementation of web-capture\n- HTTP server with compatible API to JavaScript version\n- CLI with `--serve`, `--format`, `--output`, and `--port` options\n- HTML fetching and rendering via browser-commander\n- HTML to Markdown conversion\n- PNG screenshot capture\n- Relative to absolute URL conversion\n- UTF-8 encoding support\n- Docker support\n\n---\n\n[![Crates.io](https://img.shields.io/badge/crates.io-0.2.1-orange.svg)](https://crates.io/crates/web-capture/versions)","name":"[Rust] v0.2.1","publishedAt":"2026-04-14T12:21:52Z","tagName":"rust-v0.2.1","url":"https://github.com/link-assistant/web-capture/releases/tag/rust-v0.2.1"}
+diff --git a/docs/case-studies/issue-98/data/release-rust-v0.3.0.json b/docs/case-studies/issue-98/data/release-rust-v0.3.0.json
+new file mode 100644
+index 0000000..397d7fc
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-rust-v0.3.0.json
+@@ -0,0 +1 @@
++{"body":"Rust web-capture version 0.3.0\n\n---\n\n[![Crates.io](https://img.shields.io/badge/crates.io-0.3.0-orange.svg)](https://crates.io/crates/web-capture/versions)","name":"[Rust] v0.3.0","publishedAt":"2026-04-14T14:52:12Z","tagName":"rust-v0.3.0","url":"https://github.com/link-assistant/web-capture/releases/tag/rust-v0.3.0"}
+diff --git a/docs/case-studies/issue-98/data/release-rust-v0.3.1.json b/docs/case-studies/issue-98/data/release-rust-v0.3.1.json
+new file mode 100644
+index 0000000..d1646c1
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-rust-v0.3.1.json
+@@ -0,0 +1 @@
++{"body":"Rust web-capture version 0.3.1\n\n---\n\n[![Crates.io](https://img.shields.io/badge/crates.io-0.3.1-orange.svg)](https://crates.io/crates/web-capture/versions)","name":"[Rust] v0.3.1","publishedAt":"2026-04-14T16:19:38Z","tagName":"rust-v0.3.1","url":"https://github.com/link-assistant/web-capture/releases/tag/rust-v0.3.1"}
+diff --git a/docs/case-studies/issue-98/data/release-rust-v0.3.2.json b/docs/case-studies/issue-98/data/release-rust-v0.3.2.json
+new file mode 100644
+index 0000000..dcade56
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-rust-v0.3.2.json
+@@ -0,0 +1 @@
++{"body":"Rust web-capture version 0.3.2\n\n---\n\n[![Crates.io](https://img.shields.io/badge/crates.io-0.3.2-orange.svg)](https://crates.io/crates/web-capture/versions)","name":"[Rust] v0.3.2","publishedAt":"2026-04-20T11:03:54Z","tagName":"rust-v0.3.2","url":"https://github.com/link-assistant/web-capture/releases/tag/rust-v0.3.2"}
+diff --git a/docs/case-studies/issue-98/data/release-rust-v0.3.3.json b/docs/case-studies/issue-98/data/release-rust-v0.3.3.json
+new file mode 100644
+index 0000000..938173b
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-rust-v0.3.3.json
+@@ -0,0 +1 @@
++{"body":"### Patch Changes\n\n- Auto-release unreleased changes\n\n---\n\n[![Crates.io](https://img.shields.io/badge/crates.io-0.3.3-orange.svg)](https://crates.io/crates/web-capture/versions)","name":"[Rust] v0.3.3","publishedAt":"2026-04-20T22:35:14Z","tagName":"rust-v0.3.3","url":"https://github.com/link-assistant/web-capture/releases/tag/rust-v0.3.3"}
+diff --git a/docs/case-studies/issue-98/data/release-rust-v0.3.4.json b/docs/case-studies/issue-98/data/release-rust-v0.3.4.json
+new file mode 100644
+index 0000000..d0478ac
+--- /dev/null
++++ b/docs/case-studies/issue-98/data/release-rust-v0.3.4.json
+@@ -0,0 +1 @@
++{"body":"### Patch Changes\n\n- Auto-release unreleased changes\n\n---\n\n[![Crates.io](https://img.shields.io/badge/crates.io-0.3.4-orange.svg)](https://crates.io/crates/web-capture/versions)","name":"[Rust] v0.3.4","publishedAt":"2026-04-21T10:19:56Z","tagName":"rust-v0.3.4","url":"https://github.com/link-assistant/web-capture/releases/tag/rust-v0.3.4"}
+diff --git a/docs/case-studies/issue-98/reference/broken-badge-before.svg b/docs/case-studies/issue-98/reference/broken-badge-before.svg
+new file mode 100644
+index 0000000..6c8701a
+--- /dev/null
++++ b/docs/case-studies/issue-98/reference/broken-badge-before.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" width="132" height="20" role="img" aria-label="404: badge not found"><title>404: badge not found</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="132" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="31" height="20" fill="#555"/><rect x="31" width="101" height="20" fill="#e05d44"/><rect width="132" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text aria-hidden="true" x="165" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="210">404</text><text x="165" y="140" transform="scale(.1)" fill="#fff" textLength="210">404</text><text aria-hidden="true" x="805" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="910">badge not found</text><text x="805" y="140" transform="scale(.1)" fill="#fff" textLength="910">badge not found</text></g></svg>
+\ No newline at end of file
+diff --git a/docs/case-studies/issue-98/reference/fixed-badge-after.svg b/docs/case-studies/issue-98/reference/fixed-badge-after.svg
+new file mode 100644
+index 0000000..0f2c111
+--- /dev/null
++++ b/docs/case-studies/issue-98/reference/fixed-badge-after.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20" role="img" aria-label="npm: 1.7.12"><title>npm: 1.7.12</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="80" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="35" height="20" fill="#555"/><rect x="35" width="45" height="20" fill="#007ec6"/><rect width="80" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text aria-hidden="true" x="185" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="250">npm</text><text x="185" y="140" transform="scale(.1)" fill="#fff" textLength="250">npm</text><text aria-hidden="true" x="565" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="350">1.7.12</text><text x="565" y="140" transform="scale(.1)" fill="#fff" textLength="350">1.7.12</text></g></svg>
+\ No newline at end of file
+diff --git a/experiments/test-release-badge-encoding.mjs b/experiments/test-release-badge-encoding.mjs
+new file mode 100644
+index 0000000..33d52a9
+--- /dev/null
++++ b/experiments/test-release-badge-encoding.mjs
+@@ -0,0 +1,49 @@
++#!/usr/bin/env node
++
++/**
++ * Regression test for issue #98: JavaScript release version-specific badge was broken.
++ *
++ * Reproduces: passing a tag like "js-v1.7.12" through format-release-notes.mjs's
++ * version-normalization logic used to produce the URL
++ *   https://img.shields.io/badge/npm-js-v1.7.12-blue.svg
++ * which shields.io serves as "404: badge not found" because its path format is
++ * /badge/<label>-<message>-<color>, so extra unescaped dashes corrupt the
++ * field boundaries.
++ *
++ * Verifies: the corrected normalization returns a clean numeric version
++ * ("1.7.12") for every tag shape we produce today (js-v<ver>, rust-v<ver>,
++ * v<ver>, and bare <ver>).
++ */
++import assert from 'node:assert/strict';
++
++function normalizeVersion(raw) {
++  // Strip an optional language prefix like "js-" or "rust-", then a leading "v".
++  return String(raw).replace(/^[a-z]+-/i, '').replace(/^v/i, '');
++}
++
++const cases = [
++  ['js-v1.7.12', '1.7.12'],
++  ['rust-v0.3.4', '0.3.4'],
++  ['v1.7.12', '1.7.12'],
++  ['1.7.12', '1.7.12'],
++  ['V1.7.12', '1.7.12'],
++  ['JS-V1.7.12', '1.7.12'],
++];
++
++for (const [input, expected] of cases) {
++  const got = normalizeVersion(input);
++  assert.equal(got, expected, `normalizeVersion(${JSON.stringify(input)}) -> ${got} (expected ${expected})`);
++}
++
++// Shape of the badge URL the script builds - must not contain a language prefix
++// or stray 'v' before the numeric version, because shields.io /badge/ uses '-'
++// as a field separator.
++const versionWithoutV = normalizeVersion('js-v1.7.12');
++const badgeUrl = `https://img.shields.io/badge/npm-${versionWithoutV}-blue.svg`;
++assert.equal(
++  badgeUrl,
++  'https://img.shields.io/badge/npm-1.7.12-blue.svg',
++  `badge URL for js-v1.7.12 should be the three-field shields format, got ${badgeUrl}`
++);
++
++console.log('OK: release badge encoding regression test passes.');
+diff --git a/scripts/create-github-release.mjs b/scripts/create-github-release.mjs
+index 51e1538..013fe75 100644
+--- a/scripts/create-github-release.mjs
++++ b/scripts/create-github-release.mjs
+@@ -78,7 +78,7 @@ try {
+   // (Previously caused apostrophes like "didn't" to appear as "didn'''" in releases)
+   const payload = JSON.stringify({
+     tag_name: tag,
+-    name: `JS v${version}`,
++    name: `[JavaScript] v${version}`,
+     body: releaseNotes,
+   });
+ 
+diff --git a/scripts/fix-existing-release-badges.mjs b/scripts/fix-existing-release-badges.mjs
+new file mode 100644
+index 0000000..9edfcf7
+--- /dev/null
++++ b/scripts/fix-existing-release-badges.mjs
+@@ -0,0 +1,139 @@
++#!/usr/bin/env node
++
++/**
++ * One-shot repair for already-published GitHub releases whose bodies contain a
++ * broken shields.io version-specific badge (see issue #98).
++ *
++ * The badge URL template is /badge/<label>-<message>-<color>, so a raw tag
++ * like "js-v1.7.12" or "rust-v0.3.4" broke the URL boundaries and rendered
++ * as "404: badge not found" on github.com/.../releases/tag/js-v1.7.12.
++ *
++ * This script walks every release in the repository, rewrites any badge URL
++ * of the form
++ *
++ *   https://img.shields.io/badge/npm-<tag-with-dashes>-blue.svg
++ *   https://img.shields.io/badge/crates.io-<tag-with-dashes>-orange.svg
++ *
++ * and the matching package link in the markdown link target, replacing
++ * <tag-with-dashes> with the bare numeric version. It also updates the
++ * release title to the [JavaScript] / [Rust] prefix format so the release
++ * name unambiguously identifies the language.
++ *
++ * Usage:
++ *   GH_TOKEN=... node scripts/fix-existing-release-badges.mjs \
++ *     --repository link-assistant/web-capture [--dry-run]
++ */
++
++// Load use-m dynamically
++const { use } = eval(
++  await (await fetch('https://unpkg.com/use-m/use.js')).text()
++);
++
++const { $ } = await use('command-stream');
++const { makeConfig } = await use('lino-arguments');
++
++const config = makeConfig({
++  yargs: ({ yargs, getenv }) =>
++    yargs
++      .option('repository', {
++        type: 'string',
++        default: getenv('REPOSITORY', ''),
++        describe: 'GitHub repository (owner/repo)',
++      })
++      .option('dry-run', {
++        type: 'boolean',
++        default: false,
++        describe: 'Preview changes without calling the GitHub API',
++      }),
++});
++
++const { repository, dryRun } = config;
++
++if (!repository) {
++  console.error('Error: --repository is required');
++  process.exit(1);
++}
++
++function normalizeVersion(raw) {
++  return String(raw)
++    .replace(/^[a-z]+-/i, '')
++    .replace(/^v/i, '');
++}
++
++function rewriteBody(body, tag) {
++  const version = normalizeVersion(tag);
++  const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
++  let out = body;
++
++  // Fix the shields.io badge URL: /badge/npm-<tag>-blue.svg -> /badge/npm-<version>-blue.svg
++  out = out.replace(
++    new RegExp(`img\\.shields\\.io/badge/npm-${escapedTag}-blue\\.svg`, 'g'),
++    `img.shields.io/badge/npm-${version}-blue.svg`
++  );
++
++  // Fix the shields.io badge URL: /badge/crates.io-<tag>-orange.svg -> .../crates.io-<version>-orange.svg
++  out = out.replace(
++    new RegExp(
++      `img\\.shields\\.io/badge/crates\\.io-${escapedTag}-orange\\.svg`,
++      'g'
++    ),
++    `img.shields.io/badge/crates.io-${version}-orange.svg`
++  );
++
++  // Fix the npm package link target: /package/<name>/v/<tag> -> /v/<version>
++  out = out.replace(
++    new RegExp(`(npmjs\\.com/package/[^)]*?/v/)${escapedTag}`, 'g'),
++    `$1${version}`
++  );
++
++  return out;
++}
++
++function rewriteName(name, tag) {
++  const version = normalizeVersion(tag);
++  if (tag.startsWith('js-v') || /^JS v/i.test(name)) {
++    return `[JavaScript] v${version}`;
++  }
++  if (tag.startsWith('rust-v') || /^Rust v/i.test(name)) {
++    return `[Rust] v${version}`;
++  }
++  return name;
++}
++
++const listResult =
++  await $`gh api "repos/${repository}/releases?per_page=100"`.run({
++    capture: true,
++    mirror: false,
++  });
++const releases = JSON.parse(listResult.stdout);
++
++let touched = 0;
++for (const release of releases) {
++  const { id, tag_name: tag, name = '', body = '' } = release;
++  const newBody = rewriteBody(body, tag);
++  const newName = rewriteName(name, tag);
++
++  if (newBody === body && newName === name) {
++    continue;
++  }
++
++  touched += 1;
++  console.log(
++    `- ${tag}: name "${name}" -> "${newName}"${newBody !== body ? ', body patched' : ''}`
++  );
++
++  if (dryRun) {
++    continue;
++  }
++
++  const payload = JSON.stringify({ name: newName, body: newBody });
++  await $`gh api repos/${repository}/releases/${id} -X PATCH --input -`.run({
++    stdin: payload,
++  });
++}
++
++console.log(
++  dryRun
++    ? `Dry run: ${touched} release(s) would be updated.`
++    : `Updated ${touched} release(s).`
++);
+diff --git a/scripts/format-release-notes.mjs b/scripts/format-release-notes.mjs
+index 1b1e414..45c1bbd 100644
+--- a/scripts/format-release-notes.mjs
++++ b/scripts/format-release-notes.mjs
+@@ -187,8 +187,14 @@ try {
+     console.log('ℹ️ No commit SHA available - not adding PR link');
+   }
+ 
+-  // Build formatted release notes
+-  const versionWithoutV = version.replace(/^v/, '');
++  // Build formatted release notes.
++  //
++  // Strip any language prefix like "js-" or "rust-" and a leading "v" so the
++  // numeric version reaches shields.io cleanly. shields.io's /badge/ path uses
++  // "-" as the label/message/color separator, so a raw tag like "js-v1.7.12"
++  // would be parsed as label="npm-js", message="v1.7.12-blue" and render as
++  // "404: badge not found" (see issue #98).
++  const versionWithoutV = version.replace(/^[a-z]+-/i, '').replace(/^v/i, '');
+   const npmBadge = `[![npm version](https://img.shields.io/badge/npm-${versionWithoutV}-blue.svg)](https://www.npmjs.com/package/${PACKAGE_NAME}/v/${versionWithoutV})`;
+ 
+   let formattedBody = `${cleanDescription}`;
+diff --git a/scripts/rust-create-github-release.mjs b/scripts/rust-create-github-release.mjs
+index 9d5d8dd..2c2695a 100644
+--- a/scripts/rust-create-github-release.mjs
++++ b/scripts/rust-create-github-release.mjs
+@@ -101,7 +101,7 @@ try {
+   // This avoids shell escaping issues
+   const payload = {
+     tag_name: tag,
+-    name: `Rust v${version}`,
++    name: `[Rust] v${version}`,
+     body: releaseNotes,
+   };
+ 

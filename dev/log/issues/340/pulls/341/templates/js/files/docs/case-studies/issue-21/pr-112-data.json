@@ -1,0 +1,109 @@
+{
+  "additions": 1300,
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "body": "## Summary\n\nFix the JS release workflow failure by adding `--legacy-peer-deps` flag to npm install commands in release scripts.\n\n### Root Cause\nThe release scripts (`changeset-version.mjs` and `instant-version-bump.mjs`) were running `npm install --package-lock-only` without the `--legacy-peer-deps` flag, causing npm ERESOLVE errors due to peer dependency conflicts between solid-js versions.\n\n### Changes\n- Add `--legacy-peer-deps` flag to `scripts/changeset-version.mjs`\n- Add `--legacy-peer-deps` flag to `scripts/instant-version-bump.mjs`\n- Add case study documentation with root cause analysis in `docs/case-studies/issue-111/`\n\n### Test Plan\n- [x] Local lint and format checks pass\n- [ ] CI workflow passes on this PR\n- [ ] Release workflow should no longer fail with npm ERESOLVE errors\n\n## Issue Reference\nFixes #111\n\n---\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+  "commits": [
+    {
+      "authoredDate": "2026-01-10T22:24:49Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2026-01-10T22:24:49Z",
+      "messageBody": "Adding CLAUDE.md with task information for AI processing.\nThis file will be removed when the task is complete.\n\nIssue: https://github.com/link-assistant/agent/issues/111",
+      "messageHeadline": "Initial commit with task details",
+      "oid": "deef8f99e96be1869c1dede68be1f72924aae011"
+    },
+    {
+      "authoredDate": "2026-01-10T22:28:07Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Opus 4.5"
+        }
+      ],
+      "committedDate": "2026-01-10T22:28:07Z",
+      "messageBody": "…cripts\n\nThe JS release workflow was failing because the release scripts\n(changeset-version.mjs and instant-version-bump.mjs) were running\n`npm install --package-lock-only` without the --legacy-peer-deps flag.\n\nThis caused npm ERESOLVE errors due to peer dependency conflicts\nbetween solid-js versions required by @opentui/solid and other packages.\n\nChanges:\n- Add --legacy-peer-deps to changeset-version.mjs\n- Add --legacy-peer-deps to instant-version-bump.mjs\n- Add case study documentation for issue #111\n\nFixes #111\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+      "messageHeadline": "fix: Add --legacy-peer-deps flag to npm install commands in release s…",
+      "oid": "73d08af5e222b998607a8aa2b7268f5aeb04c967"
+    },
+    {
+      "authoredDate": "2026-01-10T22:28:36Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Opus 4.5"
+        }
+      ],
+      "committedDate": "2026-01-10T22:28:47Z",
+      "messageBody": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+      "messageHeadline": "docs: Add CI run log to case study for issue #111",
+      "oid": "a16a508bd1a998aafc43420e8fb864235bd0fd25"
+    },
+    {
+      "authoredDate": "2026-01-10T22:31:47Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2026-01-10T22:31:47Z",
+      "messageBody": "This reverts commit deef8f99e96be1869c1dede68be1f72924aae011.",
+      "messageHeadline": "Revert \"Initial commit with task details\"",
+      "oid": "86b8babac5552395d2c447dcaa311f9e10acf699"
+    }
+  ],
+  "createdAt": "2026-01-10T22:24:56Z",
+  "deletions": 2,
+  "files": [
+    {
+      "path": "docs/case-studies/issue-111/README.md",
+      "additions": 110,
+      "deletions": 0
+    },
+    {
+      "path": "docs/case-studies/issue-111/ci-run-20803315337.txt",
+      "additions": 1188,
+      "deletions": 0
+    },
+    { "path": "scripts/changeset-version.mjs", "additions": 1, "deletions": 1 },
+    {
+      "path": "scripts/instant-version-bump.mjs",
+      "additions": 1,
+      "deletions": 1
+    }
+  ],
+  "mergedAt": "2026-01-10T22:38:48Z",
+  "number": 112,
+  "state": "MERGED",
+  "title": "fix: Add --legacy-peer-deps flag to release scripts",
+  "url": "https://github.com/link-assistant/agent/pull/112"
+}

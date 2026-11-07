@@ -1,0 +1,66 @@
+name: Publish Docker Hub Image
+description: Build and push one platform-specific Docker image by digest.
+
+outputs:
+  digest:
+    description: Digest of the pushed platform-specific image.
+    value: ${{ steps.build.outputs.digest }}
+
+inputs:
+  context:
+    description: Docker build context path.
+    required: false
+    default: .
+  file:
+    description: Dockerfile path.
+    required: false
+    default: ./Dockerfile
+  image:
+    description: Docker Hub image name, for example namespace/image.
+    required: true
+  platform:
+    description: Target platform, for example linux/amd64.
+    required: true
+  token:
+    description: Docker Hub access token.
+    required: true
+  username:
+    description: Docker Hub username.
+    required: true
+  version:
+    description: Published npm package version used for the Docker tag.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Docker Buildx (resilient)
+      uses: ./.github/actions/setup-buildx-resilient
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v4
+      with:
+        username: ${{ inputs.username }}
+        password: ${{ inputs.token }}
+
+    - name: Extract Docker metadata
+      id: metadata
+      uses: docker/metadata-action@v6
+      with:
+        images: ${{ inputs.image }}
+        labels: |
+          org.opencontainers.image.version=${{ inputs.version }}
+
+    - name: Publish Docker image by digest
+      id: build
+      uses: docker/build-push-action@v7
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.file }}
+        platforms: ${{ inputs.platform }}
+        labels: ${{ steps.metadata.outputs.labels }}
+        build-args: |
+          NPM_PACKAGE_VERSION=${{ inputs.version }}
+        cache-from: type=gha,scope=docker-${{ inputs.platform }}
+        cache-to: type=gha,mode=max,scope=docker-${{ inputs.platform }}
+        outputs: type=image,name=${{ inputs.image }},push-by-digest=true,name-canonical=true,push=true

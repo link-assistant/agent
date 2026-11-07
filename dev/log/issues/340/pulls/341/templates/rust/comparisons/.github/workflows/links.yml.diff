@@ -1,0 +1,200 @@
+--- template/.github/workflows/links.yml
++++ .github/workflows/links.yml
+@@ -5,28 +5,24 @@
+     branches:
+       - main
+     paths:
++      - 'scripts/check-pipeline-status.sh'
++      - 'scripts/job-cancel-policy.mjs'
+       - '**.md'
+       - '**.html'
+       - '.github/workflows/links.yml'
+       - '.lycheeignore'
+-      - 'lychee.toml'
+       - 'scripts/check-web-archive.mjs'
+-      - 'scripts/check-web-archive.test.mjs'
+-      - 'scripts/recheck-broken-links.mjs'
+-      - 'scripts/recheck-broken-links.test.mjs'
+       - 'scripts/fixtures/lychee-report.md'
+   pull_request:
+     types: [opened, synchronize, reopened]
+     paths:
++      - 'scripts/check-pipeline-status.sh'
++      - 'scripts/job-cancel-policy.mjs'
+       - '**.md'
+       - '**.html'
+       - '.github/workflows/links.yml'
+       - '.lycheeignore'
+-      - 'lychee.toml'
+       - 'scripts/check-web-archive.mjs'
+-      - 'scripts/check-web-archive.test.mjs'
+-      - 'scripts/recheck-broken-links.mjs'
+-      - 'scripts/recheck-broken-links.test.mjs'
+       - 'scripts/fixtures/lychee-report.md'
+   workflow_dispatch:
+ 
+@@ -54,31 +50,27 @@
+     permissions:
+       contents: read
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+           persist-credentials: false
+ 
+-      - name: Test Web Archive report parser
+-        run: node --test scripts/check-web-archive.test.mjs
+-
+-      - name: Test link re-check
+-        run: node --test scripts/recheck-broken-links.test.mjs
+-
+-      - name: Restore lychee cache
+-        uses: actions/cache@v6
+-        with:
+-          path: .lycheecache
+-          key: lychee-${{ runner.os }}-${{ github.run_id }}
+-          restore-keys: lychee-${{ runner.os }}-
++      - name: Initialize link diagnostics
++        run: mkdir -p lychee && echo 'Link checker did not complete; inspect the job log.' > lychee/out.md
+ 
+       - name: Check links with lychee
+         id: lychee
+         uses: lycheeverse/lychee-action@v2
+         with:
+-          # Check all Markdown and HTML files
+-          # Exclude case-studies directory - these are research documents from
+-          # external repos with references to files and issues that don't exist
+-          # in this repository (similar exclusion pattern as eslint.config.js)
++          # Check all Markdown and HTML files. A directory input with
++          # --extensions walks the tree honouring .gitignore and, unlike a
++          # './**/*.html' glob, does not log "No files found" while the
++          # repository has no HTML files (#337).
++          # Exclusions:
++          # - docs/case-studies: research documents quoting external repos,
++          #   whose issue numbers and file paths do not exist here.
++          # - scripts/fixtures: captured lychee reports containing deliberately
++          #   broken links used as parser test input.
++          # - dev/log: raw CI evidence collected for an issue investigation.
+           args: >-
+             --verbose
+             --no-progress
+@@ -88,8 +80,11 @@
+             --timeout 30
+             --exclude-path docs/case-studies
+             --exclude-path scripts/fixtures
+-            './**/*.md'
+-            './**/*.html'
++            --exclude-path node_modules
++            --exclude-path js/node_modules
++            --exclude-path dev
++            --extensions md,html
++            .
+           # Don't fail the workflow immediately - we want to check web archive first
+           fail: false
+           # Output file for broken links report (used by check-web-archive.mjs)
+@@ -99,47 +94,15 @@
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+ 
+-      - name: Re-check unanswered and transient links
+-        # --max-retries never retries a failure during the connect phase
+-        # (lycheeverse/lychee#2297), so a healthy URL behind a connection
+-        # reset is reported broken without one retry. Ask those URLs again
+-        # outside lychee. Rejected 5xx responses are also never retried by
+-        # lychee; retry them and 429 here while keeping 404 final.
++      - name: Check broken links against Web Archive
+         if: steps.lychee.outputs.exit_code != 0
+-        id: recheck
+-        run: node scripts/recheck-broken-links.mjs
+-        env:
+-          LYCHEE_EXIT_CODE: ${{ steps.lychee.outputs.exit_code }}
+-          LYCHEE_OUTPUT: lychee/out.md
+-          RECOVERED_OUTPUT: lychee/recovered.txt
+-
+-      - name: Check broken links against Web Archive
+-        # `!= 'true'`, never `== 'false'`: a skipped re-check leaves the
+-        # output empty, and only the != form fails safe.
+-        if: >-
+-          steps.lychee.outputs.exit_code != 0 &&
+-          steps.recheck.outputs.all_recovered != 'true'
+         id: webarchive
+         run: node scripts/check-web-archive.mjs
+         env:
+-          LYCHEE_EXIT_CODE: ${{ steps.lychee.outputs.exit_code }}
+           LYCHEE_OUTPUT: lychee/out.md
+-          RECOVERED_URLS: lychee/recovered.txt
+-
+-      - name: Upload broken link report
+-        if: ${{ !cancelled() && steps.lychee.outputs.exit_code != 0 }}
+-        uses: actions/upload-artifact@v7
+-        with:
+-          name: broken-links
+-          path: lychee/
+-          retention-days: 7
+-          if-no-files-found: error
+ 
+       - name: Fail if broken links were found
+-        if: >-
+-          always() &&
+-          steps.lychee.outputs.exit_code != 0 &&
+-          steps.recheck.outputs.all_recovered != 'true'
++        if: always() && steps.lychee.outputs.exit_code != 0
+         run: |
+           echo "::error::Broken live links were detected."
+           echo ""
+@@ -157,35 +120,38 @@
+           echo "     b. Remove the link if the content is no longer relevant."
+           echo "     c. Add the URL to .lycheeignore if it is a known false positive."
+           echo ""
+-          echo "Report location: lychee/out.md (available as the broken-links workflow artifact)."
++          echo "Report location: lychee/out.md (available as a workflow artifact if configured)."
+           exit 1
+ 
+-  # Terminal status gate (issue #156): GitHub reports jobs killed by
+-  # timeout-minutes as cancelled. Observe every other job so a timeout on main
+-  # becomes a visible failure instead of a grey run, while a run that was
+-  # superseded by a newer commit is recognised as expected churn.
++      - name: Preserve link diagnostics
++        if: always()
++        uses: actions/upload-artifact@v7
++        with:
++          name: link-checker
++          path: lychee/out.md
++          if-no-files-found: error
++
++  # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
++  # the run grey instead of red. This gate fails the run on any unsuccessful
++  # job and on any cancellation a newer run does not explain (#301, #337).
+   pipeline-status:
+     name: Pipeline Status
++    runs-on: ubuntu-24.04
++    timeout-minutes: 5
++    concurrency:
++      group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
++      cancel-in-progress: true
++    if: always()
+     needs:
+       - link-checker
+-    if: ${{ !cancelled() }}
+-    runs-on: ubuntu-24.04
+-    timeout-minutes: 5
+-    # Read this run's jobs and annotations to name runner-acquisition failures (issue #226).
+-    permissions:
+-      contents: read
+-      actions: read
+-      checks: read
+     steps:
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v6
+         with:
+           persist-credentials: false
+ 
+-      - name: Check aggregate pipeline status
++      - name: Fail the run when a required job was cancelled or failed
+         env:
+           NEEDS_JSON: ${{ toJSON(needs) }}
+-          GH_TOKEN: ${{ github.token }}
+-          IS_MAIN: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+           RUN_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+           HEAD_REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+         run: bash scripts/check-pipeline-status.sh

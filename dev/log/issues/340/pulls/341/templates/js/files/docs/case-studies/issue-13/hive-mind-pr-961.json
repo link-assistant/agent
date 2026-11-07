@@ -1,0 +1,126 @@
+{
+  "additions": 644,
+  "author": {
+    "id": "MDQ6VXNlcjE0MzE5MDQ=",
+    "is_bot": false,
+    "login": "konard",
+    "name": "Konstantin Diachenko"
+  },
+  "baseRefName": "main",
+  "body": "## Summary\n\nThis PR makes the changeset CI/CD system more robust by addressing the issue where PRs fail validation when multiple PRs merge before a release cycle completes.\n\n### Changes Made\n\n- **Update validate-changeset.mjs to check only PR-added changesets**\n  - Uses git diff to compare base vs head SHA\n  - Only validates changesets ADDED by the current PR (not pre-existing ones from merged PRs)\n  - Falls back to checking all changesets for local development\n\n- **Add merge-changesets.mjs script**\n  - Combines multiple pending changesets into a single merged changeset during release\n  - Uses the highest version bump type (major > minor > patch)\n  - Preserves all descriptions in chronological order (by file modification time)\n  - Cleans up individual changeset files after merging\n\n- **Update release workflow**\n  - Adds step to merge multiple changesets before running `changeset version`\n  - Passes proper environment variables (GITHUB_BASE_SHA, GITHUB_HEAD_SHA) to validation script\n\n- **Add comprehensive tests**\n  - Tests for both validate-changeset.mjs and merge-changesets.mjs\n  - Tests for bump type priority, chronological ordering, edge cases\n\n### How It Works\n\n**During PR validation:**\n```\nBefore: Check all .changeset/*.md files → Fail if >1 exists\nAfter:  Check only files ADDED in this PR → Fail if >1 was added\n```\n\n**During release:**\n```\nBefore: changeset version → (fail if multiple changesets)\nAfter:  merge-changesets.mjs → changeset version → (always single changeset)\n```\n\n### Benefits\n\n1. **No more false failures** - PRs won't fail just because other PRs merged first\n2. **Preserved sequence** - Changesets are merged chronologically\n3. **Correct version bumps** - Major changes won't be downgraded to patch\n4. **Backward compatible** - Local development still works without git context\n\n### Testing\n\nAll tests pass locally:\n- `node experiments/test-changeset-scripts.mjs` - 10/10 tests pass\n- `npm run format:check` - passes\n- `npm run lint` - passes\n\n## Fixes\n\nFixes #960\n\n---\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+  "commits": [
+    {
+      "authoredDate": "2025-12-22T06:32:45Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        }
+      ],
+      "committedDate": "2025-12-22T06:32:45Z",
+      "messageBody": "Adding CLAUDE.md with task information for AI processing.\nThis file will be removed when the task is complete.\n\nIssue: https://github.com/link-assistant/hive-mind/issues/960",
+      "messageHeadline": "Initial commit with task details",
+      "oid": "a352ed4055d96cbc47e3bad062674c37104f2705"
+    },
+    {
+      "authoredDate": "2025-12-22T06:39:54Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude"
+        }
+      ],
+      "committedDate": "2025-12-22T06:39:54Z",
+      "messageBody": "- Update validate-changeset.mjs to check only changesets ADDED by the PR\n  (uses git diff to compare base vs head, not all files in .changeset/)\n- Add merge-changesets.mjs to combine multiple pending changesets during release\n  (uses highest bump type, preserves descriptions chronologically)\n- Update release workflow to merge multiple changesets before version bump\n- Add comprehensive tests for both changeset scripts\n\nThis fixes the issue where PRs fail validation when multiple PRs merge\nbefore a release cycle completes (each PR sees the other's changesets).\n\nFixes #960\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+      "messageHeadline": "Improve changeset CI/CD robustness for concurrent PRs",
+      "oid": "8934ed62e8436b80ab0d620e24731d1d447fbe06"
+    },
+    {
+      "authoredDate": "2025-12-22T06:41:49Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude"
+        }
+      ],
+      "committedDate": "2025-12-22T06:41:49Z",
+      "messageBody": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+      "messageHeadline": "Remove CLAUDE.md task file (not needed in PR)",
+      "oid": "70607f2aa60aca2c1ee985f6327dacc5dbc4e9bf"
+    },
+    {
+      "authoredDate": "2025-12-22T07:22:07Z",
+      "authors": [
+        {
+          "email": "drakonard@gmail.com",
+          "id": "MDQ6VXNlcjE0MzE5MDQ=",
+          "login": "konard",
+          "name": "konard"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude"
+        }
+      ],
+      "committedDate": "2025-12-22T07:22:07Z",
+      "messageBody": "The test script is not part of regular CI/CD runs, it's meant\nfor one-time verification during development. Per feedback,\nmoving it to experiments folder to better reflect its purpose.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+      "messageHeadline": "Move test-changeset-scripts.mjs to experiments folder",
+      "oid": "4b415eca0a66154fea175a8f68121fea5ed509ca"
+    }
+  ],
+  "createdAt": "2025-12-22T06:32:52Z",
+  "deletions": 53,
+  "files": [
+    {
+      "path": ".changeset/robust-changeset-cicd.md",
+      "additions": 11,
+      "deletions": 0
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "additions": 14,
+      "deletions": 0
+    },
+    {
+      "path": "experiments/test-changeset-scripts.mjs",
+      "additions": 257,
+      "deletions": 0
+    },
+    {
+      "path": "scripts/merge-changesets.mjs",
+      "additions": 184,
+      "deletions": 0
+    },
+    {
+      "path": "scripts/validate-changeset.mjs",
+      "additions": 178,
+      "deletions": 53
+    }
+  ],
+  "headRefName": "issue-960-4b0fdff43593",
+  "labels": [],
+  "mergedAt": "2025-12-22T19:22:16Z",
+  "number": 961,
+  "state": "MERGED",
+  "title": "Improve changeset CI/CD robustness for concurrent PRs"
+}

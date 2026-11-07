@@ -1,0 +1,407 @@
+Default model availability	Set up job	﻿2026-11-07T00:46:14.0910332Z Current runner version: '2.338.2'
+Default model availability	Set up job	2026-11-07T00:46:14.0937821Z ##[group]Runner Image Provisioner
+Default model availability	Set up job	2026-11-07T00:46:14.0939015Z Hosted Compute Agent
+Default model availability	Set up job	2026-11-07T00:46:14.0939719Z Version: 20261028.624
+Default model availability	Set up job	2026-11-07T00:46:14.0940492Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Default model availability	Set up job	2026-11-07T00:46:14.0941266Z Build Date: 2026-10-28T21:51:42Z
+Default model availability	Set up job	2026-11-07T00:46:14.0942144Z Worker ID: {f34666f6-8171-4d8f-92fd-37e064f22637}
+Default model availability	Set up job	2026-11-07T00:46:14.0942969Z Region: westcentralus
+Default model availability	Set up job	2026-11-07T00:46:14.0943993Z Cloud: Azure
+Default model availability	Set up job	2026-11-07T00:46:14.0944611Z ##[endgroup]
+Default model availability	Set up job	2026-11-07T00:46:14.0946865Z ##[group]Operating System
+Default model availability	Set up job	2026-11-07T00:46:14.0947616Z Ubuntu
+Default model availability	Set up job	2026-11-07T00:46:14.0948243Z 24.04.5
+Default model availability	Set up job	2026-11-07T00:46:14.0948855Z LTS
+Default model availability	Set up job	2026-11-07T00:46:14.0949375Z ##[endgroup]
+Default model availability	Set up job	2026-11-07T00:46:14.0950026Z ##[group]Runner Image
+Default model availability	Set up job	2026-11-07T00:46:14.0950654Z Image: ubuntu-24.04
+Default model availability	Set up job	2026-11-07T00:46:14.0951305Z Version: 20261101.360.1
+Default model availability	Set up job	2026-11-07T00:46:14.0952467Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Default model availability	Set up job	2026-11-07T00:46:14.0954966Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Default model availability	Set up job	2026-11-07T00:46:14.0956025Z ##[endgroup]
+Default model availability	Set up job	2026-11-07T00:46:14.0957326Z ##[group]GITHUB_TOKEN Permissions
+Default model availability	Set up job	2026-11-07T00:46:14.0959624Z Contents: read
+Default model availability	Set up job	2026-11-07T00:46:14.0960359Z Metadata: read
+Default model availability	Set up job	2026-11-07T00:46:14.0960980Z ##[endgroup]
+Default model availability	Set up job	2026-11-07T00:46:14.0963162Z Secret source: Actions
+Default model availability	Set up job	2026-11-07T00:46:14.0964738Z Cache mode: write
+Default model availability	Set up job	2026-11-07T00:46:14.0965734Z Prepare workflow directory
+Default model availability	Set up job	2026-11-07T00:46:14.1408880Z Prepare all required actions
+Default model availability	Set up job	2026-11-07T00:46:14.1459122Z Getting action download info
+Default model availability	Set up job	2026-11-07T00:46:14.4593144Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Default model availability	Set up job	2026-11-07T00:46:14.6579002Z Download action repository 'oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6' (SHA:0c5077e51419868618aeaa5fe8019c62421857d6)
+Default model availability	Set up job	2026-11-07T00:46:15.2281768Z Complete job name: Default model availability
+Default model availability	Run actions/checkout@v6	﻿2026-11-07T00:46:15.3167163Z ##[group]Run actions/checkout@v6
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3168113Z with:
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3168597Z   persist-credentials: false
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3169162Z   repository: link-assistant/agent
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3172808Z   token: ***
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3173268Z   ssh-strict: true
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3174094Z   ssh-user: git
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3174555Z   clean: true
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3175021Z   sparse-checkout-cone-mode: true
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3175578Z   fetch-depth: 1
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3176036Z   fetch-tags: false
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3176492Z   show-progress: true
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3176961Z   lfs: false
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3177385Z   submodules: false
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3177857Z   set-safe-directory: true
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3178388Z   allow-unsafe-pr-checkout: false
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3179209Z env:
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3179649Z   GIT_CONFIG_COUNT: 1
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3180149Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3180708Z   GIT_CONFIG_VALUE_0: main
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.3181267Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9287508Z Syncing repository: link-assistant/agent
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9289626Z ##[group]Getting Git version info
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9290444Z Working directory is '/home/runner/work/agent/agent'
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9407615Z [command]/usr/bin/git version
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9539454Z git version 2.56.0
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9564439Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9580384Z Temporarily overriding HOME='/home/runner/work/_temp/89d4d285-3e0f-4baa-b4d9-b6c7391b83a4' before making global git config changes
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9583821Z Adding repository directory to the temporary git global config as a safe directory
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9586882Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9877376Z Deleting the contents of '/home/runner/work/agent/agent'
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9883124Z ##[group]Determining repository object format
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9885660Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9887935Z ##[group]Initializing the repository
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:15.9890995Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0021497Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0036883Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0100470Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0102137Z ##[group]Disabling automatic garbage collection
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0104099Z [command]/usr/bin/git config --local gc.auto 0
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0152738Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0154646Z ##[group]Setting up auth
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0155717Z Removing SSH command configuration
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0181222Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.0417192Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.1229168Z Removing HTTP extra header
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.1238107Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.1308722Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.1617280Z Removing includeIf entries pointing to credentials config files
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.1619798Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.1668899Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.1951514Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.2014934Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.2059049Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.2104850Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.2177226Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.2207694Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.2209862Z ##[group]Fetching the repository
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:16.2217746Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b6ce167479841877dbd7ca937dc84a14dc5dc7d3:refs/remotes/pull/341/merge
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.6962812Z From https://github.com/link-assistant/agent
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.6965381Z  * [new ref]         b6ce167479841877dbd7ca937dc84a14dc5dc7d3 -> pull/341/merge
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.6968688Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.6969562Z ##[group]Determining the checkout info
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.6970571Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.6976628Z [command]/usr/bin/git sparse-checkout disable
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.7040392Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.7080134Z ##[group]Checking out the ref
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:18.7084358Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2032503Z Note: switching to 'refs/remotes/pull/341/merge'.
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2033942Z 
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2034800Z You are in 'detached HEAD' state. You can look around, make experimental
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2036563Z changes and commit them, and you can discard any commits you make in this
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2038073Z state without impacting any branches by switching back to a branch.
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2038714Z 
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2039353Z If you want to create a new branch to retain commits you create, you may
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2040296Z do so (now or later) by using -c with the switch command. Example:
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2040988Z 
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2041498Z   git switch -c <new-branch-name>
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2041898Z 
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2042137Z Or undo this operation with:
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2042476Z 
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2042670Z   git switch -
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2043129Z 
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2046236Z Turn off this advice by setting config variable advice.detachedHead to false
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2047352Z 
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2048153Z HEAD is now at b6ce167 Merge 7c81a90c62e3bda426c5e48980d0b7622e288556 into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2093696Z ##[endgroup]
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2154642Z [command]/usr/bin/git log -1 --format=%H
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2192227Z b6ce167479841877dbd7ca937dc84a14dc5dc7d3
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2204775Z ##[group]Removing auth
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2205371Z Removing SSH command configuration
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2208320Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2251906Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2521254Z Removing HTTP extra header
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2526952Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2574604Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2844236Z Removing includeIf entries pointing to credentials config files
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2846788Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2886145Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2887573Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2888739Z includeif.gitdir:/github/workspace/.git.path
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2889922Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2898272Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2937201Z /home/runner/work/_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.2955561Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3015602Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3062613Z /home/runner/work/_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3077716Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3136056Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3179059Z /github/runner_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3205594Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3244965Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3282473Z /github/runner_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3290908Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3337775Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3610339Z Removing credentials config '/home/runner/work/_temp/git-credentials-246b6e9b-b49e-45ed-8377-4dd84bbc9130.config'
+Default model availability	Run actions/checkout@v6	2026-11-07T00:46:19.3615235Z ##[endgroup]
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	﻿2026-11-07T00:46:19.4029277Z ##[group]Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4029952Z with:
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4030275Z   bun-version: latest
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4030626Z   no-cache: false
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4034401Z   token: ***
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4034631Z env:
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4034837Z   GIT_CONFIG_COUNT: 1
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4035102Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4035380Z   GIT_CONFIG_VALUE_0: main
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:19.4035604Z ##[endgroup]
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:20.0689596Z Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:20.5734796Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/5aafeeeb-750c-4c5d-8116-36f73609a248.zip
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:21.4373931Z [command]/home/runner/.bun/bin/bun --revision
+Default model availability	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:46:21.4445803Z 1.4.4+38afee6c8
+Default model availability	Test catalogue validation and Rust parity	﻿2026-11-07T00:46:21.4645459Z ##[group]Run bun test ./js/tests/default-model-catalogue.ts
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4646030Z ^[[36;1mbun test ./js/tests/default-model-catalogue.ts^[[0m
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4671888Z shell: /usr/bin/bash -e {0}
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4672153Z env:
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4672349Z   GIT_CONFIG_COUNT: 1
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4672591Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4672871Z   GIT_CONFIG_VALUE_0: main
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4673099Z ##[endgroup]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4786818Z bun test v1.4.4 (38afee6c8)
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4795967Z 
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4797574Z ##[group]js/tests/default-model-catalogue.ts:
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4855898Z (pass) shipped model catalogue (#328) > no-argument runs select a currently served model [0.09ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4874821Z (pass) shipped model catalogue (#328) > every shipped compaction entry is currently supported [0.45ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4887149Z (pass) shipped model catalogue (#328) > Rust ships the same default, single compaction model and cascade [0.37ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4888339Z (pass) shipped model catalogue (#328) > same resolves to the default and duplicate entries are checked once [0.05ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4889628Z (pass) shipped model catalogue (#328) > missing metadata does not count as a non-deprecated model [0.04ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4890738Z (pass) shipped model catalogue (#328) > either live availability or non-deprecated metadata is sufficient [0.05ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4891902Z (pass) shipped model catalogue (#328) > deprecated and withdrawn models fail with their exact ids [0.80ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4892940Z (pass) shipped model catalogue (#328) > Zen ids cannot validate a model from another provider [0.03ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4894357Z (pass) shipped model catalogue (#328) > a failed endpoint can use the other catalogue [0.28ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4895547Z (pass) shipped model catalogue (#328) > invalid responses cannot silently pass the check [0.19ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4896534Z (pass) shipped model catalogue (#328) > both catalogue URLs are fetched [0.19ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4897577Z (pass) Kilo defaults after merging #329 > resolves shipped aliases against exact live gateway IDs [0.33ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4898776Z (pass) Kilo defaults after merging #329 > reports the shipped alias when its exact gateway ID is withdrawn [0.03ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4900021Z (pass) Kilo defaults after merging #329 > accepts an explicit gateway ID as well as a built-in alias [0.02ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4901322Z (pass) Kilo defaults after merging #329 > an invalid Kilo catalog cannot pass via Zen IDs [0.27ms]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4901708Z 
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4902060Z ##[endgroup]
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4902175Z 
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4902257Z  15 pass
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4902460Z  0 fail
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4902650Z  21 expect() calls
+Default model availability	Test catalogue validation and Rust parity	2026-11-07T00:46:21.4902871Z Ran 15 tests across 1 file. [13.00ms]
+Default model availability	Validate shipped models against live catalogues	﻿2026-11-07T00:46:21.4967069Z ##[group]Run bun scripts/check-default-models.mjs
+Default model availability	Validate shipped models against live catalogues	2026-11-07T00:46:21.4967685Z ^[[36;1mbun scripts/check-default-models.mjs^[[0m
+Default model availability	Validate shipped models against live catalogues	2026-11-07T00:46:21.4994609Z shell: /usr/bin/bash -e {0}
+Default model availability	Validate shipped models against live catalogues	2026-11-07T00:46:21.4994991Z env:
+Default model availability	Validate shipped models against live catalogues	2026-11-07T00:46:21.4995280Z   GIT_CONFIG_COUNT: 1
+Default model availability	Validate shipped models against live catalogues	2026-11-07T00:46:21.4995639Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Default model availability	Validate shipped models against live catalogues	2026-11-07T00:46:21.4996068Z   GIT_CONFIG_VALUE_0: main
+Default model availability	Validate shipped models against live catalogues	2026-11-07T00:46:21.4996425Z ##[endgroup]
+Default model availability	Validate shipped models against live catalogues	2026-11-07T00:46:21.8632848Z Default model catalogue check passed: kilo/nemotron-3-ultra-free, kilo/nemotron-3.5-lightning-free
+Default model availability	Post Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	﻿2026-11-07T00:46:21.8867446Z Post job cleanup.
+Default model availability	Post Run actions/checkout@v6	﻿2026-11-07T00:46:22.0834393Z Post job cleanup.
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.1874101Z [command]/usr/bin/git version
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.1920581Z git version 2.56.0
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.1968167Z Temporarily overriding HOME='/home/runner/work/_temp/5e2d6e1c-1f5c-47d0-9ae7-be1222817d40' before making global git config changes
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.1976267Z Adding repository directory to the temporary git global config as a safe directory
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.1984877Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2024587Z Removing SSH command configuration
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2033383Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2080021Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2419036Z Removing HTTP extra header
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2426999Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2467092Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2780380Z Removing includeIf entries pointing to credentials config files
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2781625Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Default model availability	Post Run actions/checkout@v6	2026-11-07T00:46:22.2865417Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Default model availability	Complete job	﻿2026-11-07T00:46:22.3358447Z Cleaning up orphan processes
+Pipeline Status	Set up job	﻿2026-11-07T00:46:31.5657197Z Current runner version: '2.338.2'
+Pipeline Status	Set up job	2026-11-07T00:46:31.5677071Z ##[group]Runner Image Provisioner
+Pipeline Status	Set up job	2026-11-07T00:46:31.5677706Z Hosted Compute Agent
+Pipeline Status	Set up job	2026-11-07T00:46:31.5678198Z Version: 20261028.624
+Pipeline Status	Set up job	2026-11-07T00:46:31.5678987Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Pipeline Status	Set up job	2026-11-07T00:46:31.5679472Z Build Date: 2026-10-28T21:51:42Z
+Pipeline Status	Set up job	2026-11-07T00:46:31.5679932Z Worker ID: {c1054866-cf6d-48f3-b2bb-f5536141bbd0}
+Pipeline Status	Set up job	2026-11-07T00:46:31.5680356Z Region: southcentralus
+Pipeline Status	Set up job	2026-11-07T00:46:31.5680695Z Cloud: Azure
+Pipeline Status	Set up job	2026-11-07T00:46:31.5681089Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:46:31.5681993Z ##[group]Operating System
+Pipeline Status	Set up job	2026-11-07T00:46:31.5682480Z Ubuntu
+Pipeline Status	Set up job	2026-11-07T00:46:31.5682818Z 24.04.5
+Pipeline Status	Set up job	2026-11-07T00:46:31.5683200Z LTS
+Pipeline Status	Set up job	2026-11-07T00:46:31.5683587Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:46:31.5684028Z ##[group]Runner Image
+Pipeline Status	Set up job	2026-11-07T00:46:31.5684436Z Image: ubuntu-24.04
+Pipeline Status	Set up job	2026-11-07T00:46:31.5684870Z Version: 20261101.360.1
+Pipeline Status	Set up job	2026-11-07T00:46:31.5685552Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Pipeline Status	Set up job	2026-11-07T00:46:31.5686761Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Pipeline Status	Set up job	2026-11-07T00:46:31.5687420Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:46:31.5688182Z ##[group]GITHUB_TOKEN Permissions
+Pipeline Status	Set up job	2026-11-07T00:46:31.5690121Z Contents: read
+Pipeline Status	Set up job	2026-11-07T00:46:31.5690608Z Metadata: read
+Pipeline Status	Set up job	2026-11-07T00:46:31.5690978Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:46:31.5692604Z Secret source: Actions
+Pipeline Status	Set up job	2026-11-07T00:46:31.5693231Z Cache mode: write
+Pipeline Status	Set up job	2026-11-07T00:46:31.5694035Z Prepare workflow directory
+Pipeline Status	Set up job	2026-11-07T00:46:31.5951676Z Prepare all required actions
+Pipeline Status	Set up job	2026-11-07T00:46:31.5983699Z Getting action download info
+Pipeline Status	Set up job	2026-11-07T00:46:31.8630115Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Pipeline Status	Set up job	2026-11-07T00:46:32.0179218Z Complete job name: Pipeline Status
+Pipeline Status	Run actions/checkout@v6	﻿2026-11-07T00:46:32.0727101Z ##[group]Run actions/checkout@v6
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0727591Z with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0727841Z   persist-credentials: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0728157Z   repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0730540Z   token: ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0730778Z   ssh-strict: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0731022Z   ssh-user: git
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0731261Z   clean: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0731507Z   sparse-checkout-cone-mode: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0731793Z   fetch-depth: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0732032Z   fetch-tags: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0732278Z   show-progress: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0732525Z   lfs: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0732757Z   submodules: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0733008Z   set-safe-directory: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0733287Z   allow-unsafe-pr-checkout: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0733653Z env:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0733878Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0734234Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0734530Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.0734816Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2564861Z Syncing repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2567096Z ##[group]Getting Git version info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2567796Z Working directory is '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2568639Z [command]/usr/bin/git version
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2626955Z git version 2.56.0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2643126Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2655116Z Temporarily overriding HOME='/home/runner/work/_temp/030dd13b-7a92-4953-92b3-dd2c1a834186' before making global git config changes
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2656498Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2659812Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2713023Z Deleting the contents of '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2717514Z ##[group]Determining repository object format
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2719178Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2720245Z ##[group]Initializing the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2723180Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2824351Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2826069Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2876865Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2877669Z ##[group]Disabling automatic garbage collection
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2879808Z [command]/usr/bin/git config --local gc.auto 0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2913830Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2914535Z ##[group]Setting up auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2915115Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2921932Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.2960834Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3277639Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3283851Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3326293Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3532110Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3537579Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3578274Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3785309Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3831434Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3870852Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3915669Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3953238Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3987824Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3988397Z ##[group]Fetching the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:32.3994452Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b6ce167479841877dbd7ca937dc84a14dc5dc7d3:refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6488270Z From https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6490041Z  * [new ref]         b6ce167479841877dbd7ca937dc84a14dc5dc7d3 -> pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6493160Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6494277Z ##[group]Determining the checkout info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6495465Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6496200Z [command]/usr/bin/git sparse-checkout disable
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6547300Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6584631Z ##[group]Checking out the ref
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:34.6586855Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0160366Z Note: switching to 'refs/remotes/pull/341/merge'.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0161838Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0162091Z You are in 'detached HEAD' state. You can look around, make experimental
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0162559Z changes and commit them, and you can discard any commits you make in this
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0163099Z state without impacting any branches by switching back to a branch.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0163719Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0163958Z If you want to create a new branch to retain commits you create, you may
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0164422Z do so (now or later) by using -c with the switch command. Example:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0164649Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0164796Z   git switch -c <new-branch-name>
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0164973Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0165114Z Or undo this operation with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0165260Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0165355Z   git switch -
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0165497Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0165763Z Turn off this advice by setting config variable advice.detachedHead to false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0165953Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0166175Z HEAD is now at b6ce167 Merge 7c81a90c62e3bda426c5e48980d0b7622e288556 into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0206709Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0253144Z [command]/usr/bin/git log -1 --format=%H
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0284281Z b6ce167479841877dbd7ca937dc84a14dc5dc7d3
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0292493Z ##[group]Removing auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0292890Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0295382Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0330884Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0525679Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0529443Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0565682Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0756924Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0760099Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0793206Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0793694Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0793985Z includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0794245Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0801375Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0831678Z /home/runner/work/_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0841546Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0884309Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0913331Z /home/runner/work/_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0920503Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0965156Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.0995629Z /github/runner_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.1000932Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.1038204Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.1066502Z /github/runner_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.1072080Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.1109632Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.1297946Z Removing credentials config '/home/runner/work/_temp/git-credentials-33f4b838-7a35-4f73-81f9-fd461d47bb09.config'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:46:35.1305475Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	﻿2026-11-07T00:46:35.1516422Z ##[group]Run bash scripts/check-pipeline-status.sh
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1516850Z ^[[36;1mbash scripts/check-pipeline-status.sh^[[0m
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1536309Z shell: /usr/bin/bash -e {0}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1536518Z env:
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1536660Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1536821Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1537003Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1537215Z   NEEDS_JSON: {
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "defaults": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  }
+Pipeline Status	Fail the run when a required job was cancelled or failed	}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1537498Z   RUN_SHA: 7c81a90c62e3bda426c5e48980d0b7622e288556
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1537692Z   HEAD_REF: refs/pull/341/head
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.1537853Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.3236780Z Failed jobs:    <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.3237288Z Cancelled jobs: <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:46:35.3237522Z All required jobs succeeded or were legitimately skipped.
+Pipeline Status	Post Run actions/checkout@v6	﻿2026-11-07T00:46:35.3412733Z Post job cleanup.
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4015759Z [command]/usr/bin/git version
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4053402Z git version 2.56.0
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4083606Z Temporarily overriding HOME='/home/runner/work/_temp/448d29a5-a921-4681-9a68-f3a04434ca42' before making global git config changes
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4084643Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4088367Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4131415Z Removing SSH command configuration
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4137476Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4174943Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4399348Z Removing HTTP extra header
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4404642Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4446062Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4680038Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4686718Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:46:35.4727122Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Complete job	﻿2026-11-07T00:46:35.5058542Z Cleaning up orphan processes

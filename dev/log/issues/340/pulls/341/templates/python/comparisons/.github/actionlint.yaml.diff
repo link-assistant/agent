@@ -1,0 +1,17 @@
+--- template/.github/actionlint.yaml
++++ .github/actionlint.yaml
+@@ -1,9 +1,7 @@
++# actionlint 1.7.12 predates concurrency.queue (rhysd/actionlint#657).
++# workflow-policy.js validates the key, value and writer placement.
++# Keep this in YAML: Docker action arguments do not interpret shell quotes.
+ paths:
+-  .github/workflows/**/*.{yml,yaml}:
++  .github/workflows/{js,rust}.yml:
+     ignore:
+-      # queue is documented syntax, newer than actionlint 1.7.12's schema.
+-      # Remove this exception when rhysd/actionlint#654 ships.
+-      - 'unexpected key "queue" for "concurrency" section'
+-      # GitHub's commit-bound self-repository syntax is newer than 1.7.12.
+-      # Remove after rhysd/actionlint#711 ships; scope to these exact local actions.
+-      - 'specifying action "\$/\.github/actions/(artifact|deploy-pages)" in invalid format because ref is missing'
++      - '^unexpected key "queue" for "concurrency" section\.'

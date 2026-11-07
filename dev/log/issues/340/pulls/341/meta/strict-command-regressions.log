@@ -1,0 +1,25 @@
+bun test v1.4.4 (38afee6c8)
+
+js/tests/use-module.js:
+(pass) normalizeModule > hoists named exports off the Node 24 CommonJS interop marker [0.56ms]
+(pass) normalizeModule > keeps default pointing at the callable CommonJS export [0.18ms]
+(pass) normalizeModule > leaves an already-unwrapped namespace untouched [0.14ms]
+(pass) normalizeModule > leaves a real ES module namespace untouched [0.04ms]
+(pass) normalizeModule > does not unwrap a non-callable, non-object CommonJS default [0.02ms]
+(pass) normalizeModule > passes null and undefined through [0.04ms]
+(pass) normalizeModule > unwraps a plain-object CommonJS default [0.05ms]
+(pass) CI command failure propagation (#340) > rejects dependencies outside the reviewed installed package list [0.54ms]
+(pass) CI command failure propagation (#340) > requires a strict shell instead of silently accepting incompatible versions [0.14ms]
+(pass) CI command failure propagation (#340) > a real failed command rejects with its exit code and stderr [358.17ms]
+(pass) CI command failure propagation (#340) > the real strict command runner reaches push retry on a nonzero exit [325.16ms]
+
+js/tests/github-release.js:
+(pass) GitHub release failures (#340) > successful creation does not need a lookup [0.30ms]
+(pass) GitHub release failures (#340) > reruns can confirm an existing public release with the exact tag [0.35ms]
+(pass) GitHub release failures (#340) > validation errors are fatal unless the exact public release exists [0.87ms]
+(pass) GitHub release failures (#340) > formatting skips an explicit missing release but propagates other errors [0.63ms]
+
+ 15 pass
+ 0 fail
+ 34 expect() calls
+Ran 15 tests across 2 files. [709.00ms]

@@ -83,11 +83,11 @@ env:
 jobs:
   test-model:
     name: Test Model
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-test-model-${{ inputs.model }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     env:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       KILO_API_KEY: ${{ secrets.KILO_API_KEY }}
@@ -104,7 +104,7 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
         working-directory: js
 
       - name: Determine model to test
@@ -229,11 +229,11 @@ jobs:
   # job and on any cancellation a newer run does not explain (#301, #337).
   pipeline-status:
     name: Pipeline Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status-${{ inputs.model }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: always()
     needs:
       - test-model

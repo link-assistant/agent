@@ -75,3 +75,15 @@ export function buildAuthFailureGuidance(packageName) {
     '',
   ].join('\n');
 }
+/** Retain command-stream's captured diagnostics when errexit rejects. */
+export function publishCommandOutput(result, error) {
+  return [
+    error?.message,
+    error?.stdout,
+    error?.stderr,
+    result?.stdout,
+    result?.stderr,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}

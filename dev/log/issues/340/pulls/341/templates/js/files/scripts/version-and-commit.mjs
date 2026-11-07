@@ -1,0 +1,296 @@
+#!/usr/bin/env bun
+
+/**
+ * Version packages and commit to main
+ * Usage: node scripts/version-and-commit.mjs --mode <changeset|instant> [--bump-type <type>] [--description <desc>] [--js-root <path>]
+ *   changeset: Run changeset version
+ *   instant: Run instant version bump with bump_type (patch|minor|major) and optional description
+ *
+ * Configuration:
+ * - CLI: --js-root <path> to explicitly set JavaScript root
+ * - Environment: JS_ROOT=<path>
+ *
+ * Uses link-foundation libraries:
+ * - Lockfile-installed command-stream and lino-arguments helpers
+ * - command-stream: Modern shell command execution with streaming support
+ * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
+ */
+
+import { readFileSync, appendFileSync } from 'fs';
+
+import {
+  getJsRoot,
+  getPackageJsonPath,
+  needsCd,
+  parseJsRootConfig,
+} from './js-paths.mjs';
+import { bootstrapDependencies } from './bootstrap-dependencies.mjs';
+import { loadCommandStream, loadLinoArguments } from './use-module.mjs';
+import { printUntrusted } from './github-actions-log.mjs';
+import { checkStagedFormatting } from './check-staged-formatting.mjs';
+import { runStrict } from './run-command.mjs';
+import { captureVersionTree, syncVersionLock } from './version-lock.mjs';
+import { stageReleaseMetadata } from './release-metadata.mjs';
+import { assertValidatedRelease } from './release-publication.mjs';
+
+// Import link-foundation libraries
+// Loaded through bootstrapDependencies: when installed helpers are unavailable,
+// this script reports the failure and writes its outputs, and the process
+// does not die inside module initialisation.
+const [{ $ }, { makeConfig }] = await bootstrapDependencies(
+  [loadCommandStream, loadLinoArguments],
+  { outputs: { version_committed: 'false' } }
+);
+
+// Parse CLI arguments using lino-arguments
+const config = makeConfig({
+  yargs: ({ yargs, getenv }) =>
+    yargs
+      .option('mode', {
+        type: 'string',
+        default: getenv('MODE', 'changeset'),
+        describe: 'Version mode: changeset or instant',
+        choices: ['changeset', 'instant'],
+      })
+      .option('bump-type', {
+        type: 'string',
+        default: getenv('BUMP_TYPE', ''),
+        describe: 'Version bump type for instant mode: major, minor, or patch',
+      })
+      .option('description', {
+        type: 'string',
+        default: getenv('DESCRIPTION', ''),
+        describe: 'Description for instant version bump',
+      })
+      .option('js-root', {
+        type: 'string',
+        default: getenv('JS_ROOT', ''),
+        describe:
+          'JavaScript package root directory (auto-detected if not specified)',
+      }),
+});
+
+const { mode, bumpType, description, jsRoot: jsRootArg } = config;
+
+// Get JavaScript package root (auto-detect or use explicit config)
+const jsRootConfig = jsRootArg || parseJsRootConfig();
+const jsRoot = getJsRoot({ jsRoot: jsRootConfig, verbose: true });
+
+// Debug: Log parsed configuration
+console.log('Parsed configuration:', {
+  mode,
+  bumpType,
+  jsRoot,
+});
+console.log('Description:');
+printUntrusted(description || '(none)');
+
+// Detect if positional arguments were used (common mistake)
+const args = process.argv.slice(2);
+if (args.length > 0 && !args[0].startsWith('--')) {
+  console.error('Error: Positional arguments detected!');
+  console.error('Command line arguments:', args);
+  console.error('');
+  console.error(
+    'This script requires named arguments (--mode, --bump-type, --description, --js-root).'
+  );
+  console.error('Usage:');
+  console.error('  Changeset mode:');
+  console.error(
+    '    node scripts/version-and-commit.mjs --mode changeset [--js-root <path>]'
+  );
+  console.error('  Instant mode:');
+  console.error(
+    '    node scripts/version-and-commit.mjs --mode instant --bump-type <major|minor|patch> [--description <desc>] [--js-root <path>]'
+  );
+  console.error('');
+  console.error('Examples:');
+  console.error(
+    '  node scripts/version-and-commit.mjs --mode instant --bump-type patch --description "Fix bug"'
+  );
+  console.error('  node scripts/version-and-commit.mjs --mode changeset');
+  console.error(
+    '  node scripts/version-and-commit.mjs --mode changeset --js-root js'
+  );
+  process.exit(1);
+}
+
+// Validation: Ensure mode is set correctly
+if (mode !== 'changeset' && mode !== 'instant') {
+  console.error(`Invalid mode: "${mode}". Expected "changeset" or "instant".`);
+  console.error('Command line arguments:', process.argv.slice(2));
+  process.exit(1);
+}
+
+// Validation: Ensure bump type is provided for instant mode
+if (mode === 'instant' && !bumpType) {
+  console.error('Error: --bump-type is required for instant mode');
+  console.error(
+    'Usage: node scripts/version-and-commit.mjs --mode instant --bump-type <major|minor|patch> [--description <desc>] [--js-root <path>]'
+  );
+  process.exit(1);
+}
+
+// Store the original working directory to restore after cd commands
+// IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
+const originalCwd = process.cwd();
+
+/**
+ * Append to GitHub Actions output file
+ * @param {string} key
+ * @param {string} value
+ */
+function setOutput(key, value) {
+  const outputFile = process.env.GITHUB_OUTPUT;
+  if (outputFile) {
+    appendFileSync(outputFile, `${key}=${value}\n`);
+  }
+}
+
+/**
+ * Get package version
+ * @param {string} source - 'local' or 'remote'
+ */
+async function getVersion(source = 'local') {
+  const packageJsonPath = getPackageJsonPath({ jsRoot });
+  if (source === 'remote') {
+    const result = await $`git show origin/main:${packageJsonPath}`.run({
+      capture: true,
+    });
+    return JSON.parse(result.stdout).version;
+  }
+  return JSON.parse(readFileSync(packageJsonPath, 'utf8')).version;
+}
+
+async function main() {
+  try {
+    await assertValidatedRelease({ jsRoot });
+
+    // Configure git
+    // The 41898282+ prefix is what links the commit to the github-actions[bot]
+    // account. Without it the commit is "unattributed", and a ruleset with
+    // require_extra_approval_for_unattributed_changes will demand a human
+    // approval before an automated release pull request can be merged.
+    await $`git config user.name "github-actions[bot]"`;
+    await $`git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`;
+
+    // Check if remote main has advanced (handles re-runs after partial success)
+    console.log('Checking for remote changes...');
+    await $`git fetch origin main`;
+
+    const localHeadResult = await $`git rev-parse HEAD`.run({ capture: true });
+    const localHead = localHeadResult.stdout.trim();
+
+    const remoteHeadResult = await $`git rev-parse origin/main`.run({
+      capture: true,
+    });
+    const remoteHead = remoteHeadResult.stdout.trim();
+
+    if (localHead !== remoteHead) {
+      console.log(
+        `Remote main has advanced (local: ${localHead}, remote: ${remoteHead})`
+      );
+      console.log('This may indicate a previous attempt partially succeeded.');
+
+      // A rerun may recover an already-pushed version-only child. Source or
+      // dependency changes require a new validation run on the current main.
+      try {
+        await assertValidatedRelease({
+          parentSha: process.env.GITHUB_SHA,
+          headRef: 'origin/main',
+          jsRoot,
+        });
+      } catch (error) {
+        throw new Error(
+          'Remote main changed after validation; rerun CI on current main.',
+          {
+            cause: error,
+          }
+        );
+      }
+      const remoteVersion = await getVersion('remote');
+      console.log(`Remote version: ${remoteVersion}`);
+      await $`git merge --ff-only origin/main`;
+      setOutput('version_committed', 'false');
+      setOutput('already_released', 'true');
+      setOutput('new_version', remoteVersion);
+      return;
+    }
+
+    // Get current version before bump
+    const oldVersion = await getVersion();
+    console.log(`Current version: ${oldVersion}`);
+    const validatedVersionTree = captureVersionTree(jsRoot);
+
+    if (mode === 'instant') {
+      console.log('Running instant version bump...');
+      // Run instant version bump script
+      // Pass --js-root to ensure consistent path handling
+      // Rely on command-stream's auto-quoting for proper argument handling
+      if (description) {
+        await $`node scripts/instant-version-bump.mjs --bump-type ${bumpType} --description ${description} --js-root ${jsRoot}`;
+      } else {
+        await $`node scripts/instant-version-bump.mjs --bump-type ${bumpType} --js-root ${jsRoot}`;
+      }
+    } else {
+      console.log('Running changeset version...');
+      // Run changeset version to bump versions and update CHANGELOG
+      // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
+      if (needsCd({ jsRoot })) {
+        await $`cd ${jsRoot} && npm run changeset:version`;
+        process.chdir(originalCwd);
+      } else {
+        await $`npm run changeset:version`;
+      }
+    }
+
+    // Get new version after bump
+    syncVersionLock(jsRoot, validatedVersionTree);
+    const newVersion = await getVersion();
+    console.log(`New version: ${newVersion}`);
+    setOutput('new_version', newVersion);
+
+    // Check if there are changes to commit
+    const statusResult = await $`git status --porcelain`.run({ capture: true });
+    const status = statusResult.stdout.trim();
+
+    if (status) {
+      console.log('Changes detected, committing...');
+
+      // Only release metadata may enter this commit.
+      await stageReleaseMetadata();
+
+      // A failure here aborts the release before anything is written.
+      await checkStagedFormatting();
+
+      // Commit with version number as message
+      await runStrict('git', ['commit', '-m', newVersion]);
+
+      // Push directly with bounded recovery for the attested metadata commit.
+      // Source races and permanent rules fail before publication.
+      try {
+        await $`node scripts/push-main-with-rebase-retry.mjs origin main --label ${newVersion} --release-parent ${process.env.GITHUB_SHA}`.run(
+          { capture: true, mirror: true }
+        );
+      } catch (error) {
+        throw new Error(
+          `Failed to push version ${newVersion} to main: ${error.message}`,
+          { cause: error }
+        );
+      }
+
+      console.log('\u2705 Version bump committed and pushed to main');
+      setOutput('version_committed', 'true');
+    } else {
+      console.log('No changes to commit');
+      setOutput('version_committed', 'false');
+    }
+  } catch (error) {
+    // Restore cwd on error
+    process.chdir(originalCwd);
+    console.error('Error:', error.message);
+    process.exit(1);
+  }
+}
+
+main();

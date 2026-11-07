@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { syncReleaseCheckout } from './release-safety.mjs';
 
 /**
  * Publish the Rust crate to crates.io with verification.
@@ -109,7 +110,7 @@ async function main() {
   try {
     if (shouldPull) {
       console.log('Pulling latest changes...');
-      execSync('git pull origin main', { stdio: 'inherit' });
+      syncReleaseCheckout({ rustRoot });
     }
 
     const { name: crateName, version: currentVersion } = readCrateInfo({

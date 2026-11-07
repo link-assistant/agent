@@ -1,0 +1,11 @@
+{
+  "features": [
+    {
+      "id": "isEven",
+      "status": "complete",
+      "nativeAdapter": false,
+      "evidence": "cases.json",
+      "contract": "i32 -> bool; JavaScript rejects values outside the Rust input type"
+    }
+  ]
+}

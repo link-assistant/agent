@@ -1,80 +1,105 @@
 #!/usr/bin/env node
-
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { reportFreshness } from './freshness-policy.mjs';
 
-const manifest = JSON.parse(readFileSync('package.json', 'utf8'));
-const pins = manifest.dependencyPins ?? {};
-const result = spawnSync('npm', ['outdated', '--json', '--prefer-online'], {
-  encoding: 'utf8',
-});
-
-if (result.error || (result.status !== 0 && result.status !== 1)) {
-  process.stderr.write(result.stderr ?? '');
-  throw result.error ?? new Error(`npm outdated exited ${result.status}`);
-}
-
-const outdated = JSON.parse(result.stdout || '{}');
-const failures = [];
-
-for (const [name, versions] of Object.entries(outdated)) {
-  // npm outdated can report an older cached dist-tag after a package is
-  // republished. Verify any apparent drift against the live registry tag.
-  const live = spawnSync(
-    'npm',
-    ['view', name, 'dist-tags.latest', '--json', '--prefer-online'],
-    {
-      encoding: 'utf8',
-    }
-  );
-  if (live.status !== 0) {
-    failures.push(`${name}: could not verify the latest release`);
-    continue;
-  }
-  const tag = JSON.parse(live.stdout.trim());
-  const latest = Array.isArray(tag) ? tag.at(-1) : tag;
-  if (versions.current === latest) {
-    continue;
-  }
-
-  const issueUrl = pins[name];
-  if (!issueUrl) {
-    failures.push(`${name}: ${versions.current} -> ${latest}`);
-    continue;
-  }
-
-  const match = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/issues\/(\d+)$/.exec(
-    issueUrl
-  );
-  if (!match) {
-    failures.push(`${name}: invalid issue URL ${issueUrl}`);
-    continue;
-  }
-
-  const response = await fetch(
-    `https://api.github.com/repos/${match[1]}/${match[2]}/issues/${match[3]}`,
-    {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        ...(process.env.GITHUB_TOKEN
-          ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
-          : {}),
-      },
-    }
-  );
-  const issue = response.ok ? await response.json() : null;
-  if (issue?.state !== 'open' || issue.pull_request) {
-    failures.push(`${name}: pin issue is not open: ${issueUrl}`);
-  } else {
-    console.log(
-      `${name}: pinned at ${versions.current}; latest ${latest} (${issueUrl})`
+function npm(args) {
+  const result = spawnSync('npm', [...args, '--json', '--prefer-online'], {
+    encoding: 'utf8',
+  });
+  if (result.error || result.signal || ![0, 1].includes(result.status)) {
+    throw (
+      result.error ||
+      new Error(
+        `npm ${args[0]} failed (${result.signal || result.status}): ${result.stderr}`
+      )
     );
   }
+  const value = JSON.parse(result.stdout || '{}');
+  if (value.error) {
+    throw new Error(
+      `npm ${args[0]} failed: ${value.error.summary || value.error.code}`
+    );
+  }
+  return value;
 }
 
-if (failures.length > 0) {
-  console.error(`Dependencies behind latest:\n${failures.join('\n')}`);
-  process.exitCode = 1;
-} else {
-  console.log('All unpinned npm dependencies are current.');
+export async function npmFindings(
+  manifest,
+  outdated,
+  latestVersion,
+  fetchIssue
+) {
+  const failures = [];
+  for (const [name, versions] of Object.entries(outdated)) {
+    // Verify apparent drift against the live tag; stale npm metadata used to
+    // report a package already at the latest version as outdated (#337).
+    const latest = await latestVersion(name);
+    if (typeof latest !== 'string' || !latest) {
+      throw new Error(`${name}: invalid latest dist-tag`);
+    }
+    if (versions.current === latest) {
+      continue;
+    }
+    const issueUrl = manifest.dependencyPins?.[name];
+    if (!issueUrl) {
+      failures.push(
+        `${name}: ${versions.current || 'not installed'} -> ${latest}`
+      );
+      continue;
+    }
+    const match =
+      /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/issues\/(\d+)$/.exec(issueUrl);
+    if (!match) {
+      failures.push(`${name}: invalid issue URL ${issueUrl}`);
+      continue;
+    }
+    const response = await fetchIssue(
+      `https://api.github.com/repos/${match[1]}/${match[2]}/issues/${match[3]}`
+    );
+    if (!response.ok) {
+      throw new Error(
+        `${name}: pin issue verification unavailable (HTTP ${response.status}): ${issueUrl}`
+      );
+    }
+    const issue = await response.json();
+    if (issue?.state !== 'open' || issue.pull_request) {
+      failures.push(`${name}: pin issue is not open: ${issueUrl}`);
+    } else {
+      console.log(
+        `${name}: pinned at ${versions.current}; latest ${latest} (${issueUrl})`
+      );
+    }
+  }
+  return failures;
+}
+
+if (
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
+) {
+  const failures = await npmFindings(
+    JSON.parse(readFileSync('package.json', 'utf8')),
+    npm(['outdated']),
+    (name) => {
+      const tag = npm(['view', name, 'dist-tags.latest']);
+      return Array.isArray(tag) ? tag.at(-1) : tag;
+    },
+    (url) =>
+      fetch(url, {
+        signal: globalThis.AbortSignal.timeout(30000),
+        headers: {
+          Accept: 'application/vnd.github+json',
+          ...(process.env.GITHUB_TOKEN
+            ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+            : {}),
+        },
+      })
+  );
+  process.exitCode = reportFreshness(failures);
+  if (failures.length === 0) {
+    console.log('All unpinned npm dependencies are current.');
+  }
 }

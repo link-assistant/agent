@@ -1,0 +1,264 @@
+--- template/scripts/publish-to-npm.mjs
++++ scripts/publish-to-npm.mjs
+@@ -1,21 +1,21 @@
+-#!/usr/bin/env bun
++#!/usr/bin/env node
++import { syncReleaseCheckout } from './release-safety.mjs';
+ 
+ /**
+  * Publish to npm using OIDC trusted publishing
+  * Usage: node scripts/publish-to-npm.mjs [--should-pull] [--js-root <path>]
+- *   should_pull: Verify the validated release commit landed on main before publishing
++ *   should_pull: Optional flag to pull latest changes before publishing (for release job)
+  *
+  * Configuration:
+  * - CLI: --js-root <path> to explicitly set JavaScript root
+  * - Environment: JS_ROOT=<path>
+  *
++ * The package name is read from package.json, so there is nothing to keep in
++ * sync by hand.
++ *
+  * Uses link-foundation libraries:
+- * - Lockfile-installed command-stream and lino-arguments helpers
+  * - command-stream: Modern shell command execution with streaming support
+  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
+- *
+- * Supports both single and multi-language repository structures via a
+- * configurable package root.
+  */
+ 
+ import { appendFileSync } from 'fs';
+@@ -23,27 +23,24 @@
+ import { getJsRoot, needsCd, parseJsRootConfig } from './js-paths.mjs';
+ import { isPackageVersionPublished } from './npm-registry.mjs';
+ import { readPackageInfo } from './package-info.mjs';
+-import { prepareReleasePublication } from './release-publication.mjs';
+ import {
+   buildAuthFailureGuidance,
+   isNonRetryableFailure,
++  publishCommandOutput,
+ } from './publish-failure-classifier.mjs';
+ import {
+   isAlreadyPublishedError,
+   publishWithRetry,
+   sleep,
+ } from './publish-retry.mjs';
+-import { bootstrapDependencies } from './bootstrap-dependencies.mjs';
+-import { loadCommandStream, loadLinoArguments } from './use-module.mjs';
++
++// Load locked dependencies through the shared loader, which normalizes the
++// CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
++import { useModule } from './use-module.mjs';
+ 
+ // Import link-foundation libraries
+-// Loaded through bootstrapDependencies: when installed helpers are unavailable,
+-// this script reports the failure and writes its outputs, and the process
+-// does not die inside module initialisation.
+-const [{ $ }, { makeConfig }] = await bootstrapDependencies(
+-  [loadCommandStream, loadLinoArguments],
+-  { outputs: { published: 'false' } }
+-);
++const { $ } = await useModule('command-stream');
++const { makeConfig } = await useModule('lino-arguments');
+ 
+ // Parse CLI arguments using lino-arguments
+ const config = makeConfig({
+@@ -52,7 +49,7 @@
+       .option('should-pull', {
+         type: 'boolean',
+         default: getenv('SHOULD_PULL', false),
+-        describe: 'Verify the validated release commit landed on main',
++        describe: 'Pull latest changes before publishing',
+       })
+       .option('js-root', {
+         type: 'string',
+@@ -75,8 +72,8 @@
+ // IMPORTANT: command-stream's cd is a virtual command that calls process.chdir()
+ const originalCwd = process.cwd();
+ 
+-// Patterns that indicate publish failure in changeset output
+-// Guards against false positives in CI/CD output parsing.
++// Patterns that indicate publish failure in changeset output.
++// Guards against a publish command that reports success without publishing.
+ const FAILURE_PATTERNS = [
+   'packages failed to publish',
+   'error occurred while publishing',
+@@ -94,7 +91,7 @@
+  * @returns {string|null} - The matched failure pattern or null if no failure detected
+  */
+ function detectPublishFailure(output) {
+-  const lowerOutput = output.toLowerCase();
++  const lowerOutput = String(output || '').toLowerCase();
+   for (const pattern of FAILURE_PATTERNS) {
+     if (lowerOutput.includes(pattern.toLowerCase())) {
+       return pattern;
+@@ -128,22 +125,21 @@
+ /**
+  * Run changeset:publish command with output capture
+  * @param {Function} shell
+- * @param {string} jsRoot
+- * @param {string} originalCwd
++ * @param {string} packageRoot
++ * @param {string} restoreCwd
+  * @returns {Promise<{result: object|null, error: Error|null}>}
+  */
+-async function runChangesetPublish(shell, jsRoot, originalCwd) {
++async function runChangesetPublish(shell, packageRoot, restoreCwd) {
+   try {
+     // Run changeset:publish from the js directory where package.json with this script exists
+     // IMPORTANT: Use .run({ capture: true }) to capture output for failure detection
+     // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
+-    if (needsCd({ jsRoot })) {
+-      const result = await shell`cd ${jsRoot} && npm run changeset:publish`.run(
+-        {
++    if (needsCd({ jsRoot: packageRoot })) {
++      const result =
++        await shell`cd ${packageRoot} && npm run changeset:publish`.run({
+           capture: true,
+-        }
+-      );
+-      process.chdir(originalCwd);
++        });
++      process.chdir(restoreCwd);
+       return { result, error: null };
+     }
+     const result = await shell`npm run changeset:publish`.run({
+@@ -152,8 +148,8 @@
+     return { result, error: null };
+   } catch (error) {
+     // Restore cwd on error before retry
+-    if (needsCd({ jsRoot })) {
+-      process.chdir(originalCwd);
++    if (needsCd({ jsRoot: packageRoot })) {
++      process.chdir(restoreCwd);
+     }
+     return { result: null, error };
+   }
+@@ -174,7 +170,11 @@
+     ? `${publishResult.stdout || ''}\n${publishResult.stderr || ''}`
+     : '';
+ 
+-  // command-stream mirrors captured output live; retain it for failure analysis.
++  // Log the output for debugging
++  if (combinedOutput.trim()) {
++    console.log('Changeset output:', combinedOutput);
++  }
++
+   // Check for failure patterns in output (most reliable for changeset)
+   const failurePattern = detectPublishFailure(combinedOutput);
+   if (failurePattern) {
+@@ -195,22 +195,18 @@
+  * Run a single publish command invocation (no verification).
+  * Verification is a separate failure domain handled by publishWithRetry.
+  * @param {Function} shell
+- * @param {string} jsRoot
+- * @param {string} originalCwd
++ * @param {string} packageRoot
++ * @param {string} restoreCwd
+  * @returns {Promise<{success: boolean, error: Error|null, output: string}>}
+  */
+-async function runPublishCommand(shell, jsRoot, originalCwd) {
++async function runPublishCommand(shell, packageRoot, restoreCwd) {
+   const { result, error } = await runChangesetPublish(
+     shell,
+-    jsRoot,
+-    originalCwd
++    packageRoot,
++    restoreCwd
+   );
+   const analysisError = analyzePublishResult(result, error);
+-  const output = [
+-    analysisError?.message || '',
+-    result?.stdout || '',
+-    result?.stderr || '',
+-  ].join('\n');
++  const output = publishCommandOutput(result, error || analysisError);
+ 
+   if (analysisError) {
+     // Mark authentication / registry-configuration failures as non-retryable so
+@@ -227,27 +223,29 @@
+ 
+ async function main() {
+   try {
+-    if (process.env.GITHUB_SHA || shouldPull) {
+-      await prepareReleasePublication({ verifyRemote: shouldPull, jsRoot });
+-    }
+-
+-    // Get current version
++    if (shouldPull) {
++      // Pull the latest changes we just pushed
++      syncReleaseCheckout({ jsRoot });
++    }
++
++    // Get current package name and version
+     const { name: packageName, version: currentVersion } = readPackageInfo({
+       jsRoot,
+     });
+     console.log(`Package to publish: ${packageName}`);
+     console.log(`Current version to publish: ${currentVersion}`);
++    setOutput('published_version', currentVersion);
+ 
+     // Check if this version is already published on npm
+     console.log(
+       `Checking if version ${currentVersion} is already published...`
+     );
+-    const isAlreadyPublished = await isPackageVersionPublished(
++    const alreadyPublished = await isPackageVersionPublished(
+       packageName,
+       currentVersion
+     );
+ 
+-    if (isAlreadyPublished) {
++    if (alreadyPublished) {
+       console.log(`Version ${currentVersion} is already published to npm`);
+       setOutput('published', 'true');
+       setOutput('published_version', currentVersion);
+@@ -255,19 +253,15 @@
+       return;
+     }
+ 
+-    // Version not found on npm (E404), proceed with publish
++    // Version not found on npm, proceed with publish
+     console.log(
+       `Version ${currentVersion} not found on npm, proceeding with publish...`
+     );
+ 
+-    // Publish to npm using OIDC trusted publishing with retry logic
+-    // Multi-layer failure detection guards against a publish command that
+-    // reports success without actually publishing.
+-    //
+     // The publish command is retried only when the publish itself failed.
+-    // A verification miss is handled by bounded polling and never triggers a
+-    // republish.
+-    const { success, error } = await publishWithRetry({
++    // A verification miss is registry propagation lag, not a publish failure,
++    // so it is handled by bounded polling and never triggers a republish.
++    const { success, error, publishCommandSucceeded } = await publishWithRetry({
+       publish: () => runPublishCommand($, jsRoot, originalCwd),
+       verify: () => verifyPublished(packageName, currentVersion),
+       maxRetries: MAX_RETRIES,
+@@ -276,14 +270,22 @@
+       log: (message) => console.log(message),
+     });
+ 
++    // A successful publish command is evidence that npm accepted the package,
++    // even if registry verification later times out. Keep it visible to the
++    // always-running workflow summary when this step exits non-zero.
++    if (publishCommandSucceeded) {
++      setOutput('publish_command_succeeded', 'true');
++      setOutput('published_version', currentVersion);
++    }
++
+     if (success) {
+       setOutput('published', 'true');
+       setOutput('published_version', currentVersion);
+-      console.log(`\u2705 Published ${packageName}@${currentVersion} to npm`);
++      console.log(`✅ Published ${packageName}@${currentVersion} to npm`);
+       return;
+     }
+ 
+-    console.error(`\u274C Publish failed: ${error.message}`);
++    console.error(`❌ Publish failed: ${error.message}`);
+     // Authentication / registry-configuration errors will not be fixed by
+     // retrying, so print actionable guidance for the operator.
+     if (error?.nonRetryable && !error?.verificationFailed) {

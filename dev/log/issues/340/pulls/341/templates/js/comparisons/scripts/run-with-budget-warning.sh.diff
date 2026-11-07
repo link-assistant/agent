@@ -1,0 +1,38 @@
+--- template/scripts/run-with-budget-warning.sh
++++ scripts/run-with-budget-warning.sh
+@@ -215,13 +215,21 @@
+   group_is_populated
+ }
+ 
+-# SECONDS is integer-valued and may tick early relative to wall time.
+-# Only enforce a deadline after its entire second has elapsed.
+-deadline_elapsed() { [ "${SECONDS}" -gt "$1" ]; }
++# bash's SECONDS counts the wall-clock second boundaries crossed since it was
++# set, not the time that has passed: one millisecond after `SECONDS=0` it can
++# already read 1. Comparing it with `-ge` therefore ended every deadline up to
++# a whole second early -- a command that finished well inside its budget was
++# terminated whenever the wrapper happened to start just before a second
++# boundary (issue #337). SECONDS only ever over-reads by less than a second, so
++# a reading strictly greater than N proves that N seconds really have passed.
++# Warnings may still fire early: an early warning costs nothing.
++has_elapsed() {
++  [ "${SECONDS}" -gt "$1" ]
++}
+ 
+ wait_while_running() {
+   local deadline=$((SECONDS + $1))
+-  while command_is_running && ! deadline_elapsed "${deadline}"; do
++  while command_is_running && ! has_elapsed "${deadline}"; do
+     relay_output
+     sleep "${poll_seconds}"
+   done
+@@ -267,7 +275,8 @@
+     echo "::warning title=${label} is approaching its execution budget::${label} has run for ${SECONDS}s of its ${budget_seconds}s budget."
+   fi
+ 
+-  if deadline_elapsed "${budget_seconds}"; then
++  if has_elapsed "${budget_seconds}"; then
++    trace "budget expired: SECONDS=${SECONDS} > ${budget_seconds}"
+     terminate_over_budget
+   fi
+ 

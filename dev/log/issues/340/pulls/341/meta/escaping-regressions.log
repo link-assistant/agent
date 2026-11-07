@@ -1,0 +1,23 @@
+bun test v1.4.4 (38afee6c8)
+
+js/tests/github-release.js:
+(pass) GitHub release failures (#340) > release notes match exact versions in JS and Rust headings [1.06ms]
+(pass) GitHub release failures (#340) > heading comparisons treat metacharacters literally and stop at the next section [0.24ms]
+(pass) GitHub release failures (#340) > successful creation does not need a lookup [0.57ms]
+(pass) GitHub release failures (#340) > reruns can confirm an existing public release with the exact tag [0.15ms]
+(pass) GitHub release failures (#340) > validation errors are fatal unless the exact public release exists [0.57ms]
+(pass) GitHub release failures (#340) > formatting skips an explicit missing release but propagates other errors [0.88ms]
+
+js/tests/release-safety.js:
+(pass) release safety (#340) > release commits preserve literal message arguments and propagate failures [110.67ms]
+(pass) release safety (#340) > staged release metadata rejects dependency changes inside an allowed lockfile [353.95ms]
+(pass) release safety (#340) > JavaScript versioning preserves every resolved dependency in both lock formats [0.78ms]
+(pass) release safety (#340) > generated release commits cannot include source files [0.68ms]
+(pass) release safety (#340) > a queued release can accept a version change but cannot accept new dependencies [0.52ms]
+(pass) release safety (#340) > a rule, authentication or network refusal is never retried as a lost race [0.69ms]
+(pass) relevant change detection > docs do not build packages, while sources, dependencies and CI scripts do [0.38ms]
+
+ 13 pass
+ 0 fail
+ 85 expect() calls
+Ran 13 tests across 2 files. [504.00ms]

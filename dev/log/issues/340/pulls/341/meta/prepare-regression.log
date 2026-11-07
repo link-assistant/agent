@@ -1,0 +1,20 @@
+bun test v1.4.4 (38afee6c8)
+
+js/tests/ci-audit-340.js:
+(pass) documentation links and prose cannot replace required section headings [0.40ms]
+(pass) Husky installation failures do not silently pass prepare [0.59ms]
+(pass) dependency compatibility (#340) > unrelated proxy aliases do not prevent CLI configuration [163.17ms]
+(pass) dependency compatibility (#340) > the deprecated DOMException package is replaced by the native constructor [7.98ms]
+(pass) release credential preflight > verifies package-scoped npm exchange without publishing or leaking credentials [1.80ms]
+(pass) release credential preflight > missing, denied, malformed and unavailable npm credentials never pass [3.07ms]
+(pass) release credential preflight > crates probe omits the archive and recognizes only authenticated parsing [2.17ms]
+(pass) external freshness policy > only a push to main reports drift without failing; manual/scheduled/local/PR runs enforce it [0.32ms]
+(pass) repository guards > manual versions in either language fail independently [0.57ms]
+(pass) repository guards > TypeScript/Rust/shell are covered and archived evidence is excluded [0.79ms]
+(pass) repository guards > lint warnings fail and dependency installs are frozen [0.83ms]
+(pass) prepare is available in a standalone package source copy [85.76ms]
+
+ 12 pass
+ 0 fail
+ 134 expect() calls
+Ran 12 tests across 1 file. [346.00ms]

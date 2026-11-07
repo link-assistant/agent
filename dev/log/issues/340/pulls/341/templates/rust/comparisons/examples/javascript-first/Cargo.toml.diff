@@ -1,0 +1,244 @@
+--- template/examples/javascript-first/Cargo.toml
++++ rust/Cargo.toml
+@@ -1,10 +1,234 @@
+ [package]
+-name = "javascript-first-example"
+-version = "0.1.0"
++name = "link-assistant-agent"
++version = "0.11.0"
+ edition = "2021"
+-description = "Executable JavaScript-first gate example"
++description = "A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface"
+ license = "Unlicense"
+-repository = "https://github.com/link-foundation/rust-ai-driven-development-pipeline-template"
+-publish = ["crates-io"]
+-
+-[workspace]
++authors = ["Link Assistant"]
++repository = "https://github.com/link-assistant/agent"
++keywords = ["ai", "cli", "agent", "opencode", "assistant"]
++categories = ["command-line-utilities", "development-tools"]
++
++[dependencies]
++# CLI argument parsing
++clap = { version = "4.6.7", features = ["derive"] }
++
++# Async runtime
++tokio = { version = "1.54.1", features = ["full"] }
++
++# JSON serialization
++serde = { version = "1.0.229", features = ["derive"] }
++serde_json = "1.0.154"
++
++# HTTP client (for API calls)
++reqwest = { version = "0.13.5", features = ["json", "stream"] }
++
++# Path and file handling
++walkdir = "2.5.0"
++glob = "0.3.4"
++regex = "1.13.1"
++ignore = "0.4.34"
++globset = "0.4.21"
++
++# Unicode normalization (NFC file name lookup, as JS String#normalize)
++unicode-normalization = "0.1"
++
++# Error handling
++thiserror = "2.0.21"
++anyhow = "1.0.104"
++
++# Unique identifiers
++ulid = "3.0.0"
++uuid = { version = "1.29.0", features = ["v4"] }
++
++# Time handling
++chrono = { version = "0.4.45", features = ["serde"] }
++
++# Logging
++tracing = "0.1.44"
++tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
++
++# Environment variables
++dotenvy = "0.15.7"
++
++# Process execution
++which = "8.0.6"
++
++# Diff utilities
++similar = "3.2.1"
++
++# Async traits
++async-trait = "0.1.92"
++
++# Random number generation
++rand = "0.10.3"
++
++# Base64 encoding
++base64 = "0.23.1"
++
++[target.'cfg(unix)'.dependencies]
++# Process-group signalling for the bash tool
++libc = "0.2.191"
++
++[dev-dependencies]
++tempfile = "3.27.0"
++assert_cmd = "2.2.2"
++predicates = "3.1.4"
++
++[lib]
++name = "link_assistant_agent"
++path = "src/lib.rs"
++
++[[bin]]
++name = "agent"
++path = "src/main.rs"
++
++[[test]]
++name = "integration_bash_tools"
++path = "tests/integration/bash_tools.rs"
++
++[[test]]
++name = "integration_basic"
++path = "tests/integration/basic.rs"
++
++[[test]]
++name = "integration_batch_tools"
++path = "tests/integration/batch_tools.rs"
++
++[[test]]
++name = "integration_codesearch_tools"
++path = "tests/integration/codesearch_tools.rs"
++
++[[test]]
++name = "integration_dry_run"
++path = "tests/integration/dry_run.rs"
++
++[[test]]
++name = "integration_edit_tools"
++path = "tests/integration/edit_tools.rs"
++
++[[test]]
++name = "integration_generate_title"
++path = "tests/integration/generate_title.rs"
++
++[[test]]
++name = "integration_glob_tools"
++path = "tests/integration/glob_tools.rs"
++
++[[test]]
++name = "integration_google_cloudcode"
++path = "tests/integration/google_cloudcode.rs"
++
++[[test]]
++name = "integration_grep_tools"
++path = "tests/integration/grep_tools.rs"
++
++[[test]]
++name = "integration_json_standard_claude"
++path = "tests/integration/json_standard_claude.rs"
++
++[[test]]
++name = "integration_json_standard_opencode"
++path = "tests/integration/json_standard_opencode.rs"
++
++[[test]]
++name = "integration_list_tools"
++path = "tests/integration/list_tools.rs"
++
++[[test]]
++name = "integration_mcp"
++path = "tests/integration/mcp.rs"
++
++[[test]]
++name = "integration_models_cache"
++path = "tests/integration/models_cache.rs"
++
++[[test]]
++name = "integration_output_response_model"
++path = "tests/integration/output_response_model.rs"
++
++[[test]]
++name = "integration_plaintext_input"
++path = "tests/integration/plaintext_input.rs"
++
++[[test]]
++name = "integration_provider"
++path = "tests/integration/provider.rs"
++
++[[test]]
++name = "integration_read_image_validation_tools"
++path = "tests/integration/read_image_validation_tools.rs"
++
++[[test]]
++name = "integration_read_tools"
++path = "tests/integration/read_tools.rs"
++
++[[test]]
++name = "integration_resume"
++path = "tests/integration/resume.rs"
++
++[[test]]
++name = "integration_server_mode"
++path = "tests/integration/server_mode.rs"
++
++[[test]]
++name = "integration_socket_retry"
++path = "tests/integration/socket_retry.rs"
++
++[[test]]
++name = "integration_stdin_input_queue"
++path = "tests/integration/stdin_input_queue.rs"
++
++[[test]]
++name = "integration_stream_parse_error"
++path = "tests/integration/stream_parse_error.rs"
++
++[[test]]
++name = "integration_stream_timeout"
++path = "tests/integration/stream_timeout.rs"
++
++[[test]]
++name = "integration_system_message"
++path = "tests/integration/system_message.rs"
++
++[[test]]
++name = "integration_system_message_file"
++path = "tests/integration/system_message_file.rs"
++
++[[test]]
++name = "integration_task_tools"
++path = "tests/integration/task_tools.rs"
++
++[[test]]
++name = "integration_timeout_retry"
++path = "tests/integration/timeout_retry.rs"
++
++[[test]]
++name = "integration_todo_tools"
++path = "tests/integration/todo_tools.rs"
++
++[[test]]
++name = "integration_verbose_env_fallback"
++path = "tests/integration/verbose_env_fallback.rs"
++
++[[test]]
++name = "integration_verbose_hi"
++path = "tests/integration/verbose_hi.rs"
++
++[[test]]
++name = "integration_webfetch_tools"
++path = "tests/integration/webfetch_tools.rs"
++
++[[test]]
++name = "integration_websearch_tools"
++path = "tests/integration/websearch_tools.rs"
++
++[[test]]
++name = "integration_write_tools"
++path = "tests/integration/write_tools.rs"
++
++[profile.release]
++lto = true
++strip = true
++opt-level = "z"
++codegen-units = 1

@@ -8,13 +8,27 @@ on:
     branches:
       - main
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - '.github/workflows/**'
       - '.github/zizmor.yml'
+      - '.github/actionlint.yaml'
+      - 'scripts/check-version.mjs'
+      - 'scripts/pr-comparison.mjs'
+      - 'scripts/validate-docs.mjs'
+      - '**.md'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
+      - 'scripts/check-pipeline-status.sh'
+      - 'scripts/job-cancel-policy.mjs'
       - '.github/workflows/**'
       - '.github/zizmor.yml'
+      - '.github/actionlint.yaml'
+      - 'scripts/check-version.mjs'
+      - 'scripts/pr-comparison.mjs'
+      - 'scripts/validate-docs.mjs'
+      - '**.md'
   workflow_dispatch:
 
 # Least-privilege default; these jobs only need to read the checked-out tree.
@@ -31,7 +45,7 @@ env:
 jobs:
   actionlint:
     name: actionlint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-actionlint
@@ -45,14 +59,14 @@ jobs:
       # every `run:` block. A native actionlint binary without shellcheck on
       # PATH silently skips the shell checks and exits 0 - worth knowing when
       # reproducing a failure locally:
-      #   docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7 -color
-      - uses: docker://rhysd/actionlint:1.7.7
+      #   docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
+      - uses: docker://rhysd/actionlint:1.7.12
         with:
           args: -color
 
   zizmor:
     name: zizmor
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-zizmor
@@ -71,18 +85,40 @@ jobs:
           config: .github/zizmor.yml
           min-confidence: medium
 
+  repository-policy:
+    name: Repository Policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-repository-policy
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26.x'
+      - name: Guard CI-managed package versions
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-version.mjs
+      - name: Validate documentation
+        run: node scripts/validate-docs.mjs
+
   # GitHub reports a job killed by timeout-minutes as cancelled, which leaves
   # the run grey instead of red. This gate fails the run on any unsuccessful
   # job and on any cancellation a newer run does not explain (#301, #337).
   pipeline-status:
     name: Pipeline Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: check-${{ github.workflow }}-${{ github.ref }}-pipeline-status
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      cancel-in-progress: true
     if: always()
     needs:
+      - repository-policy
       - actionlint
       - zizmor
     steps:

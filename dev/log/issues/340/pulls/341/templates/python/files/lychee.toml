@@ -1,0 +1,4 @@
+# Avoid GitHub bursts; 429/5xx responses still require recovery or fail CI.
+[hosts."github.com"]
+concurrency = 2
+request_interval = "1s"

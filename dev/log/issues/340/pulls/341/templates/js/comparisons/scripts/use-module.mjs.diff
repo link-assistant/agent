@@ -1,0 +1,243 @@
+--- template/scripts/use-module.mjs
++++ scripts/use-module.mjs
+@@ -1,120 +1,135 @@
+-#!/usr/bin/env node
++/**
++ * Lockfile-installed release dependencies with CommonJS normalization.
++ *
++ * Why this file exists
++ * --------------------
++ * Resolve from the installed js/package.json dependency tree rather than
++ * evaluating an unpinned loader downloaded from a CDN. Because the `require`
++ * export condition wins during resolution, a dual package such as
++ * `command-stream@>=0.19.0` is loaded through its CommonJS entry point.
++ *
++ * Node.js 23.0.0+ adds a synthetic `'module.exports'` named export to CommonJS
++ * namespaces (https://nodejs.org/api/esm.html#commonjs-namespaces). `use-m`
++ * 8.15.0 unwraps a callable `default` only when every other key is known
++ * metadata, and `'module.exports'` is not in that set, so on Node 24 it returns
++ * `{ default, 'module.exports' }` instead of the callable module. Destructuring
++ * `const { $ } = await use('command-stream')` then yields `undefined`, and the
++ * first tagged-template call fails with `TypeError: $ is not a function`.
++ *
++ * Upstream report: https://github.com/link-foundation/use-m/issues/72
++ *
++ * `useModule()` below returns a namespace with the named exports hoisted back to
++ * the top level on every Node.js version, so callers can keep destructuring.
++ *
++ * Debug tracing is off by default. Set `CI_SCRIPTS_DEBUG=1` (or `=true`) to
++ * print the resolved module shape, which is what makes an interop regression
++ * like the one above diagnosable from a CI log alone.
++ */
++
++import { createRequire } from 'node:module';
++import { pathToFileURL, URL } from 'node:url';
++
++const requireInstalled = createRequire(
++  new URL('../js/package.json', import.meta.url)
++);
++const SUPPORTED_MODULES = new Set(['command-stream', 'lino-arguments']);
+ 
+ /**
+- * Lockfile-installed release dependencies with namespace normalization.
+- * Literal imports use npm's local dependency tree; loading never installs
+- * packages or executes a downloaded loader. Install with npm ci first.
+- * CI_SCRIPTS_DEBUG=1 traces module shapes (off by default).
++ * Keys Node.js and bundlers attach to a namespace that carry no user-facing
++ * exports. `'module.exports'` is the Node 23+ CommonJS interop marker.
+  */
+-import { debug } from './debug-print.mjs';
++const METADATA_KEYS = new Set(['default', 'module.exports', '__esModule']);
+ 
+-function candidates(loaded) {
+-  return [
+-    loaded,
+-    loaded?.default,
+-    loaded?.['module.exports'],
+-    loaded?.default?.default,
+-  ];
+-}
++export const isDebugEnabled = () =>
++  ['1', 'true', 'yes'].includes(
++    String(process.env.CI_SCRIPTS_DEBUG ?? '').toLowerCase()
++  );
++
++export const debug = (...args) => {
++  if (isDebugEnabled()) {
++    console.log('[use-module]', ...args);
++  }
++};
++
++const describe = (value) => {
++  if (value === null || value === undefined) {
++    return String(value);
++  }
++  const type = typeof value;
++  if (type !== 'object' && type !== 'function') {
++    return type;
++  }
++  let keys;
++  try {
++    keys = Object.keys(value);
++  } catch {
++    keys = ['<unreadable>'];
++  }
++  return `${type}(${keys.join(', ')})`;
++};
+ 
+ /**
+- * Human-readable description of a loaded module, used in error messages.
+- * @param {unknown} loaded
+- * @returns {string}
++ * Collapse a CommonJS namespace back into the object the package actually
++ * exports, then re-expose its own enumerable properties at the top level.
++ *
++ * The returned object always keeps `default` pointing at the callable/plain
++ * CommonJS export, so `mod.default` stays valid for callers that use it.
+  */
+-export function describeModule(loaded) {
++export const normalizeModule = (loaded) => {
+   if (loaded === null || loaded === undefined) {
+-    return String(loaded);
++    return loaded;
+   }
+-  if (typeof loaded !== 'object' && typeof loaded !== 'function') {
+-    return typeof loaded;
++
++  const cjsDefault = loaded['module.exports'] ?? loaded.default;
++  const hasNamedExports = Object.keys(loaded).some(
++    (key) => !METADATA_KEYS.has(key)
++  );
++
++  // A real ES module namespace already exposes its named exports.
++  if (hasNamedExports || cjsDefault === undefined) {
++    return loaded;
+   }
+-  return `${typeof loaded} with keys [${Object.keys(loaded).join(', ')}]`;
+-}
++
++  const type = typeof cjsDefault;
++  if (type !== 'object' && type !== 'function') {
++    return loaded;
++  }
++
++  const normalized = { default: cjsDefault };
++  for (const key of Object.keys(cjsDefault)) {
++    normalized[key] = cjsDefault[key];
++  }
++  debug('normalized CommonJS namespace ->', describe(normalized));
++  return normalized;
++};
++
++/** Apply the failure semantics required by every release command's try/catch. */
++export const configureModule = (specifier, loaded) => {
++  const normalized = normalizeModule(loaded);
++  if (specifier === 'command-stream') {
++    if (typeof normalized?.shell?.errexit !== 'function') {
++      throw new Error(
++        'command-stream must expose shell.errexit for CI commands'
++      );
++    }
++    normalized.shell.errexit(true);
++    debug('enabled command-stream exit-on-error');
++  }
++  return normalized;
++};
+ 
+ /**
+- * Pick the object that actually carries `exportName` out of the namespace the loader
+- * returned for `moduleName`.
+- *
+- * @param {unknown} loaded value returned by `await import(moduleName)`
+- * @param {string} exportName named export the caller needs
+- * @param {string} moduleName package name, used for the error message only
+- * @returns {Record<string, unknown>} object exposing `exportName`
++ * Load a reviewed, installed package and return a namespace whose named exports are
++ * reachable at the top level on every supported Node.js version.
+  */
+-export function resolveNamedExport(loaded, exportName, moduleName) {
+-  for (const candidate of candidates(loaded)) {
+-    if (candidate && typeof candidate[exportName] === 'function') {
+-      debug(`resolved ${moduleName}.${exportName}`, {
+-        received: describeModule(loaded),
+-        via: candidate === loaded ? 'namespace' : 'unwrapped',
+-      });
+-      return candidate;
+-    }
++export const useModule = async (specifier) => {
++  if (!SUPPORTED_MODULES.has(specifier)) {
++    throw new Error(`Unsupported release dependency: ${specifier}`);
+   }
+-  throw new Error(
+-    `Installed ${moduleName} did not expose a callable "${exportName}". ` +
+-      `Received ${describeModule(loaded)}. Check the installed dependency version (see scripts/use-module.mjs).`
+-  );
+-}
++  const resolved = requireInstalled.resolve(specifier);
++  const loaded = await import(pathToFileURL(resolved).href);
++  debug(`installed ${specifier} on ${process.version} ->`, describe(loaded));
++  return configureModule(specifier, loaded);
++};
+ 
+-/** Only reviewed, lockfile-installed packages can be loaded by this shim. */
+-export function loadInstalledModule(name) {
+-  switch (name) {
+-    case 'command-stream':
+-      return import('command-stream');
+-    case 'lino-arguments':
+-      return import('lino-arguments');
+-    default:
+-      throw new Error(`Unsupported release dependency: ${name}`);
+-  }
+-}
+-
+-/** Preserve normalization and the injectable loader used by unit tests. */
+-export async function useModule(
+-  moduleName,
+-  exportName,
+-  load = loadInstalledModule
+-) {
+-  return resolveNamedExport(await load(moduleName), exportName, moduleName);
+-}
+-
+-/**
+- * Load `command-stream` with `$` guaranteed to be callable and with
+- * non-zero exits rejecting.
+- *
+- * The errexit switch is the semantics every release script is written
+- * against: without it `$` RESOLVES on a non-zero exit, so every
+- * `try { await $`...`; } catch` in the release path is unreachable and a
+- * crashed step prints the success line. The scripts that deliberately
+- * probe for a non-zero outcome (`push-main-with-rebase-retry.mjs`,
+- * `land-via-pull-request.mjs`) use `runCommand`/`runStrict` from
+- * run-command.mjs, which resolves with the code, so this switch does not
+- * reach them.
+- *
+- * @param {(name: string) => Promise<unknown>} [use] injected module loader
+- * @returns {Promise<Record<string, unknown>>} command-stream exports
+- */
+-export async function loadCommandStream(use) {
+-  const commandStream = await useModule('command-stream', '$', use);
+-  const shell = commandStream.shell;
+-
+-  if (shell && typeof shell.errexit === 'function') {
+-    shell.errexit(true);
+-  } else {
+-    debug(
+-      'command-stream did not expose shell.errexit; $ keeps resolve-on-exit semantics'
+-    );
+-  }
+-
+-  return commandStream;
+-}
+-
+-/**
+- * Load `lino-arguments` with `makeConfig` guaranteed to be callable.
+- *
+- * @param {(name: string) => Promise<unknown>} [use] injected module loader
+- * @returns {Promise<Record<string, unknown>>} lino-arguments exports
+- */
+-export function loadLinoArguments(use) {
+-  return useModule('lino-arguments', 'makeConfig', use);
+-}
++export default useModule;

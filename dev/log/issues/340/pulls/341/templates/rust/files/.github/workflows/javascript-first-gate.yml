@@ -1,0 +1,94 @@
+name: JavaScript-first gate
+
+on:
+  workflow_call:
+    inputs:
+      source-sha:
+        description: Immutable forty-character commit SHA to validate, including release candidates
+        required: true
+        type: string
+      javascript-command:
+        description: Install dependencies and run the complete native JavaScript checks
+        required: false
+        type: string
+      parity-command:
+        description: Run the strict complete-feature parity inventory check
+        required: false
+        type: string
+      translation-command:
+        description: Regenerate from pinned source and reject target drift or carried code
+        required: false
+        type: string
+      project-directory:
+        description: Rust project root to inspect for a native JavaScript counterpart
+        default: '.'
+        required: false
+        type: string
+    outputs:
+      tested-sha:
+        description: Exact revision that passed detection and every required prerequisite stage
+        value: ${{ jobs.javascript-first.outputs.tested-sha }}
+
+permissions:
+  contents: read
+
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: init.defaultBranch
+  GIT_CONFIG_VALUE_0: main
+
+jobs:
+  javascript-first:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}-javascript-prerequisite
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    outputs:
+      tested-sha: ${{ steps.revision.outputs.sha }}
+    steps:
+      - name: Validate requested revision
+        env:
+          EXPECTED_SHA: ${{ inputs.source-sha }}
+        run: '[[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]'
+      # Keep the gate's own helpers available when validating older release tags.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Preserve prerequisite tools outside the candidate checkout
+        run: |
+          mkdir -p "$RUNNER_TEMP/javascript-first-tools"
+          cp scripts/detect-javascript.mjs scripts/run-javascript-first-auto.mjs \
+            scripts/run-javascript-first.sh scripts/run-with-budget-warning.sh scripts/verify-javascript-provenance.mjs \
+            "$RUNNER_TEMP/javascript-first-tools/"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Validate candidate provenance before checkout
+        id: provenance
+        env:
+          EXPECTED_SHA: ${{ inputs.source-sha }}
+          EVENT_SHA: ${{ github.sha }}
+          PREREQUISITE_EVENT: ${{ github.event_name }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: node "$RUNNER_TEMP/javascript-first-tools/verify-javascript-provenance.mjs"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.provenance.outputs.revision }}
+          persist-credentials: false
+      - name: Check exact checkout revision
+        env:
+          EXPECTED_SHA: ${{ inputs.source-sha }}
+        run: 'test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"'
+      - name: Native checks, strict parity and regeneration
+        id: revision
+        env:
+          EXPECTED_SHA: ${{ inputs.source-sha }}
+          JAVASCRIPT_COMMAND: ${{ inputs.javascript-command }}
+          PARITY_COMMAND: ${{ inputs.parity-command }}
+          TRANSLATION_COMMAND: ${{ inputs.translation-command }}
+          PROJECT_DIRECTORY: ${{ inputs.project-directory }}
+          JAVASCRIPT_BUDGET_SECONDS: 1200
+        run: bash "$RUNNER_TEMP/javascript-first-tools/run-with-budget-warning.sh" "$JAVASCRIPT_BUDGET_SECONDS" "JavaScript prerequisite" node "$RUNNER_TEMP/javascript-first-tools/run-javascript-first-auto.mjs"

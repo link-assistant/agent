@@ -1,0 +1,12 @@
+# Lychee ignore patterns - regex patterns for URLs to skip during link checking
+
+# Localhost and local development URLs
+https?://localhost
+https?://127\.0\.0\.1
+
+# Example and placeholder URLs used by the template
+https?://example\.com
+https://docs\.rs/example-sum-package-name
+
+# Web Archive rejects automated checks despite serving browser requests
+https://web\.archive\.org

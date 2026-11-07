@@ -1,0 +1,5 @@
+# Keep rate limits/transient errors as failures until bounded retries recover.
+# Slow GitHub requests to reduce secondary rate limits on shared CI addresses.
+[hosts."github.com"]
+concurrency = 2
+request_interval = "1s"

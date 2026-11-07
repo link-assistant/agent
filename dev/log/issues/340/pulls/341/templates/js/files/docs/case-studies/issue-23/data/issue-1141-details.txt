@@ -1,0 +1,18 @@
+title:	Make sure our lines count checks are syncronized in CI/CD
+state:	CLOSED
+author:	konard
+labels:	bug
+comments:	0
+assignees:	
+projects:	
+milestone:	
+number:	1141
+--
+Failed CI/CD in default branch: https://github.com/link-assistant/hive-mind/actions/runs/21128634082/job/60754705820
+Passed CI/CD in pull request: https://github.com/link-assistant/hive-mind/actions/runs/20889393003/job/60018313920
+
+We also need to ensure we use all best practices from: https://github.com/link-foundation/js-ai-driven-development-pipeline-template, and also make sure ESLint also checks for lines, and has error if lines are more than 1500.
+
+If we can improve https://github.com/link-foundation/js-ai-driven-development-pipeline-template in any way we should report issues there.
+
+Please download all logs and data related about the issue to this repository, make sure we compile that data to `./docs/case-studies/issue-{id}` folder, and use it to do deep case study analysis (also make sure to search online for additional facts and data), in which we will reconstruct timeline/sequence of events, find root causes of the problem, and propose possible solutions.

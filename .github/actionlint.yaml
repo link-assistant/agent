@@ -1,0 +1,7 @@
+# actionlint 1.7.12 predates concurrency.queue (rhysd/actionlint#657).
+# workflow-policy.js validates the key, value and writer placement.
+# Keep this in YAML: Docker action arguments do not interpret shell quotes.
+paths:
+  .github/workflows/{js,rust}.yml:
+    ignore:
+      - '^unexpected key "queue" for "concurrency" section\.'

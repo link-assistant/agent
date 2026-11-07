@@ -1,0 +1,1310 @@
+Lint and Format Check	Set up job	﻿2026-01-10T22:38:54.7634103Z Current runner version: '2.330.0'
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7658544Z ##[group]Runner Image Provisioner
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7659494Z Hosted Compute Agent
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7660013Z Version: 20251211.462
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7660590Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7661335Z Build Date: 2025-12-11T16:28:49Z
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7661985Z Worker ID: {7d136d0e-c4a7-4c46-8cce-b152e824a517}
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7662649Z ##[endgroup]
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7663217Z ##[group]Operating System
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7663728Z Ubuntu
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7664193Z 24.04.3
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7664626Z LTS
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7665140Z ##[endgroup]
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7665655Z ##[group]Runner Image
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7666174Z Image: ubuntu-24.04
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7666692Z Version: 20260105.202.1
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7667629Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260105.202/images/ubuntu/Ubuntu2404-Readme.md
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7669327Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260105.202
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7670514Z ##[endgroup]
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7673092Z ##[group]GITHUB_TOKEN Permissions
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7674975Z Actions: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7675623Z ArtifactMetadata: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7676190Z Attestations: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7676727Z Checks: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7677156Z Contents: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7677722Z Deployments: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7678486Z Discussions: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7678972Z Issues: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7679926Z Metadata: read
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7680436Z Models: read
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7680906Z Packages: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7681425Z Pages: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7681914Z PullRequests: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7682536Z RepositoryProjects: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7683165Z SecurityEvents: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7683660Z Statuses: write
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7684147Z ##[endgroup]
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7686176Z Secret source: Actions
+Lint and Format Check	Set up job	2026-01-10T22:38:54.7687135Z Prepare workflow directory
+Lint and Format Check	Set up job	2026-01-10T22:38:54.8005918Z Prepare all required actions
+Lint and Format Check	Set up job	2026-01-10T22:38:54.8045115Z Getting action download info
+Lint and Format Check	Set up job	2026-01-10T22:38:55.1343625Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Lint and Format Check	Set up job	2026-01-10T22:38:55.2398539Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+Lint and Format Check	Set up job	2026-01-10T22:38:55.4422542Z Complete job name: Lint and Format Check
+Lint and Format Check	Run actions/checkout@v4	﻿2026-01-10T22:38:55.5113562Z ##[group]Run actions/checkout@v4
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5114392Z with:
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5114803Z   repository: link-assistant/agent
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5115447Z   token: ***
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5115813Z   ssh-strict: true
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5116200Z   ssh-user: git
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5116592Z   persist-credentials: true
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5117029Z   clean: true
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5117411Z   sparse-checkout-cone-mode: true
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5117883Z   fetch-depth: 1
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5118458Z   fetch-tags: false
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5118874Z   show-progress: true
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5119260Z   lfs: false
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5119622Z   submodules: false
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5120023Z   set-safe-directory: true
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.5120688Z ##[endgroup]
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.6216271Z Syncing repository: link-assistant/agent
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.6218543Z ##[group]Getting Git version info
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.6219231Z Working directory is '/home/runner/work/agent/agent'
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.6220118Z [command]/usr/bin/git version
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.7872350Z git version 2.52.0
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.7914410Z ##[endgroup]
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.7943368Z Temporarily overriding HOME='/home/runner/work/_temp/2b472619-915a-404a-a180-fec726e4b352' before making global git config changes
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.7944985Z Adding repository directory to the temporary git global config as a safe directory
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.7951102Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.7998286Z Deleting the contents of '/home/runner/work/agent/agent'
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8002323Z ##[group]Initializing the repository
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8008441Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8143154Z hint: Using 'master' as the name for the initial branch. This default branch name
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8144154Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8145162Z hint: to use in all of your new repositories, which will suppress this warning,
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8146223Z hint: call:
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8146858Z hint:
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8147628Z hint: 	git config --global init.defaultBranch <name>
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8148933Z hint:
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8149835Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8151305Z hint: 'development'. The just-created branch can be renamed via this command:
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8152002Z hint:
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8152377Z hint: 	git branch -m <name>
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8152824Z hint:
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8153389Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8154300Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8165778Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8207182Z ##[endgroup]
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8210118Z ##[group]Disabling automatic garbage collection
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8211796Z [command]/usr/bin/git config --local gc.auto 0
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8242929Z ##[endgroup]
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8244090Z ##[group]Setting up auth
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8249295Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8280765Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8653455Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8681986Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8901590Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.8930767Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.9157622Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.9190979Z ##[endgroup]
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.9192223Z ##[group]Fetching the repository
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:55.9200698Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +1347edef98519b56b62c10f340740eecc50b7558:refs/remotes/origin/main
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4061446Z From https://github.com/link-assistant/agent
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4063257Z  * [new ref]         1347edef98519b56b62c10f340740eecc50b7558 -> origin/main
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4099273Z ##[endgroup]
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4100563Z ##[group]Determining the checkout info
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4101969Z ##[endgroup]
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4104973Z [command]/usr/bin/git sparse-checkout disable
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4146858Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4174582Z ##[group]Checking out the ref
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4178966Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4546857Z Switched to a new branch 'main'
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4549157Z branch 'main' set up to track 'origin/main'.
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4557066Z ##[endgroup]
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4593751Z [command]/usr/bin/git log -1 --format=%H
+Lint and Format Check	Run actions/checkout@v4	2026-01-10T22:38:56.4616269Z 1347edef98519b56b62c10f340740eecc50b7558
+Lint and Format Check	Setup Node.js	﻿2026-01-10T22:38:56.4922527Z ##[group]Run actions/setup-node@v4
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:56.4923669Z with:
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:56.4924471Z   node-version: 20.x
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:56.4925369Z   always-auth: false
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:56.4926273Z   check-latest: false
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:56.4927439Z   token: ***
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:56.4928392Z ##[endgroup]
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:56.6761641Z Found in cache @ /opt/hostedtoolcache/node/20.19.6/x64
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:56.6768889Z ##[group]Environment details
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:59.0074355Z node: v20.19.6
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:59.0074971Z npm: 10.8.2
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:59.0075289Z yarn: 1.22.22
+Lint and Format Check	Setup Node.js	2026-01-10T22:38:59.0076392Z ##[endgroup]
+Lint and Format Check	Install dependencies	﻿2026-01-10T22:38:59.0185627Z ##[group]Run npm install --legacy-peer-deps
+Lint and Format Check	Install dependencies	2026-01-10T22:38:59.0186042Z [36;1mnpm install --legacy-peer-deps[0m
+Lint and Format Check	Install dependencies	2026-01-10T22:38:59.0232803Z shell: /usr/bin/bash -e {0}
+Lint and Format Check	Install dependencies	2026-01-10T22:38:59.0233123Z ##[endgroup]
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.8517591Z 
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.8523058Z > @link-assistant/agent@0.7.0 prepare
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.8523516Z > cd .. && husky || true
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.8523725Z 
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9049953Z 
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9050780Z added 658 packages, and audited 659 packages in 11s
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9051402Z 
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9051708Z 143 packages are looking for funding
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9052199Z   run `npm fund` for details
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9071702Z 
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9072022Z 2 high severity vulnerabilities
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9072351Z 
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9072549Z To address all issues, run:
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9072864Z   npm audit fix
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9073008Z 
+Lint and Format Check	Install dependencies	2026-01-10T22:39:09.9073128Z Run `npm audit` for details.
+Lint and Format Check	Run ESLint	﻿2026-01-10T22:39:09.9382355Z ##[group]Run npm run lint
+Lint and Format Check	Run ESLint	2026-01-10T22:39:09.9382661Z [36;1mnpm run lint[0m
+Lint and Format Check	Run ESLint	2026-01-10T22:39:09.9416250Z shell: /usr/bin/bash -e {0}
+Lint and Format Check	Run ESLint	2026-01-10T22:39:09.9416499Z ##[endgroup]
+Lint and Format Check	Run ESLint	2026-01-10T22:39:10.0526157Z 
+Lint and Format Check	Run ESLint	2026-01-10T22:39:10.0526668Z > @link-assistant/agent@0.7.0 lint
+Lint and Format Check	Run ESLint	2026-01-10T22:39:10.0527217Z > eslint .
+Lint and Format Check	Run ESLint	2026-01-10T22:39:10.0527452Z 
+Lint and Format Check	Check formatting	﻿2026-01-10T22:39:11.9354479Z ##[group]Run npm run format:check
+Lint and Format Check	Check formatting	2026-01-10T22:39:11.9354816Z [36;1mnpm run format:check[0m
+Lint and Format Check	Check formatting	2026-01-10T22:39:11.9387936Z shell: /usr/bin/bash -e {0}
+Lint and Format Check	Check formatting	2026-01-10T22:39:11.9388313Z ##[endgroup]
+Lint and Format Check	Check formatting	2026-01-10T22:39:12.0450565Z 
+Lint and Format Check	Check formatting	2026-01-10T22:39:12.0451340Z > @link-assistant/agent@0.7.0 format:check
+Lint and Format Check	Check formatting	2026-01-10T22:39:12.0452023Z > prettier --check .
+Lint and Format Check	Check formatting	2026-01-10T22:39:12.0452221Z 
+Lint and Format Check	Check formatting	2026-01-10T22:39:12.1258876Z Checking formatting...
+Lint and Format Check	Check formatting	2026-01-10T22:39:15.1536779Z All matched files use Prettier code style!
+Lint and Format Check	Check file size limit	﻿2026-01-10T22:39:15.1941921Z ##[group]Run npm run check:file-size
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.1942255Z [36;1mnpm run check:file-size[0m
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.1974850Z shell: /usr/bin/bash -e {0}
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.1975094Z ##[endgroup]
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3019891Z 
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3020550Z > @link-assistant/agent@0.7.0 check:file-size
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3021299Z > node ../scripts/check-file-size.mjs
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3021554Z 
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3312380Z 
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3313179Z Checking JavaScript files for maximum 1000 lines...
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3313586Z 
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3474810Z ✓ All files are within the line limit
+Lint and Format Check	Check file size limit	2026-01-10T22:39:15.3475076Z 
+Lint and Format Check	Post Setup Node.js	﻿2026-01-10T22:39:15.3629343Z Post job cleanup.
+Lint and Format Check	Post Run actions/checkout@v4	﻿2026-01-10T22:39:15.5347676Z Post job cleanup.
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6281430Z [command]/usr/bin/git version
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6318942Z git version 2.52.0
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6362604Z Temporarily overriding HOME='/home/runner/work/_temp/8ee6c3a1-1fef-4a15-a3f9-7ffe50752c2f' before making global git config changes
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6363930Z Adding repository directory to the temporary git global config as a safe directory
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6377678Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6414015Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6446607Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6673930Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6694685Z http.https://github.com/.extraheader
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6707610Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6736977Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6958137Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Lint and Format Check	Post Run actions/checkout@v4	2026-01-10T22:39:15.6988685Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Lint and Format Check	Complete job	﻿2026-01-10T22:39:15.7306818Z Cleaning up orphan processes
+Unit Tests (Bun on ubuntu-latest)	Set up job	﻿2026-01-10T22:38:55.2776298Z Current runner version: '2.330.0'
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2799112Z ##[group]Runner Image Provisioner
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2799892Z Hosted Compute Agent
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2800430Z Version: 20251211.462
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2801074Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2801763Z Build Date: 2025-12-11T16:28:49Z
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2802381Z Worker ID: {cf2e0c14-3ccd-4f07-8b83-86303229d14f}
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2803153Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2803644Z ##[group]Operating System
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2804205Z Ubuntu
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2804714Z 24.04.3
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2805162Z LTS
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2805616Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2806160Z ##[group]Runner Image
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2806721Z Image: ubuntu-24.04
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2807204Z Version: 20260105.202.1
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2808691Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260105.202/images/ubuntu/Ubuntu2404-Readme.md
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2810114Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260105.202
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2811359Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2812332Z ##[group]GITHUB_TOKEN Permissions
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2814073Z Contents: write
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2814752Z Metadata: read
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2815242Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2817469Z Secret source: Actions
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.2818489Z Prepare workflow directory
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.3128604Z Prepare all required actions
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.3164405Z Getting action download info
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.7602675Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:55.8826579Z Download action repository 'oven-sh/setup-bun@v2' (SHA:b7a1c7ccf290d58743029c4f6903da283811b979)
+Unit Tests (Bun on ubuntu-latest)	Set up job	2026-01-10T22:38:56.5372939Z Complete job name: Unit Tests (Bun on ubuntu-latest)
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	﻿2026-01-10T22:38:56.6085611Z ##[group]Run actions/checkout@v4
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6086453Z with:
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6086842Z   ref: refs/heads/main
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6087472Z   token: ***
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6088068Z   repository: link-assistant/agent
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6088559Z   ssh-strict: true
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6088957Z   ssh-user: git
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6089402Z   persist-credentials: true
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6089858Z   clean: true
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6090281Z   sparse-checkout-cone-mode: true
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6090855Z   fetch-depth: 1
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6091258Z   fetch-tags: false
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6091671Z   show-progress: true
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6092070Z   lfs: false
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6092444Z   submodules: false
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6092871Z   set-safe-directory: true
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6093568Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7140260Z Syncing repository: link-assistant/agent
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7141940Z ##[group]Getting Git version info
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7142590Z Working directory is '/home/runner/work/agent/agent'
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7143697Z [command]/usr/bin/git version
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7232036Z git version 2.52.0
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7257525Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7271562Z Temporarily overriding HOME='/home/runner/work/_temp/f4548191-c0e3-43bb-b6e5-b4d3e5a17be5' before making global git config changes
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7273743Z Adding repository directory to the temporary git global config as a safe directory
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7276275Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7322955Z Deleting the contents of '/home/runner/work/agent/agent'
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7326602Z ##[group]Initializing the repository
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7330504Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7477188Z hint: Using 'master' as the name for the initial branch. This default branch name
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7478774Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7479744Z hint: to use in all of your new repositories, which will suppress this warning,
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7480462Z hint: call:
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7481187Z hint:
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7481662Z hint: 	git config --global init.defaultBranch <name>
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7482255Z hint:
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7483064Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7484448Z hint: 'development'. The just-created branch can be renamed via this command:
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7485600Z hint:
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7486305Z hint: 	git branch -m <name>
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7487099Z hint:
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7488362Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7490094Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7497022Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7530344Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7531534Z ##[group]Disabling automatic garbage collection
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7535159Z [command]/usr/bin/git config --local gc.auto 0
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7563236Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7564451Z ##[group]Setting up auth
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7571223Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7601606Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7986508Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8016699Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8233892Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8263049Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8480759Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8513768Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8514596Z ##[group]Fetching the repository
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8521986Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.4929412Z From https://github.com/link-assistant/agent
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.4930499Z  * [new branch]      main       -> origin/main
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.4962212Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.4962789Z ##[group]Determining the checkout info
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.4964391Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.4969266Z [command]/usr/bin/git sparse-checkout disable
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.5008655Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.5033371Z ##[group]Checking out the ref
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.5036844Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.5408100Z Switched to a new branch 'main'
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.5410902Z branch 'main' set up to track 'origin/main'.
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.5419563Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.5456297Z [command]/usr/bin/git log -1 --format=%H
+Unit Tests (Bun on ubuntu-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.5478334Z 1347edef98519b56b62c10f340740eecc50b7558
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	﻿2026-01-10T22:38:57.5680742Z ##[group]Run oven-sh/setup-bun@v2
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	2026-01-10T22:38:57.5681235Z with:
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	2026-01-10T22:38:57.5681577Z   bun-version: latest
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	2026-01-10T22:38:57.5681944Z   no-cache: false
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	2026-01-10T22:38:57.5682296Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	2026-01-10T22:38:57.7737988Z Downloading a new version of Bun: https://bun.sh/download/latest/linux/x64?avx2=true&profile=false
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	2026-01-10T22:38:59.1739700Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/3b60f23d-ae3f-4378-baa9-313c536cdce5.zip
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	2026-01-10T22:38:59.9605675Z [command]/home/runner/.bun/bin/bun --revision
+Unit Tests (Bun on ubuntu-latest)	Setup Bun	2026-01-10T22:38:59.9641930Z 1.3.5+1e86cebd7
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	﻿2026-01-10T22:38:59.9784041Z ##[group]Run bun install
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:38:59.9784687Z [36;1mbun install[0m
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:38:59.9822291Z shell: /usr/bin/bash -e {0}
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:38:59.9822602Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:38:59.9916399Z bun install v1.3.5 (1e86cebd)
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:01.0127873Z 
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:01.0134016Z $ cd .. && husky || true
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0727465Z 
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0728223Z + @changesets/cli@2.29.8
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0728734Z + @eslint/js@9.39.2
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0729048Z + eslint@9.39.2
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0729586Z + eslint-config-prettier@10.1.8
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0730037Z + eslint-plugin-prettier@5.5.4
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0730413Z + husky@9.1.7
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0730718Z + lint-staged@16.2.7
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0731070Z + prettier@3.7.4
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0731399Z + @actions/core@1.11.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0731732Z + @actions/github@6.0.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0732092Z + @agentclientprotocol/sdk@0.5.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0733172Z + @ai-sdk/mcp@0.0.8
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0733466Z + @ai-sdk/xai@2.0.33
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0733860Z + @clack/prompts@0.11.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0734182Z + @hono/standard-validator@0.2.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0734541Z + @hono/zod-validator@0.7.5
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0734901Z + @modelcontextprotocol/sdk@1.22.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0735275Z + @octokit/graphql@9.0.3
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0735617Z + @octokit/rest@22.0.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0735936Z + @openauthjs/openauth@0.4.3
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0736290Z + @opencode-ai/sdk@1.0.78
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0736639Z + @opentui/core@0.1.46
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0736954Z + @opentui/solid@0.1.46
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0737269Z + @parcel/watcher@2.5.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0737788Z + @solid-primitives/event-bus@1.1.2
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0738232Z + @standard-community/standard-json@0.3.5
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0738706Z + @standard-community/standard-openapi@0.2.9
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0739146Z + @zip.js/zip.js@2.8.10
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0739483Z + ai@6.0.0-beta.99
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0739800Z + chokidar@4.0.3
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0740085Z + clipboardy@5.0.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0740407Z + command-stream@0.7.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0740722Z + decimal.js@10.6.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0741010Z + diff@8.0.2
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0741277Z + fuzzysort@3.1.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0741556Z + glob@10.5.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0741823Z + gray-matter@4.0.3
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0742109Z + hono@4.10.6
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0742385Z + hono-openapi@1.1.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0742672Z + ignore@7.0.5
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0742945Z + jsonc-parser@3.3.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0743246Z + lino-objects-codec@0.1.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0743576Z + log-lazy@1.0.4
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0743856Z + minimatch@10.1.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0744151Z + remeda@2.32.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0744451Z + solid-js@1.9.10
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0744939Z + strip-ansi@7.1.2
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0745246Z + test-anywhere@0.7.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0745583Z + tree-sitter-bash@0.25.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0745915Z + turndown@7.2.2
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0746201Z + ulid@3.0.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0746484Z + vscode-jsonrpc@8.2.1
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0746862Z + vscode-languageserver-types@3.17.5
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0747300Z + web-tree-sitter@0.25.10
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0747786Z + xdg-basedir@5.1.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0748090Z + yargs@18.0.0
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0748359Z + zod@4.1.12
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0748520Z 
+Unit Tests (Bun on ubuntu-latest)	Install dependencies	2026-01-10T22:39:03.0748677Z 607 packages installed [3.08s]
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	﻿2026-01-10T22:39:03.0900330Z ##[group]Run bun test tests/json-standard-unit.test.js
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.0900769Z [36;1mbun test tests/json-standard-unit.test.js[0m
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.0938643Z shell: /usr/bin/bash -e {0}
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.0938890Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1004356Z bun test v1.3.5 (1e86cebd)
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1044507Z 
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1045401Z ##[group]tests/json-standard-unit.test.js:
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1099207Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "opencode" [1.00ms]
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1100253Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "claude"
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1101260Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > rejects invalid values
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1102639Z (pass) JSON Standard Module - Unit Tests > serializeOutput > opencode format produces pretty-printed JSON
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1103818Z (pass) JSON Standard Module - Unit Tests > serializeOutput > claude format produces compact JSON (NDJSON)
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1104938Z (pass) JSON Standard Module - Unit Tests > serializeOutput > both formats produce valid JSON
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1105974Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_start to init
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1107024Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts text to message
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1108260Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts tool_use to tool_use
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1109340Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_finish to result
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1110512Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts error to result with error status
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1111799Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > returns null for text without content [1.00ms]
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1113228Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > uses snake_case session_id instead of camelCase sessionID
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1114559Z (pass) JSON Standard Module - Unit Tests > createEventHandler > creates handler with correct startTime
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1115711Z (pass) JSON Standard Module - Unit Tests > createEventHandler > handler.output exists and is a function
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1116896Z (pass) JSON Standard Comparison Tests > opencode and claude formats produce different output for same event
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1118187Z (pass) JSON Standard Comparison Tests > opencode preserves original event structure
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1118790Z 
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1119224Z ##[endgroup]
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1119397Z 
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1119507Z  17 pass
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1119774Z  0 fail
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1120035Z  50 expect() calls
+Unit Tests (Bun on ubuntu-latest)	Run unit tests	2026-01-10T22:39:03.1120360Z Ran 17 tests across 1 file. [11.00ms]
+Unit Tests (Bun on ubuntu-latest)	Post Setup Bun	﻿2026-01-10T22:39:03.1283026Z Post job cleanup.
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	﻿2026-01-10T22:39:03.3173458Z Post job cleanup.
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4099531Z [command]/usr/bin/git version
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4134262Z git version 2.52.0
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4175891Z Temporarily overriding HOME='/home/runner/work/_temp/5c13f407-902d-482b-9f57-2c111bf10340' before making global git config changes
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4176774Z Adding repository directory to the temporary git global config as a safe directory
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4181774Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4220613Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4251705Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4471922Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4491131Z http.https://github.com/.extraheader
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4503955Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4534729Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4752779Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Unit Tests (Bun on ubuntu-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:03.4782769Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Unit Tests (Bun on ubuntu-latest)	Complete job	﻿2026-01-10T22:39:03.5096677Z Cleaning up orphan processes
+Unit Tests (Bun on windows-latest)	Set up job	﻿2026-01-10T22:38:54.6304438Z Current runner version: '2.330.0'
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6361390Z ##[group]Runner Image Provisioner
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6362721Z Hosted Compute Agent
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6363574Z Version: 20251211.462
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6364554Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6365655Z Build Date: 2025-12-11T16:28:49Z
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6366800Z Worker ID: {2e7ae59f-ca8c-4db0-b246-0b45615b2491}
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6367876Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6368669Z ##[group]Operating System
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6369729Z Microsoft Windows Server 2025
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6370802Z 10.0.26100
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6371393Z Datacenter
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6372058Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6372778Z ##[group]Runner Image
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6373487Z Image: windows-2025
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6374209Z Version: 20260105.172.1
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6375818Z Included Software: https://github.com/actions/runner-images/blob/win25/20260105.172/images/windows/Windows2025-Readme.md
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6379483Z Image Release: https://github.com/actions/runner-images/releases/tag/win25%2F20260105.172
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6381062Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6382996Z ##[group]GITHUB_TOKEN Permissions
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6385496Z Contents: write
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6386248Z Metadata: read
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6387674Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6390578Z Secret source: Actions
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6391633Z Prepare workflow directory
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6781704Z Prepare all required actions
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.6819607Z Getting action download info
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:54.8844814Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:55.0182802Z Download action repository 'oven-sh/setup-bun@v2' (SHA:b7a1c7ccf290d58743029c4f6903da283811b979)
+Unit Tests (Bun on windows-latest)	Set up job	2026-01-10T22:38:55.3959549Z Complete job name: Unit Tests (Bun on windows-latest)
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	﻿2026-01-10T22:38:55.5374670Z ##[group]Run actions/checkout@v4
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5375660Z with:
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5376025Z   ref: refs/heads/main
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5376619Z   token: ***
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5376983Z   repository: link-assistant/agent
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5377412Z   ssh-strict: true
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5377750Z   ssh-user: git
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5378093Z   persist-credentials: true
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5378494Z   clean: true
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5378837Z   sparse-checkout-cone-mode: true
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5379261Z   fetch-depth: 1
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5379595Z   fetch-tags: false
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5379946Z   show-progress: true
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5380293Z   lfs: false
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5380609Z   submodules: false
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5380965Z   set-safe-directory: true
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.5381540Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.7465165Z Syncing repository: link-assistant/agent
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.7467389Z ##[group]Getting Git version info
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.7474933Z Working directory is 'D:\a\agent\agent'
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:55.8654752Z [command]"C:\Program Files\Git\bin\git.exe" version
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0062872Z git version 2.52.0.windows.1
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0124515Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0148525Z Temporarily overriding HOME='D:\a\_temp\96553d0d-d1d4-4809-949c-40ac3ce861da' before making global git config changes
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0150790Z Adding repository directory to the temporary git global config as a safe directory
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0161429Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\agent\agent
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0484662Z Deleting the contents of 'D:\a\agent\agent'
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0492691Z ##[group]Initializing the repository
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0502876Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\agent\agent
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.0972357Z Initialized empty Git repository in D:/a/agent/agent/.git/
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.1024930Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/link-assistant/agent
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.1363291Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.1367161Z ##[group]Disabling automatic garbage collection
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.1374489Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.1697412Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.1698476Z ##[group]Setting up auth
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.1712651Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2138254Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.0682565Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.1023786Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.6901852Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:57.7265263Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.2920142Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.3270797Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.3271989Z ##[group]Fetching the repository
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.3292025Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.9660837Z From https://github.com/link-assistant/agent
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.9661637Z  * [new branch]      main       -> origin/main
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.9876097Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.9876972Z ##[group]Determining the checkout info
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.9879115Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.9896074Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:59.0273194Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:59.0640711Z ##[group]Checking out the ref
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:59.0650825Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B main refs/remotes/origin/main
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:59.2162282Z branch 'main' set up to track 'origin/main'.
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:59.2170037Z Switched to a new branch 'main'
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:59.2214065Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:59.2628068Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+Unit Tests (Bun on windows-latest)	Run actions/checkout@v4	2026-01-10T22:38:59.2955511Z 1347edef98519b56b62c10f340740eecc50b7558
+Unit Tests (Bun on windows-latest)	Setup Bun	﻿2026-01-10T22:38:59.3433743Z ##[group]Run oven-sh/setup-bun@v2
+Unit Tests (Bun on windows-latest)	Setup Bun	2026-01-10T22:38:59.3434092Z with:
+Unit Tests (Bun on windows-latest)	Setup Bun	2026-01-10T22:38:59.3434271Z   bun-version: latest
+Unit Tests (Bun on windows-latest)	Setup Bun	2026-01-10T22:38:59.3434482Z   no-cache: false
+Unit Tests (Bun on windows-latest)	Setup Bun	2026-01-10T22:38:59.3434638Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Setup Bun	2026-01-10T22:38:59.7083281Z Downloading a new version of Bun: https://bun.sh/download/latest/win32/x64?avx2=true&profile=false
+Unit Tests (Bun on windows-latest)	Setup Bun	2026-01-10T22:39:00.6577580Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command "$ErrorActionPreference = 'Stop' ; try { Add-Type -AssemblyName System.IO.Compression.ZipFile } catch { } ; try { [System.IO.Compression.ZipFile]::ExtractToDirectory('D:\a\_temp\40ff782c-d383-49cc-974a-e522ffa64ba8.zip', 'D:\a\_temp\1c06274f-bbe0-478a-96ce-ab1deedc7eee', $true) } catch { if (($_.Exception.GetType().FullName -eq 'System.Management.Automation.MethodException') -or ($_.Exception.GetType().FullName -eq 'System.Management.Automation.RuntimeException') ){ Expand-Archive -LiteralPath 'D:\a\_temp\40ff782c-d383-49cc-974a-e522ffa64ba8.zip' -DestinationPath 'D:\a\_temp\1c06274f-bbe0-478a-96ce-ab1deedc7eee' -Force } else { throw $_ } } ;"
+Unit Tests (Bun on windows-latest)	Setup Bun	2026-01-10T22:39:05.5223197Z [command]C:\Users\runneradmin\.bun\bin\bun.exe --revision
+Unit Tests (Bun on windows-latest)	Setup Bun	2026-01-10T22:39:06.1446900Z 1.3.5+1e86cebd7
+Unit Tests (Bun on windows-latest)	Install dependencies	﻿2026-01-10T22:39:06.1830739Z ##[group]Run bun install
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:06.1831143Z [36;1mbun install[0m
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:06.1912202Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:06.1912587Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:06.5664118Z bun install v1.3.5 (1e86cebd)
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:48.3151864Z 
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:48.3231864Z $ cd .. && husky || true
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7412211Z 
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7412867Z + @changesets/cli@2.29.8
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7413229Z + @eslint/js@9.39.2
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7413520Z + eslint@9.39.2
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7413825Z + eslint-config-prettier@10.1.8
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7414207Z + eslint-plugin-prettier@5.5.4
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7414810Z + husky@9.1.7
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7415328Z + lint-staged@16.2.7
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7415624Z + prettier@3.7.4
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7415851Z + @actions/core@1.11.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7416168Z + @actions/github@6.0.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7416459Z + @agentclientprotocol/sdk@0.5.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7416800Z + @ai-sdk/mcp@0.0.8
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7417142Z + @ai-sdk/xai@2.0.33
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7417410Z + @clack/prompts@0.11.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7417710Z + @hono/standard-validator@0.2.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7418055Z + @hono/zod-validator@0.7.5
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7418393Z + @modelcontextprotocol/sdk@1.22.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7418770Z + @octokit/graphql@9.0.3
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7419066Z + @octokit/rest@22.0.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7419400Z + @openauthjs/openauth@0.4.3
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7419725Z + @opencode-ai/sdk@1.0.78
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7420029Z + @opentui/core@0.1.46
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7420326Z + @opentui/solid@0.1.46
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7420626Z + @parcel/watcher@2.5.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7421279Z + @solid-primitives/event-bus@1.1.2
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7421687Z + @standard-community/standard-json@0.3.5
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7422131Z + @standard-community/standard-openapi@0.2.9
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7422563Z + @zip.js/zip.js@2.8.10
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7422844Z + ai@6.0.0-beta.99
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7423105Z + chokidar@4.0.3
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7423372Z + clipboardy@5.0.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7423648Z + command-stream@0.7.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7423950Z + decimal.js@10.6.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7424250Z + diff@8.0.2
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7424550Z + fuzzysort@3.1.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7424817Z + glob@10.5.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7425056Z + gray-matter@4.0.3
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7425309Z + hono@4.10.6
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7425551Z + hono-openapi@1.1.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7425843Z + ignore@7.0.5
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7426110Z + jsonc-parser@3.3.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7426426Z + lino-objects-codec@0.1.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7426744Z + log-lazy@1.0.4
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7427017Z + minimatch@10.1.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7427290Z + remeda@2.32.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7427562Z + solid-js@1.9.10
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7427842Z + strip-ansi@7.1.2
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7428139Z + test-anywhere@0.7.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7428462Z + tree-sitter-bash@0.25.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7428764Z + turndown@7.2.2
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7429046Z + ulid@3.0.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7429307Z + vscode-jsonrpc@8.2.1
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7429626Z + vscode-languageserver-types@3.17.5
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7429993Z + web-tree-sitter@0.25.10
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7430310Z + xdg-basedir@5.1.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7430565Z + yargs@18.0.0
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7430798Z + zod@4.1.12
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7430939Z 
+Unit Tests (Bun on windows-latest)	Install dependencies	2026-01-10T22:39:55.7431068Z 606 packages installed [49.19s]
+Unit Tests (Bun on windows-latest)	Run unit tests	﻿2026-01-10T22:39:55.9585683Z ##[group]Run bun test tests/json-standard-unit.test.js
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:55.9586185Z [36;1mbun test tests/json-standard-unit.test.js[0m
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:55.9656210Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:55.9656560Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.2603670Z bun test v1.3.5 (1e86cebd)
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.2885334Z 
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.2886242Z ##[group]tests\json-standard-unit.test.js:
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3034951Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "opencode"
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3036018Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "claude"
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3036624Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > rejects invalid values
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3039740Z (pass) JSON Standard Module - Unit Tests > serializeOutput > opencode format produces pretty-printed JSON
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3040883Z (pass) JSON Standard Module - Unit Tests > serializeOutput > claude format produces compact JSON (NDJSON)
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3043579Z (pass) JSON Standard Module - Unit Tests > serializeOutput > both formats produce valid JSON
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3047179Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_start to init
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3049308Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts text to message
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3051117Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts tool_use to tool_use
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3052120Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_finish to result
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3053704Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts error to result with error status
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3054894Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > returns null for text without content
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3056021Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > uses snake_case session_id instead of camelCase sessionID
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3057566Z (pass) JSON Standard Module - Unit Tests > createEventHandler > creates handler with correct startTime
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3058879Z (pass) JSON Standard Module - Unit Tests > createEventHandler > handler.output exists and is a function
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3060032Z (pass) JSON Standard Comparison Tests > opencode and claude formats produce different output for same event
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3061109Z (pass) JSON Standard Comparison Tests > opencode preserves original event structure
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3061789Z 
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3062273Z ##[endgroup]
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3062703Z 
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3063841Z  17 pass
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3066541Z  0 fail
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3067151Z  50 expect() calls
+Unit Tests (Bun on windows-latest)	Run unit tests	2026-01-10T22:39:56.3067451Z Ran 17 tests across 1 file. [47.00ms]
+Unit Tests (Bun on windows-latest)	Post Setup Bun	﻿2026-01-10T22:39:56.4624866Z Post job cleanup.
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	﻿2026-01-10T22:39:56.7918415Z Post job cleanup.
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.0572551Z [command]"C:\Program Files\Git\bin\git.exe" version
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.0872503Z git version 2.52.0.windows.1
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.0960915Z Temporarily overriding HOME='D:\a\_temp\2615cd85-709d-4da6-ae57-150afe9265af' before making global git config changes
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.0962428Z Adding repository directory to the temporary git global config as a safe directory
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.0974140Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\agent\agent
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.1402419Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.1835487Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.7577481Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.7849097Z http.https://github.com/.extraheader
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.7898372Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:57.8240468Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:58.4306500Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+Unit Tests (Bun on windows-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:58.4626357Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+Unit Tests (Bun on windows-latest)	Complete job	﻿2026-01-10T22:39:59.0297555Z Cleaning up orphan processes
+Unit Tests (Bun on macos-latest)	Set up job	﻿2026-01-10T22:38:54.2538120Z Current runner version: '2.330.0'
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2560760Z ##[group]Runner Image Provisioner
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2561350Z Hosted Compute Agent
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2561710Z Version: 20251211.462
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2562090Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2562530Z Build Date: 2025-12-11T16:28:49Z
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2563020Z Worker ID: {84ffd5cc-6b27-4316-a224-13194de935c2}
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2563450Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2563790Z ##[group]Operating System
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2564140Z macOS
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2564920Z 15.7.3
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2565260Z 24G419
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2565550Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2565870Z ##[group]Runner Image
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2566310Z Image: macos-15-arm64
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2566720Z Version: 20260105.0094.1
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2567410Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20260105.0094/images/macos/macos-15-arm64-Readme.md
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2568520Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260105.0094
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2569390Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2570120Z ##[group]GITHUB_TOKEN Permissions
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2571390Z Contents: write
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2571710Z Metadata: read
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2572020Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2573400Z Secret source: Actions
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2573790Z Prepare workflow directory
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2802230Z Prepare all required actions
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.2828110Z Getting action download info
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.4567420Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:54.7964470Z Download action repository 'oven-sh/setup-bun@v2' (SHA:b7a1c7ccf290d58743029c4f6903da283811b979)
+Unit Tests (Bun on macos-latest)	Set up job	2026-01-10T22:38:56.1976790Z Complete job name: Unit Tests (Bun on macos-latest)
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	﻿2026-01-10T22:38:56.2414390Z ##[group]Run actions/checkout@v4
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2414950Z with:
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2415240Z   ref: refs/heads/main
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2415740Z   token: ***
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2416030Z   repository: link-assistant/agent
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2416390Z   ssh-strict: true
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2416680Z   ssh-user: git
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2416970Z   persist-credentials: true
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2417290Z   clean: true
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2417590Z   sparse-checkout-cone-mode: true
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2417940Z   fetch-depth: 1
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2418230Z   fetch-tags: false
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2418530Z   show-progress: true
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2418820Z   lfs: false
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2419120Z   submodules: false
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2419420Z   set-safe-directory: true
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.2419850Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.5897750Z Syncing repository: link-assistant/agent
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.5899650Z ##[group]Getting Git version info
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.5900160Z Working directory is '/Users/runner/work/agent/agent'
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.5901590Z [command]/opt/homebrew/bin/git version
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6206000Z git version 2.52.0
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6235230Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6242890Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/9fe164da-4740-4238-951c-5d6ed3642030/.gitconfig'
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6250710Z Temporarily overriding HOME='/Users/runner/work/_temp/9fe164da-4740-4238-951c-5d6ed3642030' before making global git config changes
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6251950Z Adding repository directory to the temporary git global config as a safe directory
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6254630Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/agent/agent
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6358960Z Deleting the contents of '/Users/runner/work/agent/agent'
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6362030Z ##[group]Initializing the repository
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6367000Z [command]/opt/homebrew/bin/git init /Users/runner/work/agent/agent
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6544340Z hint: Using 'master' as the name for the initial branch. This default branch name
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6547030Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6548740Z hint: to use in all of your new repositories, which will suppress this warning,
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6549480Z hint: call:
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6550170Z hint:
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6550730Z hint: 	git config --global init.defaultBranch <name>
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6551550Z hint:
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6552110Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6553280Z hint: 'development'. The just-created branch can be renamed via this command:
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6553980Z hint:
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6554540Z hint: 	git branch -m <name>
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6554970Z hint:
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6555440Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6556170Z Initialized empty Git repository in /Users/runner/work/agent/agent/.git/
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6563920Z [command]/opt/homebrew/bin/git remote add origin https://github.com/link-assistant/agent
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6650850Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6651540Z ##[group]Disabling automatic garbage collection
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6652140Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6718540Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6719210Z ##[group]Setting up auth
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6723530Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.6787130Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7809870Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.7868010Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8563210Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.8619910Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.9462730Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.9526390Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.9528440Z ##[group]Fetching the repository
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:56.9532940Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.0962270Z From https://github.com/link-assistant/agent
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.0963240Z  * [new branch]      main       -> origin/main
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1039610Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1040440Z ##[group]Determining the checkout info
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1041200Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1043050Z [command]/opt/homebrew/bin/git sparse-checkout disable
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1105070Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1156150Z ##[group]Checking out the ref
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1158420Z [command]/opt/homebrew/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1659720Z Switched to a new branch 'main'
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1663090Z branch 'main' set up to track 'origin/main'.
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1666120Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1729850Z [command]/opt/homebrew/bin/git log -1 --format=%H
+Unit Tests (Bun on macos-latest)	Run actions/checkout@v4	2026-01-10T22:38:58.1785550Z 1347edef98519b56b62c10f340740eecc50b7558
+Unit Tests (Bun on macos-latest)	Setup Bun	﻿2026-01-10T22:38:58.2005630Z ##[group]Run oven-sh/setup-bun@v2
+Unit Tests (Bun on macos-latest)	Setup Bun	2026-01-10T22:38:58.2006590Z with:
+Unit Tests (Bun on macos-latest)	Setup Bun	2026-01-10T22:38:58.2007180Z   bun-version: latest
+Unit Tests (Bun on macos-latest)	Setup Bun	2026-01-10T22:38:58.2007960Z   no-cache: false
+Unit Tests (Bun on macos-latest)	Setup Bun	2026-01-10T22:38:58.2008640Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Setup Bun	2026-01-10T22:38:58.3626070Z Downloading a new version of Bun: https://bun.sh/download/latest/darwin/arm64?avx2=true&profile=false
+Unit Tests (Bun on macos-latest)	Setup Bun	2026-01-10T22:38:59.1617130Z [command]/usr/bin/unzip -o -q /Users/runner/work/_temp/8ab54b79-b561-432e-bbbf-d55e1594ef53.zip
+Unit Tests (Bun on macos-latest)	Setup Bun	2026-01-10T22:38:59.6488800Z [command]/Users/runner/.bun/bin/bun --revision
+Unit Tests (Bun on macos-latest)	Setup Bun	2026-01-10T22:38:59.6703590Z 1.3.5+1e86cebd7
+Unit Tests (Bun on macos-latest)	Install dependencies	﻿2026-01-10T22:38:59.7010200Z ##[group]Run bun install
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:38:59.7010560Z [36;1mbun install[0m
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:38:59.7073380Z shell: /bin/bash -e {0}
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:38:59.7073620Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:38:59.7448720Z bun install v1.3.5 (1e86cebd)
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.0013670Z 
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.0086710Z $ cd .. && husky || true
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3404220Z 
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3404670Z + @changesets/cli@2.29.8
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3404990Z + @eslint/js@9.39.2
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3405200Z + eslint@9.39.2
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3405470Z + eslint-config-prettier@10.1.8
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3405720Z + eslint-plugin-prettier@5.5.4
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3405970Z + husky@9.1.7
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3406170Z + lint-staged@16.2.7
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3406470Z + prettier@3.7.4
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3406620Z + @actions/core@1.11.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3406800Z + @actions/github@6.0.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3407030Z + @agentclientprotocol/sdk@0.5.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3407210Z + @ai-sdk/mcp@0.0.8
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3407350Z + @ai-sdk/xai@2.0.33
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3407660Z + @clack/prompts@0.11.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3407910Z + @hono/standard-validator@0.2.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3408100Z + @hono/zod-validator@0.7.5
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3408350Z + @modelcontextprotocol/sdk@1.22.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3408610Z + @octokit/graphql@9.0.3
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3408780Z + @octokit/rest@22.0.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3408940Z + @openauthjs/openauth@0.4.3
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3409110Z + @opencode-ai/sdk@1.0.78
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3409330Z + @opentui/core@0.1.46
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3409550Z + @opentui/solid@0.1.46
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3409730Z + @parcel/watcher@2.5.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3410450Z + @solid-primitives/event-bus@1.1.2
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3411120Z + @standard-community/standard-json@0.3.5
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3411660Z + @standard-community/standard-openapi@0.2.9
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3412130Z + @zip.js/zip.js@2.8.10
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3412530Z + ai@6.0.0-beta.99
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3412980Z + chokidar@4.0.3
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3413380Z + clipboardy@5.0.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3413740Z + command-stream@0.7.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3414090Z + decimal.js@10.6.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3414760Z + diff@8.0.2
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3415190Z + fuzzysort@3.1.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3415590Z + glob@10.5.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3415990Z + gray-matter@4.0.3
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3416440Z + hono@4.10.6
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3416700Z + hono-openapi@1.1.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3416980Z + ignore@7.0.5
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3417180Z + jsonc-parser@3.3.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3417430Z + lino-objects-codec@0.1.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3417720Z + log-lazy@1.0.4
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3417870Z + minimatch@10.1.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3418070Z + remeda@2.32.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3418260Z + solid-js@1.9.10
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3418460Z + strip-ansi@7.1.2
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3418670Z + test-anywhere@0.7.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3418910Z + tree-sitter-bash@0.25.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3419130Z + turndown@7.2.2
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3419350Z + ulid@3.0.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3419520Z + vscode-jsonrpc@8.2.1
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3419770Z + vscode-languageserver-types@3.17.5
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3420090Z + web-tree-sitter@0.25.10
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3420260Z + xdg-basedir@5.1.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3420400Z + yargs@18.0.0
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3420520Z + zod@4.1.12
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3420650Z 
+Unit Tests (Bun on macos-latest)	Install dependencies	2026-01-10T22:39:02.3420730Z 606 packages installed [2.60s]
+Unit Tests (Bun on macos-latest)	Run unit tests	﻿2026-01-10T22:39:02.3796930Z ##[group]Run bun test tests/json-standard-unit.test.js
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.3797340Z [36;1mbun test tests/json-standard-unit.test.js[0m
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.3834750Z shell: /bin/bash -e {0}
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.3834940Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4228080Z bun test v1.3.5 (1e86cebd)
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4553260Z 
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4554210Z ##[group]tests/json-standard-unit.test.js:
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4848190Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "opencode" [0.42ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4848760Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > accepts "claude" [0.09ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4849220Z (pass) JSON Standard Module - Unit Tests > isValidJsonStandard > rejects invalid values
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4850590Z (pass) JSON Standard Module - Unit Tests > serializeOutput > opencode format produces pretty-printed JSON [0.34ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4851650Z (pass) JSON Standard Module - Unit Tests > serializeOutput > claude format produces compact JSON (NDJSON) [0.10ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4855180Z (pass) JSON Standard Module - Unit Tests > serializeOutput > both formats produce valid JSON [0.29ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4856700Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_start to init [0.19ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4877360Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts text to message [0.12ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4878150Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts tool_use to tool_use [0.06ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4878830Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts step_finish to result [0.01ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4879440Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > converts error to result with error status
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4880060Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > returns null for text without content
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4880810Z (pass) JSON Standard Module - Unit Tests > convertOpenCodeToClaude > uses snake_case session_id instead of camelCase sessionID [0.12ms]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4881450Z (pass) JSON Standard Module - Unit Tests > createEventHandler > creates handler with correct startTime
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4882020Z (pass) JSON Standard Module - Unit Tests > createEventHandler > handler.output exists and is a function
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4882620Z (pass) JSON Standard Comparison Tests > opencode and claude formats produce different output for same event
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4883150Z (pass) JSON Standard Comparison Tests > opencode preserves original event structure
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4883410Z 
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4883810Z ##[endgroup]
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4883900Z 
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4884050Z  17 pass
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4884170Z  0 fail
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4884270Z  50 expect() calls
+Unit Tests (Bun on macos-latest)	Run unit tests	2026-01-10T22:39:02.4884470Z Ran 17 tests across 1 file. [65.00ms]
+Unit Tests (Bun on macos-latest)	Post Setup Bun	﻿2026-01-10T22:39:02.4947840Z Post job cleanup.
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	﻿2026-01-10T22:39:02.6325140Z Post job cleanup.
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.7190410Z [command]/opt/homebrew/bin/git version
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.7247960Z git version 2.52.0
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.7269700Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/f7e8b1ab-eaa6-415a-ac89-7a0dc55a3099/.gitconfig'
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.7280350Z Temporarily overriding HOME='/Users/runner/work/_temp/f7e8b1ab-eaa6-415a-ac89-7a0dc55a3099' before making global git config changes
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.7281020Z Adding repository directory to the temporary git global config as a safe directory
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.7283570Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/agent/agent
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.7346250Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.7416850Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.8144410Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.8189140Z http.https://github.com/.extraheader
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.8198260Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.8248240Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.8881270Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Unit Tests (Bun on macos-latest)	Post Run actions/checkout@v4	2026-01-10T22:39:02.8938350Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Unit Tests (Bun on macos-latest)	Complete job	﻿2026-01-10T22:39:02.9678570Z Cleaning up orphan processes
+Release	Set up job	﻿2026-01-10T22:40:03.6954703Z Current runner version: '2.330.0'
+Release	Set up job	2026-01-10T22:40:03.6980980Z ##[group]Runner Image Provisioner
+Release	Set up job	2026-01-10T22:40:03.6981865Z Hosted Compute Agent
+Release	Set up job	2026-01-10T22:40:03.6982426Z Version: 20251211.462
+Release	Set up job	2026-01-10T22:40:03.6982986Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+Release	Set up job	2026-01-10T22:40:03.6983860Z Build Date: 2025-12-11T16:28:49Z
+Release	Set up job	2026-01-10T22:40:03.6984506Z Worker ID: {045a66c0-166c-4b6e-8eef-4ec023dc1d28}
+Release	Set up job	2026-01-10T22:40:03.6985339Z ##[endgroup]
+Release	Set up job	2026-01-10T22:40:03.6985941Z ##[group]Operating System
+Release	Set up job	2026-01-10T22:40:03.6986469Z Ubuntu
+Release	Set up job	2026-01-10T22:40:03.6986945Z 24.04.3
+Release	Set up job	2026-01-10T22:40:03.6987540Z LTS
+Release	Set up job	2026-01-10T22:40:03.6987988Z ##[endgroup]
+Release	Set up job	2026-01-10T22:40:03.6988746Z ##[group]Runner Image
+Release	Set up job	2026-01-10T22:40:03.6989400Z Image: ubuntu-24.04
+Release	Set up job	2026-01-10T22:40:03.6989904Z Version: 20260105.202.1
+Release	Set up job	2026-01-10T22:40:03.6990852Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260105.202/images/ubuntu/Ubuntu2404-Readme.md
+Release	Set up job	2026-01-10T22:40:03.6992327Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260105.202
+Release	Set up job	2026-01-10T22:40:03.6993562Z ##[endgroup]
+Release	Set up job	2026-01-10T22:40:03.6994657Z ##[group]GITHUB_TOKEN Permissions
+Release	Set up job	2026-01-10T22:40:03.6996996Z Contents: write
+Release	Set up job	2026-01-10T22:40:03.6997710Z Metadata: read
+Release	Set up job	2026-01-10T22:40:03.6998221Z PullRequests: write
+Release	Set up job	2026-01-10T22:40:03.6998678Z ##[endgroup]
+Release	Set up job	2026-01-10T22:40:03.7000707Z Secret source: Actions
+Release	Set up job	2026-01-10T22:40:03.7001705Z Prepare workflow directory
+Release	Set up job	2026-01-10T22:40:03.7329149Z Prepare all required actions
+Release	Set up job	2026-01-10T22:40:03.7367517Z Getting action download info
+Release	Set up job	2026-01-10T22:40:04.1017112Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Release	Set up job	2026-01-10T22:40:04.2433068Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+Release	Set up job	2026-01-10T22:40:04.4744425Z Complete job name: Release
+Release	Run actions/checkout@v4	﻿2026-01-10T22:40:04.5478761Z ##[group]Run actions/checkout@v4
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5479666Z with:
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5480079Z   fetch-depth: 0
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5480537Z   repository: link-assistant/agent
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5481218Z   token: ***
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5481615Z   ssh-strict: true
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5482015Z   ssh-user: git
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5482425Z   persist-credentials: true
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5482884Z   clean: true
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5483296Z   sparse-checkout-cone-mode: true
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5483797Z   fetch-tags: false
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5484205Z   show-progress: true
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5484631Z   lfs: false
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5485167Z   submodules: false
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5485599Z   set-safe-directory: true
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.5486329Z ##[endgroup]
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6595696Z Syncing repository: link-assistant/agent
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6598740Z ##[group]Getting Git version info
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6600042Z Working directory is '/home/runner/work/agent/agent'
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6601935Z [command]/usr/bin/git version
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6675405Z git version 2.52.0
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6713435Z ##[endgroup]
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6739220Z Temporarily overriding HOME='/home/runner/work/_temp/58ddd205-4044-47ed-b936-c905b97c4bfc' before making global git config changes
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6741004Z Adding repository directory to the temporary git global config as a safe directory
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6746282Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6791063Z Deleting the contents of '/home/runner/work/agent/agent'
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6795524Z ##[group]Initializing the repository
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6801567Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6919235Z hint: Using 'master' as the name for the initial branch. This default branch name
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6920463Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6921422Z hint: to use in all of your new repositories, which will suppress this warning,
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6922228Z hint: call:
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6922603Z hint:
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6923350Z hint: 	git config --global init.defaultBranch <name>
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6924486Z hint:
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6925373Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6926333Z hint: 'development'. The just-created branch can be renamed via this command:
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6927043Z hint:
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6927435Z hint: 	git branch -m <name>
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6927881Z hint:
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6928485Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6929837Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6935548Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6967352Z ##[endgroup]
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6968116Z ##[group]Disabling automatic garbage collection
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6971565Z [command]/usr/bin/git config --local gc.auto 0
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6998477Z ##[endgroup]
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.6999211Z ##[group]Setting up auth
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7005214Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7034180Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7410562Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7442423Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7675344Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7712360Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7933671Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7968144Z ##[endgroup]
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7969563Z ##[group]Fetching the repository
+Release	Run actions/checkout@v4	2026-01-10T22:40:04.7978053Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3009273Z From https://github.com/link-assistant/agent
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3014787Z  * [new branch]      issue-100-a059c6e915ea -> origin/issue-100-a059c6e915ea
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3023027Z  * [new branch]      issue-102-6e0a44052594 -> origin/issue-102-6e0a44052594
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3025468Z  * [new branch]      issue-104-09ef4d9a60d7 -> origin/issue-104-09ef4d9a60d7
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3027677Z  * [new branch]      issue-106-00050382cea1 -> origin/issue-106-00050382cea1
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3029955Z  * [new branch]      issue-109-1e6d7f1b4e4d -> origin/issue-109-1e6d7f1b4e4d
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3032213Z  * [new branch]      issue-111-7a5c4ec5b152 -> origin/issue-111-7a5c4ec5b152
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3034551Z  * [new branch]      issue-14-8a0de63c9ac0  -> origin/issue-14-8a0de63c9ac0
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3037123Z  * [new branch]      issue-16-02a98d18139d  -> origin/issue-16-02a98d18139d
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3039613Z  * [new branch]      issue-18-ee9e687096a6  -> origin/issue-18-ee9e687096a6
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3042045Z  * [new branch]      issue-2-f427e195b913   -> origin/issue-2-f427e195b913
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3044427Z  * [new branch]      issue-20-8704d00e8b4e  -> origin/issue-20-8704d00e8b4e
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3047004Z  * [new branch]      issue-22-3ae2871ca86c  -> origin/issue-22-3ae2871ca86c
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3049386Z  * [new branch]      issue-24-9e1c4ee0ed15  -> origin/issue-24-9e1c4ee0ed15
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3051867Z  * [new branch]      issue-26-1a4b69adfb64  -> origin/issue-26-1a4b69adfb64
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3054633Z  * [new branch]      issue-28-227b62c91030  -> origin/issue-28-227b62c91030
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3057775Z  * [new branch]      issue-30-8c53504315c4  -> origin/issue-30-8c53504315c4
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3060561Z  * [new branch]      issue-32-693cfcfdd6d5  -> origin/issue-32-693cfcfdd6d5
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3063293Z  * [new branch]      issue-34-a5a973ebd576  -> origin/issue-34-a5a973ebd576
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3066358Z  * [new branch]      issue-36-33c80c585287  -> origin/issue-36-33c80c585287
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3069200Z  * [new branch]      issue-38-d6620330d024  -> origin/issue-38-d6620330d024
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3072168Z  * [new branch]      issue-39-481b45eeff2b  -> origin/issue-39-481b45eeff2b
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3075339Z  * [new branch]      issue-41-9e36c91cba9a  -> origin/issue-41-9e36c91cba9a
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3078308Z  * [new branch]      issue-43-1d50271986ab  -> origin/issue-43-1d50271986ab
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3081257Z  * [new branch]      issue-45-a036d9c72e61  -> origin/issue-45-a036d9c72e61
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3084257Z  * [new branch]      issue-47-b7704cc6b9a4  -> origin/issue-47-b7704cc6b9a4
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3087600Z  * [new branch]      issue-49-bef878bb5d38  -> origin/issue-49-bef878bb5d38
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3090868Z  * [new branch]      issue-51-bf685c43c881  -> origin/issue-51-bf685c43c881
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3094113Z  * [new branch]      issue-53-f9aa867296d4  -> origin/issue-53-f9aa867296d4
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3097658Z  * [new branch]      issue-54-54fd1e88bb01  -> origin/issue-54-54fd1e88bb01
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3100995Z  * [new branch]      issue-58-bc11cbdc23dd  -> origin/issue-58-bc11cbdc23dd
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3104263Z  * [new branch]      issue-6-097eb11195ee   -> origin/issue-6-097eb11195ee
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3107742Z  * [new branch]      issue-60-e248fa950850  -> origin/issue-60-e248fa950850
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3111072Z  * [new branch]      issue-61-e7041ade0469  -> origin/issue-61-e7041ade0469
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3114332Z  * [new branch]      issue-62-c8dd711e089c  -> origin/issue-62-c8dd711e089c
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3117998Z  * [new branch]      issue-66-4b5b645ed022  -> origin/issue-66-4b5b645ed022
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3121199Z  * [new branch]      issue-68-c0a8954ce69f  -> origin/issue-68-c0a8954ce69f
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3124341Z  * [new branch]      issue-7-8850c3e4bc8b   -> origin/issue-7-8850c3e4bc8b
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3127369Z  * [new branch]      issue-70-1e5f73ed6b3c  -> origin/issue-70-1e5f73ed6b3c
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3129584Z  * [new branch]      issue-72-6975e4e75bc7  -> origin/issue-72-6975e4e75bc7
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3131796Z  * [new branch]      issue-76-fe9d73dc3365  -> origin/issue-76-fe9d73dc3365
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3133904Z  * [new branch]      issue-77-677ebcec7a83  -> origin/issue-77-677ebcec7a83
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3136289Z  * [new branch]      issue-78-06a95192a461  -> origin/issue-78-06a95192a461
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3139015Z  * [new branch]      issue-8-62be6460b721   -> origin/issue-8-62be6460b721
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3141184Z  * [new branch]      issue-81-d58ba5a0ef88  -> origin/issue-81-d58ba5a0ef88
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3143295Z  * [new branch]      issue-82-506d1d545d4e  -> origin/issue-82-506d1d545d4e
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3145600Z  * [new branch]      issue-84-bb28b273e804  -> origin/issue-84-bb28b273e804
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3148735Z  * [new branch]      issue-86-cadafe19d775  -> origin/issue-86-cadafe19d775
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3151244Z  * [new branch]      issue-88-49422a8421a1  -> origin/issue-88-49422a8421a1
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3153426Z  * [new branch]      issue-89-9a1b6226b579  -> origin/issue-89-9a1b6226b579
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3156079Z  * [new branch]      issue-9-17ad0ffde65c   -> origin/issue-9-17ad0ffde65c
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3158218Z  * [new branch]      issue-93-40e3ae1a14d3  -> origin/issue-93-40e3ae1a14d3
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3160329Z  * [new branch]      issue-96-109dff6454e6  -> origin/issue-96-109dff6454e6
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3162344Z  * [new branch]      main                   -> origin/main
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3163978Z  * [new tag]         v0.0.10                -> v0.0.10
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3165594Z  * [new tag]         v0.0.11                -> v0.0.11
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3167225Z  * [new tag]         v0.0.12                -> v0.0.12
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3168633Z  * [new tag]         v0.0.13                -> v0.0.13
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3170055Z  * [new tag]         v0.0.14                -> v0.0.14
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3171448Z  * [new tag]         v0.0.15                -> v0.0.15
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3172834Z  * [new tag]         v0.0.16                -> v0.0.16
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3174195Z  * [new tag]         v0.0.17                -> v0.0.17
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3175798Z  * [new tag]         v0.1.0                 -> v0.1.0
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3177157Z  * [new tag]         v0.1.1                 -> v0.1.1
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3178510Z  * [new tag]         v0.1.2                 -> v0.1.2
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3179852Z  * [new tag]         v0.1.3                 -> v0.1.3
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3181208Z  * [new tag]         v0.1.4                 -> v0.1.4
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3182550Z  * [new tag]         v0.2.0                 -> v0.2.0
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3183891Z  * [new tag]         v0.2.1                 -> v0.2.1
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3185462Z  * [new tag]         v0.3.0                 -> v0.3.0
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3186801Z  * [new tag]         v0.3.1                 -> v0.3.1
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3188139Z  * [new tag]         v0.4.0                 -> v0.4.0
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3189475Z  * [new tag]         v0.5.0                 -> v0.5.0
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3190825Z  * [new tag]         v0.5.1                 -> v0.5.1
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3192192Z  * [new tag]         v0.5.2                 -> v0.5.2
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3194067Z  * [new tag]         v0.5.3                 -> v0.5.3
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3195745Z  * [new tag]         v0.6.0                 -> v0.6.0
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3197385Z  * [new tag]         v0.6.1                 -> v0.6.1
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3198799Z  * [new tag]         v0.6.2                 -> v0.6.2
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3200381Z  * [new tag]         v0.6.3                 -> v0.6.3
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3202348Z  * [new tag]         v0.7.0                 -> v0.7.0
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3207310Z [command]/usr/bin/git branch --list --remote origin/main
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3209346Z   origin/main
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3211686Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3223388Z 4f7a0d469c67403139a8017960b8e74ee52d8031
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3234588Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +1347edef98519b56b62c10f340740eecc50b7558:refs/remotes/origin/main
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3297583Z From https://github.com/link-assistant/agent
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3299912Z  + 4f7a0d4...1347ede 1347edef98519b56b62c10f340740eecc50b7558 -> origin/main  (forced update)
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3325229Z ##[endgroup]
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3326836Z ##[group]Determining the checkout info
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3328980Z ##[endgroup]
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3330544Z [command]/usr/bin/git sparse-checkout disable
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3370076Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3395833Z ##[group]Checking out the ref
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3399101Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3789120Z Switched to a new branch 'main'
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3792181Z branch 'main' set up to track 'origin/main'.
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3803197Z ##[endgroup]
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3836181Z [command]/usr/bin/git log -1 --format=%H
+Release	Run actions/checkout@v4	2026-01-10T22:40:05.3857361Z 1347edef98519b56b62c10f340740eecc50b7558
+Release	Setup Node.js	﻿2026-01-10T22:40:05.4155609Z ##[group]Run actions/setup-node@v4
+Release	Setup Node.js	2026-01-10T22:40:05.4156702Z with:
+Release	Setup Node.js	2026-01-10T22:40:05.4157431Z   node-version: 20.x
+Release	Setup Node.js	2026-01-10T22:40:05.4158386Z   registry-url: https://registry.npmjs.org
+Release	Setup Node.js	2026-01-10T22:40:05.4159517Z   always-auth: false
+Release	Setup Node.js	2026-01-10T22:40:05.4160366Z   check-latest: false
+Release	Setup Node.js	2026-01-10T22:40:05.4161467Z   token: ***
+Release	Setup Node.js	2026-01-10T22:40:05.4162213Z ##[endgroup]
+Release	Setup Node.js	2026-01-10T22:40:05.6294246Z Found in cache @ /opt/hostedtoolcache/node/20.19.6/x64
+Release	Setup Node.js	2026-01-10T22:40:05.6298962Z ##[group]Environment details
+Release	Setup Node.js	2026-01-10T22:40:08.2074203Z node: v20.19.6
+Release	Setup Node.js	2026-01-10T22:40:08.2074910Z npm: 10.8.2
+Release	Setup Node.js	2026-01-10T22:40:08.2075504Z yarn: 1.22.22
+Release	Setup Node.js	2026-01-10T22:40:08.2079056Z ##[endgroup]
+Release	Install dependencies	﻿2026-01-10T22:40:08.2204717Z ##[group]Run npm install --legacy-peer-deps
+Release	Install dependencies	2026-01-10T22:40:08.2205342Z [36;1mnpm install --legacy-peer-deps[0m
+Release	Install dependencies	2026-01-10T22:40:08.2249527Z shell: /usr/bin/bash -e {0}
+Release	Install dependencies	2026-01-10T22:40:08.2249802Z env:
+Release	Install dependencies	2026-01-10T22:40:08.2250046Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+Release	Install dependencies	2026-01-10T22:40:08.2250393Z   NODE_AUTH_TOKEN: XXXXX-XXXXX-XXXXX-XXXXX
+Release	Install dependencies	2026-01-10T22:40:08.2250668Z ##[endgroup]
+Release	Install dependencies	2026-01-10T22:40:19.2424246Z 
+Release	Install dependencies	2026-01-10T22:40:19.2434485Z > @link-assistant/agent@0.7.0 prepare
+Release	Install dependencies	2026-01-10T22:40:19.2435350Z > cd .. && husky || true
+Release	Install dependencies	2026-01-10T22:40:19.2435624Z 
+Release	Install dependencies	2026-01-10T22:40:19.2965381Z 
+Release	Install dependencies	2026-01-10T22:40:19.2967361Z added 658 packages, and audited 659 packages in 11s
+Release	Install dependencies	2026-01-10T22:40:19.2967951Z 
+Release	Install dependencies	2026-01-10T22:40:19.2968467Z 143 packages are looking for funding
+Release	Install dependencies	2026-01-10T22:40:19.2969133Z   run `npm fund` for details
+Release	Install dependencies	2026-01-10T22:40:19.2990451Z 
+Release	Install dependencies	2026-01-10T22:40:19.2990788Z 2 high severity vulnerabilities
+Release	Install dependencies	2026-01-10T22:40:19.2991082Z 
+Release	Install dependencies	2026-01-10T22:40:19.2991298Z To address all issues, run:
+Release	Install dependencies	2026-01-10T22:40:19.2991654Z   npm audit fix
+Release	Install dependencies	2026-01-10T22:40:19.2991789Z 
+Release	Install dependencies	2026-01-10T22:40:19.2991920Z Run `npm audit` for details.
+Release	Update npm for OIDC trusted publishing	﻿2026-01-10T22:40:19.3295494Z ##[group]Run node scripts/setup-npm.mjs
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:19.3295883Z [36;1mnode scripts/setup-npm.mjs[0m
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:19.3332589Z shell: /usr/bin/bash -e {0}
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:19.3332850Z env:
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:19.3333082Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:19.3333411Z   NODE_AUTH_TOKEN: XXXXX-XXXXX-XXXXX-XXXXX
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:19.3333667Z ##[endgroup]
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:21.3500681Z 10.8.2
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:21.3547608Z Current npm version: 10.8.2
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:24.4787413Z 
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:24.4789217Z removed 45 packages, and changed 107 packages in 3s
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:24.4790070Z 
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:24.4790749Z 16 packages are looking for funding
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:24.4791588Z   run `npm fund` for details
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:24.5841517Z npm warn Unknown user config "always-auth". This will stop working in the next major version of npm.
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:24.5850630Z 11.7.0
+Release	Update npm for OIDC trusted publishing	2026-01-10T22:40:24.5891430Z Updated npm version: 11.7.0
+Release	Check for changesets	﻿2026-01-10T22:40:24.5978355Z ##[group]Run # Count changeset files (excluding README.md and config.json)
+Release	Check for changesets	2026-01-10T22:40:24.5978898Z [36;1m# Count changeset files (excluding README.md and config.json)[0m
+Release	Check for changesets	2026-01-10T22:40:24.5979393Z [36;1mCHANGESET_COUNT=$(find js/.changeset -name "*.md" ! -name "README.md" | wc -l)[0m
+Release	Check for changesets	2026-01-10T22:40:24.5979836Z [36;1mecho "Found $CHANGESET_COUNT changeset file(s)"[0m
+Release	Check for changesets	2026-01-10T22:40:24.5980317Z [36;1mecho "has_changesets=$([[ $CHANGESET_COUNT -gt 0 ]] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT[0m
+Release	Check for changesets	2026-01-10T22:40:24.6013232Z shell: /usr/bin/bash -e {0}
+Release	Check for changesets	2026-01-10T22:40:24.6013479Z env:
+Release	Check for changesets	2026-01-10T22:40:24.6013704Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+Release	Check for changesets	2026-01-10T22:40:24.6014029Z   NODE_AUTH_TOKEN: XXXXX-XXXXX-XXXXX-XXXXX
+Release	Check for changesets	2026-01-10T22:40:24.6014278Z ##[endgroup]
+Release	Check for changesets	2026-01-10T22:40:24.6217356Z Found 1 changeset file(s)
+Release	Version packages and commit to main	﻿2026-01-10T22:40:24.6264144Z ##[group]Run node scripts/version-and-commit.mjs --mode changeset
+Release	Version packages and commit to main	2026-01-10T22:40:24.6264603Z [36;1mnode scripts/version-and-commit.mjs --mode changeset[0m
+Release	Version packages and commit to main	2026-01-10T22:40:24.6293448Z shell: /usr/bin/bash -e {0}
+Release	Version packages and commit to main	2026-01-10T22:40:24.6293682Z env:
+Release	Version packages and commit to main	2026-01-10T22:40:24.6293913Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+Release	Version packages and commit to main	2026-01-10T22:40:24.6294248Z   NODE_AUTH_TOKEN: XXXXX-XXXXX-XXXXX-XXXXX
+Release	Version packages and commit to main	2026-01-10T22:40:24.6294498Z ##[endgroup]
+Release	Version packages and commit to main	2026-01-10T22:40:26.9219990Z Parsed configuration: { mode: 'changeset', bumpType: '', description: '(none)' }
+Release	Version packages and commit to main	2026-01-10T22:40:26.9401407Z Checking for remote changes...
+Release	Version packages and commit to main	2026-01-10T22:40:27.1331850Z From https://github.com/link-assistant/agent
+Release	Version packages and commit to main	2026-01-10T22:40:27.1332490Z  * branch            main       -> FETCH_HEAD
+Release	Version packages and commit to main	2026-01-10T22:40:27.1334909Z    1347ede..4f7a0d4  main       -> origin/main
+Release	Version packages and commit to main	2026-01-10T22:40:27.1461860Z 1347edef98519b56b62c10f340740eecc50b7558
+Release	Version packages and commit to main	2026-01-10T22:40:27.1534062Z 4f7a0d469c67403139a8017960b8e74ee52d8031
+Release	Version packages and commit to main	2026-01-10T22:40:27.1540888Z Remote main has advanced (local: 1347edef98519b56b62c10f340740eecc50b7558, remote: 4f7a0d469c67403139a8017960b8e74ee52d8031)
+Release	Version packages and commit to main	2026-01-10T22:40:27.1543512Z This may indicate a previous attempt partially succeeded.
+Release	Version packages and commit to main	2026-01-10T22:40:27.1613677Z {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1614102Z   "name": "@link-assistant/agent",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1614585Z   "version": "0.7.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1615737Z   "description": "A minimal, public domain AI CLI agent compatible with OpenCode's JSON interface. Bun-only runtime.",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1616682Z   "main": "src/index.js",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1617063Z   "type": "module",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1617401Z   "bin": {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1617733Z     "agent": "./src/index.js"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1618149Z   },
+Release	Version packages and commit to main	2026-01-10T22:40:27.1618450Z   "scripts": {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1618855Z     "dev": "bun run src/index.js",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1619338Z     "test": "bun test",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1619697Z     "lint": "eslint .",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1620130Z     "lint:fix": "eslint . --fix",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1620629Z     "format": "prettier --write .",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1621137Z     "format:check": "prettier --check .",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1621751Z     "check:file-size": "node ../scripts/check-file-size.mjs",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1622560Z     "check": "npm run lint && npm run format:check && npm run check:file-size",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1623228Z     "prepare": "cd .. && husky || true",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1623662Z     "changeset": "changeset",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1624249Z     "changeset:version": "node ../scripts/changeset-version.mjs",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1624898Z     "changeset:publish": "changeset publish",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1625760Z     "changeset:status": "changeset status --since=origin/main"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1626301Z   },
+Release	Version packages and commit to main	2026-01-10T22:40:27.1626569Z   "engines": {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1626873Z     "bun": ">=1.0.0"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1627184Z   },
+Release	Version packages and commit to main	2026-01-10T22:40:27.1627458Z   "repository": {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1627772Z     "type": "git",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1628231Z     "url": "https://github.com/link-assistant/agent"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1628714Z   },
+Release	Version packages and commit to main	2026-01-10T22:40:27.1628987Z   "keywords": [
+Release	Version packages and commit to main	2026-01-10T22:40:27.1629283Z     "ai",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1629557Z     "cli",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1629823Z     "agent",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1630113Z     "opencode",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1630409Z     "bun",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1630689Z     "assistant",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1631048Z     "json-interface"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1631397Z   ],
+Release	Version packages and commit to main	2026-01-10T22:40:27.1631721Z   "publishConfig": {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1632101Z     "access": "public"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1632442Z   },
+Release	Version packages and commit to main	2026-01-10T22:40:27.1632738Z   "files": [
+Release	Version packages and commit to main	2026-01-10T22:40:27.1633045Z     "src/",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1633354Z     "package.json",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1633728Z     "../README.md",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1634072Z     "../MODELS.md",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1634423Z     "../TOOLS.md",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1634771Z     "../EXAMPLES.md",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1635342Z     "../LICENSE"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1635714Z   ],
+Release	Version packages and commit to main	2026-01-10T22:40:27.1636042Z   "dependencies": {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1636935Z     "@actions/core": "^1.11.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1637419Z     "@actions/github": "^6.0.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1637942Z     "@agentclientprotocol/sdk": "^0.5.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1638416Z     "@ai-sdk/mcp": "^0.0.8",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1638821Z     "@ai-sdk/xai": "^2.0.33",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1639247Z     "@clack/prompts": "^0.11.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1639747Z     "@hono/standard-validator": "^0.2.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1640255Z     "@hono/zod-validator": "^0.7.5",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1640836Z     "@modelcontextprotocol/sdk": "^1.22.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1641387Z     "@octokit/graphql": "^9.0.3",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1641875Z     "@octokit/rest": "^22.0.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1642674Z     "@openauthjs/openauth": "^0.4.3",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1643211Z     "@opencode-ai/sdk": "^1.0.78",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1643685Z     "@opentui/core": "^0.1.46",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1644146Z     "@opentui/solid": "^0.1.46",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1644601Z     "@parcel/watcher": "^2.5.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1645349Z     "@solid-primitives/event-bus": "^1.1.2",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1645970Z     "@standard-community/standard-json": "^0.3.5",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1646631Z     "@standard-community/standard-openapi": "^0.2.9",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1647240Z     "@zip.js/zip.js": "^2.8.10",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1647681Z     "ai": "6.0.0-beta.99",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1648078Z     "chokidar": "^4.0.3",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1648487Z     "clipboardy": "^5.0.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1648937Z     "command-stream": "^0.7.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1649369Z     "decimal.js": "^10.6.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1649770Z     "diff": "^8.0.2",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1650132Z     "fuzzysort": "^3.1.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1650548Z     "glob": "^10.0.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1650919Z     "gray-matter": "^4.0.3",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1651334Z     "hono": "^4.10.6",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1651723Z     "hono-openapi": "^1.1.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1652129Z     "ignore": "^7.0.5",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1652513Z     "jsonc-parser": "^3.3.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1652989Z     "lino-objects-codec": "^0.1.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1653411Z     "log-lazy": "^1.0.4",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1653781Z     "minimatch": "^10.1.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1654161Z     "remeda": "^2.32.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1654549Z     "solid-js": "^1.9.10",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1655159Z     "strip-ansi": "^7.1.2",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1655604Z     "test-anywhere": "^0.7.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1656065Z     "tree-sitter-bash": "^0.25.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1656501Z     "turndown": "^7.2.2",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1656865Z     "ulid": "^3.0.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1657272Z     "vscode-jsonrpc": "^8.2.1",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1657779Z     "vscode-languageserver-types": "^3.17.5",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1658332Z     "web-tree-sitter": "^0.25.10",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1658782Z     "xdg-basedir": "^5.1.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1659163Z     "yargs": "^18.0.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1659514Z     "zod": "^4.1.12"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1659838Z   },
+Release	Version packages and commit to main	2026-01-10T22:40:27.1660149Z   "devDependencies": {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1660588Z     "@changesets/cli": "^2.29.7",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1661033Z     "@eslint/js": "^9.18.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1661445Z     "eslint": "^9.38.0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1661912Z     "eslint-config-prettier": "^10.1.8",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1662463Z     "eslint-plugin-prettier": "^5.5.4",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1662933Z     "husky": "^9.1.7",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1663296Z     "lint-staged": "^16.2.6",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1663708Z     "prettier": "^3.6.2"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1664077Z   },
+Release	Version packages and commit to main	2026-01-10T22:40:27.1664379Z   "lint-staged": {
+Release	Version packages and commit to main	2026-01-10T22:40:27.1664737Z     "*.{js,mjs,cjs}": [
+Release	Version packages and commit to main	2026-01-10T22:40:27.1665401Z       "eslint --fix --max-warnings 0",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1665887Z       "prettier --write",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1666316Z       "prettier --check"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1666685Z     ],
+Release	Version packages and commit to main	2026-01-10T22:40:27.1666990Z     "*.md": [
+Release	Version packages and commit to main	2026-01-10T22:40:27.1667338Z       "prettier --write",
+Release	Version packages and commit to main	2026-01-10T22:40:27.1667732Z       "prettier --check"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1668164Z     ]
+Release	Version packages and commit to main	2026-01-10T22:40:27.1668782Z   },
+Release	Version packages and commit to main	2026-01-10T22:40:27.1669103Z   "license": "Unlicense"
+Release	Version packages and commit to main	2026-01-10T22:40:27.1669475Z }
+Release	Version packages and commit to main	2026-01-10T22:40:27.1669811Z Remote version: 0.7.0
+Release	Version packages and commit to main	2026-01-10T22:40:27.1670370Z Rebasing on remote main to incorporate changes...
+Release	Version packages and commit to main	2026-01-10T22:40:27.2054094Z Successfully rebased and updated refs/heads/main.
+Release	Version packages and commit to main	2026-01-10T22:40:27.2068090Z Current version: 0.7.0
+Release	Version packages and commit to main	2026-01-10T22:40:27.2068574Z Running changeset version...
+Release	Version packages and commit to main	2026-01-10T22:40:27.2974082Z npm warn Unknown user config "always-auth". This will stop working in the next major version of npm.
+Release	Version packages and commit to main	2026-01-10T22:40:27.3203044Z 
+Release	Version packages and commit to main	2026-01-10T22:40:27.3203483Z > @link-assistant/agent@0.7.0 changeset:version
+Release	Version packages and commit to main	2026-01-10T22:40:27.3204105Z > node ../scripts/changeset-version.mjs
+Release	Version packages and commit to main	2026-01-10T22:40:27.3204618Z 
+Release	Version packages and commit to main	2026-01-10T22:40:28.0144621Z Running changeset version...
+Release	Version packages and commit to main	2026-01-10T22:40:28.1040267Z npm warn Unknown user config "always-auth". This will stop working in the next major version of npm.
+Release	Version packages and commit to main	2026-01-10T22:40:28.6826874Z 🦋  All files have been updated. Review them and commit at your leisure
+Release	Version packages and commit to main	2026-01-10T22:40:28.6970274Z 
+Release	Version packages and commit to main	2026-01-10T22:40:28.6970736Z Synchronizing package-lock.json...
+Release	Version packages and commit to main	2026-01-10T22:40:28.7856149Z npm warn Unknown user config "always-auth". This will stop working in the next major version of npm.
+Release	Version packages and commit to main	2026-01-10T22:40:29.6237770Z 
+Release	Version packages and commit to main	2026-01-10T22:40:29.6238381Z > @link-assistant/agent@0.8.0 prepare
+Release	Version packages and commit to main	2026-01-10T22:40:29.6238952Z > cd .. && husky || true
+Release	Version packages and commit to main	2026-01-10T22:40:29.6239201Z 
+Release	Version packages and commit to main	2026-01-10T22:40:29.6678823Z 
+Release	Version packages and commit to main	2026-01-10T22:40:29.6679443Z up to date, audited 659 packages in 910ms
+Release	Version packages and commit to main	2026-01-10T22:40:29.6679875Z 
+Release	Version packages and commit to main	2026-01-10T22:40:29.6680145Z 143 packages are looking for funding
+Release	Version packages and commit to main	2026-01-10T22:40:29.6680446Z   run `npm fund` for details
+Release	Version packages and commit to main	2026-01-10T22:40:29.6719841Z 
+Release	Version packages and commit to main	2026-01-10T22:40:29.6725780Z 2 high severity vulnerabilities
+Release	Version packages and commit to main	2026-01-10T22:40:29.6726076Z 
+Release	Version packages and commit to main	2026-01-10T22:40:29.6726255Z To address all issues, run:
+Release	Version packages and commit to main	2026-01-10T22:40:29.6726611Z   npm audit fix
+Release	Version packages and commit to main	2026-01-10T22:40:29.6726945Z 
+Release	Version packages and commit to main	2026-01-10T22:40:29.6727129Z Run `npm audit` for details.
+Release	Version packages and commit to main	2026-01-10T22:40:29.6843981Z 
+Release	Version packages and commit to main	2026-01-10T22:40:29.6844653Z ✅ Version bump complete with synchronized package-lock.json
+Release	Version packages and commit to main	2026-01-10T22:40:29.6964724Z Error: ENOENT: no such file or directory, open './js/package.json'
+Release	Version packages and commit to main	2026-01-10T22:40:29.7027422Z ##[error]Process completed with exit code 1.
+Release	Post Run actions/checkout@v4	﻿2026-01-10T22:40:29.7149918Z Post job cleanup.
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8083908Z [command]/usr/bin/git version
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8118859Z git version 2.52.0
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8163060Z Temporarily overriding HOME='/home/runner/work/_temp/7e979c5b-4a47-45e3-a421-fe37cd3716f4' before making global git config changes
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8164606Z Adding repository directory to the temporary git global config as a safe directory
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8176241Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8209359Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8241630Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8467151Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8486632Z http.https://github.com/.extraheader
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8499038Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8528877Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8746634Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Release	Post Run actions/checkout@v4	2026-01-10T22:40:29.8776670Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Release	Complete job	﻿2026-01-10T22:40:29.9092276Z Cleaning up orphan processes

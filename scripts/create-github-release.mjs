@@ -7,16 +7,16 @@
  *   repository: GitHub repository (e.g., owner/repo)
  *
  * Uses link-foundation libraries:
- * - use-m: Dynamic package loading without package.json dependencies
  * - command-stream: Modern shell command execution with streaming support
  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
  */
 
 import { readFileSync } from 'fs';
 
-// Load dependencies through the shared use-m loader, which normalizes the
+// Load locked dependencies through the shared loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
+import { createOrFindRelease, extractReleaseNotes } from './github-release.mjs';
 
 // Import link-foundation libraries
 const { $ } = await useModule('command-stream');
@@ -84,20 +84,8 @@ try {
   // Extract changelog entry for this version
   // Read from CHANGELOG.md between this version header and the next version header
   // Supports both JS format (## 0.22.0) and Rust format (## [0.8.0] - 2026-04-11)
-  const escapedVersion = version.replace(/\./g, '\\.');
-  const versionHeaderRegex = new RegExp(
-    `## \\[?${escapedVersion}\\]?[^\\n]*\\n([\\s\\S]*?)(?=## [\\[\\d]|$)`
-  );
-  const match = changelog.match(versionHeaderRegex);
-
-  let releaseNotes = '';
-  if (match) {
-    releaseNotes = match[1].trim();
-  }
-
-  if (!releaseNotes) {
-    releaseNotes = `Release ${version}`;
-  }
+  const releaseNotes =
+    extractReleaseNotes(changelog, version) || `Release ${version}`;
 
   // Create release using GitHub API with JSON input
   // This avoids shell escaping issues that occur when passing text via command-line arguments
@@ -113,22 +101,24 @@ try {
     ...(targetCommitish ? { target_commitish: targetCommitish } : {}),
   });
 
-  try {
-    await $`gh api repos/${repository}/releases -X POST --input -`.run({
-      stdin: payload,
-    });
+  const created = await createOrFindRelease({
+    tag,
+    create: () =>
+      $`gh api repos/${repository}/releases -X POST --input -`.run({
+        stdin: payload,
+      }),
+    read: async () => {
+      const result =
+        await $`gh api repos/${repository}/releases/tags/${tag}`.run({
+          capture: true,
+        });
+      return JSON.parse(result.stdout);
+    },
+  });
+  if (created) {
     console.log(`\u2705 Created GitHub release: ${tag}`);
-  } catch (releaseError) {
-    const errorMsg = releaseError.message || '';
-    if (
-      errorMsg.includes('already exists') ||
-      errorMsg.includes('already_exists') ||
-      errorMsg.includes('Validation Failed')
-    ) {
-      console.log(`Release ${tag} already exists, skipping creation`);
-    } else {
-      throw releaseError;
-    }
+  } else {
+    console.log(`Release ${tag} already exists, skipping creation`);
   }
 } catch (error) {
   console.error('Error creating release:', error.message);
