@@ -48,7 +48,7 @@
          required: true
          type: choice
          default: patch
-@@ -18,967 +48,572 @@
+@@ -18,967 +48,575 @@
            - minor
            - major
        description:
@@ -1211,6 +1211,9 @@
 +        with:
 +          node-version: '26.x'
 +          registry-url: 'https://registry.npmjs.org'
++
++      - name: Safely synchronize release metadata before recovery
++        run: node scripts/sync-release-checkout.mjs
 +
 +      # `changeset version` formats the changelog through the package manager
 +      # it detects, which is bun because of js/bun.lock. Without bun it fails

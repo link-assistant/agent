@@ -49,7 +49,7 @@
          options:
            - patch
            - minor
-@@ -30,1472 +42,544 @@
+@@ -30,1472 +42,552 @@
          required: false
          type: string
  
@@ -1091,6 +1091,10 @@
 +        uses: actions/setup-node@v6
 +        with:
 +          node-version: '26.x'
++
++      - name: Install locked release helpers
++        run: npm ci --legacy-peer-deps --ignore-scripts
++        working-directory: js
  
        - name: Configure git
 -        run: rust-script scripts/git-config.rs
@@ -1663,6 +1667,10 @@
 +        uses: actions/setup-node@v6
 +        with:
 +          node-version: '26.x'
++
++      - name: Install locked release helpers
++        run: npm ci --legacy-peer-deps --ignore-scripts
++        working-directory: js
 +
 +      - name: Configure git
 +        run: |

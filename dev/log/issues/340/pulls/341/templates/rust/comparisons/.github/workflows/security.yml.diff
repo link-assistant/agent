@@ -74,7 +74,7 @@
      name: CodeQL (${{ matrix.language }})
      runs-on: ubuntu-24.04
      timeout-minutes: 30
-@@ -63,74 +35,34 @@
+@@ -63,74 +35,35 @@
        group: check-${{ github.workflow }}-${{ github.ref }}-codeql-${{ matrix.language }}
        cancel-in-progress: true
      permissions:
@@ -102,6 +102,7 @@
            languages: ${{ matrix.language }}
 -          build-mode: none
 -          config-file: ./.github/codeql/codeql-config.yml
++          config-file: ./.github/codeql-config.yml
  
 -      - name: Test SARIF gate
 -        run: node --test scripts/check-codeql-results.test.mjs
@@ -161,7 +162,7 @@
      runs-on: ubuntu-24.04
      timeout-minutes: 10
      concurrency:
-@@ -140,45 +72,116 @@
+@@ -140,45 +73,116 @@
        contents: read
        pull-requests: write
      steps:

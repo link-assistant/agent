@@ -43,6 +43,11 @@ reports are reports of shared template defects, not a substitute for fixing agen
 | 2026-11-06 23:59:52, `7795b58` | First implementation push starts all eight automatic workflows. npm freshness, model checks, links, lint, package install and live verbose logging pass. |
 | 2026-11-07 00:00–00:03 | CI exposes a Docker argument quoting error, a newly published uuid 1.29.1 and a test expecting the former cancellation expression. Raw failing runs 42315443066, 42315443190 and 42315443019 are preserved; each is fixed, not waived. |
 | 2026-11-07 00:15/00:22 | Seven workflows pass, but completed JS runs 42317054504 and 42317830891 fail in packed-parser verification because the prepare helper is outside the copied package. Unit-test success alone was insufficient. |
+| 2026-11-07 00:35–00:40, `14c1899` | All eight workflows complete successfully, including package-copy prepare and both CodeQL fixes. |
+| Final review, `7c81a90` | Reproduce release command false success; adopt strict, locked loader and verify API errors with 169 focused tests. |
+| 2026-11-07 00:46–00:51, `7c81a90` | All eight Actions workflows succeed, but the separate CodeQL summary check 128243030845 fails on two incomplete-escaping operations in shared release scripts. Workflow success is not all-checks success. |
+| 2026-11-07 00:58, `354f390` | Replace partial escaping with exact changelog heading comparison and direct Git argument passing; 172 focused tests pass. |
+| 2026-11-07, `354f390` completed | All eight workflows and CodeQL summary succeed: 39 passing checks, five expected skips, zero CodeQL summary annotations. |
 | Subsequent iterations | actionlint configuration moves to YAML; uuid updates only its lockfile entry; trace expectation follows the new policy. Final results are recorded separately from these historical failures. |
 
 ## Root causes, alternatives and chosen solutions
@@ -271,7 +276,75 @@ entry without the repository helper directory. Immutable third-party snapshots
 under dev/log are excluded from CodeQL extraction, while all application source,
 tests and workflows remain scanned.
 
-## Evidence handling and remaining verification
+### 10. Release commands resolved failures and loaded unpinned code
+
+The final command-level review reproduced a genuine false success: without
+`command-stream`'s `shell.errexit(true)`, a child exiting 7 resolves with code 7
+and the release caller prints success. This bypassed catch blocks for failed
+versioning, commits, Git pushes, formatting and GitHub API writes. Mocked push
+failures alone had not exercised the actual command runner. The bounded probe
+`experiments/issue-340/command-failure.mjs` records baseline exit 0 / code 7,
+fixed exit 7 with captured stderr, and a real failed command reaching one rebase
+and a successful second attempt. `meta/strict-command-before-after.json` preserves
+all three results.
+
+Chosen solution: adopt the JS template's existing strict shell setting in the
+shared loader, so all nine release-script callers receive the same semantics.
+Incompatible command-stream APIs fail explicitly. Captured error stdout/stderr
+remain available to distinguish authentication errors from already-published
+npm conflicts. A generic GitHub 422 is no longer accepted as an existing release:
+a successful exact-tag/public-release lookup is required. Formatting skips only
+an explicit HTTP 404 and propagates auth, network and malformed-response errors.
+Tests cover these cases and both release workflow consumers.
+
+The previous loader also fetched and evaluated an unpinned use-m CDN response
+at release time. Adopt the template's installed-package approach: resolve only
+the already-declared command-stream/lino-arguments dependencies from the frozen
+js/package.json installation. Both Rust release jobs install the committed lock
+before invoking shared GitHub release helpers. No new dependencies are needed.
+The actual loader/command probe runs with fetch disabled, and the CLI help smoke
+check exercises installed lino-arguments. Historical Node CommonJS namespace
+normalization and CI_SCRIPTS_DEBUG diagnostics are retained. Existing upstream
+use-m issue 72 and the current JS template already cover loader/strict-command
+behavior; another template report would duplicate that work.
+
+Alternatives: manually inspect every command result (easy to omit at a new
+call site), catch and suppress all API errors (hides real release failures), or
+keep runtime CDN loading (adds mutable code/network dependence after validation).
+The existing library setting and installed loader cover all callers centrally.
+
+### 11. Incomplete escaping and a separate failed CodeQL summary
+
+The successful Security workflow at 7c81a90 uploaded its analyses, but GitHub's
+separate CodeQL check still failed. Its exact check and annotations are preserved
+in `meta/codeql-failed-{check,annotations}.json`. They identify
+create-github-release.mjs:87 and version-and-commit.mjs:270. Escaping dots alone
+leaves other regex operators active; escaping quotes alone does not escape
+backslashes and unnecessarily mixes manual escaping with command serialization.
+
+The offline actual-script probe `experiments/issue-340/release-notes.mjs` compares
+7c81a90 with the working tree using a command adapter that only saves the release
+JSON. For valid SemVer 1.0.1+build.1 the baseline silently loses the changelog and
+falls back to "Release 1.0.1+build.1"; the fix preserves "Expected release notes".
+The exact outputs are in `meta/release-notes-before-after.json`.
+
+Chosen solution: compare JS/Rust changelog headings as literal version strings,
+stop at the next level-two section and preserve nested change headings. The
+existing changelog experiment now imports this production helper rather than
+maintaining another partial-escaping implementation. Commit creation passes an
+argument array to Node's existing execFileSync API, which preserves the message
+literally and throws on failure. Regression tests cover build/prerelease versions,
+prefix collisions, CRLF, metacharacters, both heading formats, and a real Git
+commit containing quotes, backslashes and shell-like text. A second unstaged
+commit proves failures still propagate. No extra package is required.
+
+Alternatives: complete regex escaping or a purpose-built escaping library can
+work, but exact string matching and argument arrays remove these escaping
+boundaries entirely. This follows CodeQL's primary guidance in RESEARCH.md.
+The final verification must inspect every PR check, including CodeQL's summary,
+rather than infer all-checks success from the eight workflow conclusions.
+
+## Evidence handling and verification
 
 `experiments/issue-340/collect-evidence.py` preserves complete cited logs and
 paginated job/artifact metadata without cloning three extra repository histories. Pinned archive streams preserve all
@@ -296,6 +369,20 @@ in `meta/pr-diff-error.log`. Paginated PR file patches and the local source diff
 provide the equivalent review, with archived raw logs/snapshots excluded from
 product-code review.
 
-Final verification must inspect the latest
-SHA's run timestamps, every failed log, all check conclusions, latest feedback,
-default-branch ancestry and clean Git state before marking PR 341 ready.
+The complete eight-workflow run at `14c1899` passed, including packed-parser
+verification and CodeQL. Both PR CodeQL alerts 23/24 report fixed on the PR merge
+ref; their full responses are preserved in meta/codeql-alert-*-fixed.json.
+The command-loader and escaping changes pass 172 focused tests across 13 files,
+ESLint, Prettier, source-size and actionlint checks. At 7c81a90 all eight workflows
+passed but the separate CodeQL summary failed; 354f390 fixes both annotations.
+At 354f390 all eight workflows and the separate CodeQL summary pass: 39 checks
+pass and five expected jobs skip. The summary has zero annotations. Raw evidence
+is in meta/verified-code-{checks,runs}.json and meta/codeql-fixed-{check,annotations}.json.
+
+The product changes at 354f390 pass the complete current-SHA check set. All
+implementation runs, including failures and successful follow-ups, are preserved
+under ci-logs/ with job and artifact metadata. Latest issue comments and required
+sub-issues are empty; both inline review defects and the later summary annotations
+are fixed. The default branch remains 1b48e9c and is an ancestor of this branch.
+The final evidence-only commit repeats the current-head check verification before
+PR readiness; the live PR check URLs provide its authoritative latest result.

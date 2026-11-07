@@ -105,11 +105,12 @@
          with:
            persist-credentials: false
  
-@@ -89,74 +53,133 @@
+@@ -89,74 +53,134 @@
          uses: github/codeql-action/init@v4
          with:
            languages: ${{ matrix.language }}
 -          config-file: ./.github/codeql/codeql-config.yml
++          config-file: ./.github/codeql-config.yml
  
        - name: Autobuild
          uses: github/codeql-action/autobuild@v4

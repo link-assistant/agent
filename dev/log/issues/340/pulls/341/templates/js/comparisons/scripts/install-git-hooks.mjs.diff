@@ -1,5 +1,5 @@
 --- template/scripts/install-git-hooks.mjs
-+++ scripts/install-git-hooks.mjs
++++ js/src/scripts/install-git-hooks.mjs
 @@ -1,16 +1,14 @@
 -#!/usr/bin/env node
 -// Husky reports installation errors through returned messages.
@@ -14,7 +14,7 @@
 +import { pathToFileURL, URL } from 'node:url';
 +import path from 'node:path';
  
-+const require = createRequire(new URL('../js/package.json', import.meta.url));
++const require = createRequire(new URL('../../package.json', import.meta.url));
  export async function installGitHooks({
    env = process.env,
 -  exists = existsSync,

@@ -1,6 +1,6 @@
 --- template/scripts/instant-version-bump.mjs
 +++ scripts/instant-version-bump.mjs
-@@ -1,27 +1,18 @@
+@@ -1,47 +1,35 @@
 -#!/usr/bin/env bun
 +#!/usr/bin/env node
  
@@ -20,7 +20,6 @@
   *
   * Uses link-foundation libraries:
 - * - Lockfile-installed command-stream and lino-arguments helpers
-+ * - use-m: Dynamic package loading without package.json dependencies
   * - command-stream: Modern shell command execution with streaming support
   * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
 - *
@@ -33,7 +32,8 @@
  
  import {
    getJsRoot,
-@@ -29,19 +20,14 @@
+   getPackageJsonPath,
++  getPackageLockPath,
    needsCd,
    parseJsRootConfig,
  } from './js-paths.mjs';
@@ -41,8 +41,10 @@
 -import { loadCommandStream, loadLinoArguments } from './use-module.mjs';
 -import { captureVersionTree, syncVersionLock } from './version-lock.mjs';
 -import { markdownLines } from './markdown-lines.mjs';
++import { updateInstantChangelog } from './instant-changelog.mjs';
++import { setJsLockVersion } from './release-safety.mjs';
 +
-+// Load dependencies through the shared use-m loader, which normalizes the
++// Load locked dependencies through the shared loader, which normalizes the
 +// CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 +import { useModule } from './use-module.mjs';
  
@@ -59,7 +61,7 @@
  
  // Parse CLI arguments using lino-arguments
  const config = makeConfig({
-@@ -76,13 +62,11 @@
+@@ -76,13 +64,11 @@
    // Get JavaScript package root (auto-detect or use explicit config)
    const jsRootConfig = jsRootArg || parseJsRootConfig();
    const jsRoot = getJsRoot({ jsRoot: jsRootConfig, verbose: true });
@@ -74,7 +76,7 @@
      );
      process.exit(1);
    }
-@@ -98,10 +82,10 @@
+@@ -98,10 +84,10 @@
    // Bump version using npm version (doesn't create git tag)
    // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
    if (needsCd({ jsRoot })) {
@@ -87,59 +89,72 @@
    }
  
    // Get new version
-@@ -111,8 +95,7 @@
+@@ -109,62 +95,24 @@
+   const newVersion = updatedPackageJson.version;
+   console.log(`New version: ${newVersion}`);
  
-   // Update CHANGELOG.md
-   console.log('\nUpdating CHANGELOG.md...');
+-  // Update CHANGELOG.md
+-  console.log('\nUpdating CHANGELOG.md...');
 -  const changelogPath =
 -    jsRoot === '.' ? 'CHANGELOG.md' : join(jsRoot, 'CHANGELOG.md');
-+  const changelogPath = 'CHANGELOG.md';
-   let changelog = readFileSync(changelogPath, 'utf-8');
+-  let changelog = readFileSync(changelogPath, 'utf-8');
++  updateInstantChangelog({
++    jsRoot,
++    newVersion,
++    bumpType,
++    description: finalDescription,
++  });
  
-   // Create new changelog entry
-@@ -126,25 +109,20 @@
- 
-   // Insert new entry after the first heading (# Changelog or similar)
-   // Look for the first ## heading and insert before it
+-  // Create new changelog entry
+-  const newEntry = `## ${newVersion}
+-
+-### ${bumpType.charAt(0).toUpperCase() + bumpType.slice(1)} Changes
+-
+-- ${finalDescription}
+-
+-`;
+-
+-  // Insert new entry after the first heading (# Changelog or similar)
+-  // Look for the first ## heading and insert before it
 -  const proseLines = markdownLines(changelog).filter((line) => !line.code);
 -  const firstVersionMatch = proseLines.find((line) =>
 -    /^ {0,3}## /.test(line.text)
--  );
-+  const firstVersionMatch = changelog.match(/^## /m);
- 
-   if (firstVersionMatch) {
++  // Preserve the tested dependency graph while synchronizing the root version.
++  console.log('\nSynchronizing package-lock.json...');
++  const lockPath = getPackageLockPath({ jsRoot });
++  writeFileSync(
++    lockPath,
++    setJsLockVersion(readFileSync(lockPath, 'utf8'), newVersion)
+   );
+-
+-  if (firstVersionMatch) {
 -    const insertPosition = firstVersionMatch.start;
-+    const insertPosition = firstVersionMatch.index;
-     changelog =
-       changelog.slice(0, insertPosition) +
-       newEntry +
-       changelog.slice(insertPosition);
-   } else {
-     // If no version headings exist, append after the main heading
+-    changelog =
+-      changelog.slice(0, insertPosition) +
+-      newEntry +
+-      changelog.slice(insertPosition);
+-  } else {
+-    // If no version headings exist, append after the main heading
 -    const mainHeadingMatch = proseLines.find((line) =>
 -      /^ {0,3}# .+/.test(line.text)
 -    );
-+    const mainHeadingMatch = changelog.match(/^# .+$/m);
-     if (mainHeadingMatch) {
-       const insertPosition =
+-    if (mainHeadingMatch) {
+-      const insertPosition =
 -        mainHeadingMatch.start + mainHeadingMatch.text.length;
-+        mainHeadingMatch.index + mainHeadingMatch[0].length;
-       changelog = `${changelog.slice(0, insertPosition)}\n\n${newEntry}${changelog.slice(insertPosition)}`;
-     } else {
-       // If no headings at all, prepend
-@@ -157,14 +135,17 @@
- 
-   // Synchronize package-lock.json
-   console.log('\nSynchronizing package-lock.json...');
+-      changelog = `${changelog.slice(0, insertPosition)}\n\n${newEntry}${changelog.slice(insertPosition)}`;
+-    } else {
+-      // If no headings at all, prepend
+-      changelog = `${newEntry}\n${changelog}`;
+-    }
+-  }
+-
+-  writeFileSync(changelogPath, changelog, 'utf-8');
+-  console.log('✅ CHANGELOG.md updated');
+-
+-  // Synchronize package-lock.json
+-  console.log('\nSynchronizing package-lock.json...');
 -
 -  syncVersionLock(jsRoot, before);
-+  // IMPORTANT: cd is a virtual command that calls process.chdir(), so we restore after
-+  if (needsCd({ jsRoot })) {
-+    await $`cd ${jsRoot} && npm install --package-lock-only --legacy-peer-deps`;
-+    process.chdir(originalCwd);
-+  } else {
-+    await $`npm install --package-lock-only --legacy-peer-deps`;
-+  }
  
    console.log('\n✅ Instant version bump complete');
    console.log(`Version: ${oldVersion} → ${newVersion}`);

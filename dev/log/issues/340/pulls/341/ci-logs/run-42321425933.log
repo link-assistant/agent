@@ -1,0 +1,503 @@
+Check live free model catalogs	Set up job	﻿2026-11-07T00:58:40.4231347Z Current runner version: '2.338.2'
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4257835Z ##[group]Runner Image Provisioner
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4258750Z Hosted Compute Agent
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4259433Z Version: 20261028.624
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4260115Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4261217Z Build Date: 2026-10-28T21:51:42Z
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4262054Z Worker ID: {60063dc0-7824-4a1f-8c81-604a5a1dfaac}
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4262787Z Region: westus2
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4263429Z Cloud: Azure
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4263987Z ##[endgroup]
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4265544Z ##[group]Operating System
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4266330Z Ubuntu
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4266867Z 24.04.5
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4267381Z LTS
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4267975Z ##[endgroup]
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4268541Z ##[group]Runner Image
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4269237Z Image: ubuntu-24.04
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4269845Z Version: 20261101.360.1
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4271243Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4273102Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4274158Z ##[endgroup]
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4275405Z ##[group]GITHUB_TOKEN Permissions
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4277473Z Contents: read
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4278130Z Metadata: read
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4278722Z ##[endgroup]
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4281231Z Secret source: Actions
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4282223Z Cache mode: write
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4283071Z Prepare workflow directory
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4747893Z Prepare all required actions
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.4796742Z Getting action download info
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.8132225Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Check live free model catalogs	Set up job	2026-11-07T00:58:40.9263797Z Download action repository 'oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6' (SHA:0c5077e51419868618aeaa5fe8019c62421857d6)
+Check live free model catalogs	Set up job	2026-11-07T00:58:41.1634663Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+Check live free model catalogs	Set up job	2026-11-07T00:58:41.3299017Z Complete job name: Check live free model catalogs
+Check live free model catalogs	Run actions/checkout@v6	﻿2026-11-07T00:58:41.4246318Z ##[group]Run actions/checkout@v6
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4247260Z with:
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4247740Z   persist-credentials: false
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4248314Z   repository: link-assistant/agent
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4252140Z   token: ***
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4252598Z   ssh-strict: true
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4253047Z   ssh-user: git
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4253490Z   clean: true
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4253947Z   sparse-checkout-cone-mode: true
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4254492Z   fetch-depth: 1
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4254929Z   fetch-tags: false
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4255388Z   show-progress: true
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4255842Z   lfs: false
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4256261Z   submodules: false
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4256723Z   set-safe-directory: true
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4257241Z   allow-unsafe-pr-checkout: false
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4258514Z env:
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4259119Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4259974Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4261076Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.4261637Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7297607Z Syncing repository: link-assistant/agent
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7300261Z ##[group]Getting Git version info
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7301651Z Working directory is '/home/runner/work/agent/agent'
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7303319Z [command]/usr/bin/git version
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7414373Z git version 2.56.0
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7441168Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7478377Z Temporarily overriding HOME='/home/runner/work/_temp/a0509986-fbd7-48f2-a3c7-ea05cdf83060' before making global git config changes
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7481050Z Adding repository directory to the temporary git global config as a safe directory
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7487009Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7550434Z Deleting the contents of '/home/runner/work/agent/agent'
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7555181Z ##[group]Determining repository object format
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7557775Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7559096Z ##[group]Initializing the repository
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7564490Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7720942Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7736397Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7789677Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7791291Z ##[group]Disabling automatic garbage collection
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7794884Z [command]/usr/bin/git config --local gc.auto 0
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7835695Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7836956Z ##[group]Setting up auth
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7837884Z Removing SSH command configuration
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7845078Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.7893207Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.8314551Z Removing HTTP extra header
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.8321502Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.8369369Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.8611362Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.8618298Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.8666525Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.8915083Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.8966659Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.9009947Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.9061883Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.9102060Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.9139668Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.9140445Z ##[group]Fetching the repository
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:41.9148259Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0fa20e6e138b8b4ba54ad60b787a7aa092b8b473:refs/remotes/pull/341/merge
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6087378Z From https://github.com/link-assistant/agent
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6088648Z  * [new ref]         0fa20e6e138b8b4ba54ad60b787a7aa092b8b473 -> pull/341/merge
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6099642Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6101412Z ##[group]Determining the checkout info
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6113634Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6114880Z [command]/usr/bin/git sparse-checkout disable
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6169129Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6215178Z ##[group]Checking out the ref
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:44.6217721Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1218120Z Note: switching to 'refs/remotes/pull/341/merge'.
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1218910Z 
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1219783Z You are in 'detached HEAD' state. You can look around, make experimental
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1221198Z changes and commit them, and you can discard any commits you make in this
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1223445Z state without impacting any branches by switching back to a branch.
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1224106Z 
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1224595Z If you want to create a new branch to retain commits you create, you may
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1225597Z do so (now or later) by using -c with the switch command. Example:
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1226162Z 
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1226442Z   git switch -c <new-branch-name>
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1226855Z 
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1227135Z Or undo this operation with:
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1227506Z 
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1227722Z   git switch -
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1228043Z 
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1228521Z Turn off this advice by setting config variable advice.detachedHead to false
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1229213Z 
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1229958Z HEAD is now at 0fa20e6 Merge 354f3904997d9e5eb1ff53a7da29cede4190c296 into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1276187Z ##[endgroup]
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1334002Z [command]/usr/bin/git log -1 --format=%H
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1370126Z 0fa20e6e138b8b4ba54ad60b787a7aa092b8b473
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1380020Z ##[group]Removing auth
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1459400Z Removing SSH command configuration
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1460328Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1463285Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1679030Z Removing HTTP extra header
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1685206Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1728889Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1978616Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.1979905Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2017414Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2018221Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2018735Z includeif.gitdir:/github/workspace/.git.path
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2019178Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2027531Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2060853Z /home/runner/work/_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2072823Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2122540Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2155186Z /home/runner/work/_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2165692Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2209299Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2246934Z /github/runner_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2256632Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2302967Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2335923Z /github/runner_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2344322Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2387253Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2627331Z Removing credentials config '/home/runner/work/_temp/git-credentials-7213c66e-8d6b-4ac0-b2b6-ccf009fc6cdf.config'
+Check live free model catalogs	Run actions/checkout@v6	2026-11-07T00:58:45.2639020Z ##[endgroup]
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	﻿2026-11-07T00:58:45.2957336Z ##[group]Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.2957840Z with:
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.2958086Z   no-cache: false
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.2960909Z   token: ***
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.2961348Z env:
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.2961673Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.2961956Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.2962284Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.2962561Z ##[endgroup]
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:45.8667483Z Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:46.1721447Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/efad6670-2e97-4e85-b1eb-5fd10738db8f.zip
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:47.0209635Z [command]/home/runner/.bun/bin/bun --revision
+Check live free model catalogs	Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	2026-11-07T00:58:47.0276336Z 1.4.4+38afee6c8
+Check live free model catalogs	Initialize diagnostics	﻿2026-11-07T00:58:47.0468627Z ##[group]Run mkdir -p ci-logs && echo "Model drift run $GITHUB_SHA" > ci-logs/model-drift.log
+Check live free model catalogs	Initialize diagnostics	2026-11-07T00:58:47.0469371Z ^[[36;1mmkdir -p ci-logs && echo "Model drift run $GITHUB_SHA" > ci-logs/model-drift.log^[[0m
+Check live free model catalogs	Initialize diagnostics	2026-11-07T00:58:47.0495341Z shell: /usr/bin/bash -e {0}
+Check live free model catalogs	Initialize diagnostics	2026-11-07T00:58:47.0495621Z env:
+Check live free model catalogs	Initialize diagnostics	2026-11-07T00:58:47.0495816Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	Initialize diagnostics	2026-11-07T00:58:47.0496066Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	Initialize diagnostics	2026-11-07T00:58:47.0496366Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	Initialize diagnostics	2026-11-07T00:58:47.0496604Z ##[endgroup]
+Check live free model catalogs	Install dependencies	﻿2026-11-07T00:58:47.0616225Z ##[group]Run bun install --frozen-lockfile
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:47.0616626Z ^[[36;1mbun install --frozen-lockfile^[[0m
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:47.0635425Z shell: /usr/bin/bash -e {0}
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:47.0635740Z env:
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:47.0635937Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:47.0636183Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:47.0636477Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:47.0636712Z ##[endgroup]
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:47.0699926Z bun install v1.4.4 (38afee6c8)
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7257558Z 
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7258274Z $ node src/scripts/install-git-hooks.mjs
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7579492Z 
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7580355Z + @changesets/cli@3.0.3
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7621253Z + @eslint/js@10.0.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7621898Z + eslint@10.14.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7622292Z + eslint-config-prettier@10.1.8
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7622764Z + eslint-plugin-prettier@5.5.7
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7623288Z + eslint-plugin-promise@7.3.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7623718Z + husky@9.1.7
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7624042Z + lint-staged@17.6.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7624488Z + prettier@3.9.10
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7624858Z + @agentclientprotocol/sdk@2.4.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7625288Z + @ai-sdk/alibaba@2.0.84
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7625683Z + @ai-sdk/amazon-bedrock@5.0.134
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7626108Z + @ai-sdk/anthropic@4.0.98
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7626492Z + @ai-sdk/azure@4.0.118
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7626874Z + @ai-sdk/cerebras@3.0.86
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7627250Z + @ai-sdk/cohere@4.0.77
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7628114Z + @ai-sdk/deepinfra@3.0.86
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7628560Z + @ai-sdk/deepseek@3.0.80
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7628966Z + @ai-sdk/fireworks@3.0.89
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7629358Z + @ai-sdk/gateway@4.0.137
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7629735Z + @ai-sdk/google@4.0.113
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7630128Z + @ai-sdk/google-vertex@5.0.133
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7630742Z + @ai-sdk/groq@4.0.77
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7631591Z + @ai-sdk/mcp@2.0.92
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7631955Z + @ai-sdk/mistral@4.0.80
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7632334Z + @ai-sdk/openai@4.0.110
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7632751Z + @ai-sdk/openai-compatible@3.0.86
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7633203Z + @ai-sdk/perplexity@5.0.27
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7633605Z + @ai-sdk/provider@4.0.36
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7633992Z + @ai-sdk/togetherai@3.0.87
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7634386Z + @ai-sdk/xai@5.0.39
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7634741Z + @clack/prompts@1.8.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7635128Z + @hono/standard-validator@0.4.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7635561Z + @hono/zod-validator@0.9.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7635986Z + @modelcontextprotocol/sdk@1.32.2
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7636433Z + @octokit/graphql@9.0.5
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7636810Z + @octokit/rest@22.0.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7637184Z + @openauthjs/openauth@0.4.3
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7637596Z + @opencode-ai/sdk@1.19.5
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7638009Z + @openrouter/ai-sdk-provider@3.1.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7638452Z + @opentui/core@0.8.2
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7638809Z + @opentui/solid@0.8.2
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7639189Z + @parcel/watcher@2.6.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7639587Z + @solid-primitives/event-bus@1.1.4
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7640072Z + @standard-community/standard-json@0.4.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7640824Z + @standard-community/standard-openapi@0.2.11
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7641341Z + @zip.js/zip.js@2.24.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7641698Z + ai@7.0.164
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7642016Z + chokidar@6.0.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7642355Z + clipboardy@5.3.2
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7642707Z + command-stream@2.6.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7643066Z + decimal.js@10.6.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7643401Z + diff@9.0.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7643722Z + fuzzysort@4.0.2
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7644051Z + glob@14.0.4
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7644391Z + google-auth-library@11.3.3
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7644807Z + gpt-tokenizer@4.1.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7645172Z + gray-matter@4.0.3
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7645508Z + hono@4.13.16
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7645842Z + hono-openapi@1.5.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7646193Z + ignore@7.0.14
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7646534Z + jsonc-parser@3.3.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7646895Z + lino-arguments@0.4.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7647276Z + lino-objects-codec@0.9.5
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7647695Z + log-lazy@1.0.4
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7648388Z + minimatch@11.0.5
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7648721Z + remeda@2.58.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7649049Z + solid-js@1.9.18
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7649388Z + strip-ansi@7.2.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7649737Z + test-anywhere@0.9.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7650110Z + tree-sitter-bash@0.25.1
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7678986Z + turndown@7.2.5
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7679443Z + ulid@3.0.2
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7679799Z + vscode-jsonrpc@10.0.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7680233Z + vscode-languageserver-types@3.18.5
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7680972Z + web-tree-sitter@0.25.10
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7681366Z + xdg-basedir@5.1.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7681709Z + yargs@18.2.0
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7682022Z + zod@4.6.7
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7682215Z 
+Check live free model catalogs	Install dependencies	2026-11-07T00:58:55.7682383Z 503 packages installed [8.69s]
+Check live free model catalogs	Check built-in models against live provider catalogs	﻿2026-11-07T00:58:55.7743377Z ##[group]Run mkdir -p ci-logs
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:55.7743892Z ^[[36;1mmkdir -p ci-logs^[[0m
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:55.7744533Z ^[[36;1mbun scripts/check-model-drift.mjs 2>&1 | tee ci-logs/model-drift.log^[[0m
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:55.7775321Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:55.7775913Z env:
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:55.7776222Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:55.7776621Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:55.7777085Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:55.7777474Z ##[endgroup]
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:56.0679075Z {"checkedAt":"2026-11-07T00:58:56.067Z","provider":"opencode","url":"https://opencode.ai/zen/v1/models","liveCount":80,"builtinCount":2,"missing":[]}
+Check live free model catalogs	Check built-in models against live provider catalogs	2026-11-07T00:58:56.3681955Z {"checkedAt":"2026-11-07T00:58:56.367Z","provider":"kilo","url":"https://api.kilo.ai/api/gateway/models","liveCount":383,"builtinCount":2,"missing":[]}
+Check live free model catalogs	Preserve drift diagnostics	﻿2026-11-07T00:58:56.3797486Z ##[group]Run actions/upload-artifact@v7
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3797804Z with:
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3797998Z   name: model-drift
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3798395Z   path: ci-logs/model-drift.log
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3798653Z   if-no-files-found: error
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3798892Z   compression-level: 6
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3799108Z   overwrite: false
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3799322Z   include-hidden-files: false
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3799561Z   archive: true
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3799753Z env:
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3799935Z   GIT_CONFIG_COUNT: 1
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3800170Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3800441Z   GIT_CONFIG_VALUE_0: main
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.3800867Z ##[endgroup]
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.5381441Z With the provided path, there will be 1 file uploaded
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.5392228Z Artifact name is valid!
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.5392946Z Root directory input is valid!
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.9354151Z Uploading artifact: model-drift.zip
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:56.9397000Z Beginning upload of artifact content to blob storage
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:57.2346555Z Uploaded bytes 307
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:57.3047405Z Finished uploading artifact content to blob storage!
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:57.3048501Z SHA256 digest of uploaded artifact is 04981e276c5fe54468e974f25763b3f0e9891e4add8fc1bfb4fa390510912f75
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:57.3049389Z Finalizing artifact upload
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:57.8638834Z Artifact model-drift successfully finalized. Artifact ID 13553236906
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:57.8640120Z Artifact model-drift has been successfully uploaded! Final size is 307 bytes. Artifact ID is 13553236906
+Check live free model catalogs	Preserve drift diagnostics	2026-11-07T00:58:57.8643944Z Artifact download URL: https://github.com/link-assistant/agent/actions/runs/42321425933/artifacts/13553236906
+Check live free model catalogs	Post Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6	﻿2026-11-07T00:58:57.8844164Z Post job cleanup.
+Check live free model catalogs	Post Run actions/checkout@v6	﻿2026-11-07T00:58:58.0866003Z Post job cleanup.
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2051352Z [command]/usr/bin/git version
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2141561Z git version 2.56.0
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2195274Z Temporarily overriding HOME='/home/runner/work/_temp/611fa127-79a3-4db3-ab73-5fb2d7b8a1a6' before making global git config changes
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2196828Z Adding repository directory to the temporary git global config as a safe directory
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2198079Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2303028Z Removing SSH command configuration
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2303987Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2363393Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2913333Z Removing HTTP extra header
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2914261Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.2993579Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.3371989Z Removing includeIf entries pointing to credentials config files
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.3374555Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Check live free model catalogs	Post Run actions/checkout@v6	2026-11-07T00:58:58.3433286Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Check live free model catalogs	Complete job	﻿2026-11-07T00:58:58.3883650Z Cleaning up orphan processes
+Pipeline Status	Set up job	﻿2026-11-07T00:59:04.1840722Z Current runner version: '2.338.2'
+Pipeline Status	Set up job	2026-11-07T00:59:04.1868610Z ##[group]Runner Image Provisioner
+Pipeline Status	Set up job	2026-11-07T00:59:04.1869571Z Hosted Compute Agent
+Pipeline Status	Set up job	2026-11-07T00:59:04.1870233Z Version: 20261028.624
+Pipeline Status	Set up job	2026-11-07T00:59:04.1870873Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+Pipeline Status	Set up job	2026-11-07T00:59:04.1871861Z Build Date: 2026-10-28T21:51:42Z
+Pipeline Status	Set up job	2026-11-07T00:59:04.1872578Z Worker ID: {0e0e7dbd-5076-48be-ac05-381df711f77c}
+Pipeline Status	Set up job	2026-11-07T00:59:04.1873366Z Region: centralus
+Pipeline Status	Set up job	2026-11-07T00:59:04.1873973Z Cloud: Azure
+Pipeline Status	Set up job	2026-11-07T00:59:04.1874498Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:59:04.1876084Z ##[group]Operating System
+Pipeline Status	Set up job	2026-11-07T00:59:04.1876739Z Ubuntu
+Pipeline Status	Set up job	2026-11-07T00:59:04.1877323Z 24.04.5
+Pipeline Status	Set up job	2026-11-07T00:59:04.1877898Z LTS
+Pipeline Status	Set up job	2026-11-07T00:59:04.1878414Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:59:04.1879031Z ##[group]Runner Image
+Pipeline Status	Set up job	2026-11-07T00:59:04.1879672Z Image: ubuntu-24.04
+Pipeline Status	Set up job	2026-11-07T00:59:04.1880266Z Version: 20261101.360.1
+Pipeline Status	Set up job	2026-11-07T00:59:04.1881402Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+Pipeline Status	Set up job	2026-11-07T00:59:04.1883717Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+Pipeline Status	Set up job	2026-11-07T00:59:04.1884733Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:59:04.1885911Z ##[group]GITHUB_TOKEN Permissions
+Pipeline Status	Set up job	2026-11-07T00:59:04.1887873Z Contents: read
+Pipeline Status	Set up job	2026-11-07T00:59:04.1888562Z Metadata: read
+Pipeline Status	Set up job	2026-11-07T00:59:04.1889151Z ##[endgroup]
+Pipeline Status	Set up job	2026-11-07T00:59:04.1891355Z Secret source: Actions
+Pipeline Status	Set up job	2026-11-07T00:59:04.1893014Z Cache mode: write
+Pipeline Status	Set up job	2026-11-07T00:59:04.1893748Z Prepare workflow directory
+Pipeline Status	Set up job	2026-11-07T00:59:04.2377438Z Prepare all required actions
+Pipeline Status	Set up job	2026-11-07T00:59:04.2448982Z Getting action download info
+Pipeline Status	Set up job	2026-11-07T00:59:04.4926087Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+Pipeline Status	Set up job	2026-11-07T00:59:04.7058213Z Complete job name: Pipeline Status
+Pipeline Status	Run actions/checkout@v6	﻿2026-11-07T00:59:04.7942435Z ##[group]Run actions/checkout@v6
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7943433Z with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7943895Z   persist-credentials: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7944459Z   repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7948533Z   token: ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7948974Z   ssh-strict: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7949423Z   ssh-user: git
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7949856Z   clean: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7950308Z   sparse-checkout-cone-mode: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7950838Z   fetch-depth: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7951272Z   fetch-tags: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7951922Z   show-progress: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7952398Z   lfs: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7952826Z   submodules: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7953288Z   set-safe-directory: true
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7953813Z   allow-unsafe-pr-checkout: false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7954597Z env:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7955021Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7955520Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7956078Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:04.7956587Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0646391Z Syncing repository: link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0650014Z ##[group]Getting Git version info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0651872Z Working directory is '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0654120Z [command]/usr/bin/git version
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0735579Z git version 2.56.0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0763792Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0787367Z Temporarily overriding HOME='/home/runner/work/_temp/a79f0756-adae-4237-ad9a-9130f24ba144' before making global git config changes
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0793739Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0796059Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0854579Z Deleting the contents of '/home/runner/work/agent/agent'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0863689Z ##[group]Determining repository object format
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0865979Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0867416Z ##[group]Initializing the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0871771Z [command]/usr/bin/git init /home/runner/work/agent/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.0989624Z Initialized empty Git repository in /home/runner/work/agent/agent/.git/
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1002924Z [command]/usr/bin/git remote add origin https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1058528Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1060212Z ##[group]Disabling automatic garbage collection
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1063356Z [command]/usr/bin/git config --local gc.auto 0
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1105076Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1106822Z ##[group]Setting up auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1108087Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1117671Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1169308Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1653400Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1660402Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1711240Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1956462Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.1964153Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2012929Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2299925Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2356822Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2405811Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2464777Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2511197Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2554389Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2564022Z ##[group]Fetching the repository
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:05.2566833Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0fa20e6e138b8b4ba54ad60b787a7aa092b8b473:refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5476122Z From https://github.com/link-assistant/agent
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5479293Z  * [new ref]         0fa20e6e138b8b4ba54ad60b787a7aa092b8b473 -> pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5485531Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5487579Z ##[group]Determining the checkout info
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5489934Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5491856Z [command]/usr/bin/git sparse-checkout disable
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5559023Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5602149Z ##[group]Checking out the ref
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:06.5607003Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/341/merge
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0688414Z Note: switching to 'refs/remotes/pull/341/merge'.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0692213Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0692824Z You are in 'detached HEAD' state. You can look around, make experimental
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0694203Z changes and commit them, and you can discard any commits you make in this
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0695448Z state without impacting any branches by switching back to a branch.
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0696759Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0697315Z If you want to create a new branch to retain commits you create, you may
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0698344Z do so (now or later) by using -c with the switch command. Example:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0698737Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0698950Z   git switch -c <new-branch-name>
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0699214Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0699383Z Or undo this operation with:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0699619Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0699761Z   git switch -
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0699963Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0700289Z Turn off this advice by setting config variable advice.detachedHead to false
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0700763Z 
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0701251Z HEAD is now at 0fa20e6 Merge 354f3904997d9e5eb1ff53a7da29cede4190c296 into 1b48e9c02c99ab16696a5a8965c171aa3bd5f7db
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0741901Z ##[endgroup]
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0799848Z [command]/usr/bin/git log -1 --format=%H
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0836266Z 0fa20e6e138b8b4ba54ad60b787a7aa092b8b473
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0846802Z ##[group]Removing auth
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0847360Z Removing SSH command configuration
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0851117Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.0895947Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1156921Z Removing HTTP extra header
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1163232Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1211145Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1468212Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1473540Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1513203Z includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1514111Z includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1514637Z includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1515100Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1524677Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1559615Z /home/runner/work/_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1573256Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git.path /home/runner/work/_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1634637Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1670771Z /home/runner/work/_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1682866Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/agent/agent/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1733527Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1774354Z /github/runner_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1784263Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1833563Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1868144Z /github/runner_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1877462Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.1925972Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.2182555Z Removing credentials config '/home/runner/work/_temp/git-credentials-66fba663-3cf4-4b36-9008-c1de49f60935.config'
+Pipeline Status	Run actions/checkout@v6	2026-11-07T00:59:07.2192684Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	﻿2026-11-07T00:59:07.2515536Z ##[group]Run bash scripts/check-pipeline-status.sh
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2516135Z ^[[36;1mbash scripts/check-pipeline-status.sh^[[0m
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2540375Z shell: /usr/bin/bash -e {0}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2540716Z env:
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2540960Z   GIT_CONFIG_COUNT: 1
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2541261Z   GIT_CONFIG_KEY_0: init.defaultBranch
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2541861Z   GIT_CONFIG_VALUE_0: main
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2542266Z   NEEDS_JSON: {
+Pipeline Status	Fail the run when a required job was cancelled or failed	  "model-drift": {
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "result": "success",
+Pipeline Status	Fail the run when a required job was cancelled or failed	    "outputs": {}
+Pipeline Status	Fail the run when a required job was cancelled or failed	  }
+Pipeline Status	Fail the run when a required job was cancelled or failed	}
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2542788Z   RUN_SHA: 354f3904997d9e5eb1ff53a7da29cede4190c296
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2543138Z   HEAD_REF: refs/pull/341/head
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.2543417Z ##[endgroup]
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.4449133Z Failed jobs:    <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.4449464Z Cancelled jobs: <none>
+Pipeline Status	Fail the run when a required job was cancelled or failed	2026-11-07T00:59:07.4450471Z All required jobs succeeded or were legitimately skipped.
+Pipeline Status	Post Run actions/checkout@v6	﻿2026-11-07T00:59:07.4693105Z Post job cleanup.
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.5631271Z [command]/usr/bin/git version
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.5685187Z git version 2.56.0
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.5736507Z Temporarily overriding HOME='/home/runner/work/_temp/52c32441-00bf-44e2-a9ed-e3fca4f5d975' before making global git config changes
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.5737993Z Adding repository directory to the temporary git global config as a safe directory
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.5743915Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agent/agent
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.5788057Z Removing SSH command configuration
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.5798023Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.5845211Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.6130520Z Removing HTTP extra header
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.6137840Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.6186294Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.6470567Z Removing includeIf entries pointing to credentials config files
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.6480078Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pipeline Status	Post Run actions/checkout@v6	2026-11-07T00:59:07.6532748Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pipeline Status	Complete job	﻿2026-11-07T00:59:07.6954931Z Cleaning up orphan processes

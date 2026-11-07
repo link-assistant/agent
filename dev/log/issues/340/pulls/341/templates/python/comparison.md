@@ -21,7 +21,7 @@ template application source, tests and assets are classified separately from reu
 | `.github/actions/deploy-pages/action.yml` | 18 lines; no same-basename agent file. Conditional: no desktop, site, container or deployment artifact is released by this CLI; retain template evidence. |
 | `.github/actions/deploy-pages/deploy.mjs` | 267 lines; no same-basename agent file. Conditional: no desktop, site, container or deployment artifact is released by this CLI; retain template evidence. |
 | `.github/actions/deploy-pages/index.mjs` | 4 lines; no same-basename agent file. Conditional: no desktop, site, container or deployment artifact is released by this CLI; retain template evidence. |
-| `.github/codeql/codeql-config.yml` | 7 lines; no same-basename agent file. Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained. |
+| `.github/codeql/codeql-config.yml` | 7 lines; nearest `.github/codeql-config.yml` (adapted/different). Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained. |
 | `.github/dependabot.yml` | 30 lines; no same-basename agent file. Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding. |
 | `.github/workflows/docs.yml` | 153 lines; no same-basename agent file. Compared job graph, triggers, permissions, cancellation, runners, install flags and artifacts; applicable policies mapped in ANALYSIS.md. |
 | `.github/workflows/links.yml` | 167 lines; nearest `.github/workflows/links.yml` (adapted/different). Applied: existing lychee/archive validation retained; broken live links still fail; diagnostics always uploaded. |

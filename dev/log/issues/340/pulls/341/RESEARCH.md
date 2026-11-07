@@ -38,3 +38,13 @@ Additional security review sources:
 - [URL hostname](https://developer.mozilla.org/en-US/docs/Web/API/URL/hostname): compare the parsed normalized hostname exactly, with a separate protocol check.
 - [Bun escapeHTML](https://bun.com/guides/util/escape-html): existing runtime alternative; explicit HTML character encoding keeps the trust boundary visible to static analysis without an additional dependency.
 - [GitHub CodeQL path configuration](https://docs.github.com/en/code-security/reference/code-scanning/workflow-configuration-options): exclude archived third-party snapshot contents from extraction, while continuing to scan actual agent code and workflows.
+
+Release command review:
+
+- [command-stream shell settings](https://github.com/link-foundation/command-stream/blob/main/js/README.md#shell-settings-api): default nonzero exits resolve; enable shell.errexit(true) for CI/release scripts. Reuse this existing API rather than hand-checking each command.
+- [GitHub release API](https://docs.github.com/en/rest/releases/releases#create-a-release): validation failure is not proof a release already exists. Confirm the exact tag through the successful release lookup; missing-resource and authentication failures have distinct outcomes.
+- [Node createRequire](https://nodejs.org/api/module.html#modulecreaterequirefilename): resolve the reviewed packages from the installed JS dependency tree and preserve existing CommonJS normalization. This adopts the pinned JS template loader approach and removes the release-time CDN fetch/eval.
+
+Incomplete-escaping follow-up:
+
+- [CodeQL incomplete sanitization](https://codeql.github.com/codeql-query-help/javascript/js-incomplete-sanitization/): partial string replacement can leave backslashes and regex metacharacters active. Its recommended alternative is a design that needs no sanitization. Exact changelog heading comparison and direct Git argument arrays implement that alternative.

@@ -7,7 +7,7 @@ template application source, tests and assets are classified separately from reu
 | --- | --- |
 | `.github/actions/download-artifact/action.yml` | 43 lines; no same-basename agent file. Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding. |
 | `.github/actions/setup-buildx-resilient/action.yml` | 110 lines; no same-basename agent file. Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding. |
-| `.github/codeql/codeql-config.yml` | 3 lines; no same-basename agent file. Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained. |
+| `.github/codeql/codeql-config.yml` | 3 lines; nearest `.github/codeql-config.yml` (adapted/different). Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained. |
 | `.github/scripts/check-secrets.mjs` | 49 lines; no same-basename agent file. Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding. |
 | `.github/scripts/check-secrets.test.mjs` | 75 lines; no same-basename agent file. Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding. |
 | `.github/secretlint/package-lock.json` | 1126 lines; nearest `js/package-lock.json` (adapted/different). Compared repository automation/configuration; adapted existing policies rather than adding unrelated template scaffolding. |

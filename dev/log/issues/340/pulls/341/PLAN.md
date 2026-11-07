@@ -16,17 +16,18 @@ verification, without merging the pull request.
       suggested code fixes, when applicable.
 - [x] Add release triggers required by repository conventions, commit useful
       atomic steps, and push only issue-340-8f7dd340a8ef.
-- [ ] Inspect the complete PR diff; merge latest main into this branch if needed;
+- [x] Inspect the complete PR diff; merge latest main into this branch if needed;
       run focused checks, then inspect all current-SHA CI runs and preserve logs.
-- [ ] Update PR title/body with reproduction, tests, findings and Fixes #340;
-      verify a clean worktree and mark PR 341 ready only after required checks pass.
+- [x] Update PR title/body with reproduction, tests, findings and Fixes #340;
+      preserve passing implementation checks and the delivery procedure below.
 
 Local constraints: 2.92 GiB total container memory; prefer static checks and small
 script tests. Leave full builds/test matrices to CI. Keep experiments bounded and
 put reusable probes under experiments/issue-340/.
 
-Progress: review follow-ups fix two CodeQL findings, restore moved runtime imports,
-correct manual changelog paths and keep prepare available in standalone package
-copies. 151 focused regressions passed before the final packaging regression;
-the complete suite and current-SHA CI are being verified. Historical JS packaging
-failures are preserved with exact log lines in ANALYSIS.md.
+Progress: all requirements implemented; 172 focused tests pass. All eight
+workflows and the separate CodeQL summary pass at 354f390 (39 passing checks,
+five expected skips, no new summary annotations). Latest main is already an
+ancestor. Delivery procedure after this evidence snapshot: push the evidence-only commit,
+verify its complete check set and clean worktree, refresh default-branch ancestry
+and feedback, then mark PR 341 ready. The live PR records the delivery outcome.

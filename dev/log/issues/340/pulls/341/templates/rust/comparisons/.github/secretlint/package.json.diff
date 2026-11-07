@@ -24,7 +24,7 @@
 +    "check:file-size": "node ../scripts/check-file-size.mjs",
 +    "check:model-drift": "bun ../scripts/check-model-drift.mjs",
 +    "check": "npm run lint && npm run format:check && npm run check:file-size",
-+    "prepare": "node ../scripts/install-git-hooks.mjs",
++    "prepare": "node src/scripts/install-git-hooks.mjs",
 +    "changeset": "changeset",
 +    "changeset:version": "node ../scripts/changeset-version.mjs",
 +    "changeset:publish": "changeset publish",

@@ -1,6 +1,6 @@
 --- template/scripts/publish-to-npm.mjs
 +++ scripts/publish-to-npm.mjs
-@@ -1,21 +1,22 @@
+@@ -1,21 +1,21 @@
 -#!/usr/bin/env bun
 +#!/usr/bin/env node
 +import { syncReleaseCheckout } from './release-safety.mjs';
@@ -20,7 +20,6 @@
 + *
   * Uses link-foundation libraries:
 - * - Lockfile-installed command-stream and lino-arguments helpers
-+ * - use-m: Dynamic package loading without package.json dependencies
   * - command-stream: Modern shell command execution with streaming support
   * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
 - *
@@ -29,7 +28,7 @@
   */
  
  import { appendFileSync } from 'fs';
-@@ -23,7 +24,6 @@
+@@ -23,27 +23,24 @@
  import { getJsRoot, needsCd, parseJsRootConfig } from './js-paths.mjs';
  import { isPackageVersionPublished } from './npm-registry.mjs';
  import { readPackageInfo } from './package-info.mjs';
@@ -37,14 +36,17 @@
  import {
    buildAuthFailureGuidance,
    isNonRetryableFailure,
-@@ -33,17 +33,14 @@
++  publishCommandOutput,
+ } from './publish-failure-classifier.mjs';
+ import {
+   isAlreadyPublishedError,
    publishWithRetry,
    sleep,
  } from './publish-retry.mjs';
 -import { bootstrapDependencies } from './bootstrap-dependencies.mjs';
 -import { loadCommandStream, loadLinoArguments } from './use-module.mjs';
 +
-+// Load dependencies through the shared use-m loader, which normalizes the
++// Load locked dependencies through the shared loader, which normalizes the
 +// CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 +import { useModule } from './use-module.mjs';
  
@@ -145,7 +147,7 @@
    // Check for failure patterns in output (most reliable for changeset)
    const failurePattern = detectPublishFailure(combinedOutput);
    if (failurePattern) {
-@@ -195,15 +195,15 @@
+@@ -195,22 +195,18 @@
   * Run a single publish command invocation (no verification).
   * Verification is a separate failure domain handled by publishWithRetry.
   * @param {Function} shell
@@ -165,8 +167,16 @@
 +    restoreCwd
    );
    const analysisError = analyzePublishResult(result, error);
-   const output = [
-@@ -227,27 +227,29 @@
+-  const output = [
+-    analysisError?.message || '',
+-    result?.stdout || '',
+-    result?.stderr || '',
+-  ].join('\n');
++  const output = publishCommandOutput(result, error || analysisError);
+ 
+   if (analysisError) {
+     // Mark authentication / registry-configuration failures as non-retryable so
+@@ -227,27 +223,29 @@
  
  async function main() {
    try {
@@ -203,7 +213,7 @@
        console.log(`Version ${currentVersion} is already published to npm`);
        setOutput('published', 'true');
        setOutput('published_version', currentVersion);
-@@ -255,19 +257,15 @@
+@@ -255,19 +253,15 @@
        return;
      }
  
@@ -227,7 +237,7 @@
        publish: () => runPublishCommand($, jsRoot, originalCwd),
        verify: () => verifyPublished(packageName, currentVersion),
        maxRetries: MAX_RETRIES,
-@@ -276,14 +274,22 @@
+@@ -276,14 +270,22 @@
        log: (message) => console.log(message),
      });
  

@@ -1,0 +1,20 @@
+[
+  {
+    "mode": "before",
+    "exit_code": 0,
+    "stdout": "{\"falselySucceeded\":true,\"code\":7}\n",
+    "stderr": ""
+  },
+  {
+    "mode": "after",
+    "exit_code": 7,
+    "stdout": "{\"rejected\":true,\"code\":7,\"stderr\":\"fetch first\\n\"}\n",
+    "stderr": ""
+  },
+  {
+    "mode": "retry",
+    "exit_code": 0,
+    "stdout": "{\"pushes\":2,\"rebases\":1}\n",
+    "stderr": ""
+  }
+]

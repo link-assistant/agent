@@ -20,7 +20,9 @@
     "lines": 3,
     "binary": false,
     "sha256": "f88d4a292bb64a034d5898b5e8d51fc3fb54642c7507e9ee0a1dccdad902de21",
-    "nearest": [],
+    "nearest": [
+      ".github/codeql-config.yml"
+    ],
     "decision": "Applied: scheduled npm/Cargo lockfile audit, dependency review fallback, CodeQL and least-privilege permissions retained."
   },
   {

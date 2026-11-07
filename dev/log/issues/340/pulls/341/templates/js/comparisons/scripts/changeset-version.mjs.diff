@@ -1,6 +1,6 @@
 --- template/scripts/changeset-version.mjs
 +++ scripts/changeset-version.mjs
-@@ -1,65 +1,47 @@
+@@ -1,65 +1,43 @@
 -#!/usr/bin/env bun
 +#!/usr/bin/env node
  
@@ -22,7 +22,6 @@
   *
   * Uses link-foundation libraries:
 - * - Lockfile-installed command-stream and lino-arguments helpers
-+ * - use-m: Dynamic package loading without package.json dependencies
   * - command-stream: Modern shell command execution with streaming support
 - *
 - * Repository layout: single-language and multi-language repositories are both
@@ -33,7 +32,7 @@
 -import { bootstrapDependencies } from './bootstrap-dependencies.mjs';
 -import { loadCommandStream } from './use-module.mjs';
 -import { captureVersionTree, syncVersionLock } from './version-lock.mjs';
-+// Load dependencies through the shared use-m loader, which normalizes the
++// Load locked dependencies through the shared loader, which normalizes the
 +// CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 +import { useModule } from './use-module.mjs';
 +import { assertChangesetsConsumed } from './changeset-files.mjs';
@@ -65,11 +64,9 @@
 -    process.chdir(originalCwd);
 -  } else {
 -    await $`npx --no-install changeset version`;
-+  // command-stream does not throw on a non-zero exit code.
-+  const versionResult = await $`npx changeset version`;
-+  if (versionResult.code !== 0) {
-+    throw new Error(`changeset version exited with code ${versionResult.code}`);
-   }
+-  }
++  // The shared loader enables errexit, so a failed version command is fatal.
++  await $`npx changeset version`;
 +  assertChangesetsConsumed('.changeset');
  
    console.log('\nSynchronizing package-lock.json...');
