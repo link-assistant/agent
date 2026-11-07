@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
   createOrFindRelease,
+  extractReleaseNotes,
   findReleaseId,
 } from '../../scripts/github-release.mjs';
 
@@ -10,6 +11,30 @@ const failed = (error) => () => Promise.reject(error);
 const found = (data) => () => Promise.resolve(data);
 
 describe('GitHub release failures (#340)', () => {
+  test('release notes match exact versions in JS and Rust headings', () => {
+    for (const heading of ['1.0.1+build.1', '[1.0.1+build.1] - 2026-11-07']) {
+      const changelog = `# Changes\n## 1.0.10\nWrong release\n## ${heading}\n\n### Fixed\n\n- Correct release\n\n## 1.0.0\nOlder release\n`;
+      expect(extractReleaseNotes(changelog, '1.0.1+build.1')).toBe(
+        '### Fixed\n\n- Correct release'
+      );
+      expect(extractReleaseNotes(changelog, '1.0.1')).toBe(null);
+      expect(extractReleaseNotes(changelog, '1.0.10')).toBe('Wrong release');
+    }
+  });
+
+  test('heading comparisons treat metacharacters literally and stop at the next section', () => {
+    for (const version of [
+      '1.0.1-rc.1',
+      '1.0.1+build.1',
+      'literal\\.*(version)',
+    ]) {
+      const changelog = `## ${version}\r\nNotes\r\n## Unreleased\r\nFuture\r\n`;
+      expect(extractReleaseNotes(changelog, version)).toBe('Notes');
+      expect(extractReleaseNotes(changelog, 'missing')).toBe(null);
+    }
+    expect(extractReleaseNotes('## 1.0.1\n', '1.0.1')).toBe('');
+  });
+
   test('successful creation does not need a lookup', async () => {
     expect(
       await createOrFindRelease({

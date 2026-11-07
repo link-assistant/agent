@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
   assertReleaseMetadata,
+  commitReleaseVersion,
   equivalentMetadata,
   setLockPackageVersion,
   setJsLockVersion,
@@ -14,6 +15,32 @@ import { join } from 'node:path';
 import { URL } from 'node:url';
 
 describe('release safety (#340)', () => {
+  test('release commits preserve literal message arguments and propagate failures', () => {
+    const root = mkdtempSync(join(tmpdir(), 'release-message-340-'));
+    const git = (...args) => {
+      const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+      if (result.status !== 0) {
+        throw new Error(result.stderr);
+      }
+      return result.stdout;
+    };
+    try {
+      git('init', '-q');
+      git('config', 'user.name', 'test');
+      git('config', 'user.email', 'test@example.com');
+      writeFileSync(join(root, 'package.json'), '{"version":"1.0.1"}\n');
+      git('add', '.');
+      const message = '1.0.1 "quoted" \\backslash $(literal) `literal`';
+      commitReleaseVersion(message, { cwd: root });
+      expect(git('log', '-1', '--format=%B').trim()).toBe(message);
+      expect(() =>
+        commitReleaseVersion('no staged changes', { cwd: root })
+      ).toThrow();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
   test('staged release metadata rejects dependency changes inside an allowed lockfile', () => {
     const root = mkdtempSync(join(tmpdir(), 'release-index-340-'));
     const run = (command, args) =>

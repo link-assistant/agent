@@ -2,6 +2,7 @@
 import {
   assertSafeAdvance,
   assertStagedReleaseMetadata,
+  commitReleaseVersion,
   syncReleaseCheckout,
 } from './release-safety.mjs';
 
@@ -266,9 +267,7 @@ async function main() {
       assertStagedReleaseMetadata({ jsRoot });
 
       // Commit with version number as message
-      const commitMessage = newVersion;
-      const escapedMessage = commitMessage.replace(/"/g, '\\"');
-      await $`git commit -m "${escapedMessage}"`;
+      console.log(commitReleaseVersion(newVersion));
 
       // Push directly to main, rebasing when another merge landed first
       await pushWithRebaseRetry({

@@ -16,7 +16,7 @@ import { readFileSync } from 'fs';
 // Load locked dependencies through the shared loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
-import { createOrFindRelease } from './github-release.mjs';
+import { createOrFindRelease, extractReleaseNotes } from './github-release.mjs';
 
 // Import link-foundation libraries
 const { $ } = await useModule('command-stream');
@@ -84,20 +84,8 @@ try {
   // Extract changelog entry for this version
   // Read from CHANGELOG.md between this version header and the next version header
   // Supports both JS format (## 0.22.0) and Rust format (## [0.8.0] - 2026-04-11)
-  const escapedVersion = version.replace(/\./g, '\\.');
-  const versionHeaderRegex = new RegExp(
-    `## \\[?${escapedVersion}\\]?[^\\n]*\\n([\\s\\S]*?)(?=## [\\[\\d]|$)`
-  );
-  const match = changelog.match(versionHeaderRegex);
-
-  let releaseNotes = '';
-  if (match) {
-    releaseNotes = match[1].trim();
-  }
-
-  if (!releaseNotes) {
-    releaseNotes = `Release ${version}`;
-  }
+  const releaseNotes =
+    extractReleaseNotes(changelog, version) || `Release ${version}`;
 
   // Create release using GitHub API with JSON input
   // This avoids shell escaping issues that occur when passing text via command-line arguments

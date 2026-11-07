@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Test that the changelog version regex works for both JS and Rust formats
+ * Test that changelog extraction works for both JS and Rust formats
  */
+
+import { extractReleaseNotes } from '../scripts/github-release.mjs';
 
 const jsChangelog = `# @link-assistant/agent
 
@@ -40,15 +42,6 @@ All notable changes to this project will be documented in this file.
 - Initial release
 `;
 
-function extractReleaseNotes(changelog, version) {
-  const escapedVersion = version.replace(/\./g, '\\.');
-  const versionHeaderRegex = new RegExp(
-    `## \\[?${escapedVersion}\\]?[^\\n]*\\n([\\s\\S]*?)(?=## [\\[\\d]|$)`
-  );
-  const match = changelog.match(versionHeaderRegex);
-  return match ? match[1].trim() : null;
-}
-
 // Test JS format
 const jsNotes = extractReleaseNotes(jsChangelog, '0.22.0');
 console.log('=== JS format (## 0.22.0) ===');
@@ -81,6 +74,10 @@ console.log('=== Old regex on Rust format (should fail) ===');
 console.log('Match:', oldRustNotes !== null ? 'YES' : 'NO');
 
 // Summary
-const allPassed = jsNotes !== null && rustNotes !== null && missingNotes === null && oldRustNotes === null;
+const allPassed =
+  jsNotes !== null &&
+  rustNotes !== null &&
+  missingNotes === null &&
+  oldRustNotes === null;
 console.log(`\n${allPassed ? 'ALL TESTS PASSED' : 'SOME TESTS FAILED'}`);
 process.exit(allPassed ? 0 : 1);

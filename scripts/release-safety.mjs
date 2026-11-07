@@ -12,6 +12,15 @@ const prefix = (root) =>
   !root || root === '.' ? '' : `${root.replace(/\/$/, '')}/`;
 const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+export function commitReleaseVersion(version, { cwd = process.cwd() } = {}) {
+  // An argument array preserves the message literally without shell escaping.
+  return execFileSync('git', ['commit', '-m', version], {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
 export function metadataFile(file, { jsRoot = 'js', rustRoot = 'rust' } = {}) {
   const js = prefix(jsRoot);
   const rust = prefix(rustRoot);
