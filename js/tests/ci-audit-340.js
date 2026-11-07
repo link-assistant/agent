@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { URL } from 'node:url';
+import { URL, pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { spawnSync } from 'node:child_process';
 import { makeConfig } from 'lino-arguments';
 import { preflight } from '../../scripts/release-preflight.mjs';
 import {
@@ -10,6 +11,8 @@ import {
 } from '../../scripts/freshness-policy.mjs';
 import { checkVersions } from '../../scripts/check-version.mjs';
 import { sourceLimit, violations } from '../../scripts/check-file-size.mjs';
+import { missingSections } from '../../scripts/validate-docs.mjs';
+import { installGitHooks } from '../../scripts/install-git-hooks.mjs';
 
 const response = (status, data = {}) => ({
   status,
@@ -20,6 +23,46 @@ const npmEnv = {
   ACTIONS_ID_TOKEN_REQUEST_URL: 'https://token.invalid/request?existing=1',
   ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'request-secret',
 };
+
+test('documentation links and prose cannot replace required section headings', () => {
+  expect(missingSections('# Guide\n## Usage\n', ['Usage'])).toEqual([]);
+  expect(
+    missingSections('# Guide\nSee [Usage](#usage)\nUsage examples\n', ['Usage'])
+  ).toEqual(['Usage']);
+});
+
+test('Husky installation failures do not silently pass prepare', async () => {
+  let installed = false;
+  const install = () => {
+    installed = true;
+    return Promise.resolve('installation failed');
+  };
+  expect(await installGitHooks({ env: { CI: 'true' }, install })).toBe(0);
+  expect(installed).toBe(false);
+  expect(
+    await installGitHooks({
+      env: {},
+      install,
+      readHooksPath: () => '',
+      log: () => {},
+    })
+  ).toBe(1);
+  expect(
+    await installGitHooks({
+      env: {},
+      install,
+      readHooksPath: () => '.husky/_',
+      log: () => {},
+    })
+  ).toBe(1);
+  expect(
+    await installGitHooks({
+      env: {},
+      install: () => Promise.resolve(''),
+      readHooksPath: () => '.husky/_',
+    })
+  ).toBe(0);
+});
 
 describe('dependency compatibility (#340)', () => {
   test('unrelated proxy aliases do not prevent CLI configuration', () => {
@@ -33,6 +76,22 @@ describe('dependency compatibility (#340)', () => {
       yargs: ({ yargs }) => yargs.option('model', { type: 'string' }),
     });
     expect(parsed.model).toBe('kilo/nemotron-3-ultra-free');
+    // Agent startup uses legacy process.env mode, so exercise that path too.
+    const entry = createRequire(import.meta.url).resolve('lino-arguments');
+    const program = `import { makeConfig } from ${JSON.stringify(pathToFileURL(entry).href)};
+      console.log(makeConfig({argv: ['bun', 'agent'], lenv: {enabled: false},
+        yargs: ({yargs, getenv}) => yargs.option('verbose', {type: 'boolean', default: getenv('VERBOSE', false)})}).verbose);`;
+    const child = spawnSync(process.execPath, ['--eval', program], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        HTTP_PROXY: 'http://same.invalid',
+        http_proxy: 'http://same.invalid',
+      },
+    });
+    expect(child.stderr).not.toContain('Ambiguous environment aliases');
+    expect(child.status).toBe(0);
+    expect(child.stdout.trim()).toBe('false');
   });
   test('the deprecated DOMException package is replaced by the native constructor', async () => {
     const require = createRequire(import.meta.url);
