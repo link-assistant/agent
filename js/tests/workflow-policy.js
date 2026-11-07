@@ -426,6 +426,22 @@ describe('release gating', () => {
 });
 
 describe('release tooling', () => {
+  test('both Rust publishers install the locked JS helpers before GitHub release creation', () => {
+    const body = workflows.find(
+      (workflow) => workflow.file === 'rust.yml'
+    ).body;
+    for (const job of ['auto-release', 'manual-release']) {
+      const block = getJobBlock(body, job);
+      const install = block.indexOf(
+        'npm ci --legacy-peer-deps --ignore-scripts'
+      );
+      expect(install).toBeGreaterThan(-1);
+      expect(install).toBeLessThan(
+        block.indexOf('node scripts/create-github-release.mjs')
+      );
+      expect(block.slice(install)).toContain('working-directory: js');
+    }
+  });
   // `changeset version` formats files with the package manager it detects
   // (bun, because of js/bun.lock). Without bun the 0.26.15 release left its
   // changeset in js/.changeset.

@@ -10,11 +10,10 @@
  * 2. Updates only package-lock.json's root version, preserving tested dependencies
  *
  * Uses link-foundation libraries:
- * - use-m: Dynamic package loading without package.json dependencies
  * - command-stream: Modern shell command execution with streaming support
  */
 
-// Load dependencies through the shared use-m loader, which normalizes the
+// Load locked dependencies through the shared loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
 import { assertChangesetsConsumed } from './changeset-files.mjs';
@@ -26,11 +25,8 @@ const { $ } = await useModule('command-stream');
 
 try {
   console.log('Running changeset version...');
-  // command-stream does not throw on a non-zero exit code.
-  const versionResult = await $`npx changeset version`;
-  if (versionResult.code !== 0) {
-    throw new Error(`changeset version exited with code ${versionResult.code}`);
-  }
+  // The shared loader enables errexit, so a failed version command is fatal.
+  await $`npx changeset version`;
   assertChangesetsConsumed('.changeset');
 
   console.log('\nSynchronizing package-lock.json...');

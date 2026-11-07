@@ -8,14 +8,14 @@
  *   commit_sha: Commit SHA for PR detection
  *
  * Uses link-foundation libraries:
- * - use-m: Dynamic package loading without package.json dependencies
  * - command-stream: Modern shell command execution with streaming support
  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
  */
 
-// Load dependencies through the shared use-m loader, which normalizes the
+// Load locked dependencies through the shared loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
+import { findReleaseId } from './github-release.mjs';
 
 // Import link-foundation libraries
 const { $ } = await useModule('command-stream');
@@ -62,15 +62,15 @@ const tag = `${prefix}v${version}`;
 
 try {
   // Get the release ID for this version
-  let releaseId = '';
-  try {
+  const releaseId = await findReleaseId(async () => {
     const result =
-      await $`gh api "repos/${repository}/releases/tags/${tag}" --jq '.id'`.run(
-        { capture: true }
-      );
-    releaseId = result.stdout.trim();
-  } catch {
-    console.log(`\u26A0\uFE0F Could not find release for ${tag}`);
+      await $`gh api "repos/${repository}/releases/tags/${tag}"`.run({
+        capture: true,
+      });
+    return JSON.parse(result.stdout);
+  });
+  if (releaseId === null) {
+    console.log(`\u26A0\uFE0F No release exists for ${tag} (HTTP 404)`);
     process.exit(0);
   }
 

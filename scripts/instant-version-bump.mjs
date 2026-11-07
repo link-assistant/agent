@@ -7,7 +7,6 @@
  * Usage: node scripts/instant-version-bump.mjs --bump-type <major|minor|patch> [--description <description>]
  *
  * Uses link-foundation libraries:
- * - use-m: Dynamic package loading without package.json dependencies
  * - command-stream: Modern shell command execution with streaming support
  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
  */
@@ -24,7 +23,7 @@ import {
 import { updateInstantChangelog } from './instant-changelog.mjs';
 import { setJsLockVersion } from './release-safety.mjs';
 
-// Load dependencies through the shared use-m loader, which normalizes the
+// Load locked dependencies through the shared loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
 

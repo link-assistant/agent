@@ -16,7 +16,6 @@
  * 4. If no PR found, simply don't display any PR link (no guessing)
  *
  * Uses link-foundation libraries:
- * - use-m: Dynamic package loading without package.json dependencies
  * - command-stream: Modern shell command execution with streaming support
  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
  *
@@ -26,7 +25,7 @@
 // Package name from package.json
 const PACKAGE_NAME = '@link-assistant/agent';
 
-// Load dependencies through the shared use-m loader, which normalizes the
+// Load locked dependencies through the shared loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
 import { hasFormattedNpmBadge, npmVersionBadge } from './release-badge.mjs';

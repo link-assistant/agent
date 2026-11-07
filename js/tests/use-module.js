@@ -14,8 +14,14 @@
  */
 
 import { describe, expect, test } from 'bun:test';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath, URL } from 'node:url';
 
-import { normalizeModule } from '../../scripts/use-module.mjs';
+import {
+  configureModule,
+  normalizeModule,
+  useModule,
+} from '../../scripts/use-module.mjs';
 
 /**
  * The exact namespace Node.js 24 hands back for command-stream@0.19.0: only the
@@ -89,4 +95,59 @@ describe('normalizeModule', () => {
     expect(normalized.beta()).toBe(2);
     expect(normalized.default).toBe(exported);
   });
+});
+
+describe('CI command failure propagation (#340)', () => {
+  test('rejects dependencies outside the reviewed installed package list', async () => {
+    await expect(useModule('unreviewed-package')).rejects.toThrow(
+      'Unsupported release dependency'
+    );
+  });
+  test('requires a strict shell instead of silently accepting incompatible versions', () => {
+    expect(() => configureModule('command-stream', { $: () => {} })).toThrow(
+      'shell.errexit'
+    );
+    const other = { makeConfig: () => ({}) };
+    expect(configureModule('lino-arguments', other)).toBe(other);
+  });
+
+  test('a real failed command rejects with its exit code and stderr', () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        fileURLToPath(
+          new URL(
+            '../../experiments/issue-340/command-failure.mjs',
+            import.meta.url
+          )
+        ),
+        'after',
+      ],
+      { encoding: 'utf8' }
+    );
+    expect(result.status).toBe(7);
+    expect(JSON.parse(result.stdout)).toEqual({
+      rejected: true,
+      code: 7,
+      stderr: 'fetch first\n',
+    });
+  }, 30000);
+
+  test('the real strict command runner reaches push retry on a nonzero exit', () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        fileURLToPath(
+          new URL(
+            '../../experiments/issue-340/command-failure.mjs',
+            import.meta.url
+          )
+        ),
+        'retry',
+      ],
+      { encoding: 'utf8' }
+    );
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toEqual({ pushes: 2, rebases: 1 });
+  }, 30000);
 });

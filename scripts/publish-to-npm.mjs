@@ -14,7 +14,6 @@ import { syncReleaseCheckout } from './release-safety.mjs';
  * sync by hand.
  *
  * Uses link-foundation libraries:
- * - use-m: Dynamic package loading without package.json dependencies
  * - command-stream: Modern shell command execution with streaming support
  * - lino-arguments: Unified configuration from CLI args, env vars, and .lenv files
  */
@@ -27,6 +26,7 @@ import { readPackageInfo } from './package-info.mjs';
 import {
   buildAuthFailureGuidance,
   isNonRetryableFailure,
+  publishCommandOutput,
 } from './publish-failure-classifier.mjs';
 import {
   isAlreadyPublishedError,
@@ -34,7 +34,7 @@ import {
   sleep,
 } from './publish-retry.mjs';
 
-// Load dependencies through the shared use-m loader, which normalizes the
+// Load locked dependencies through the shared loader, which normalizes the
 // CommonJS namespace shape Node.js 23+ returns (see scripts/use-module.mjs).
 import { useModule } from './use-module.mjs';
 
@@ -206,11 +206,7 @@ async function runPublishCommand(shell, packageRoot, restoreCwd) {
     restoreCwd
   );
   const analysisError = analyzePublishResult(result, error);
-  const output = [
-    analysisError?.message || '',
-    result?.stdout || '',
-    result?.stderr || '',
-  ].join('\n');
+  const output = publishCommandOutput(result, error || analysisError);
 
   if (analysisError) {
     // Mark authentication / registry-configuration failures as non-retryable so

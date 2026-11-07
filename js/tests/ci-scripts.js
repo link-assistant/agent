@@ -34,7 +34,10 @@ import {
   buildCrateVersionUrl,
   isCrateVersionPublished,
 } from '../../scripts/crates-registry.mjs';
-import { isNonRetryableFailure } from '../../scripts/publish-failure-classifier.mjs';
+import {
+  isNonRetryableFailure,
+  publishCommandOutput,
+} from '../../scripts/publish-failure-classifier.mjs';
 import { pushWithRebaseRetry } from '../../scripts/push-with-rebase-retry.mjs';
 import {
   decideRustRelease,
@@ -66,6 +69,19 @@ import {
 
 const noSleep = () => Promise.resolve();
 const noLog = () => {};
+
+test('strict command errors retain auth and already-published diagnostics', () => {
+  const error = Object.assign(new Error('Command failed with exit code 1'), {
+    stdout: 'npm publish output',
+    stderr: 'npm error E401 Unable to authenticate',
+  });
+  const output = publishCommandOutput(null, error);
+  expect(output).toContain('npm publish output');
+  expect(isNonRetryableFailure(output)).toBe(true);
+  error.stderr =
+    'npm error EPUBLISHCONFLICT Cannot publish over previously published version';
+  expect(isAlreadyPublishedError(publishCommandOutput(null, error))).toBe(true);
+});
 
 // A Cargo.toml shaped like rust/Cargo.toml: many sections carry `name = "..."`.
 const CARGO_TOML = `[package]
