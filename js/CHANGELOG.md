@@ -1,5 +1,12 @@
 # @link-assistant/agent
 
+## 0.27.2
+
+### Patch Changes
+
+- 7795b58: Make CI validate frozen dependencies and merge results, restore dependency freshness,
+  remove deprecated transitive dependencies, and enforce release and workflow quality guards.
+
 ## 0.27.1
 
 ### Patch Changes
